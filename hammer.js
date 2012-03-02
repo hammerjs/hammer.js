@@ -28,7 +28,8 @@ function Hammer(element, options)
     element.css({
         "-webkit-user-select": "none",
         "-webkit-touch-callout": "none",
-        "-webkit-text-size-adjust": "none",
+        "-webkit-user-drag": "none",
+        "-moz-user-drag": "none",
         "-webkit-tap-highlight-color": "rgba(0, 0, 0, 0)"
     });
 
