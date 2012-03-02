@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+    <style>
+        #container {
+            height: 400px;
+            background: silver;
+            color: #fff;
+            margin-bottom: 20px;
+            font: 100px/400px 'Helvetica Neue', Helvetica, Arial;
+            text-align: center;
+        }
+
+        #debug {
+            font: 12px 'Courier New';
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="container">Touch here</div>
+
+<div id="debug"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://raw.github.com/jtangelder/hammer.js/master/hammer.js"></script>
+<script>
+
+    var debug_el = $("#debug");
+    function log(name, args) {
+        args = Array.prototype.slice.call(args, 0);
+        debug_el.prepend("<strong>"+ name +"</strong>: "+ args.join(" ") +"<br>");
+    }
+
+
+    var hammer = new Hammer("#container");
+
+    // event callbacks
+    hammer.onHold = function() { log('hold', arguments); };
+
+    hammer.onTap = function() { log('tap', arguments); };
+    hammer.onDoubleTap = function() { log('double tap', arguments); };
+
+    hammer.onTransformStart = function() { log('transform start', arguments); };
+    hammer.onTransform = function() { log('transform', arguments); };
+
+    hammer.onDragStart = function() { log('drag start', arguments); };
+    hammer.onDrag = function() { log('drag', arguments); };
+    hammer.onDragEnd = function() { log('drag end', arguments); };
+
+</script>
+
+</body>
+</html>
