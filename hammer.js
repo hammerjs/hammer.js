@@ -7,30 +7,22 @@ function Hammer(element, options)
         drag_vertical: false,
         drag_horizontal: true,
         drag_min_distance: 20,
-        drag_space: 70,		// how much the sliding can be out of the exact direction
+        drag_threshold: 70,		// how much the sliding can be out of the exact direction
 
-        zoom: true,
-        zoom_min: 1,
-        zoom_max: 3,
-
-        rotate: true,
-        rotate_min: 0,
-        rotate_max: 180,
+        transform: true,    // pinch zoom and rotation
 
         tap: true,
         tap_double: true,
         tap_max_interval: 500,
 
         hold: true,
-        hold_timeout: 500,
-
-        transform_element: $(">:first", element)
+        hold_timeout: 500
     };
     options = $.extend({}, defaults, options);
 
 
     // make sure element in a jQuery object
-    var element = $(element);
+    element = $(element);
 
     // some css hacks
     element.css({
@@ -85,8 +77,8 @@ function Hammer(element, options)
     this.getDirectionFromAngle = function( angle )
     {
         for(var name in this.DIRECTION) {
-            var min = this.DIRECTION[name] - options.slide_space;
-            var max = this.DIRECTION[name] + options.slide_space;
+            var min = this.DIRECTION[name] - options.drag_threshold;
+            var max = this.DIRECTION[name] + options.drag_threshold;
 
             // when we move up we also need to test the absolute number of the angle
             // because it also can be a negative number
@@ -247,7 +239,7 @@ function Hammer(element, options)
                             ev.preventDefault();
 
                             var position = { x: _pos.move.x - _offset.left,
-                                y: _pos.move.y- _offset.top };
+                                             y: _pos.move.y - _offset.top };
 
 
                             // on the first time trigger the start event
@@ -259,29 +251,30 @@ function Hammer(element, options)
                             // normal slide event
                             triggerEvent("onDrag", [ position, _direction, _distance, _angle ]);
                         }
-
                         break;
 
                     // two fingers
                     case 2:
-                        _gesture = 'transform';
+                        if(options.transform) {
+                            _gesture = 'transform';
 
-                        var scale = ev.originalEvent.scale;
-                        var rotation = ev.originalEvent.rotation;
+                            var scale = ev.originalEvent.scale;
+                            var rotation = ev.originalEvent.rotation;
 
-                        if(scale || rotation) {
-                            var center = { x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                                y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+                            if(scale || rotation) {
+                                var center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
+                                    y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
-                            // on the first time trigger the start event
-                            if(_first) {
-                                triggerEvent("onTransformStart", [ center, scale, rotation ]);
-                                _first = false;
+                                // on the first time trigger the start event
+                                if(_first) {
+                                    triggerEvent("onTransformStart", [ center, scale, rotation ]);
+                                    _first = false;
+                                }
+
+                                triggerEvent("onTransform", [ center, scale, rotation ]);
                             }
-
-                            triggerEvent("onTransform", [ center, scale, rotation ]);
+                            ev.preventDefault();
                         }
-                        ev.preventDefault();
                         break;
                 }
                 break;
@@ -308,12 +301,14 @@ function Hammer(element, options)
                             ev.preventDefault();
                         }
                         // single tap is single touch
-                        else if(options.tap) {
+                        else {
                             _gesture = 'tap';
                             _prev_tap_end_time = now;
 
-                            triggerEvent("onTap");
-                            ev.preventDefault();
+                            if(options.tap) {
+                                triggerEvent("onTap");
+                                ev.preventDefault();
+                            }
                         }
                     }
                 }
@@ -326,12 +321,15 @@ function Hammer(element, options)
         }
     }
 
-    // mouseup on the document because the mouse can be out of the element when this is fired
-    // or else it is never fired...!
-    // $(document).bind("mouseup", handleEvents);
 
-    // touch, gesture and mouse events on the element
-    // mousedown mousemove mouseup
-    // gesturestart gesturemove gesturechange gestureend
-    $(element).bind("touchstart touchmove touchend", handleEvents);
+    // bind events for touch devices
+    if('ontouchstart' in window) {
+        $(element).bind("touchstart touchmove touchend", handleEvents);
+    // for non-touch
+    } else {
+        // mouseup on the document because the mouse can be out of the element when this is fired
+        // or else it is never fired...!
+        $(document).bind("mouseup", handleEvents);
+        $(element).bind("mousedown mousemove", handleEvents);
+    }
 }
