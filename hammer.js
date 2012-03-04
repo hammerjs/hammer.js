@@ -228,6 +228,8 @@ function Hammer(element, options)
                             // calculate the angle
                             _angle = getAngle(_pos.start, _pos.move);
                             _direction = self.getDirectionFromAngle(_angle);
+							
+							
 
                             // check the movement and stop if we go in the wrong direction
                             var is_vertical = (self.DIRECTION.UP == _direction || self.DIRECTION.DOWN == _direction);
@@ -242,13 +244,12 @@ function Hammer(element, options)
                             var position = { x: _pos.move.x - _offset.left,
                                              y: _pos.move.y - _offset.top };
 
-
                             // on the first time trigger the start event
                             if(_first) {
                                 triggerEvent("onDragStart", [ position, _direction, _distance, _angle ]);
                                 _first = false;
                             }
-
+							
                             // normal slide event
                             triggerEvent("onDrag", [ position, _direction, _distance, _angle ]);
                         }
@@ -263,16 +264,16 @@ function Hammer(element, options)
                             var rotation = ev.originalEvent.rotation;
 
                             if(scale || rotation) {
-                                var center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                                    y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+                                _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
+                                    			 y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
                                 // on the first time trigger the start event
                                 if(_first) {
-                                    triggerEvent("onTransformStart", [ center, scale, rotation ]);
+                                    triggerEvent("onTransformStart", [ _pos.center, scale, rotation ]);
                                     _first = false;
                                 }
 
-                                triggerEvent("onTransform", [ center, scale, rotation ]);
+                                triggerEvent("onTransform", [ _pos.center, scale, rotation ]);
                             }
                             ev.preventDefault();
                         }
@@ -286,6 +287,10 @@ function Hammer(element, options)
                 if(_gesture == 'drag') {
                     triggerEvent("onDragEnd", [ _direction, _distance, _angle ]);
                 }
+				// transform
+                else if(_gesture == 'transform') {
+                    triggerEvent("onTransformEnd", [ _pos.center, ev.originalEvent.scale, ev.originalEvent.rotation ]);
+                }
                 else {
                     // compare the kind of gesture by time
                     var now = new Date().getTime();
@@ -298,7 +303,7 @@ function Hammer(element, options)
                             _gesture = 'double_tap';
                             _prev_tap_end_time = null;
 
-                            triggerEvent("onDoubleTap");
+                            triggerEvent("onDoubleTap", [_pos.start]);
                             ev.preventDefault();
                         }
                         // single tap is single touch
@@ -307,7 +312,7 @@ function Hammer(element, options)
                             _prev_tap_end_time = now;
 
                             if(options.tap) {
-                                triggerEvent("onTap");
+                                triggerEvent("onTap", [_pos.start]);
                                 ev.preventDefault();
                             }
                         }

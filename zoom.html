@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        #zoom {
+           	width: 500px;
+		   	height: 300px;
+		   	overflow: hidden;
+			position:relative;
+		  	background: #eee;			
+        }
+		
+		#zoom :first-child {
+			position: relative;
+			-webkit-transition: all .2s ease-out;
+		}
+		
+    </style>
+</head>
+
+<body>
+
+<div id="zoom">
+	<img src="http://placekitten.com/1000/600" width="500" height="300" alt="" />
+</div>
+	
+<p>Simple image transform demo.</p>
+<p>Notice that the drag event is non-blocking for the scrolling of your page...</p>
+	
+	<div id="debug" style="white-space:pre;"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="hammer.js"></script>
+<script>
+
+    function debug(str) {
+        $("#debug").prepend(str+"\n");
+    }
+
+	// disable the dragging of images on desktop browsers
+	$("#zoom img").bind("dragstart", function() { 
+	   	return false; 
+	});
+
+
+
+    var hammer = new Hammer("#zoom");
+
+	var el = $("#zoom > :first");
+	var start_scale = 1;
+	var origin = { x: 0, y: 0 };
+
+	function setScale( scale ) {
+		if(scale > 8) {
+			scale = 8;
+		} else if(scale < 1) {
+			scale = 1;
+		}
+
+		el.css("-webkit-transform", "scale("+ scale +")");
+	}
+	
+	function setOrigin( center ) {
+		origin.x = origin.x + ((center.x - origin.x) / start_scale);
+		origin.y = origin.y + ((center.y - origin.y) / start_scale);
+
+		el.css("-webkit-transform-origin", origin.x +"px "+ origin.y +"px");
+	}
+	
+	
+	hammer.onTransformStart = function(center, scale, rotation) {
+		setOrigin(center);
+    };
+		
+	hammer.onTransform = function(center, scale, rotation) {
+		setScale(start_scale * scale);
+    };
+
+	hammer.onTransformEnd = function(center, scale, rotation) {
+		start_scale = start_scale * scale;
+	}
+	
+	hammer.onDoubleTap = function( position ) {
+		start_scale = (start_scale <= 1.5) ? 3 : 1;
+		
+		setOrigin(position)
+		setScale(start_scale);
+	}
+
+</script>
+</body>
+</html>
