@@ -92,17 +92,17 @@ A slideshow that uses hammer.js to switch slides. Note that the drag event in th
 ### Drag
 ? [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
 
-### Color traces!
-We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check it out]()
+### Color traces (not finished yet)
+We use hammer.js to generate beautiful traces with colorful balls. Balls! Upload multi-drag.html [Check it out](http://eightmedia.github.com/hammer.js/multi-drag.html)
 
 ### Lightbox (not finished yet)
-We use hammer.js to close a lightbox by pinching it. [Check it out]()
+We use hammer.js to close a lightbox by pinching it.
 
 ### Pinch to zoom (not finished yet)
-We use hammer.js to zoom in and out on an image by pinching. [Check it out]()
+We use hammer.js to zoom in and out on an image by pinching.
 
 ### Videoplayer / Google maps threshold (not finished yet)
-We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window. [Check it out]()
+We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window.
 
 ## Further notes
 Created by [J. Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
