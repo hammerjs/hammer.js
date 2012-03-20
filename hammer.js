@@ -178,8 +178,13 @@ function Hammer(element, options)
      */
     function triggerEvent( eventName, params )
     {
+        // return touches object
+        params.touches = getXYfromEvent(params.originalEvent);
+
+        // trigger jQuery event
         element.trigger($.Event(eventName, params));
 
+        // trigger callback
         if($.isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
         }

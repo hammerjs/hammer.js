@@ -183,14 +183,14 @@
 
 	
 	// ondrag we preview the next/prev slide
-    hammer.onDrag = function(ev, position, direction, distance, angle) {
+    hammer.ondrag = function(ev) {
 		var left = 0;
 		
 		// determine which direction we need to show the preview
-		if(direction == hammer.DIRECTION.LEFT) {
-			left = 0 - distance;
-		} else if(direction == hammer.DIRECTION.RIGHT) {
-			left = distance;
+		if(ev.direction == hammer.DIRECTION.LEFT) {
+			left = 0 - ev.distance;
+		} else if(ev.direction == hammer.DIRECTION.RIGHT) {
+			left = ev.distance;
 		}
 		
 		// just move the marginLeft
@@ -200,15 +200,15 @@
 	
 	// ondragend we will move to the next/prev slide when we have 
 	// opened it more then 1/3 on the screen
-	hammer.onDragEnd = function(ev, direction, distance, angle) {
+	hammer.ondragend = function(ev) {
 		// restore the margin
 		slideshow.getContainer().css({ marginLeft: 0 });
 
 		// if we moved the slide 1/3 then navigate
-		if(Math.abs(distance) > (510/3)) {
-			if(direction == hammer.DIRECTION.RIGHT) {
+		if(Math.abs(ev.distance) > (510/3)) {
+			if(ev.direction == hammer.DIRECTION.RIGHT) {
 				slideshow.prev();
-			} else if(direction == hammer.DIRECTION.LEFT) {
+			} else if(ev.direction == hammer.DIRECTION.LEFT) {
 				slideshow.next();
 			}
 		}

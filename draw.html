@@ -52,9 +52,8 @@
     });
 
     $("#draw").bind("drag", function(event) {
-        var touches = event.originalEvent.originalEvent.touches;
-        for(var t=0, len=touches.length; t<len; t++) {
-            points.unshift({ x: touches[t].pageX, y: touches[t].pageY });
+        for(var t=0, len=event.touches.length; t<len; t++) {
+            points.unshift({ x: event.touches[t].x, y: event.touches[t].y });
         }
 
         // allow max 100 points

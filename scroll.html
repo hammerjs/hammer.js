@@ -207,11 +207,6 @@
         }
 
 
-        function bindEvents() {
-
-        }
-
-
         /**
          * get the dimensions of a element
          * @param   jQuery  el
@@ -240,7 +235,7 @@
         var scroll_dim = {};
         var content_dim = {};
 
-        hammer.onDragStart = function() {
+        hammer.ondragstart = function() {
             scroll_start = getScrollPosition();
             scroll_start.time = new Date().getTime();
 
@@ -253,8 +248,8 @@
         };
 
 
-        hammer.onDrag = function( ev, pos, direction, distance ) {
-            if(direction == hammer.DIRECTION.UP || direction == hammer.DIRECTION.LEFT) {
+        hammer.ondrag = function( ev ) {
+            if(ev.direction == hammer.DIRECTION.UP || ev.direction == hammer.DIRECTION.LEFT) {
                 distance = 0-distance;
             }
 
@@ -269,7 +264,7 @@
         };
 
 
-        hammer.onDragEnd = function( ev, direction, distance ) {
+        hammer.ondragend = function( ev ) {
             var scroll = getScrollPosition();
             var corrections = {};
             if(scroll.top > 0) {
