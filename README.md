@@ -56,7 +56,7 @@ The Drag gesture also returns:
 - Direction: Based on the angle, we return a simplified direction, which can be either up, right, down or left.
 - Distance: The distance of the drag in pixels.
 
-Something about start and end events?
+In addition to this the Transform and Drag gestures return start and end events.
 
 ### Requirements and compatibility
 Hammer.js requires jQuery for simple event binding and for the position of the container element.
