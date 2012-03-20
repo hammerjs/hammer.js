@@ -84,13 +84,13 @@ We've created some demo's to show you the immense power of hammer.js:
 A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Slideshow
-A slideshow that uses hammer to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
+A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Colors!
 kleurenbolletjes?
 
 ### Pinch to zoom
-We use hammer to zoom in and out on an image by pinching. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
+We use hammer.js to zoom in and out on an image by pinching. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Lightbox
 We use hammer.js to close a lightbox by pinching it. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
