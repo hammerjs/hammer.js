@@ -7,36 +7,38 @@ function Hammer(element, options)
     var self = this;
 
     var defaults = {
-        prevent_default: false, // prevent the default event or not... might be buggy when false
+        // prevent the default event or not... might be buggy when false
+        prevent_default    : false,
 
-        drag: true,
-        drag_vertical: true,
-        drag_horizontal: true,
-        drag_min_distance: 20,
-        drag_threshold: 90,		// how much the sliding can be out of the exact direction
+        drag               : true,
+        drag_vertical      : true,
+        drag_horizontal    : true,
+        // minimum distance before the drag event starts
+        drag_min_distance  : 20, // pixels
+        // how much the sliding can be out of the exact direction
+        drag_threshold     : 90, // degrees
 
-        transform: true,    // pinch zoom and rotation
-        scale_treshold: 0.1,
-        rotation_treshold: 15,   // in degrees
+        // pinch zoom and rotation
+        transform          : true,
+        scale_treshold     : 0.1,
+        rotation_treshold  : 15, // degrees
 
-        tap: true,
-        tap_double: true,
-        tap_max_interval: 300,
+        tap                : true,
+        tap_double         : true,
+        tap_max_interval   : 300,
         tap_double_distance: 20,
 
-        hold: true,
-        hold_timeout: 500
+        hold               : true,
+        hold_timeout       : 500
     };
     options = $.extend({}, defaults, options);
-
 
     // make sure element in a jQuery object
     element = $(element);
 
     // some css hacks
-    $(['-webkit-','-moz-','-ms-','-o-','']).each(function() {
+    $(['-webkit-','-moz-','-ms-','-o-','']).each(function(i, vendor) {
         var css = {};
-        var vendor = this;
         var props = {
             "user-select": "none",
             "touch-callout": "none",
@@ -51,14 +53,13 @@ function Hammer(element, options)
         element.css(css);
     });
 
-
     // directions defines
     this.DIRECTION = {
         UP: 360,
         DOWN: 0,
         LEFT: -180,
-        RIGHT: 180 };
-
+        RIGHT: 180
+    };
 
     // holds the distance that has been moved
     var _distance = 0;
@@ -81,7 +82,7 @@ function Hammer(element, options)
     var _prev_gesture = null;
 
     var _touch_start_time = null;
-    var _prev_tap_pos = {x:0, y:0};
+    var _prev_tap_pos = {x: 0, y: 0};
     var _prev_tap_end_time = null;
 
     var _hold_timer = null;
@@ -94,8 +95,8 @@ function Hammer(element, options)
 
     /**
      * angle to direction define
-     * @param	float	angle
-     * @return	int		DIRECTION
+     * @param  float angle
+     * @return int   DIRECTION
      */
     this.getDirectionFromAngle = function( angle )
     {
@@ -125,8 +126,8 @@ function Hammer(element, options)
     /**
      * count the number of fingers in the event
      * when no fingers are detected, one finger is returned (mouse pointer)
-     * @param 	jQueryEvent
-     * @return	int		fingers
+     * @param  jQueryEvent
+     * @return int  fingers
      */
     function countFingers( event )
     {
@@ -137,9 +138,9 @@ function Hammer(element, options)
 
 
     /**
-     * get the x and y position from the event object
-     * @param 	jQueryEvent
-     * @return	mixed		object with x and y or array with objects
+     * get the x and y positions from the event object
+     * @param  jQueryEvent
+     * @return array  [{ x: int, y: int }]
      */
     function getXYfromEvent( event )
     {
@@ -161,8 +162,8 @@ function Hammer(element, options)
 
     /**
      * calculate the angle between two points
-     * @param	object	pos1	{ x: int, y: int }
-     * @param	object	pos2	{ x: int, y: int }
+     * @param object pos1 { x: int, y: int }
+     * @param object pos2 { x: int, y: int }
      */
     function getAngle( pos1, pos2 )
     {
@@ -172,15 +173,13 @@ function Hammer(element, options)
 
     /**
      * trigger an event/callback by name with params
-     * @param 	string	name
-     * @param	array	params
+     * @param string name
+     * @param array  params
      */
     function triggerEvent( eventName, params )
     {
-        // jQuery style binding
         element.trigger($.Event(eventName, params));
 
-        // try to call the callback onEvent
         if($.isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
         }
@@ -202,7 +201,6 @@ function Hammer(element, options)
 
 
     var gestures = {
-
         // hold gesture
         // fired on touchstart
         hold : function(event)
@@ -321,6 +319,16 @@ function Hammer(element, options)
             // compare the kind of gesture by time
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
+            var is_double_tap = function () {
+                if (options.tap_double && _prev_gesture == 'tap' &&
+                                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+                    var x_distance = Math.abs(prev_tap_pos[0].x - _pos.start[0].x);
+                    var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
+                    return (_prev_tap_pos && _pos.start &&
+                        Math.max(x_distance, y_distance) < options.tap_double_distance);
+                }
+                return false;
+            }
 
             // dont fire when hold is fired
             if(options.hold && !(options.hold && options.hold_timeout > touch_time)) {
@@ -328,20 +336,16 @@ function Hammer(element, options)
             }
 
             // when previous event was tap and the tap was max_interval ms ago
-            if(options.tap_double && _prev_gesture == 'tap' &&
-                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
 
-                if(_prev_tap_pos && _pos.start &&
-                    Math.max(Math.abs(_prev_tap_pos[0].x - _pos.start[0].x), Math.abs(_prev_tap_pos[0].y - _pos.start[0].y)) < options.tap_double_distance) {
-                    _gesture = 'double_tap';
-                    _prev_tap_end_time = null;
+            if(is_double_tap()) {
+                _gesture = 'double_tap';
+                _prev_tap_end_time = null;
 
-                    triggerEvent("doubletap", {
-                        originalEvent   : event,
-                        position        : _pos.start
-                    });
-                    event.preventDefault();
-                }
+                triggerEvent("doubletap", {
+                    originalEvent   : event,
+                    position        : _pos.start
+                });
+                event.preventDefault();
             }
 
             // single tap is single touch
@@ -414,8 +418,8 @@ function Hammer(element, options)
                     });
                 }
 
-				// transform
-                // transformstart is triggered, so transformend is possible
+                // transform
+                // transformstart is triggered, so transformed is possible
                 else if(_gesture == 'transform') {
                     triggerEvent("transformend", {
                         originalEvent   : event,
@@ -443,8 +447,8 @@ function Hammer(element, options)
     }
     // for non-touch
     else {
-        // mouseup on the document because the mouse can be out of the element when this is fired
-        // or else it is never fired...!
+        // Listen for mouseup on the document so we know it happens
+        // even if the mouse has left the element.
         $(document).bind("mouseup", handleEvents);
         $(element).bind("mousedown mousemove", handleEvents);
     }
