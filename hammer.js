@@ -325,9 +325,9 @@ function Hammer(element, options)
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
             var is_double_tap = function () {
-                if (options.tap_double && _prev_gesture == 'tap' &&
+                if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' &&
                                 (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
-                    var x_distance = Math.abs(prev_tap_pos[0].x - _pos.start[0].x);
+                    var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
                     var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
                     return (_prev_tap_pos && _pos.start &&
                         Math.max(x_distance, y_distance) < options.tap_double_distance);
