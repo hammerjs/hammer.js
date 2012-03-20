@@ -138,24 +138,20 @@ function Hammer(element, options)
 
 
     /**
-     * get the x and y position from the event object
+     * get the x and y positions from the event object
      * @param  jQueryEvent
-     * @return mixed  object with x and y or array with objects
+     * @return array  [{ x: int, y: int }]
      */
     function getXYfromEvent( event )
     {
-        var src;
-
-        // single touch
-        if(countFingers(event) == 1) {
-            src = event.originalEvent.touches ? event.originalEvent.touches[0] : event;
-
-            return [{ x: src.pageX, y: src.pageY }];
+        // no touches, use the event pageX and pageY
+        if(!event.originalEvent.touches) {
+            return [{ x: event.pageX, y: event.pageY }];
         }
         // multitouch, return array with positions
         else {
-            var pos = [];
-            for(var t=0; t<event.originalEvent.touches.length; t++) {
+            var pos = [], src;
+            for(var t=0, len=event.originalEvent.touches.length; t<len; t++) {
                 src = event.originalEvent.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
@@ -318,17 +314,14 @@ function Hammer(element, options)
 
         // tap and double tap gesture
         // fired on touchend
-        tap : function (event)
+        tap : function(event)
         {
             // compare the kind of gesture by time
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
-
-            function is_double_tap()
-            {
-                // when previous event was tap and the tap was max_interval ms ago
+            var is_double_tap = function () {
                 if (options.tap_double && _prev_gesture == 'tap' &&
-                   _touch_start_time - _prev_tap_end_time < options.tap_max_interval) {
+                                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
                     var x_distance = Math.abs(prev_tap_pos[0].x - _pos.start[0].x);
                     var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
                     return (_prev_tap_pos && _pos.start &&
@@ -341,6 +334,8 @@ function Hammer(element, options)
             if(options.hold && !(options.hold && options.hold_timeout > touch_time)) {
                 return;
             }
+
+            // when previous event was tap and the tap was max_interval ms ago
 
             if(is_double_tap()) {
                 _gesture = 'double_tap';
