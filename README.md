@@ -1,6 +1,6 @@
 # Hammer.js 
 
-## An easy-to-use javascript library for multi touch gestures
+## A javascript library for multi-touch gestures
 
 > I told you, homeboy /
 > You *CAN* touch this /
@@ -22,9 +22,9 @@ Hammer.js is a javascript library (that depends on jQuery) that can be used to c
 
 A step by step guide on how to use hammer.js:
 
-* [Download the hammer javascript] or clone the latest version from our github repository:
+* [Download the hammer javascript](https://github.com/EightMedia/hammer.js/zipball/master) or clone the latest version from our github repository:
 
-```$ git clone git@github.com:jtangelder/hammer.js.git```
+```$ git clone git@github.com:eightmedia/hammer.js.git```
 
 * Import jquery and import hammer.js in your project:
     
@@ -42,10 +42,10 @@ Now, on every gesture that is performed on the container element, you'll receive
 All gestures return:
 
 - Event: The original jQuery event (targetElement, etc.).
-- Position: An object with the x and y position of the gesture. (e.g. the position of a tap and the center position of a transform)
+- Position: An object with the x and y position of the gesture (e.g. the position of a tap and the center position of a transform).
 - Touches: An array of touches, containing an object with the x and the y position for every finger.
 
-Besides these, the Transform gesture also returns:
+Besides these, the Transform gesture returns:
 
 - Scale: The distance between two fingers since the start of an event as a multiplier of the initial distance. The initial value is 1.0. If less than 1.0 the gesture is pinch close to zoom out. If greater than 1.0 the gesture is pinch open to zoom in.
 - Rotation: A delta rotation since the start of an event in degrees where clockwise is positive and counter-clockwise is negative. The initial value is 0.0.
@@ -73,7 +73,6 @@ Not all gestures are supported on every device. This matrix shows the support we
 | Transform  | X        | X        |          | ? |
 | Drag       | X        | X        | X        | ? |
 
-
 ## Demo's
 > While it's rollin', hold on /
 > Pump a little bit and let 'em know it's goin' on /
@@ -100,15 +99,9 @@ We use hammer.js to close a lightbox by pinching it. [Check it out](http://jtang
 We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ## Further notes
-Created by [J. Tangelder] and developed further by everyone at [Eight Media] in Arnhem, the Netherlands.
+Created by [J. Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
-Add your feature suggestions and bug reports on [Github].
+Add your feature suggestions and bug reports on [Github](http://github.com/eightmedia/hammer.js/issues).
 
-We recommend listening to [this loop] while using hammer.js.
-
-  [Download]: https://github.com/jtangelder/hammer.js/zipball/master
-  [eight media]: http://www.eight.nl/
-  [j. tangelder]: http://twitter.com/jorikdelaporik
-  [github]: http://github.com/eightmedia/hammer.js/issues
-  [this loop]: http://soundcloud.com/eightmedia/hammerfreak
+We recommend listening to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
 
