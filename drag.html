@@ -49,14 +49,13 @@
 <script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
 <script>
 
-    function debug(str) {
-        $("#_debug").prepend(str+"\n");
-    }
-
-
 
     $(function()
     {
+        
+        /**
+         * setup hammer
+         */
         var hammer = new Hammer("#container", {
             drag_min_distance: 0,
             drag_horizontal: true,
@@ -75,6 +74,9 @@
         var drag_pos = {};
         var zIndex = 10;
 
+        /**
+         * keep up dragging
+         */
         function watchDrag()
         {
             if(!drag_el) {
@@ -106,7 +108,10 @@
 
             setTimeout(watchDrag, 10);
         }
-
+        
+        /**
+         * on tap
+         */
         hammer.ontap = function(ev) {
             var el = $(ev.originalEvent.target);
             if(el.hasClass("box")) {
@@ -114,6 +119,9 @@
             }
         };
 
+        /**
+         * on drag start
+         */
         hammer.ondragstart = function(ev) {
             var el = $(ev.originalEvent.target);
             if(el.hasClass("box")) {
@@ -133,7 +141,10 @@
                 setTimeout(watchDrag, 10);
             }
         };
-
+        
+        /**
+         * on drag
+         */
         hammer.ondrag = function(ev) {
             if(!drag_el) {
                 return;
@@ -142,6 +153,9 @@
             drag_pos = ev.position;
         };
 
+        /**
+         * on drag end
+         */
         hammer.ondragend = function() {
             if(!drag_el) {
                 return;
@@ -152,10 +166,6 @@
         }
 
     });
-
-
-
-
 </script>
 </body>
 </html>
