@@ -56,16 +56,19 @@ What to do after downloading?
 ### The Hammer callback object:
 
 Tap, Hold and Double Tap events return:
+
 - Event
 - Position
 
 Transform event returns:
+
 - Event
 - Position
 - Scale
 - Rotation
 
 Drag event returns:
+
 - Event
 - Position
 - Direction
@@ -80,6 +83,7 @@ Something about start and end events?
 Hammer.js has been tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy S with Android 2.3.3 and Google Chrome 17. Requires jQuery for some simple event binding and position of the container element. On a desktop browser the mouse can be used to simulate touch events with one finger. On Android 2 (and 3?) the default browser doesnt support multi-touch events, so no transform callback
 
 Not all gestures are supported on every device. This support matrix shows the support we have tested. Note that this is not extensive. If you've tested hammer.js on a different device, please let us know.
+
 | Gesture    |          |          |          |          |
 |:-----------|:---------|:---------|:---------|:---------|
 | Tap        |          |          |          |          |
