@@ -1,20 +1,19 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
         #zoom {
-           	width: 500px;
-		   	height: 300px;
+		   	height: 600px;
 		   	overflow: hidden;
 			position:relative;
-		  	background: #eee;			
+		  	background: #eee;
+            -webkit-transform: translate3d(0,0,0);
         }
 		
 		#zoom :first-child {
 			position: relative;
-			-webkit-transition: all .2s ease-out;
+			//-webkit-transition: all .2s ease-out;
 		}
 		
     </style>
@@ -23,31 +22,100 @@
 <body>
 
 <div id="zoom">
-	<img src="http://placekitten.com/1000/600" width="500" height="300" alt="" />
+    <img src="Waldo.jpg" alt="" height=600 />
 </div>
+
 	
-<p>Simple image transform demo.</p>
-<p>Notice that the drag event is non-blocking for the scrolling of your page...</p>
-	
-	<div id="debug" style="white-space:pre;"></div>
+	<div id="_debug" style="white-space:pre;"></div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="hammer.js"></script>
 <script>
 
     function debug(str) {
-        $("#debug").prepend(str+"\n");
+        $("#_debug").prepend(str+"\n");
     }
 
 	// disable the dragging of images on desktop browsers
-	$("#zoom img").bind("dragstart", function() { 
+	$("img").bind("dragstart", function() {
 	   	return false; 
 	});
 
 
 
-    var hammer = new Hammer("#zoom");
+    $(function()
+    {
+        var hammer = new Hammer("#zoom", {
+            non_blocking: false,
+            drag_min_distance: 0
+        });
 
+        var zoom = new ZoomCanvas(hammer, '#zoom', '#zoom :first-child');
+    });
+
+
+    function ZoomCanvas(hammer, container, el)
+    {
+        container = $(container);
+        el = $(el);
+
+        var max_zoom = 5;
+
+        var last_scale = 1;  // scale of the image
+        var scale = 1;  // scale of the image
+
+        var last_rotation = 0;  // scale of the image
+        var rotation = 0;  // scale of the image
+
+        var last_x = 0;  // last x location on the screen
+        var last_y = 0;  // last y location on the screen
+        var image_x = 0; // last x location on the image
+        var image_y = 0; // last y location on the image
+
+
+        // Helpers
+        function registerListeners( event )
+        {
+            hammer.onTransform = onTransform;
+            hammer.onTransformStart = function( position ) {
+                last_scale = scale;
+                last_rotation = rotation;
+            };
+
+            onTransform({}, { x: 200, y: 200 }, 1.6, 0);
+        }
+
+        // Event Handlers
+        function onTransform( ev, position, zoom, rotate )
+        {
+            // find current location on the image at the current scale
+            image_x = image_x + ((position.x - last_x) / scale);
+            image_y = image_y + ((position.y - last_y) / scale);
+
+            // determine the new scale
+            scale = last_scale * zoom;
+            scale = scale < 1 ? 1 : (scale > max_zoom ? max_zoom : scale);
+
+            //rotation = last_rotation + rotate;
+
+            // determine the location on the screen at the new scale
+            var x_new = (position.x - image_x) / scale;
+            var y_new = (position.y - image_y) / scale;
+
+            // save the current screen location
+            last_x = position.x;
+            last_y = position.y;
+
+            // redraw
+            el.css('-webkit-transform', 'scale(' + scale + ') rotate(' + rotation + 'deg) translate3d(' + x_new + 'px, ' + y_new + 'px' + ', 0)')
+              .css('-webkit-transform-origin', image_x +'px '+ image_y +'px');
+        }
+
+
+        registerListeners();
+    }
+
+/*
 	var el = $("#zoom > :first");
 	var start_scale = 1;
 	var origin = { x: 0, y: 0 };
@@ -75,19 +143,24 @@
     };
 		
 	hammer.onTransform = function(center, scale, rotation) {
-		setScale(start_scale * scale);
+		setScale( start_scale * scale);
     };
 
 	hammer.onTransformEnd = function(center, scale, rotation) {
 		start_scale = start_scale * scale;
-	}
+	};
 	
 	hammer.onDoubleTap = function( position ) {
-		start_scale = (start_scale <= 1.5) ? 3 : 1;
+		start_scale = (start_scale <= 1) ? 3 : 1;
 		
 		setOrigin(position)
 		setScale(start_scale);
-	}
+	};
+
+    hammer.onDrag = function( position ) {
+        setOrigin( position );
+    };
+*/
 
 </script>
 </body>

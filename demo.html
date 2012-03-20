@@ -1,16 +1,18 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0; user-scalable=no">
     <title></title>
     <style>
+
+        body {
+            background: #003;
+            color: #fff;
+        }
         #container {
             height: 400px;
-            background: silver;
-            color: #fff;
+            background-color: #ac0;
             margin-bottom: 20px;
-            font: 100px/400px 'Helvetica Neue', Helvetica, Arial;
-            text-align: center;
         }
 
         #debug {
@@ -21,7 +23,7 @@
 </head>
 <body>
 
-<div id="container">Touch here</div>
+<div id="container"></div>
 
 <div id="debug"></div>
 
@@ -36,7 +38,9 @@
     }
 
 
-    var hammer = new Hammer("#container");
+    var hammer = new Hammer("#container", {
+        prevent_default: false
+    });
 
     // event callbacks
     hammer.onHold = function() { log('hold', arguments); };
