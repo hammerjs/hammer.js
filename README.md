@@ -52,9 +52,9 @@ Besides these, the Transform gesture returns:
 
 The Drag gesture also returns:
 
-- Direction: up|right|down|left
-- Distance: An …
-- Angle: The angle of the drag movement in degrees (up = 360/0, right = 90, down = 180, left = 270)
+- Angle: The angle of the drag movement, where right is 0 degrees, left is -180 degrees, up is -90 degrees and down is 90 degrees. [This picture makes this approach somewhat clearer](http://paperjs.org/tutorials/geometry/vector-geometry/resources/Angles.gif)
+- Direction: Based on the angle, we return a simplified direction, which can be either up, right, down or left.
+- Distance: The distance of the drag in pixels.
 
 Something about start and end events?
 
