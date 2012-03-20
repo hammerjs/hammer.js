@@ -143,18 +143,14 @@ function Hammer(element, options)
      */
     function getXYfromEvent( event )
     {
-        var src;
-
-        // single touch
-        if(countFingers(event) == 1) {
-            src = event.originalEvent.touches ? event.originalEvent.touches[0] : event;
-
-            return [{ x: src.pageX, y: src.pageY }];
+        // no touches, use the event pageX and pageY
+        if(!event.originalEvent.touches) {
+            return [{ x: event.pageX, y: event.pageY }];
         }
         // multitouch, return array with positions
         else {
-            var pos = [];
-            for(var t=0; t<event.originalEvent.touches.length; t++) {
+            var pos = [], src;
+            for(var t=0, len=event.originalEvent.touches.length; t<len; t++) {
                 src = event.originalEvent.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
@@ -181,10 +177,10 @@ function Hammer(element, options)
      */
     function triggerEvent( eventName, params )
     {
+        // jQuery style binding
         element.trigger($.Event(eventName, params));
 
-
-
+        // try to call the callback onEvent
         if($.isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
         }
