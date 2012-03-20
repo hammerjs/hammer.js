@@ -51,22 +51,24 @@ Unsure whether we'll finish this
 
 ## Documentation
 
+A step by step guide on how to use hammer.
+
 > So wave your hands in the air /
 > Bust a few moves /
 > Run your fingers through your hair
 
 1. [Download the hammer javascript] or clone the latest version from our github repository:
 
-    $ git clone git@github.com:jtangelder/hammer.js.git
+```$ git clone git@github.com:jtangelder/hammer.js.git```
 
 2. Import jquery and import hammer.js in your project:
     
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script src="hammer.js"></script>
+```<script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="hammer.js"></script>```
 
 3. Hammertime! Bind hammer to a container element:
 
-    Code example. { blabla }
+```Code example. { blabla }```
 
 Now, on every gesture that is performed on the container element, you'll receive a callback object with information on the gesture.
 
