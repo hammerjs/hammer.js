@@ -1,101 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <meta charset='utf-8'>
-
-  <title>jtangelder/hammer.js @ GitHub</title>
-
-  <style type="text/css">
+    <title>Hammer.js &mdash; A javascript library for multi touch gestures</title>
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        font: 16px/1.25 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
     body {
-      margin-top: 1.0em;
-      background-color: #8fe8ff;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
+        background: #202020 url(bg.png);
+        color: #fff;
     }
-    #container {
-      margin: 0 auto;
-      width: 700px;
+    article {
+        width: 642px; margin: 0 auto;
     }
-    h1 { font-size: 3.8em; color: #701700; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #701700; }
-    h3 { text-align: center; color: #701700; }
-    a { color: #701700; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+    h1, h2 {
+        margin: 0;
+        font: 300 36px 'Oswald', sans-serif;
+    }
+    h2 {
+        margin: 0 0 15px 20px;
+    }
+    hgroup h2 {
+        text-align: center;
+        margin: 0;
+    }
+    h1 {
+        text-indent: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        background: url(logo.png) no-repeat 50% 0;
+        height: 75px;
+        margin-top: 48px;
+    }
+    div {
+        background: #000;
+        background: rgba(0, 0, 0, .6);
+        padding: 10px;
+        margin-bottom: 50px;
+    }
+    ul {
+        margin: 0;
+        padding: 0 15px;
+        list-style-type: square;
+        list-style-position: inside;
+    }
+    .icons {
+        background: none;
+        padding: 0;
+    }
+   .icons ul {
+        list-style: none;
+        font: 300 18px 'Oswald', sans-serif;
+        overflow: hidden;
+        text-align: center;
+    }
+    .icons img {
+        display: block;
+    }
+    .icons li {
+        float: left;
+        margin-right: 32px;
+    }
+    li {
+        color: #fc0;
+        padding: 5px 0;
+    }
+    li span {
+        color: #fff;
+    }
+    section {
+        padding: 0 69px;
+        overflow: hidden;
+        margin: 50px 0;
+    }
+    section a {
+        font-weight: 14px;
+        display: block;
+        width: 222px;
+        margin: 0 15px;
+        float: left;
+        text-align: center;
+        text-decoration: none;
+        background: #000;
+        color: #fff;
+        padding: 12px 0;
+    }
+    section a:first-child {
+        background: #fc0;
+        color: #000;
+    }
+    section span {
+        display: block;
+        text-transform: uppercase;
+        font: 400 20px 'Oswald', sans-serif;
+    }
+    </style>
 </head>
-
 <body>
-  <a href="https://github.com/jtangelder/hammer.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="https://github.com/jtangelder/hammer.js/zipball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/zip.png"></a>
-      <a href="https://github.com/jtangelder/hammer.js/tarball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/tar.png"></a>
+<article>
+    <hgroup>
+        <h1>Hammer.js</h1>
+        <h2>A javascript library for multi-touch gestures</h2>
+    </hgroup>
+    
+    <section>
+        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
+        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb</a>
+    </section>
+    
+    <h2>Why use Hammer.js?</h2>
+    <div>
+        <ul>
+            <li><span>easy implementation of touch events to your website</span>
+            <li><span>lightweight with only 2kb, easy to dig into</span>
+            <li><span>focused javascript library, only for multi-touch gestures</span>
+        </ul>
     </div>
-
-    <h1><a href="https://github.com/jtangelder/hammer.js">hammer.js</a>
-      <span class="small">by <a href="https://github.com/jtangelder">jtangelder</a></span></h1>
-
-    <div class="description">
-      you can touch this
+    
+    <h2>Gesture supported by Hammer.js</h2>
+    <div class="icons">
+        <ul>
+            <li><img src="tap.png" widht="90" height="90" alt="">Tap
+            <li><img src="doubletap.png" widht="90" height="90" alt="">Double Tap
+            <li><img src="hold.png" widht="90" height="90" alt="">Hold
+            <li><img src="drag.png" widht="90" height="90" alt="">Drag
+            <li><img src="transform.png" widht="90" height="90" alt="">Transform
+        </ul>
     </div>
-
     
-
-    
-	<p>Object to control the gestures on touch devices. Supports the following gestures:</p>
-
-	<ul>
-	<li>Tap</li>
-	<li>Double tap</li>
-	<li>Hold</li>
-	<li>Drag</li>
-	<li>Transform (scale and rotation)</li>
-	</ul><p>Tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy S with Android 2.3.3 and Google Chrome 17. Requires jQuery for some simple event binding and position of the container element.
-	On a desktop browser the mouse can be used to simulate touch events with one finger. On Android 2 (and 3?) the default browser doesnt support multi-touch events, so no transform callback.</p>
-
-<h3><a href="demo.html">Take a look at the demo</a></h3>
-    
-
-    
-
-    
-      <h2>Authors</h2>
-      <p>J. Tangelder (j.tangelder@gmail.com)
-<br/>      </p>
-    
-
-    
-      <h2>Contact</h2>
-      <p> (j.tangelder@gmail.com)
-<br/>      </p>
-    
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="https://github.com/jtangelder/hammer.js/zipball/master">zip</a> or
-      <a href="https://github.com/jtangelder/hammer.js/tarball/master">tar formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/jtangelder/hammer.js</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="https://github.com/jtangelder/hammer.js">jtangelder/hammer.js</a>
-    </div>
-
-  </div>
-
+    <section>
+        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
+        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb</a>
+    </section>
+</article>
 </body>
 </html>
