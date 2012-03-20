@@ -15,42 +15,7 @@ Hammer.js supports the following gestures:
 - Drag
 - Transform
 
-## Demo's
-We've created some demo's to show you the power of hammer.js.
-
-> While it's rollin', hold on /
-> Pump a little bit and let 'em know it's goin' on /
-> Like that, like that
-
-### Basic Demo
-A very simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized.
-/ Insert link here /
-
-### Slideshow
-A simple slideshow that uses hammer to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page.
-/ Insert link here /
-
-### Zoom and Scroll
-We use hammer to zoom in on an image by pinching and scrolling it by dragging.
-/ Insert link here /
-
-### Videoplayer / Google maps threshold
-/ Insert explanation and link here /
-
-### Pagination
-Unsure whether we'll finish this
-/ Insert explanation and link here /
-
-### Lightbox
-Unsure whether we'll finish this
-/ Insert explanation and link here /
-
-### Scrub video
-Unsure whether we'll finish this
-/ Insert explanation and link here /
-
 ## Documentation
-
 A step by step guide on how to use hammer.
 
 > So wave your hands in the air /
@@ -110,13 +75,49 @@ Hammer.js has been tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy 
 
 Not all gestures are supported on every device. This support matrix shows the support we have tested. Note that this is not extensive. If you've tested hammer.js on a different device, please let us know.
 
-| *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 |          |
-|:-----------|:--------:|:---------|:---------|:---------|
-| Tap        | X        |          |          |          |
-| Hold       | X        |          |          |          |
-| Double Tap | X        |          |          |          |
-| Transform  | X        |          |    X      |          |
-| Drag       | X        |          |          |          |
+| *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 | ? |
+|:-----------|:--------:|:---------|:---------|:--|
+| Tap        | X        | X        | X        | ? |
+| Hold       | X        | X        | X        | ? |
+| Double Tap | X        | X        | X        | ? |
+| Transform  | X        | X        |          | ? |
+| Drag       | X        | X        | X   ``     | ? |
+
+
+## Demo's
+We've created some demo's to show you the power of hammer.js.
+
+> While it's rollin', hold on /
+> Pump a little bit and let 'em know it's goin' on /
+> Like that, like that
+
+### Basic Demo
+A very simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized.
+/ Insert link here /
+
+### Slideshow
+A simple slideshow that uses hammer to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page.
+/ Insert link here /
+
+### Zoom and Scroll
+We use hammer to zoom in on an image by pinching and scrolling it by dragging.
+/ Insert link here /
+
+### Videoplayer / Google maps threshold
+/ Insert explanation and link here /
+
+### Pagination
+Unsure whether we'll finish this
+/ Insert explanation and link here /
+
+### Lightbox
+Unsure whether we'll finish this
+/ Insert explanation and link here /
+
+### Scrub video
+Unsure whether we'll finish this
+/ Insert explanation and link here /
+
 
 ## Further notes
 Created by [J. Tangelder] and developed furher by everyone  at [Eight Media] in Arnhem.
