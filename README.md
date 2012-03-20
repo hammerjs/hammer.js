@@ -56,21 +56,21 @@ What to do after downloading?
 ### The Hammer callback object:
 
 Tap, Hold and Double Tap events return:
-* Event
-* Position
+- Event
+- Position
 
 Transform event returns:
-* Event
-* Position
-* Scale
-* Rotation
+- Event
+- Position
+- Scale
+- Rotation
 
 Drag event returns:
-* Event
-* Position
-* Direction
-* Distance
-* Angle
+- Event
+- Position
+- Direction
+- Distance
+- Angle
 
 Something about start and end events?
 
