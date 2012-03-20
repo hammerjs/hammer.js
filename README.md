@@ -55,14 +55,20 @@ Unsure whether we'll finish this
 > Bust a few moves /
 > Run your fingers through your hair
 
-1. Download or clone the hammer javascript -> eightmedia.github.com
-2. Import jquery
-3. Import hammer.js
-4. Hammertime!
+1. [Download the hammer javascript] or clone the latest version from our github repository:
 
-### Binding to a container element:
+    $ git clone git@github.com:jtangelder/hammer.js.git
 
-Code example.
+2. Import jquery and import hammer.js in your project:
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="hammer.js"></script>
+
+3. Hammertime! Bind hammer to a container element:
+
+    Code example. { blabla }
+
+Now, on every gesture that is performed on the container element, you'll receive a callback object with information on the gesture.
 
 ### The Hammer callback object:
 
@@ -70,11 +76,13 @@ Tap, Hold and Double Tap events return:
 
 - Event
 - Position
+- Touches
 
 Transform event returns:
 
 - Event
 - Position
+- Touches
 - Scale
 - Rotation
 
@@ -82,15 +90,16 @@ Drag event returns:
 
 - Event
 - Position
+- Touches
 - Direction
 - Distance
 - Angle
 
 Something about start and end events?
 
-### More code examples
+### More examples
 
-Are there any?
+Please view the source code of our demo's for more examples.
 
 ### Requirements and compatibility
 Hammer.js requires jQuery for simple event binding and for the position of the container element.
@@ -100,21 +109,21 @@ Hammer.js has been tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy 
 Not all gestures are supported on every device. This support matrix shows the support we have tested. Note that this is not extensive. If you've tested hammer.js on a different device, please let us know.
 
 | *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 |          |
-|:-----------|:---------|:---------|:---------|:---------|
-| Tap        |          |          |          |          |
-| Hold       |          |          |          |          |
-| Double Tap |          |          |          |          |
-| Transform  |          |          |    X      |          |
-| Drag       |          |          |          |          |
+|:-----------|:--------:|:---------|:---------|:---------|
+| Tap        | X        |          |          |          |
+| Hold       | X        |          |          |          |
+| Double Tap | X        |          |          |          |
+| Transform  | X        |          |    X      |          |
+| Drag       | X        |          |          |          |
 
 ## Further notes
 Created by [J. Tangelder] and developed furher by everyone  at [Eight Media] in Arnhem.
 
-Add your feature suggestions and bug reports on [Github]
+Add your feature suggestions and bug reports on [Github].
 
 We recommend listening to [this loop] while using hammer.js.
 
-
+  [Download]: https://github.com/jtangelder/hammer.js/zipball/master
   [eight media]: http://www.eight.nl/
   [j. tangelder]: http://twitter.com/jorikdelaporik
   [github]: http://github.com/jtangelder/...
