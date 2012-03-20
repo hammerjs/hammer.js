@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hammer.js &mdash; A javascript library for multi touch gestures</title>
     <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
     <style>
@@ -8,13 +9,18 @@
         margin: 0;
         padding: 0;
         font: 16px/1.25 "Helvetica Neue", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-smoothing: antialiased;
     }
-    body {
+    html {
         background: #202020 url(bg.png);
+    }
+    body {        
+        background: url(mchammer.png) no-repeat 95% 100%;
         color: #fff;
     }
     article {
-        width: 642px; margin: 0 auto;
+        max-width: 642px; margin: 0 auto;
     }
     h1, h2 {
         margin: 0;
@@ -22,6 +28,7 @@
     }
     h2 {
         margin: 0 0 15px 20px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
     }
     hgroup h2 {
         text-align: center;
@@ -63,6 +70,7 @@
     .icons li {
         float: left;
         margin-right: 32px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
     }
     li {
         color: #fc0;
@@ -72,16 +80,15 @@
         color: #fff;
     }
     section {
-        padding: 0 69px;
+        text-align: center;
         overflow: hidden;
         margin: 50px 0;
     }
     section a {
         font-weight: 14px;
-        display: block;
+        display: inline-block;
         width: 222px;
         margin: 0 15px;
-        float: left;
         text-align: center;
         text-decoration: none;
         background: #000;
