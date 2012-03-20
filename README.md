@@ -2,25 +2,26 @@
 
 Hammer.js is a javascript object that can be used to control gestures on touch devices.
 
-> I told you, homeboy
-> You *CAN* touch this
-> Yeah, that's how we living and you know
+> I told you, homeboy /
+> You *CAN* touch this /
+> Yeah, that's how we living and you know /
 > You *CAN* touch this
 
 Why?
 
 Hammer.js supports the following gestures:
-* Tap
-* Double tap
-* Hold
-* Drag
-* Transform
+
+- Tap
+- Double tap
+- Hold
+- Drag
+- Transform
 
 ## DEMO'S
 We've created some demo's to show you the power of hammer.js
 
-> Wile it's rollin', hold on
-> Pump a little bit and let 'em know it's goin' on
+> While it's rollin', hold on /
+> Pump a little bit and let 'em know it's goin' on /
 > Like that, like that
 
 ### Basic Demo
@@ -42,8 +43,8 @@ Shows the callback of every gesture.
 
 ## DOCUMENTATION
 
-> So wave your hands in the air
-> Bust a few moves
+> So wave your hands in the air /
+> Bust a few moves /
 > Run your fingers through your hair
 
 How to use?
@@ -87,10 +88,10 @@ Not all gestures are supported on every device. This support matrix shows the su
 | Transform  |          |          |          |          |
 | Drag       |          |          |          |          |
 
-# HELP US OUT
+## HELP US OUT
 Feature suggestions and bug reports: http://github.com/jtangelder/...
 
-# NOTES
+## NOTES
 Created by [J. Tangelder] and the rest of the team at [Eight Media] in Arnhem.
 
 We recommend listening to [this loop] while using hammer.js.
