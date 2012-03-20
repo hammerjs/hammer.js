@@ -107,15 +107,15 @@
             setTimeout(watchDrag, 10);
         }
 
-        hammer.onTap = function(ev, position) {
-            var el = $(ev.target);
+        hammer.ontap = function(ev) {
+            var el = $(ev.originalEvent.target);
             if(el.hasClass("box")) {
                 el.css({ zIndex: zIndex++ });
             }
         };
 
-        hammer.onDragStart = function(ev, position) {
-            var el = $(ev.target);
+        hammer.ondragstart = function(ev) {
+            var el = $(ev.originalEvent.target);
             if(el.hasClass("box")) {
                 drag_el = el;
 
@@ -128,21 +128,21 @@
                     width: drag_el.width()
                 };
 
-                drag_pos = position;
+                drag_pos = ev.position;
 
                 setTimeout(watchDrag, 10);
             }
         };
 
-        hammer.onDrag = function(ev, position) {
+        hammer.ondrag = function(ev) {
             if(!drag_el) {
                 return;
             }
 
-            drag_pos = position;
+            drag_pos = ev.position;
         };
 
-        hammer.onDragEnd = function() {
+        hammer.ondragend = function() {
             if(!drag_el) {
                 return;
             }
