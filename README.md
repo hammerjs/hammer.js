@@ -71,7 +71,7 @@ Not all gestures are supported on every device. This matrix shows the support we
 | Hold       | X        | X        | X        | ? |
 | Double Tap | X        | X        | X        | ? |
 | Transform  | X        | X        |          | ? |
-| Drag       | X        | X        | X   ``     | ? |
+| Drag       | X        | X        | X        | ? |
 
 
 ## Demo's
@@ -82,22 +82,22 @@ Not all gestures are supported on every device. This matrix shows the support we
 We've created some demo's to show you the immense power of hammer.js:
 
 ### Basic demo
-A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out: http://jtangelder.github.com/hammer.js/demo.html]
+A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Slideshow
-A slideshow that uses hammer to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out: http://jtangelder.github.com/hammer.js/demo.html]
+A slideshow that uses hammer to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Colors!
-kleurenbolletjes
+kleurenbolletjes?
 
 ### Pinch to zoom
-We use hammer to zoom in and out on an image by pinching. [Check it out: http://jtangelder.github.com/hammer.js/demo.html]
+We use hammer to zoom in and out on an image by pinching. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Lightbox
-We use hammer.js to close a lightbox by pinching it. [Check it out: http://jtangelder.github.com/hammer.js/demo.html]
+We use hammer.js to close a lightbox by pinching it. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ### Videoplayer / Google maps threshold
-We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window. [Check it out: http://jtangelder.github.com/hammer.js/demo.html]
+We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window. [Check it out](http://jtangelder.github.com/hammer.js/demo.html)
 
 ## Further notes
 Created by [J. Tangelder] and developed further by everyone at [Eight Media] in Arnhem, the Netherlands.
@@ -109,6 +109,6 @@ We recommend listening to [this loop] while using hammer.js.
   [Download]: https://github.com/jtangelder/hammer.js/zipball/master
   [eight media]: http://www.eight.nl/
   [j. tangelder]: http://twitter.com/jorikdelaporik
-  [github]: http://github.com/jtangelder/hammer.js/issues
-  [this loop]: http://soundcloud.com/eightmedia/ace-of-speights
+  [github]: http://github.com/eightmedia/hammer.js/issues
+  [this loop]: http://soundcloud.com/eightmedia/hammerfreak
 
