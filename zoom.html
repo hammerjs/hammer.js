@@ -74,23 +74,23 @@
 
 
         // Helpers
-        function registerListeners( event )
+        function registerListeners()
         {
-            hammer.onTransform = onTransform;
-            hammer.onTransformStart = function( ev, position ) {
+            hammer.ontransform = ontransform;
+            hammer.ontransformstart = function() {
                 last_scale = scale;
                 last_rotation = rotation;
             };
 
-            onTransform({}, { x: 200, y: 200 }, 1.6, 0);
+
         }
 
         // Event Handlers
-        function onTransform( ev, position, zoom, rotate )
+        function ontransform( ev )
         {
             // find current location on the image at the current scale
-            image_x = image_x + ((position.x - last_x) / scale);
-            image_y = image_y + ((position.y - last_y) / scale);
+            image_x = image_x + ((ev.position.x - last_x) / scale);
+            image_y = image_y + ((ev.position.y - last_y) / scale);
 
             // determine the new scale
             scale = last_scale * zoom;
@@ -99,12 +99,12 @@
             //rotation = last_rotation + rotate;
 
             // determine the location on the screen at the new scale
-            var x_new = (position.x - image_x) / scale;
-            var y_new = (position.y - image_y) / scale;
+            var x_new = (ev.position.x - image_x) / scale;
+            var y_new = (ev.position.y - image_y) / scale;
 
             // save the current screen location
-            last_x = position.x;
-            last_y = position.y;
+            last_x = ev.position.x;
+            last_y = ev.position.y;
 
             // redraw
             el.css('-webkit-transform', 'scale(' + scale + ') rotate(' + rotation + 'deg) translate3d(' + x_new + 'px, ' + y_new + 'px' + ', 0)')
