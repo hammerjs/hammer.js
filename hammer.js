@@ -10,12 +10,14 @@ function Hammer(element, options)
         prevent_default: false, // prevent the default event or not... might be buggy when false
 
         drag: true,
-        drag_vertical: false,
+        drag_vertical: true,
         drag_horizontal: true,
         drag_min_distance: 20,
         drag_threshold: 90,		// how much the sliding can be out of the exact direction
 
         transform: true,    // pinch zoom and rotation
+        scale_treshold: 0.1,
+        rotation_treshold: 15,   // in degrees
 
         tap: true,
         tap_double: true,
@@ -147,7 +149,7 @@ function Hammer(element, options)
         if(countFingers(event) == 1) {
             src = event.originalEvent.touches ? event.originalEvent.touches[0] : event;
 
-            return { x: src.pageX, y: src.pageY };
+            return [{ x: src.pageX, y: src.pageY }];
         }
         // multitouch, return array with positions
         else {
@@ -179,8 +181,12 @@ function Hammer(element, options)
      */
     function triggerEvent( eventName, params )
     {
-        if($.isFunction(self[eventName])) {
-            self[eventName].apply(self, params);
+        element.trigger($.Event(eventName, params));
+
+
+
+        if($.isFunction(self["on"+ eventName])) {
+            self["on"+ eventName].call(self, params);
         }
     }
 
@@ -212,7 +218,10 @@ function Hammer(element, options)
 
                 _hold_timer = setTimeout(function() {
                     if(_gesture == 'hold' && _fingers == 1) {
-                        triggerEvent("onHold", [event, _pos.start]);
+                        triggerEvent("hold", {
+                            originalEvent   : event,
+                            position        : _pos.start
+                        });
                     }
                 }, options.hold_timeout);
             }
@@ -224,17 +233,15 @@ function Hammer(element, options)
         drag : function(event)
         {
             // get the distance we moved
-            var _distance_x = Math.abs(_pos.move.x - _pos.start.x);
-            var _distance_y = Math.abs(_pos.move.y - _pos.start.y);
+            var _distance_x = Math.abs(_pos.move[0].x - _pos.start[0].x);
+            var _distance_y = Math.abs(_pos.move[0].y - _pos.start[0].y);
             _distance = Math.max(_distance_x, _distance_y);
 
             // drag
             // minimal movement required
             if(options.drag && (_distance > options.drag_min_distance) || _gesture == 'drag') {
-                _gesture = 'drag';
-
                 // calculate the angle
-                _angle = getAngle(_pos.start, _pos.move);
+                _angle = getAngle(_pos.start[0], _pos.move[0]);
                 _direction = self.getDirectionFromAngle(_angle);
 
                 // check the movement and stop if we go in the wrong direction
@@ -243,17 +250,28 @@ function Hammer(element, options)
                     return;
                 }
 
-                var position = { x: _pos.move.x - _offset.left,
-                    y: _pos.move.y - _offset.top };
+                _gesture = 'drag';
+
+                var position = { x: _pos.move[0].x - _offset.left,
+                                 y: _pos.move[0].y - _offset.top };
+
+                var event_obj = {
+                    originalEvent   : event,
+                    position        : position,
+                    direction       : _direction,
+                    distance        : _distance,
+                    angle           : _angle
+                };
 
                 // on the first time trigger the start event
                 if(_first) {
-                    triggerEvent("onDragStart", [ event, position, _direction, _distance, _angle ]);
+                    triggerEvent("dragstart", event_obj);
+
                     _first = false;
                 }
 
                 // normal slide event
-                triggerEvent("onDrag", [ event, position, _direction, _distance, _angle,  ]);
+                triggerEvent("drag", event_obj);
 
                 event.preventDefault();
             }
@@ -265,26 +283,38 @@ function Hammer(element, options)
         transform : function(event)
         {
             if(options.transform) {
-                _gesture = 'transform';
+                var scale = event.originalEvent.scale || 1;
+                var rotation = event.originalEvent.rotation || 0;
 
-                var scale = event.originalEvent.scale;
-                var rotation = event.originalEvent.rotation;
+                if(_gesture != 'drag' &&
+                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold || Math.abs(rotation) > options.rotation_treshold)) {
+                    _gesture = 'transform';
 
-                if(scale || rotation) {
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                        y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+                                     y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+
+                    var event_obj = {
+                        originalEvent   : event,
+                        position        : _pos.center,
+                        scale           : scale,
+                        rotation        : rotation
+                    };
 
                     // on the first time trigger the start event
                     if(_first) {
-                        triggerEvent("onTransformStart", [ event, _pos.center, scale, rotation ]);
+                        triggerEvent("transformstart", event_obj);
                         _first = false;
                     }
 
-                    triggerEvent("onTransform", [ event, _pos.center, scale, rotation ]);
+                    triggerEvent("transform", event_obj);
 
                     event.preventDefault();
+
+                    return true;
                 }
             }
+
+            return false;
         },
 
 
@@ -303,13 +333,17 @@ function Hammer(element, options)
 
             // when previous event was tap and the tap was max_interval ms ago
             if(options.tap_double && _prev_gesture == 'tap' &&
-                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval
-                ) {
-                if(_prev_tap_pos && _pos.start && Math.max(Math.abs(_prev_tap_pos.x - _pos.start.x), Math.abs(_prev_tap_pos.y - _pos.start.y)) < options.tap_double_distance) {
+                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+
+                if(_prev_tap_pos && _pos.start &&
+                    Math.max(Math.abs(_prev_tap_pos[0].x - _pos.start[0].x), Math.abs(_prev_tap_pos[0].y - _pos.start[0].y)) < options.tap_double_distance) {
                     _gesture = 'double_tap';
                     _prev_tap_end_time = null;
 
-                    triggerEvent("onDoubleTap", [event, _pos.start]);
+                    triggerEvent("doubletap", {
+                        originalEvent   : event,
+                        position        : _pos.start
+                    });
                     event.preventDefault();
                 }
             }
@@ -321,7 +355,10 @@ function Hammer(element, options)
                 _prev_tap_pos = _pos.start;
 
                 if(options.tap) {
-                    triggerEvent("onTap", [event, _pos.start]);
+                    triggerEvent("tap", {
+                        originalEvent   : event,
+                        position        : _pos.start
+                    });
                     event.preventDefault();
                 }
             }
@@ -360,15 +397,10 @@ function Hammer(element, options)
                 }
                 _pos.move = getXYfromEvent(event);
 
-                switch(_fingers) {
-                    case 1:
-                        gestures.drag(event);
-                        break;
-
-                    case 2:
-                        gestures.transform(event);
-                        break;
+                if(!gestures.transform(event)) {
+                    gestures.drag(event);
                 }
+
                 break;
 
             case 'mouseup':
@@ -377,14 +409,24 @@ function Hammer(element, options)
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible
-                if(_gesture == 'drag' && !_first) {
-                    triggerEvent("onDragEnd", [ event, _direction, _distance, _angle ]);
+                if(_gesture == 'drag') {
+                    triggerEvent("dragend", {
+                        originalEvent   : event,
+                        direction       : _direction,
+                        distance        : _distance,
+                        angle           : _angle
+                    });
                 }
 
 				// transform
                 // transformstart is triggered, so transformend is possible
-                else if(_gesture == 'transform' && !_first) {
-                    triggerEvent("onTransformEnd", [ event, _pos.center, event.originalEvent.scale, event.originalEvent.rotation ]);
+                else if(_gesture == 'transform') {
+                    triggerEvent("transformend", {
+                        originalEvent   : event,
+                        position        : _pos.center,
+                        scale           : event.originalEvent.scale,
+                        rotation        : event.originalEvent.rotation
+                    });
                 }
                 else {
                     gestures.tap(event);

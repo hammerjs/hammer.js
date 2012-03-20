@@ -33,27 +33,20 @@
 
     var debug_el = $("#debug");
     function log(name, args) {
-        args = Array.prototype.slice.call(args, 0);
-        debug_el.prepend("<strong>"+ name +"</strong>: "+ args.join(" ") +"<br>");
+        debug_el.prepend("<strong>"+ name +"</strong><br>");
     }
 
 
     var hammer = new Hammer("#container", {
-        prevent_default: false
+        prevent_default: false,
+        drag_vertical: false
     });
 
-    // event callbacks
-    hammer.onHold = function() { log('hold', arguments); };
+    $("#container").bind("hold tap doubletap transformstart transform transformend dragstart drag dragend", function(ev) {
+        log(ev.type);
+        //log(ev.type, hammer);
+    });
 
-    hammer.onTap = function() { log('tap', arguments); };
-    hammer.onDoubleTap = function() { log('double tap', arguments); };
-
-    hammer.onTransformStart = function() { log('transform start', arguments); };
-    hammer.onTransform = function() { log('transform', arguments); };
-
-    hammer.onDragStart = function() { log('drag start', arguments); };
-    hammer.onDrag = function() { log('drag', arguments); };
-    hammer.onDragEnd = function() { log('drag end', arguments); };
 
 </script>
 

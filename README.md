@@ -38,13 +38,16 @@ Sample usage
   var hammer = new Hammer("#hitarea", options); 
 
   // event callbacks
-  hammer.onHold = function() { console.log('hold', arguments); };
+  hammer.onHold = function(event, position) {
+    console.log('hold', arguments);
+  };
 
   hammer.onTap = function() { console.log('tap', arguments); };
   hammer.onDoubleTap = function() { console.log('double tap', arguments); };
 
   hammer.onTransformStart = function() { console.log('transform start', arguments); };
   hammer.onTransform = function() { console.log('transform', arguments); };
+  hammer.onTransformEnd = function() { console.log('transform end', arguments); };
 
   hammer.onDragStart = function() { console.log('drag start', arguments); };
   hammer.onDrag = function() { console.log('drag', arguments); };
