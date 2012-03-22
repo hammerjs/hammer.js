@@ -67,13 +67,31 @@ Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and 
 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive. If you've tested hammer.js on a different device, please let us know.
 
-| *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 | Firefox 10 on Android 2.2.3 | Windows Phone 7.5 | Nokia N900 (Firefox 1.1) | ? |
-|:-----------|:--------:|:---------|:---------|:---------|:---------|:---------|:---------|
-| Tap        | X        | X        | X        | X        | X        | X        | ?        |
-| Hold       | X        | X        | X        | X        |          |          | ?        |
-| Double Tap | X        | X        | X        | X        |          |          | ?        |
-| Transform  | X        | X        |          |          |          |          | ?        |
-| Drag       | X        | X        | X        | X        |          |          | ?        |
+|                                   | Tap | Double Tap | Hold | Drag | Transform |
+|:----------------------------------|:----|:-----------|:-----|:-----|:----------|
+| *Windows*                                                                      |
+| Internet Explorer 8               | X   | X          | X    | X    |           |
+| Internet Explorer 9               | X   | X          | X    | X    |           |
+|                                                                                |
+| *OSX*                                                                          |
+| Firefox 11                        | X   | X          | X    | X    |           |
+| Opera 11                          | X   | X          | X    | X    |           |
+|                                                                                |
+| *iOS*                                                                          |
+| iPad iOS 5                        | X   | X          | X    | X    | X         |
+| iPhone iOS 5                      | X   | X          | X    | X    | X         |
+|                                                                                |
+| *Android 2.2.3*                                                                |
+| Default browser                   | X   | X          | X    | X    |           |
+| Firefox 10                        | X   | X          | X    | X    |           |
+| Opera Mobile 12                   | X   | X          | X    | X    |           |
+| Opera Mini 6.5                    | X   |            |      |      |           |
+| Opera Mini 7.0                    | X   |            |      |      |           |
+|                                                                                |
+| *Others*                                                                       |
+| Windows Phone 7.5                 | X   |            |      |      |           |
+| Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
+
 
 ## Demo's
 > While it's rollin', hold on /
