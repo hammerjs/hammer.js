@@ -61,17 +61,19 @@ In addition to this the Transform and Drag gestures return start and end events.
 ### Requirements and compatibility
 Hammer.js requires jQuery for simple event binding and for the position of the container element.
 
-Hammer.js has been tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy S with Android 2.3.3 and Google Chrome 17. On a desktop browser the mouse can be used to simulate touch events with one finger. On Android 2 (and 3?) the default browser doesn't support multi-touch events, so there's no transform callback on Android.
+Hammer.js has been tested on iPad1 with iOS5, iPhone4 with iOS5, Samsung Galaxy S with Android 2.3.3 and Google Chrome 17. On a desktop browser the mouse can be used to simulate touch events with one finger.
+On Android 2 (and 3?) the default browser and Firefox 10 doesn't support multi-touch events, so there's no transform callback on Android.
+Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and mouse events are badly supported.
 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive. If you've tested hammer.js on a different device, please let us know.
 
-| *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 | ? |
-|:-----------|:--------:|:---------|:---------|:--|
-| Tap        | X        | X        | X        | ? |
-| Hold       | X        | X        | X        | ? |
-| Double Tap | X        | X        | X        | ? |
-| Transform  | X        | X        |          | ? |
-| Drag       | X        | X        | X        | ? |
+| *Gesture/ Device* | iPad iOS5 | iPhone iOS5 | Android 2.2.3 | Firefox 10 on Android 2.2.3 | Windows Phone 7.5 | Nokia N900 (Firefox 1.1) | ? |
+|:-----------|:--------:|:---------|:---------|:---------|:---------|:---------|:---------|
+| Tap        | X        | X        | X        | X        | X        | X        | ?        |
+| Hold       | X        | X        | X        | X        |          |          | ?        |
+| Double Tap | X        | X        | X        | X        |          |          | ?        |
+| Transform  | X        | X        |          |          |          |          | ?        |
+| Drag       | X        | X        | X        | X        |          |          | ?        |
 
 ## Demo's
 > While it's rollin', hold on /

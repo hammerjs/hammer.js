@@ -15,8 +15,6 @@ function Hammer(element, options)
         drag_horizontal    : true,
         // minimum distance before the drag event starts
         drag_min_distance  : 20, // pixels
-        // how much the sliding can be out of the exact direction
-        drag_threshold     : 90, // degrees
 
         // pinch zoom and rotation
         transform          : true,
@@ -53,14 +51,6 @@ function Hammer(element, options)
         element.css(css);
     });
 
-    // directions defines
-    this.DIRECTION = {
-        UP: 360,
-        DOWN: 0,
-        LEFT: -180,
-        RIGHT: 180
-    };
-
     // holds the distance that has been moved
     var _distance = 0;
 
@@ -95,31 +85,26 @@ function Hammer(element, options)
 
     /**
      * angle to direction define
-     * @param  float angle
-     * @return int   DIRECTION
+     * @param  float    angle
+     * @return string   direction
      */
     this.getDirectionFromAngle = function( angle )
     {
-        var dir, min, max, name;
+        var directions = {
+            down: angle >= 45 && angle < 135, //90
+            left: angle >= 135 || angle <= -135, //180
+            up: angle < -45 && angle > -135, //270
+            right: angle >= -45 && angle <= 45 //0
+        };
 
-        for(name in this.DIRECTION) {
-            dir = this.DIRECTION[name];
-            min = dir - options.drag_threshold;
-            max = dir + options.drag_threshold;
-
-            // when we move up we also need to test the absolute number of the angle
-            // because it also can be a negative number
-            if(name == 'UP') {
-                if(min < Math.abs(angle) && max > Math.abs(angle)) {
-                    return dir;
-                }
+        var direction;
+        $.each(directions, function(key, value){
+            if(value){
+                direction = key;
+                return false;
             }
-
-            // just check if it is betweet the angles
-            if(min < angle && max > angle) {
-                return dir;
-            }
-        }
+        });
+        return direction;
     };
 
 
@@ -167,9 +152,8 @@ function Hammer(element, options)
      */
     function getAngle( pos1, pos2 )
     {
-        return Math.atan2(pos2.x - pos1.x, pos2.y - pos1.y) * 360 / Math.PI;
+          return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
     }
-
 
     /**
      * trigger an event/callback by name with params
@@ -244,8 +228,9 @@ function Hammer(element, options)
                 _direction = self.getDirectionFromAngle(_angle);
 
                 // check the movement and stop if we go in the wrong direction
-                var is_vertical = (self.DIRECTION.UP == _direction || self.DIRECTION.DOWN == _direction);
-                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal)) && (_distance > options.drag_min_distance)) {
+                var is_vertical = (_direction == 'up' || _direction == 'down');
+                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal))
+                        && (_distance > options.drag_min_distance)) {
                     return;
                 }
 
@@ -286,7 +271,8 @@ function Hammer(element, options)
                 var rotation = event.originalEvent.rotation || 0;
 
                 if(_gesture != 'drag' &&
-                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold || Math.abs(rotation) > options.rotation_treshold)) {
+                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold
+                        || Math.abs(rotation) > options.rotation_treshold)) {
                     _gesture = 'transform';
 
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
@@ -405,10 +391,10 @@ function Hammer(element, options)
                 if(!gestures.transform(event)) {
                     gestures.drag(event);
                 }
-
                 break;
 
             case 'mouseup':
+            case 'touchcancel':
             case 'touchend':
                 _mousedown = false;
 
@@ -445,16 +431,16 @@ function Hammer(element, options)
         }
     }
 
-
     // bind events for touch devices
+    // except for windows phone 7.5, it doenst support touch events..!
     if('ontouchstart' in window) {
-        $(element).bind("touchstart touchmove touchend", handleEvents);
+        element.bind("touchstart touchmove touchend touchcancel", handleEvents);
     }
     // for non-touch
     else {
         // Listen for mouseup on the document so we know it happens
         // even if the mouse has left the element.
         $(document).bind("mouseup", handleEvents);
-        $(element).bind("mousedown mousemove", handleEvents);
+        element.bind("mousedown mousemove", handleEvents);
     }
 }
