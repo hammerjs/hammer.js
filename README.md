@@ -76,6 +76,8 @@ Not all gestures are supported on every device. This matrix shows the support we
 | **OSX**                                                                        |
 | Firefox 11                        | X   | X          | X    | X    |           |
 | Opera 11                          | X   | X          | X    | X    |           |
+| Chrome 16                         | X   | X          | X    | X    |           |
+| Safari 5                          | X   | X          | X    | X    |           |
 |                                                                                |
 | **iOS**                                                                        |
 | iPad iOS 5                        | X   | X          | X    | X    | X         |
