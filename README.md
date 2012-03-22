@@ -69,26 +69,26 @@ Not all gestures are supported on every device. This matrix shows the support we
 
 |                                   | Tap | Double Tap | Hold | Drag | Transform |
 |:----------------------------------|:----|:-----------|:-----|:-----|:----------|
-| *Windows*                                                                      |
+| **Windows**                                                                    |
 | Internet Explorer 8               | X   | X          | X    | X    |           |
 | Internet Explorer 9               | X   | X          | X    | X    |           |
 |                                                                                |
-| *OSX*                                                                          |
+| **OSX**                                                                        |
 | Firefox 11                        | X   | X          | X    | X    |           |
 | Opera 11                          | X   | X          | X    | X    |           |
 |                                                                                |
-| *iOS*                                                                          |
+| **iOS**                                                                        |
 | iPad iOS 5                        | X   | X          | X    | X    | X         |
 | iPhone iOS 5                      | X   | X          | X    | X    | X         |
 |                                                                                |
-| *Android 2.2.3*                                                                |
+| **Android 2.2.3**                                                              |
 | Default browser                   | X   | X          | X    | X    |           |
 | Firefox 10                        | X   | X          | X    | X    |           |
 | Opera Mobile 12                   | X   | X          | X    | X    |           |
 | Opera Mini 6.5                    | X   |            |      |      |           |
 | Opera Mini 7.0                    | X   |            |      |      |           |
 |                                                                                |
-| *Others*                                                                       |
+| **Others**                                                                     |
 | Windows Phone 7.5                 | X   |            |      |      |           |
 | Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
 
@@ -112,8 +112,8 @@ A slideshow that uses hammer.js to switch slides. Note that the drag event in th
 ### Drag
 ? [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
 
-### Color traces (not finished yet)
-We use hammer.js to generate beautiful traces with colorful balls. Balls! Upload multi-drag.html [Check it out](http://eightmedia.github.com/hammer.js/multi-drag.html)
+### Color traces
+We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check it out](http://eightmedia.github.com/hammer.js/draw.html)
 
 ### Lightbox (not finished yet)
 We use hammer.js to close a lightbox by pinching it.
