@@ -119,7 +119,7 @@
         var total_slides = slides.length;
 
         // overview dots
-        overview.click(function(ev) {	
+        overview.click(function(ev) {    
             self.slideTo( $(this).index() );
             ev.preventDefault();
         });
@@ -180,9 +180,9 @@
         var left = 0;
 
         // determine which direction we need to show the preview
-        if(ev.direction == hammer.DIRECTION.LEFT) {
+        if(ev.direction == 'left') {
             left = 0 - ev.distance;
-        } else if(ev.direction == hammer.DIRECTION.RIGHT) {
+        } else if(ev.direction == 'right') {
             left = ev.distance;
         }
 
@@ -192,16 +192,16 @@
 
 
     // ondragend we will move to the next/prev slide when we have 
-    // opened it more then 1/3 on the screen
+    // opened it more then 100px on the screen
     hammer.ondragend = function(ev) {
         // restore the margin
         slideshow.getContainer().css({ marginLeft: 0 });
 
         // if we moved the slide 100px then navigate
         if(Math.abs(ev.distance) > 100) {
-            if(ev.direction == hammer.DIRECTION.RIGHT) {
+            if(ev.direction == 'right') {
                 slideshow.prev();
-            } else if(ev.direction == hammer.DIRECTION.LEFT) {
+            } else if(ev.direction == 'left') {
                 slideshow.next();
             }
         }
