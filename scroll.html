@@ -185,8 +185,6 @@
 
         var self = this;
         var hammer = new Hammer(container, {
-            non_blocking: true,
-
             drag: true,
             drag_vertical: true,
             drag_horizontal: true,
@@ -249,13 +247,13 @@
 
 
         hammer.ondrag = function( ev ) {
-            if(ev.direction == hammer.DIRECTION.UP || ev.direction == hammer.DIRECTION.LEFT) {
-                distance = 0-distance;
+            if(ev.direction == 'up' || ev.direction == 'left') {
+                ev.distance = 0-ev.distance;
             }
 
             var delta = 1;
 
-            var top = scroll_start.top + distance * delta;
+            var top = scroll_start.top + ev.distance * delta;
             content.css({ top: top });
 
             scrollbar.css({
