@@ -109,7 +109,7 @@ A simple demo that demonstrates that hammer.js works and is able to recognize ge
 A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://eightmedia.github.com/hammer.js/slideshow.html)
 
 ### Scroll content
-? [Check it out](http://eightmedia.github.com/hammer.js/scroll-content.html)
+? [Check it out](http://eightmedia.github.com/hammer.js/scroll.html)
 
 ### Drag
 ? [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
