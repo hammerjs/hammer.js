@@ -128,7 +128,7 @@ We use hammer.js to zoom in and out on an image by pinching.
 We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window.
 
 ## Further notes
-Created by [J. Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
+Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
 Add your feature suggestions and bug reports on [Github](http://github.com/eightmedia/hammer.js/issues).
 
