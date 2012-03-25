@@ -92,6 +92,7 @@ Not all gestures are supported on every device. This matrix shows the support we
 |                                                                                |
 | **Others**                                                                     |
 | Windows Phone 7.5                 | X   |            |      |      |           |
+| Kindle Fire                       | X   | X          | X    | X    | X         |
 | Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
 
 
