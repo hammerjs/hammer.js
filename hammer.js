@@ -32,11 +32,11 @@ function Hammer(element, options, undefined)
     options = extend({}, defaults, options);
 
     // make sure element in a jQuery object
-    element = $(element);
+    elements = $(element);
 
     // some css hacks
     var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
-    var css = '';
+    //var css = '';
     var css_props = {
         "user-select": "none",
         "touch-callout": "none",
@@ -48,11 +48,14 @@ function Hammer(element, options, undefined)
     {
         if( supports(vendors[i] + 'user-select') ) {
             for(var prop in css_props) {
-                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+                //css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+                for(j = 0; j < elements.length; j++)
+                {
+                    elements[j].style[vendors[i] + prop] = css_props[prop];
+                }
             }
         }
     }
-    element[0].setAttribute('style', css);
 
     // holds the distance that has been moved
     var _distance = 0;
@@ -147,7 +150,7 @@ function Hammer(element, options, undefined)
         {
             if(directions[key]){
                 direction = key;
-                return false;
+                break;
             }
         }
         
@@ -211,7 +214,7 @@ function Hammer(element, options, undefined)
         params.touches = getXYfromEvent(params.originalEvent);
 
         // trigger jQuery event
-        element.trigger($.Event(eventName, params));
+        elements.trigger($.Event(eventName, params));
 
         // trigger callback
         if(isFunction(self["on"+ eventName])) {
@@ -414,7 +417,7 @@ function Hammer(element, options, undefined)
                 _touch_start_time = new Date().getTime();
                 _fingers = countFingers(event);
                 _first = true;
-                _offset = element.offset();
+                _offset = elements.offset();
 
                 _mousedown = true;
 
@@ -479,13 +482,13 @@ function Hammer(element, options, undefined)
     // bind events for touch devices
     // except for windows phone 7.5, it doenst support touch events..!
     if('ontouchstart' in window) {
-        element.bind("touchstart touchmove touchend touchcancel", handleEvents);
+        elements.bind("touchstart touchmove touchend touchcancel", handleEvents);
     }
     // for non-touch
     else {
         // Listen for mouseup on the document so we know it happens
         // even if the mouse has left the element.
         $(document).bind("mouseup", handleEvents);
-        element.bind("mousedown mousemove", handleEvents);
+        elements.bind("mousedown mousemove", handleEvents);
     }
 }
