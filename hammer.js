@@ -48,7 +48,6 @@ function Hammer(element, options, undefined)
     {
         if( supports(vendors[i] + 'user-select') ) {
             for(var prop in css_props) {
-                //css += vendors[i] + prop + ': ' + css_props[prop] + ';';
                 for(j = 0; j < elements.length; j++)
                 {
                     elements[j].style[vendors[i] + prop] = css_props[prop];
