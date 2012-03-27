@@ -2,7 +2,7 @@
  * Hammer.JS
  * version 0.01
  */
-function Hammer(element, options)
+function Hammer(element, options, undefined)
 {
     var self = this;
 
@@ -29,27 +29,30 @@ function Hammer(element, options)
         hold               : true,
         hold_timeout       : 500
     };
-    options = $.extend({}, defaults, options);
+    options = extend({}, defaults, options);
 
     // make sure element in a jQuery object
     element = $(element);
 
     // some css hacks
-    $(['-webkit-','-moz-','-ms-','-o-','']).each(function(i, vendor) {
-        var css = {};
-        var props = {
-            "user-select": "none",
-            "touch-callout": "none",
-            "user-drag": "none",
-            "tap-highlight-color": "rgba(0,0,0,0)"
-        };
-
-        for(var prop in props) {
-            css[vendor + prop] = props[prop];
+    var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
+    var css = '';
+    var css_props = {
+        "user-select": "none",
+        "touch-callout": "none",
+        "user-drag": "none",
+        "tap-highlight-color": "rgba(0,0,0,0)"
+    }
+    
+    for(i = 0; i < vendors.length; i++)
+    {
+        if( supports(vendors[i] + 'user-select') ) {
+            for(var prop in css_props) {
+                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+            }
         }
-
-        element.css(css);
-    });
+    }
+    element[0].setAttribute('style', css);
 
     // holds the distance that has been moved
     var _distance = 0;
@@ -82,6 +85,47 @@ function Hammer(element, options)
     // keep track of the mouse status
     var _mousedown = false;
 
+    // We borrow each and extend from Underscore's implementation
+    var nativeForEach = Array.prototype.forEach;
+    function each (obj, iterator, context)
+    {
+        if (obj == null) return;
+        if (nativeForEach && obj.forEach === nativeForEach) {
+            obj.forEach(iterator, context);
+        } else if (obj.length === +obj.length) {
+            for (var i = 0, l = obj.length; i < l; i++) {
+                if (i in obj && iterator.call(context, obj[i], i, obj) === {}) return;
+            }
+        } else {
+            for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    if (iterator.call(context, obj[key], key, obj) === {}) return;
+                }
+            }
+        }
+    }
+
+    function extend ( obj )
+    {
+        each(Array.prototype.slice.call(arguments, 1), function( source )
+        {
+            for (var prop in source) {
+                obj[prop] = source[prop];
+            }
+        });
+        
+        return obj;
+    };
+    
+    function supports( property )
+    {
+        return document.body.style[property] !== undefined;
+    }
+    
+    function isFunction( obj )
+    {
+        return Object.prototype.toString.call( obj ) == "[object Function]";
+    }
 
     /**
      * angle to direction define
@@ -98,15 +142,17 @@ function Hammer(element, options)
         };
 
         var direction;
-        $.each(directions, function(key, value){
-            if(value){
+        
+        for(var key in directions)
+        {
+            if(directions[key]){
                 direction = key;
                 return false;
             }
-        });
+        }
+        
         return direction;
     };
-
 
     /**
      * count the number of fingers in the event
@@ -120,7 +166,6 @@ function Hammer(element, options)
         // so no multitouch is supported, e.g. no, zoom and rotation...
         return event.originalEvent.touches ? event.originalEvent.touches.length : 1;
     }
-
 
     /**
      * get the x and y positions from the event object
@@ -169,7 +214,7 @@ function Hammer(element, options)
         element.trigger($.Event(eventName, params));
 
         // trigger callback
-        if($.isFunction(self["on"+ eventName])) {
+        if(isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
         }
     }
