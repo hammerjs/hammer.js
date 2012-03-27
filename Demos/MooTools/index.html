@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hammer.js &mdash; A javascript library for multi touch gestures</title>
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        font: 16px/1.25 "Helvetica Neue", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-smoothing: antialiased;
+    }
+    html {
+        background: #202020 url(bg.png);
+    }
+    body {        
+        background: url(mchammer.png) no-repeat 95% 100%;
+        color: #fff;
+    }
+    img { 
+        border: none; 
+    }    
+    article {
+        max-width: 642px; margin: 0 auto;
+    }
+    h1, h2 {
+        margin: 0;
+        font: 300 36px 'Oswald', sans-serif;
+    }
+    h2 {
+        margin: 0 0 15px 20px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
+    }
+    hgroup h2 {
+        text-align: center;
+        margin: 0;
+    }
+    h1 {
+        text-indent: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        background: url(logo.png) no-repeat 50% 0;
+        height: 75px;
+        margin-top: 48px;
+    }
+    div {
+        background: #000;
+        background: rgba(0, 0, 0, .6);
+        padding: 10px;
+        margin-bottom: 50px;
+    }
+    ul {
+        margin: 0;
+        padding: 0 15px;
+        list-style-type: square;
+        list-style-position: inside;
+    }
+    .icons {
+        background: none;
+        padding: 0;
+    }
+   .icons ul {
+        list-style: none;
+        font: 300 18px 'Oswald', sans-serif;
+        overflow: hidden;
+        text-align: center;
+    }
+    .icons img {
+        display: block;
+    }
+    .icons li {
+        float: left;
+        margin-right: 32px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
+    }
+    li {
+        color: #fc0;
+        padding: 5px 0;
+    }
+    li span {
+        color: #fff;
+    }
+    section {
+        text-align: center;
+        overflow: hidden;
+        margin: 50px 0;
+    }
+    section a {
+        font-weight: 14px;
+        display: inline-block;
+        width: 222px;
+        margin: 0 15px;
+        text-align: center;
+        text-decoration: none;
+        background: #000;
+        color: #fff;
+        padding: 12px 0;
+    }
+    section a:first-child {
+        background: #fc0;
+        color: #000;
+    }
+    section.eightmedia a { 
+        color: #fff; 
+        font-size: 13px;
+        line-height: 16px;
+        background: none; 
+        padding: 0; 
+    }
+    section.eightmedia a img {
+        margin-top: 5px;
+    }
+    section span {
+        display: block;
+        text-transform: uppercase;
+        font: 400 20px 'Oswald', sans-serif;
+    }
+    </style>
+</head>
+<body>
+<article>
+    <hgroup>
+        <h1>Hammer.js</h1>
+        <h2>A javascript library for multi-touch gestures</h2>
+    </hgroup>
+    
+    <section>
+        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
+        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb</a>
+    </section>
+    
+    <h2>Why use Hammer.js?</h2>
+    <div>
+        <ul>
+            <li><span>easy implementation of touch events in your website</span>
+            <li><span>lightweight with only 2kb, easy to dig into</span>
+            <li><span>focused javascript library, only for multi-touch gestures</span>
+        </ul>
+    </div>
+    
+    <h2>Gesture supported by Hammer.js</h2>
+    <div class="icons">
+        <ul>
+            <li><img src="tap.png" width="90" height="90" alt="">Tap
+            <li><img src="doubletap.png" width="90" height="90" alt="">Double Tap
+            <li><img src="hold.png" width="90" height="90" alt="">Hold
+            <li><img src="drag.png" width="90" height="90" alt="">Drag
+            <li><img src="transform.png" width="90" height="90" alt="">Transform
+        </ul>
+    </div>
+    
+    <section>
+        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
+        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb</a>
+    </section>
+    
+    <section class="eightmedia">
+        <a href="http://www.eight.nl">
+            Hammer.js<br>by<br>
+            <img src="http://test.eightmedia.com/eightlabs/eight.png" width="100" height="33" alt="Eight Media - Internet agency in Arnhem">
+        </a>
+    </section>
+    
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-30289566-1']);
+      _gaq.push(['_trackPageview']);
+    
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    
+    </script>
+    
+</article>
+</body>
+</html>
