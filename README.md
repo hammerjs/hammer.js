@@ -106,7 +106,7 @@ Not all gestures are supported on every device. This matrix shows the support we
 We've created some demo's to show you the immense power of hammer.js:
 
 ### Basic demo
-A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://eightmedia.github.com/hammer.js/demo2.html)
+A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://eightmedia.github.com/hammer.js/demo.html)
 
 ### Slideshow
 A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://eightmedia.github.com/hammer.js/slideshow.html)
