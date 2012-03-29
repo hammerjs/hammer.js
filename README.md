@@ -1,4 +1,4 @@
-# The documentation will be updated tomorrow for the 0.2 release. Hammer.JS is now standalone, and a jQuery plugin is available. 
+# The documentation / examples will be updated tomorrow for the 0.2 release. Hammer.JS is now standalone, and a jQuery plugin is available. 
 
 # Hammer.js 
 
