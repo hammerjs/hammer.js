@@ -1,8 +1,10 @@
 /*
  * Hammer.JS
- * version 0.01
+ * version 0.2
+ * author: Eight Media
+ * https://github.com/EightMedia/hammer.js
  */
-function Hammer(element, options)
+function Hammer(element, options, undefined)
 {
     var self = this;
 
@@ -29,27 +31,27 @@ function Hammer(element, options)
         hold               : true,
         hold_timeout       : 500
     };
-    options = $.extend({}, defaults, options);
-
-    // make sure element in a jQuery object
-    element = $(element);
+    options = mergeObject(defaults, options);
 
     // some css hacks
-    $(['-webkit-','-moz-','-ms-','-o-','']).each(function(i, vendor) {
-        var css = {};
-        var props = {
-            "user-select": "none",
-            "touch-callout": "none",
-            "user-drag": "none",
-            "tap-highlight-color": "rgba(0,0,0,0)"
-        };
+    var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
+    var css = '';
+    var css_props = {
+        "user-select": "none",
+        "touch-callout": "none",
+        "user-drag": "none",
+        "tap-highlight-color": "rgba(0,0,0,0)"
+    }
 
-        for(var prop in props) {
-            css[vendor + prop] = props[prop];
+    var i = 0, l = vendors.length;
+    for(; i<l; ++i){
+        if( supports(vendors[i] + 'user-select') ) {
+            for(var prop in css_props) {
+                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+            }
         }
-
-        element.css(css);
-    });
+    }
+    element.setAttribute('style', css);
 
     // holds the distance that has been moved
     var _distance = 0;
@@ -97,13 +99,13 @@ function Hammer(element, options)
             right: angle >= -45 && angle <= 45 //0
         };
 
-        var direction;
-        $.each(directions, function(key, value){
-            if(value){
+        var direction, key;
+        for(key in directions){
+            if(directions[key]){
                 direction = key;
-                return false;
+                break;
             }
-        });
+        }
         return direction;
     };
 
@@ -111,33 +113,33 @@ function Hammer(element, options)
     /**
      * count the number of fingers in the event
      * when no fingers are detected, one finger is returned (mouse pointer)
-     * @param  jQueryEvent
+     * @param  event
      * @return int  fingers
      */
     function countFingers( event )
     {
         // there is a bug on android (until v4?) that touches is always 1,
         // so no multitouch is supported, e.g. no, zoom and rotation...
-        return event.originalEvent.touches ? event.originalEvent.touches.length : 1;
+        return event.touches ? event.touches.length : 1;
     }
 
 
     /**
      * get the x and y positions from the event object
-     * @param  jQueryEvent
+     * @param  event
      * @return array  [{ x: int, y: int }]
      */
     function getXYfromEvent( event )
     {
         // no touches, use the event pageX and pageY
-        if(!event.originalEvent.touches) {
+        if(!event.touches) {
             return [{ x: event.pageX, y: event.pageY }];
         }
         // multitouch, return array with positions
         else {
             var pos = [], src;
-            for(var t=0, len=event.originalEvent.touches.length; t<len; t++) {
-                src = event.originalEvent.touches[t];
+            for(var t=0, len=event.touches.length; t<len; t++) {
+                src = event.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
             return pos;
@@ -152,7 +154,7 @@ function Hammer(element, options)
      */
     function getAngle( pos1, pos2 )
     {
-          return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
+        return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
     }
 
     /**
@@ -164,12 +166,10 @@ function Hammer(element, options)
     {
         // return touches object
         params.touches = getXYfromEvent(params.originalEvent);
-
-        // trigger jQuery event
-        element.trigger($.Event(eventName, params));
+        params.type = eventName;
 
         // trigger callback
-        if($.isFunction(self["on"+ eventName])) {
+        if(isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
         }
     }
@@ -230,7 +230,7 @@ function Hammer(element, options)
                 // check the movement and stop if we go in the wrong direction
                 var is_vertical = (_direction == 'up' || _direction == 'down');
                 if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal))
-                        && (_distance > options.drag_min_distance)) {
+                    && (_distance > options.drag_min_distance)) {
                     return;
                 }
 
@@ -269,8 +269,8 @@ function Hammer(element, options)
         transform : function(event)
         {
             if(options.transform) {
-                var scale = event.originalEvent.scale || 1;
-                var rotation = event.originalEvent.rotation || 0;
+                var scale = event.scale || 1;
+                var rotation = event.rotation || 0;
 
                 if(_gesture != 'drag' &&
                     (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold
@@ -278,7 +278,7 @@ function Hammer(element, options)
                     _gesture = 'transform';
 
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                                     y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+                        y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
                     var event_obj = {
                         originalEvent   : event,
@@ -314,7 +314,7 @@ function Hammer(element, options)
             var touch_time = now - _touch_start_time;
             var is_double_tap = function () {
                 if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' &&
-                                (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+                    (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
                     var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
                     return (_prev_tap_pos && _pos.start &&
@@ -371,7 +371,19 @@ function Hammer(element, options)
                 _touch_start_time = new Date().getTime();
                 _fingers = countFingers(event);
                 _first = true;
-                _offset = element.offset();
+
+                // borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
+                // needs to be tested yet
+                var box = element.getBoundingClientRect();
+                var clientTop  = element.clientTop  || document.body.clientTop  || 0;
+                var clientLeft = element.clientLeft || document.body.clientLeft || 0;
+                var scrollTop  = window.pageYOffset || element.scrollTop  || document.body.scrollTop;
+                var scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
+
+                _offset = {
+                    top: box.top + scrollTop  - clientTop,
+                    left: box.left + scrollLeft - clientLeft
+                };
 
                 _mousedown = true;
 
@@ -417,8 +429,8 @@ function Hammer(element, options)
                     triggerEvent("transformend", {
                         originalEvent   : event,
                         position        : _pos.center,
-                        scale           : event.originalEvent.scale,
-                        rotation        : event.originalEvent.rotation
+                        scale           : event.scale,
+                        rotation        : event.rotation
                     });
                 }
                 else {
@@ -436,13 +448,49 @@ function Hammer(element, options)
     // bind events for touch devices
     // except for windows phone 7.5, it doenst support touch events..!
     if('ontouchstart' in window) {
-        element.bind("touchstart touchmove touchend touchcancel", handleEvents);
+        element.addEventListener("touchstart", handleEvents, false);
+        element.addEventListener("touchmove", handleEvents, false);
+        element.addEventListener("touchend", handleEvents, false);
+        element.addEventListener("touchcancel", handleEvents, false);
     }
     // for non-touch
     else {
         // Listen for mouseup on the document so we know it happens
         // even if the mouse has left the element.
-        $(document).bind("mouseup", handleEvents);
-        element.bind("mousedown mousemove", handleEvents);
+        document.addEventListener("mouseup", handleEvents, false);
+        element.addEventListener("mousedown", handleEvents, false);
+        element.addEventListener("mousemove", handleEvents, false);
+    }
+
+
+    /**
+     * merge 2 objects into a new object
+     * @param   object  obj1
+     * @param   object  obj2
+     * @return  object  merged object
+     */
+    function mergeObject(obj1, obj2) {
+        var output = {};
+
+        if(!obj2) {
+            return obj1;
+        }
+
+        for (var prop in obj1) {
+            if (prop in obj2) {
+                output[prop] = obj2[prop];
+            } else {
+                output[prop] = obj1[prop];
+            }
+        }
+        return output;
+    }
+
+    function supports( property ){
+        return document.body.style[property] !== undefined;
+    }
+
+    function isFunction( obj ){
+        return Object.prototype.toString.call( obj ) == "[object Function]";
     }
 }
