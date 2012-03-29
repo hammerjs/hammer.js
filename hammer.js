@@ -50,8 +50,6 @@ function Hammer(element, options, undefined)
                 css += vendors[i] + prop + ': ' + css_props[prop] + ';';
             }
         }
-    
-        element.css(css);
     }
     element.setAttribute('style', css);
 
