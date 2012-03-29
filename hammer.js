@@ -35,24 +35,25 @@ function Hammer(element, options, undefined)
 
     // some css hacks
     var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
+    var css = '';
     var css_props = {
         "user-select": "none",
         "touch-callout": "none",
         "user-drag": "none",
         "tap-highlight-color": "rgba(0,0,0,0)"
     }
-
+    
     for(i = 0; i < vendors.length; i++)
     {
         if( supports(vendors[i] + 'user-select') ) {
             for(var prop in css_props) {
-                for(j = 0; j < elements.length; j++)
-                {
-                    elements[j].style[vendors[i] + prop] = css_props[prop];
-                }
+                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
             }
         }
+    
+        element.css(css);
     }
+    element.setAttribute('style', css);
 
     // holds the distance that has been moved
     var _distance = 0;
