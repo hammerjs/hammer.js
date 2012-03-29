@@ -35,7 +35,6 @@ function Hammer(element, options, undefined)
 
     // some css hacks
     var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
-    var css = '';
     var css_props = {
         "user-select": "none",
         "touch-callout": "none",
@@ -43,15 +42,17 @@ function Hammer(element, options, undefined)
         "tap-highlight-color": "rgba(0,0,0,0)"
     }
 
-    var i = 0, l = vendors.length;
-    for(; i<l; ++i){
+    for(i = 0; i < vendors.length; i++)
+    {
         if( supports(vendors[i] + 'user-select') ) {
             for(var prop in css_props) {
-                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+                for(j = 0; j < elements.length; j++)
+                {
+                    elements[j].style[vendors[i] + prop] = css_props[prop];
+                }
             }
         }
     }
-    element.setAttribute('style', css);
 
     // holds the distance that has been moved
     var _distance = 0;
