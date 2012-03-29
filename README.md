@@ -110,22 +110,17 @@ A simple demo that demonstrates that hammer.js works and is able to recognize ge
 A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://eightmedia.github.com/hammer.js/slideshow.html)
 
 ### Scroll content
-? [Check it out](http://eightmedia.github.com/hammer.js/scroll.html)
+A touch-scrollable div. [Check it out](http://eightmedia.github.com/hammer.js/scroll.html)
 
 ### Drag
-? [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
+Move boxes around. [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
 
 ### Color traces
 We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check it out](http://eightmedia.github.com/hammer.js/draw.html)
 
-### Lightbox (not finished yet)
-We use hammer.js to close a lightbox by pinching it.
 
-### Pinch to zoom (not finished yet)
-We use hammer.js to zoom in and out on an image by pinching.
-
-### Videoplayer / Google maps threshold (not finished yet)
-We use hammer.js to differentiate between an intentional interaction with a videoplayer or a google maps element and i.e. a scroll gesture. Without this differentiation it's easy to get stuck in such an element, especially when it takes up a large part of your browser window.
+### Pinch to zoom
+We use hammer.js to zoom in and out on an image by pinching. [Check it out](http://eightmedia.github.com/hammer.js/zoom/zoom.html)
 
 ## Further notes
 Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.

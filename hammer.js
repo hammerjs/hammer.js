@@ -216,9 +216,9 @@ function Hammer(element, options)
         drag : function(event)
         {
             // get the distance we moved
-            var _distance_x = Math.abs(_pos.move[0].x - _pos.start[0].x);
-            var _distance_y = Math.abs(_pos.move[0].y - _pos.start[0].y);
-            _distance = Math.max(_distance_x, _distance_y);
+            var _distance_x = _pos.move[0].x - _pos.start[0].x;
+            var _distance_y = _pos.move[0].y - _pos.start[0].y;
+            _distance = Math.sqrt(_distance_x * _distance_x + _distance_y * _distance_y);
 
             // drag
             // minimal movement required
@@ -244,6 +244,8 @@ function Hammer(element, options)
                     position        : position,
                     direction       : _direction,
                     distance        : _distance,
+                    distanceX       : _distance_x,
+                    distanceY       : _distance_y,
                     angle           : _angle
                 };
 
