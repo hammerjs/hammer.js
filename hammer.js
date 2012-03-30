@@ -35,7 +35,7 @@ function Hammer(element, options, undefined)
 
     // some css hacks
     var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
-    var css = '';
+    var css = element.getAttribute('style');
     var css_props = {
         "user-select": "none",
         "touch-callout": "none",
