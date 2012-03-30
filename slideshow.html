@@ -92,7 +92,7 @@
     <p>Simple slideshow to demo the drag event.</p>
     <p>Notice that the drag event is non-blocking for the scrolling of your page...</p>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
     <script>
 
@@ -127,7 +127,7 @@
         this.updateOverview = function() {
             overview.removeClass("active");
             $(overview.get( current )).addClass('active');
-        }
+        };
         self.updateOverview();
 
 
@@ -154,24 +154,24 @@
 
         this.next = function() {
             return this.slideTo(current+1);	
-        }
+        };
 
         this.prev = function() {
             return this.slideTo(current-1);	
-        }
+        };
 
         this.getContainer = function() {
             return container;
-        }
+        };
 
         this.getCurrent = function() {
             return $(slides.get(current));
-        }
+        };
     }
 
 
 
-    var hammer = new Hammer("#slideshow");
+    var hammer = new Hammer($("#slideshow").get(0));
     var slideshow = new Slideshow("#slideshow ul", "#overview li");
 
 

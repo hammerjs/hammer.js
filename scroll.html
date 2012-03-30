@@ -184,7 +184,7 @@
         var scrollbar = $(">.scrollbar div", container);
 
         var self = this;
-        var hammer = new Hammer(container, {
+        var hammer = new Hammer(container.get(0), {
             drag: true,
             drag_vertical: true,
             drag_horizontal: true,

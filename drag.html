@@ -52,6 +52,7 @@
      * setup hammer
      */
     var el = document.getElementById('container');
+
     var hammer = new Hammer(el, {
         drag_min_distance: 0,
         drag_horizontal: true,
@@ -59,7 +60,7 @@
         prevent_default: true
     });
 
-    var container_size = el.getBoundingClientRect()
+    var container_size = el.getBoundingClientRect();
 
     var drag_el;
     var drag_el_size = {};
@@ -146,7 +147,7 @@
             return;
         }
 
-        drag_el.className.replace("active", '');
+        drag_el.className = drag_el.className.replace(/ active/g, '');
         drag_el = null;
     }
 </script>
