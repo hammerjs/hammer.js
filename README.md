@@ -77,7 +77,7 @@ Now, on every gesture that is performed on the container element, you'll receive
 
 A jQuery plugin is also available and can be found in this repos.
 
-   ```<script src="https://raw.github.com/EightMedia/hammer.js/master/jquery.hammer.js"></script>```
+   ```<script src="http://eightmedia.github.com/hammer.js/jquery.hammer.js"></script>```
 
     $("#element")
        .hammer({
