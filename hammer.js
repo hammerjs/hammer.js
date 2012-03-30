@@ -35,14 +35,14 @@ function Hammer(element, options, undefined)
 
     // some css hacks
     var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
-    var css = '';
+    var css = element.getAttribute('style') || '';
     var css_props = {
         "user-select": "none",
         "touch-callout": "none",
         "user-drag": "none",
         "tap-highlight-color": "rgba(0,0,0,0)"
     };
-    
+
     for(i = 0; i < vendors.length; i++) {
         if(supports(vendors[i] + 'user-select')) {
             for(var prop in css_props) {
@@ -236,7 +236,7 @@ function Hammer(element, options, undefined)
                 _gesture = 'drag';
 
                 var position = { x: _pos.move[0].x - _offset.left,
-                                 y: _pos.move[0].y - _offset.top };
+                    y: _pos.move[0].y - _offset.top };
 
                 var event_obj = {
                     originalEvent   : event,
