@@ -11,7 +11,7 @@
             color: #fff;
         }
         #container {
-            height: 100px;
+            height: 200px;
             background-color: #ac0;
             margin-bottom: 20px;
             float: left;
@@ -26,22 +26,25 @@
 </head>
 <body>
 
-<div id="container" onfocus="return false"></div>
+<div id="container"></div>
 
 <div id="debug"></div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
-<script src="https://raw.github.com/eightmedia/hammer.js/master/jquery.hammer.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="hammer.js"></script>
+<script src="jquery.hammer.js"></script>
 <script>
+
+    window.onerror = function(ev) {
+        alert(ev);
+    };
 
     var debug_el = $("#debug");
     function log(name, args) {
         debug_el.prepend("<strong>"+ name +"</strong><br>");
     }
 
-    $("#container")
-        .hammer({
+    $("#container").hammer({
             prevent_default: false,
             drag_vertical: false
         })
