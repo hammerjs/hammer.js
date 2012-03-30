@@ -34,23 +34,26 @@ function Hammer(element, options, undefined)
     options = mergeObject(defaults, options);
 
     // some css hacks
-    var vendors = ['-webkit-','-moz-','-ms-','-o-',''];
-    var css = element.getAttribute('style') || '';
-    var css_props = {
-        "user-select": "none",
-        "touch-callout": "none",
-        "user-drag": "none",
-        "tap-highlight-color": "rgba(0,0,0,0)"
-    };
+    (function() {
+        var vendors = ['webkit','moz','ms','o',''];
+        var css_props = {
+            "userSelect": "none",
+            "touchCallout": "none",
+            "userDrag": "none",
+            "tapHighlightColor": "rgba(0,0,0,0)"
+        };
 
-    for(i = 0; i < vendors.length; i++) {
-        if(supports(vendors[i] + 'user-select')) {
-            for(var prop in css_props) {
-                css += vendors[i] + prop + ': ' + css_props[prop] + ';';
+        var prop = '';
+        for(i = 0; i < vendors.length; i++) {
+            for(var p in css_props) {
+                prop = p;
+                if(vendors[i]) {
+                    prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+                }
+                element.style[ prop ] = css_props[p];
             }
         }
-    }
-    element.setAttribute('style', css);
+    })();
 
     // holds the distance that has been moved
     var _distance = 0;
@@ -311,6 +314,7 @@ function Hammer(element, options, undefined)
             // compare the kind of gesture by time
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
+
             var is_double_tap = function () {
                 if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' &&
                     (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
@@ -380,7 +384,7 @@ function Hammer(element, options, undefined)
                 var scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
 
                 _offset = {
-                    top: box.top + scrollTop  - clientTop,
+                    top: box.top + scrollTop - clientTop,
                     left: box.left + scrollLeft - clientLeft
                 };
 
@@ -483,10 +487,6 @@ function Hammer(element, options, undefined)
             }
         }
         return output;
-    }
-
-    function supports( property ){
-        return document.body.style[property] !== undefined;
     }
 
     function isFunction( obj ){
