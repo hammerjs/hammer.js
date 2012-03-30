@@ -41,11 +41,10 @@ function Hammer(element, options, undefined)
         "touch-callout": "none",
         "user-drag": "none",
         "tap-highlight-color": "rgba(0,0,0,0)"
-    }
+    };
     
-    for(i = 0; i < vendors.length; i++)
-    {
-        if( supports(vendors[i] + 'user-select') ) {
+    for(i = 0; i < vendors.length; i++) {
+        if(supports(vendors[i] + 'user-select')) {
             for(var prop in css_props) {
                 css += vendors[i] + prop + ': ' + css_props[prop] + ';';
             }
@@ -321,7 +320,7 @@ function Hammer(element, options, undefined)
                         Math.max(x_distance, y_distance) < options.tap_double_distance);
                 }
                 return false;
-            }
+            };
 
             // dont fire when hold is fired
             if(options.hold && !(options.hold && options.hold_timeout > touch_time)) {
