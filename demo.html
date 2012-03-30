@@ -1,16 +1,21 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+<!doctype html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <title></title>
     <style>
-        #container {
-            height: 400px;
-            background: silver;
+
+        body {
+            background: #003;
             color: #fff;
+        }
+        #container {
+            height: 100px;
+            background-color: #ac0;
             margin-bottom: 20px;
-            font: 100px/400px 'Helvetica Neue', Helvetica, Arial;
-            text-align: center;
+            float: left;
+            width: 100%;
         }
 
         #debug {
@@ -21,35 +26,28 @@
 </head>
 <body>
 
-<div id="container">Touch here</div>
+<div id="container" onfocus="return false"></div>
 
 <div id="debug"></div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
+<script src="https://raw.github.com/eightmedia/hammer.js/master/jquery.hammer.js"></script>
 <script>
 
     var debug_el = $("#debug");
     function log(name, args) {
-        args = Array.prototype.slice.call(args, 0);
-        debug_el.prepend("<strong>"+ name +"</strong>: "+ args.join(" ") +"<br>");
+        debug_el.prepend("<strong>"+ name +"</strong><br>");
     }
 
-
-    var hammer = new Hammer("#container");
-
-    // event callbacks
-    hammer.onHold = function() { log('hold', arguments); };
-
-    hammer.onTap = function() { log('tap', arguments); };
-    hammer.onDoubleTap = function() { log('double tap', arguments); };
-
-    hammer.onTransformStart = function() { log('transform start', arguments); };
-    hammer.onTransform = function() { log('transform', arguments); };
-
-    hammer.onDragStart = function() { log('drag start', arguments); };
-    hammer.onDrag = function() { log('drag', arguments); };
-    hammer.onDragEnd = function() { log('drag end', arguments); };
+    $("#container")
+        .hammer({
+            prevent_default: false,
+            drag_vertical: false
+        })
+        .bind("hold tap doubletap transformstart transform transformend dragstart drag dragend", function(ev) {
+            log(ev.type);
+        });
 
 </script>
 

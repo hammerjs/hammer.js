@@ -18,13 +18,12 @@
 
 	<div id="debug" style="white-space:pre;"></div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
 <script>
 
     var drawingCanvas = document.getElementById('draw');
-    drawingCanvas.width = $("body").width();
-    drawingCanvas.height = $("body").height();
+    drawingCanvas.width = window.innerWidth;
+    drawingCanvas.height = window.innerHeight;
 
     var ctx;
     if(drawingCanvas.getContext) {
@@ -40,7 +39,7 @@
 
     var points = [];
 
-    var hammer = new Hammer("#draw", {
+    var hammer = new Hammer(document.getElementById('draw'), {
         hold: false,
         tap: false,
         tap_double: false,
@@ -51,7 +50,7 @@
         prevent_default: true
     });
 
-    $("#draw").bind("drag", function(event) {
+    hammer.ondrag = function(event){
         for(var t=0, len=event.touches.length; t<len; t++) {
             points.unshift({ x: event.touches[t].x, y: event.touches[t].y });
         }
@@ -59,8 +58,8 @@
         // allow max 100 points
         points.splice(100, 100);
 
-        event.preventDefault();
-    });
+        return false;
+    };
 
 
     function drawDot(x, y, opacity) {
