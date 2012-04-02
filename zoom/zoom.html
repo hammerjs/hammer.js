@@ -20,11 +20,12 @@
 <body>
 
 <div id="zoom">
-    <img src="waldo.jpg" alt="" height=600 />
+    <img src="waldo.jpg" alt="" height="600" id="waldo" />
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="../hammer.js"></script>
+<script src="../jquery.hammer.js"></script>
 <script>
 
     // disable the dragging of images on desktop browsers
@@ -34,16 +35,16 @@
 
 
     $(function(){
-        var hammer = new Hammer("#zoom", {
+        var hammer = new Hammer(document.getElementById('waldo'), {
             prevent_default: true,
             scale_treshold: .1
         });
 
-        var zoom = new ZoomCanvas(hammer, '#zoom', '#zoom :first-child');
+        var zoom = new ZoomCanvas(hammer, document.getElementById('waldo'));
     });
 
 
-    function ZoomCanvas(hammer, container, el){
+    function ZoomCanvas(hammer, el){
         var MAX_ZOOM = 5;
         
         var el = $(el);
