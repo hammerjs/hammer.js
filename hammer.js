@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.2
+ * version 0.3
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -11,6 +11,8 @@ function Hammer(element, options, undefined)
     var defaults = {
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
+
+        css_hacks          : true,
 
         drag               : true,
         drag_vertical      : true,
@@ -33,8 +35,13 @@ function Hammer(element, options, undefined)
     };
     options = mergeObject(defaults, options);
 
+
     // some css hacks
     (function() {
+        if(!options.css_hacks) {
+            return false;
+        }
+
         var vendors = ['webkit','moz','ms','o',''];
         var css_props = {
             "userSelect": "none",
@@ -44,7 +51,7 @@ function Hammer(element, options, undefined)
         };
 
         var prop = '';
-        for(i = 0; i < vendors.length; i++) {
+        for(var i = 0; i < vendors.length; i++) {
             for(var p in css_props) {
                 prop = p;
                 if(vendors[i]) {
@@ -197,12 +204,12 @@ function Hammer(element, options, undefined)
         hold : function(event)
         {
             // only when one finger is on the screen
-            if(options.hold && _fingers == 1) {
+            if(options.hold) {
                 _gesture = 'hold';
                 clearTimeout(_hold_timer);
 
                 _hold_timer = setTimeout(function() {
-                    if(_gesture == 'hold' && _fingers == 1) {
+                    if(_gesture == 'hold') {
                         triggerEvent("hold", {
                             originalEvent   : event,
                             position        : _pos.start
@@ -411,8 +418,13 @@ function Hammer(element, options, undefined)
                 break;
 
             case 'mouseup':
+            case 'mouseout':
             case 'touchcancel':
             case 'touchend':
+                if(!_mousedown) {
+                    return false;
+                }
+
                 _mousedown = false;
 
                 // drag gesture
@@ -448,6 +460,7 @@ function Hammer(element, options, undefined)
         }
     }
 
+
     // bind events for touch devices
     // except for windows phone 7.5, it doenst support touch events..!
     if('ontouchstart' in window) {
@@ -460,7 +473,8 @@ function Hammer(element, options, undefined)
     else {
         // Listen for mouseup on the document so we know it happens
         // even if the mouse has left the element.
-        document.addEventListener("mouseup", handleEvents, false);
+        element.addEventListener("mouseout", handleEvents, false);
+        element.addEventListener("mouseup", handleEvents, false);
         element.addEventListener("mousedown", handleEvents, false);
         element.addEventListener("mousemove", handleEvents, false);
     }
