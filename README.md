@@ -114,6 +114,27 @@ The Drag gesture also returns:
 
 In addition to this the Transform and Drag gestures return start and end events.
 
+
+### Defaults
+|                    | default |                           |
+|:-----------------------------------|:--------------------------|
+| prevent_default    | false         | when true all default browser actions are blocked. For instance if you want to drag vertically, try setting this to true. |
+| css_hacks          | true          | css userSelect, touchCallout, userDrag, tapHighlightColor are added |
+| drag               | true          |                           |
+| drag_vertical      | true          |                           |
+| drag_horizontal    | true          |                           |
+| drag_min_distance  | 20            | pixels                    | 
+| transform          | true          |                           |
+| scale_treshold     | 0.1           | how much scaling needs to be done before firing the transform event |                   
+| rotation_treshold  | 15            | degrees before firing the transform event | 
+| tap                | true          |                           |
+| tap_double         | true          |                           |
+| tap_max_interval   | 300           | ms                          |
+| tap_double_distance:| 20           | pixels, distance between taps  |
+| hold               | true          |                           |
+| hold_timeout       | 500           | ms                          |
+
+
 ### Compatibility
 |                                   | Tap | Double Tap | Hold | Drag | Transform |
 |:----------------------------------|:----|:-----------|:-----|:-----|:----------|
