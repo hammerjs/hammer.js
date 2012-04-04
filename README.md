@@ -87,6 +87,10 @@ A jQuery plugin is also available and can be found in this repos.
             console.log(ev);
        });
 
+
+[Brian Rinaldi](https://twitter.com/remotesynth) has written a blogpost about Hammer.js, it explains things a bit more and has a nice looking demo. [Read it here.](http://www.remotesynthesis.com/post.cfm/add-gesture-support-to-your-web-application-via-hammer-js)
+
+
 ### The Hammer callback objects:
 
 All gestures return:
