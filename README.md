@@ -117,7 +117,7 @@ In addition to this the Transform and Drag gestures return start and end events.
 
 ### Defaults
 |                    | default |                           |
-|:-----------------------------------|:--------------------------|
+|:-----------------------------------|:--------------------------|-----------------|
 | prevent_default    | false         | when true all default browser actions are blocked. For instance if you want to drag vertically, try setting this to true. |
 | css_hacks          | true          | css userSelect, touchCallout, userDrag, tapHighlightColor are added |
 | drag               | true          |                           |
