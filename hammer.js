@@ -11,7 +11,6 @@ function Hammer(element, options, undefined)
     var defaults = {
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
-
         css_hacks          : true,
 
         drag               : true,
