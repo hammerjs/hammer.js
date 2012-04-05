@@ -24,22 +24,22 @@ Hammer.js is a javascript library that can be used to control gestures on touch 
 We've created some demo's to show you the immense power of hammer.js:
 
 ### Basic demo
-A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://eightmedia.github.com/hammer.js/demo.html)
+A simple demo that demonstrates that hammer.js works and is able to recognize gestures. We output the gestures that are recognized. [Check it out](http://eightmedia.github.com/hammer.js/demo/)
 
 ### Slideshow
-A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://eightmedia.github.com/hammer.js/slideshow.html)
+A slideshow that uses hammer.js to switch slides. Note that the drag event in the slideshow is non-blocking for the scrolling of the page. [Check it out](http://eightmedia.github.com/hammer.js/slideshow/)
 
 ### Scroll content
-A touch-scrollable div. [Check it out](http://eightmedia.github.com/hammer.js/scroll.html)
+A touch-scrollable div. [Check it out](http://eightmedia.github.com/hammer.js/scroll/)
 
 ### Drag
-Move boxes around. [Check it out](http://eightmedia.github.com/hammer.js/drag.html)
+Move boxes around. [Check it out](http://eightmedia.github.com/hammer.js/drag/)
 
 ### Color traces
-We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check it out](http://eightmedia.github.com/hammer.js/draw.html)
+We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check it out](http://eightmedia.github.com/hammer.js/draw/)
 
 ### Pinch to zoom
-We use hammer.js to zoom in and out on an image by pinching. [Check it out](http://eightmedia.github.com/hammer.js/zoom/zoom.html)
+We use hammer.js to zoom in and out on an image by pinching. [Check it out](http://eightmedia.github.com/hammer.js/zoom/)
 
 
 ## Documentation
