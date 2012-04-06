@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.3
+ * version 0.4
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -33,7 +33,6 @@ function Hammer(element, options, undefined)
         hold_timeout       : 500
     };
     options = mergeObject(defaults, options);
-
 
     // some css hacks
     (function() {
@@ -472,10 +471,35 @@ function Hammer(element, options, undefined)
     else {
         // Listen for mouseup on the document so we know it happens
         // even if the mouse has left the element.
-        element.addEventListener("mouseout", handleEvents, false);
+        element.addEventListener("mouseout", function(event) {
+            if(!isInsideHammer(element, event.relatedTarget)) {
+                handleEvents(event);
+            }
+        }, false);
         element.addEventListener("mouseup", handleEvents, false);
         element.addEventListener("mousedown", handleEvents, false);
         element.addEventListener("mousemove", handleEvents, false);
+    }
+
+
+    /**
+     * find if element is (inside) given parent element
+     * @param   object  element
+     * @param   object  parent
+     * @return  bool    inside
+     */
+    function isInsideHammer(parent, child) {
+        if(parent === child){
+            return true;
+        }
+        var node = child.parentNode;
+        while(node !== null){
+            if(node === parent){
+                return true;
+            };
+            node = node.parentNode;
+        }
+        return false;
     }
 
 
