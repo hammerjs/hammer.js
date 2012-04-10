@@ -469,16 +469,16 @@ function Hammer(element, options, undefined)
     }
     // for non-touch
     else {
-        // Listen for mouseup on the document so we know it happens
-        // even if the mouse has left the element.
-        element.addEventListener("mouseout", function(event) {
-            if(!isInsideHammer(element, event.relatedTarget)) {
-                handleEvents(event);
-            }
-        }, false);
-        element.addEventListener("mouseup", handleEvents, false);
-        element.addEventListener("mousedown", handleEvents, false);
-        element.addEventListener("mousemove", handleEvents, false);
+        if(element.addEventListener){ // prevent old IE errors
+            element.addEventListener("mouseout", function(event) {
+                if(!isInsideHammer(element, event.relatedTarget)) {
+                    handleEvents(event);
+                }
+            }, false);
+            element.addEventListener("mouseup", handleEvents, false);
+            element.addEventListener("mousedown", handleEvents, false);
+            element.addEventListener("mousemove", handleEvents, false);
+        }
     }
 
 
