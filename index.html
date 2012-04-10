@@ -1,9 +1,12 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Hammer.js &mdash; A javascript library for multi touch gestures</title>
     <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
     <style>
     html, body {
         margin: 0;
@@ -219,7 +222,11 @@
         shouts['drag'] = 'You are dragging me.';
         shouts['dragend'] = 'You just dragged me.';
         
-        var hammer = new Hammer(container);
+        container.onselectstart = function() { return false; }; // IE fix for doubletap
+        
+        var hammer = new Hammer(container, {
+            tap_max_interval: 700 // seems to bee needed for IE8
+        });
         hammer.onhold = hammer.ontap = hammer.ondoubletap = hammer.ontransformstart = hammer.ontransform = hammer.ontransformend = hammer.ondragstart = hammer.ondrag = hammer.ondragend = shout;
         
         function shout(e){

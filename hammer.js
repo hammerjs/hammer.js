@@ -138,9 +138,17 @@ function Hammer(element, options, undefined)
      */
     function getXYfromEvent( event )
     {
+        event = event || window.event;
+        
         // no touches, use the event pageX and pageY
         if(!event.touches) {
-            return [{ x: event.pageX, y: event.pageY }];
+            var doc = document,
+            body = doc.body;
+            
+            return [{ 
+                x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
+                y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
+            }];
         }
         // multitouch, return array with positions
         else {
@@ -178,6 +186,23 @@ function Hammer(element, options, undefined)
         // trigger callback
         if(isFunction(self["on"+ eventName])) {
             self["on"+ eventName].call(self, params);
+        }
+    }
+    
+    
+    /**
+     * cancel event
+     * @param   object  event
+     * @return  void
+     */
+     
+    function cancelEvent(event){
+        event = event || window.event;
+        if(event.preventDefault){
+            event.preventDefault();
+        }else{
+            event.returnValue = false;
+            event.cancelBubble = true;
         }
     }
 
@@ -226,7 +251,7 @@ function Hammer(element, options, undefined)
             var _distance_x = _pos.move[0].x - _pos.start[0].x;
             var _distance_y = _pos.move[0].y - _pos.start[0].y;
             _distance = Math.sqrt(_distance_x * _distance_x + _distance_y * _distance_y);
-
+            
             // drag
             // minimal movement required
             if(options.drag && (_distance > options.drag_min_distance) || _gesture == 'drag') {
@@ -266,7 +291,7 @@ function Hammer(element, options, undefined)
                 // normal slide event
                 triggerEvent("drag", event_obj);
 
-                event.preventDefault();
+                cancelEvent(event);
             }
         },
 
@@ -302,7 +327,7 @@ function Hammer(element, options, undefined)
 
                     triggerEvent("transform", event_obj);
 
-                    event.preventDefault();
+                    cancelEvent(event);
 
                     return true;
                 }
@@ -319,26 +344,24 @@ function Hammer(element, options, undefined)
             // compare the kind of gesture by time
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
-
-            var is_double_tap = function () {
-                if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' &&
-                    (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
-                    var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
-                    var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
-                    return (_prev_tap_pos && _pos.start &&
-                        Math.max(x_distance, y_distance) < options.tap_double_distance);
-                }
-                return false;
-            };
-
+            
             // dont fire when hold is fired
             if(options.hold && !(options.hold && options.hold_timeout > touch_time)) {
                 return;
             }
-
+            
             // when previous event was tap and the tap was max_interval ms ago
-
-            if(is_double_tap()) {
+            var is_double_tap = (function(){
+                if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' && (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+                    var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
+                    var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
+                    return (_prev_tap_pos && _pos.start && Math.max(x_distance, y_distance) < options.tap_double_distance);
+                    
+                }
+                return false;
+            })();
+            
+            if(is_double_tap) {
                 _gesture = 'double_tap';
                 _prev_tap_end_time = null;
 
@@ -346,7 +369,7 @@ function Hammer(element, options, undefined)
                     originalEvent   : event,
                     position        : _pos.start
                 });
-                event.preventDefault();
+                cancelEvent(event);
             }
 
             // single tap is single touch
@@ -360,7 +383,7 @@ function Hammer(element, options, undefined)
                         originalEvent   : event,
                         position        : _pos.start
                     });
-                    event.preventDefault();
+                    cancelEvent(event);
                 }
             }
 
@@ -381,7 +404,6 @@ function Hammer(element, options, undefined)
                 _first = true;
 
                 // borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
-                // needs to be tested yet
                 var box = element.getBoundingClientRect();
                 var clientTop  = element.clientTop  || document.body.clientTop  || 0;
                 var clientLeft = element.clientLeft || document.body.clientLeft || 0;
@@ -399,7 +421,7 @@ function Hammer(element, options, undefined)
                 gestures.hold(event);
 
                 if(options.prevent_default) {
-                    event.preventDefault();
+                    cancelEvent(event);
                 }
                 break;
 
@@ -409,7 +431,7 @@ function Hammer(element, options, undefined)
                     return false;
                 }
                 _pos.move = getXYfromEvent(event);
-
+                
                 if(!gestures.transform(event)) {
                     gestures.drag(event);
                 }
@@ -460,7 +482,7 @@ function Hammer(element, options, undefined)
 
 
     // bind events for touch devices
-    // except for windows phone 7.5, it doenst support touch events..!
+    // except for windows phone 7.5, it doesnt support touch events..!
     if('ontouchstart' in window) {
         element.addEventListener("touchstart", handleEvents, false);
         element.addEventListener("touchmove", handleEvents, false);
@@ -469,16 +491,28 @@ function Hammer(element, options, undefined)
     }
     // for non-touch
     else {
-        // Listen for mouseup on the document so we know it happens
-        // even if the mouse has left the element.
-        element.addEventListener("mouseout", function(event) {
-            if(!isInsideHammer(element, event.relatedTarget)) {
-                handleEvents(event);
-            }
-        }, false);
-        element.addEventListener("mouseup", handleEvents, false);
-        element.addEventListener("mousedown", handleEvents, false);
-        element.addEventListener("mousemove", handleEvents, false);
+        
+        if(element.addEventListener){ // prevent old IE errors
+            element.addEventListener("mouseout", function(event) {
+                if(!isInsideHammer(element, event.relatedTarget)) {
+                    handleEvents(event);
+                }
+            }, false);
+            element.addEventListener("mouseup", handleEvents, false);
+            element.addEventListener("mousedown", handleEvents, false);
+            element.addEventListener("mousemove", handleEvents, false);
+            
+        // events for older IE
+        }else if(document.attachEvent){
+            element.attachEvent("onmouseout", function(event) {
+                if(!isInsideHammer(element, event.relatedTarget)) {
+                    handleEvents(event);
+                }
+            }, false);
+            element.attachEvent("onmouseup", handleEvents);
+            element.attachEvent("onmousedown", handleEvents);
+            element.attachEvent("onmousemove", handleEvents);
+        }
     }
 
 
@@ -489,16 +523,26 @@ function Hammer(element, options, undefined)
      * @return  bool    inside
      */
     function isInsideHammer(parent, child) {
+        
+        // get related target for IE
+        if(!child && event.toElement){
+            child = event.toElement;
+        }
+        
         if(parent === child){
             return true;
         }
-        var node = child.parentNode;
-        while(node !== null){
-            if(node === parent){
-                return true;
-            };
-            node = node.parentNode;
-        }
+        
+        // loop over parentNodes of child until we find hammer element
+        if(child){
+            var node = child.parentNode;
+            while(node !== null){
+                if(node === parent){
+                    return true;
+                };
+                node = node.parentNode;
+            }
+        }    
         return false;
     }
 
