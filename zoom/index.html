@@ -4,103 +4,174 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
         #zoom {
-            height: 600px;
+            height: 377px;
+            width: 600px;
             overflow: hidden;
             position:relative;
             background: #eee;
-            -webkit-transform: translate3d(0,0,0);
+            border: solid 1px #ccc;
         }
 
-        #zoom :first-child {
-            position: relative;
-        }
     </style>
 </head>
 
 <body>
 
 <div id="zoom">
-    <img src="waldo.jpg" alt="" height="600" id="waldo" />
+    <img src="waldo.jpg" alt="" width="600" height="377" />
 </div>
+
+<p>Sample of pinch zoom and panning. Zoom at a point needs to be fixed, feel free to help me with this!</p>
+
+<div id="debug"></div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script src="../hammer.js"></script>
+<script src="../jquery.hammer.js"></script>
 <script>
+
+    var debug_el = $("#debug");
+    function debug(str) {
+        debug_el.prepend(str.toString() +"<br>");
+    }
 
     // disable the dragging of images on desktop browsers
     $("img").bind("dragstart", function() {
-       	return false; 
+        return false;
     });
 
 
     $(function(){
-        var hammer = new Hammer(document.getElementById('waldo'), {
-            prevent_default: true,
-            scale_treshold: .1
-        });
-
-        var zoom = new ZoomCanvas(hammer, document.getElementById('waldo'));
+        var zoom = new ZoomView('#zoom','#zoom :first');
     });
 
 
-    function ZoomCanvas(hammer, el){
+    /**
+     * ZoomView
+     * Port of the android tutorial for zoom/pan
+     * http://vivin.net/2011/12/04/implementing-pinch-zoom-and-pandrag-in-an-android-view-on-the-canvas/
+     *
+     * @param container
+     * @param element
+     */
+    function ZoomView(container, element) {
+
+        container = $(container).hammer({
+            prevent_default: true,
+            scale_treshold: 0,
+            drag_min_distance: 0
+        });
+
+        element = $(element);
+
+
+        var displayWidth = container.width();
+        var displayHeight = container.height();
+
+        //These two constants specify the minimum and maximum zoom
+        var MIN_ZOOM = 1;
         var MAX_ZOOM = 5;
-        
-        var el = $(el);
 
-        var start = {
-            scale: 1,
-            x: 0,
-            y: 0,
-            width: el.width(),
-            height: el.height()
-        }
-        var current = {
-            scale: 1,
-            x: 0,
-            y: 0,
-            width: el.width(),
-            height: el.height()
-        }
+        var scaleFactor = 1;
+        var previousScaleFactor = 1;
 
-        
+        //These two variables keep track of the X and Y coordinate of the finger when it first
+        //touches the screen
+        var startX = 0;
+        var startY = 0;
 
-        // on start transform
-        function ontransformstart(ev){
-            start.scale = current.scale;
-            start.x = current.x;
-            start.y = current.y;
-            start.width = current.width;
-            start.height = current.height;
-        }
+        //These two variables keep track of the amount we need to translate the canvas along the X
+        //and the Y coordinate
+        var translateX = 0;
+        var translateY = 0;
 
-        // on transform
-        function ontransform( ev ){
-            if(ev.scale){
-                current.scale = start.scale * ev.scale;
-                current.scale = current.scale < 1 ? 1 : (current.scale > MAX_ZOOM ? MAX_ZOOM : current.scale);
+        //These two variables keep track of the amount we translated the X and Y coordinates, the last time we
+        //panned.
+        var previousTranslateX = 0;
+        var previousTranslateY = 0;
+
+
+        container.bind("dragstart", function(event) {
+            //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
+            //amount for each coordinates This works even when we are translating the first time because the initial
+            //values for these two variables is zero.
+            startX = event.position.x - previousTranslateX;
+            startY = event.position.y - previousTranslateY;
+        });
+
+        container.bind("drag", function(event) {
+            translateX = event.position.x - startX;
+            translateY = event.position.y - startY;
+
+            transform();
+        });
+
+        container.bind("dragend", function(event) {
+            //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
+            //and previousTranslateY when the second finger goes up
+            previousTranslateX = translateX;
+            previousTranslateY = translateY;
+
+            transform();
+        });
+
+        container.bind("transform", function(event) {
+            scaleFactor = previousScaleFactor * event.scale;
+            scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
+
+            transform();
+        });
+
+        container.bind("transformend", function(event) {
+            previousScaleFactor = scaleFactor;
+        });
+
+
+        function transform() {
+            //We're going to scale the X and Y coordinates by the same amount
+            var cssScale = "scale("+ scaleFactor +")";
+
+            //If translateX times -1 is lesser than zero, let's set it to zero. This takes care of the left bound
+            if((translateX * -1) < 0) {
+                translateX = 0;
             }
-            var x = ev.position.x;
-            var y = ev.position.y;
-            el.css('-webkit-transform-origin', x +'px '+ y +'px');
-            move(x, y);
-        }
-        
-        // move
-        function move(x, y){
-            current.width = start.width * current.scale;
-            current.height = start.height * current.scale;
 
-            current.x = (x * (start.width - current.width)) / current.width;
-            current.y = (y * (start.height - current.height)) / current.height;
-            
-            el.css('-webkit-transform', 'matrix('+ current.scale +', 0, 0, '+ current.scale +', '+ current.x  +', '+ current.y +')');
+            //This is where we take care of the right bound. We compare translateX times -1 to (scaleFactor - 1) * displayWidth.
+            //If translateX is greater than that value, then we know that we've gone over the bound. So we set the value of
+            //translateX to (1 - scaleFactor) times the display width. Notice that the terms are interchanged; it's the same
+            //as doing -1 * (scaleFactor - 1) * displayWidth
+            else if((translateX * -1) > (scaleFactor - 1) * displayWidth) {
+                translateX = (1 - scaleFactor) * displayWidth;
+            }
+
+            if(translateY * -1 < 0) {
+                translateY = 0;
+            }
+
+            //We do the exact same thing for the bottom bound, except in this case we use the height of the display
+            else if((translateY * -1) > (scaleFactor - 1) * displayHeight) {
+                translateY = (1 - scaleFactor) * displayHeight;
+            }
+
+            //We need to divide by the scale factor here, otherwise we end up with excessive panning based on our zoom level
+            //because the translation amount also gets scaled according to how much we've zoomed into the canvas.
+            var cssTranslate = "translate("+ translateX / scaleFactor +"px, "+ translateY / scaleFactor +"px)";
+
+            element.css({
+                webkitTransform: cssScale +" "+ cssTranslate,
+                webkitTransformOrigin: "0 0",
+
+                mozTransform: cssScale +" "+ cssTranslate,
+                mozTransformOrigin: "0 0",
+
+                oTransform: cssScale +" "+ cssTranslate,
+                oTransformOrigin: "0 0",
+
+                transform: cssScale +" "+ cssTranslate,
+                transformOrigin: "0 0"
+            });
         }
 
-        hammer.ontransform = ontransform;
-        hammer.ontransformstart = ontransformstart;
-        hammer.ondrag = ondrag;
-        hammer.ondragstart = ondragstart;
     }
 
 </script>

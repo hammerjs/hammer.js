@@ -91,6 +91,10 @@ function Hammer(element, options, undefined)
     // keep track of the mouse status
     var _mousedown = false;
 
+    var _event_start;
+    var _event_move;
+    var _event_end;
+
 
     /**
      * angle to direction define
@@ -304,13 +308,17 @@ function Hammer(element, options, undefined)
                 var scale = event.scale || 1;
                 var rotation = event.rotation || 0;
 
+                if(countFingers(event) != 2) {
+                    return false;
+                }
+
                 if(_gesture != 'drag' &&
                     (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold
                         || Math.abs(rotation) > options.rotation_treshold)) {
                     _gesture = 'transform';
 
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                        y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+                                     y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
                     var event_obj = {
                         originalEvent   : event,
@@ -402,6 +410,7 @@ function Hammer(element, options, undefined)
                 _touch_start_time = new Date().getTime();
                 _fingers = countFingers(event);
                 _first = true;
+                _event_start = event;
 
                 // borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
                 var box = element.getBoundingClientRect();
@@ -430,6 +439,7 @@ function Hammer(element, options, undefined)
                 if(!_mousedown) {
                     return false;
                 }
+                _event_move = event;
                 _pos.move = getXYfromEvent(event);
 
                 if(!gestures.transform(event)) {
@@ -441,11 +451,12 @@ function Hammer(element, options, undefined)
             case 'mouseout':
             case 'touchcancel':
             case 'touchend':
-                if(!_mousedown) {
+                if(!_mousedown || (_gesture != 'transform' && event.touches && event.touches.length > 0)) {
                     return false;
                 }
 
                 _mousedown = false;
+                _event_end = event;
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible
@@ -469,7 +480,7 @@ function Hammer(element, options, undefined)
                     });
                 }
                 else {
-                    gestures.tap(event);
+                    gestures.tap(_event_start);
                 }
 
                 _prev_gesture = _gesture;

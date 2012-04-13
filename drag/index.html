@@ -20,17 +20,11 @@
             -webkit-transition: -webkit-transform .1s;
         }
 
-        .box1 { background: blue; }
-        .box2 { background: red; }
-        .box3 { background: green; }
-        .box4 { background: orange; }
+        .box1 { left: 150px; top: 150px; background: blue; }
+        .box2 { left: 350px; top: 150px; background: red; }
+        .box3 { left: 500px; top: 150px; background: green; }
+        .box4 { left: 0; top: 150px; background: orange; }
 
-        .box.active {
-            opacity: .5;
-            -webkit-transform: scale(1.05);
-            box-shadow: 4px 4px 4px rgba(0,0,0,.2);
-        }
-		
     </style>
 </head>
 
@@ -43,11 +37,16 @@
 	<div class="box box4"></div>
 </div>
 
-	<div id="_debug" style="white-space:pre;"></div>
+	<div id="_debug"></div>
 
 <script src="../hammer.js"></script>
 <script>
-        
+
+    var debug_el = document.getElementById("_debug");
+   function debug(str) {
+       debug_el.innerHTML += " "+ str.toString() ;
+   }
+
     /**
      * setup hammer
      */
@@ -57,10 +56,14 @@
         drag_min_distance: 0,
         drag_horizontal: true,
         drag_vertical: true,
+        transform: false,
+        hold: false,
         prevent_default: true
     });
 
     var container_size = el.getBoundingClientRect();
+
+    var drag = {};
 
     var drag_el;
     var drag_el_size = {};
@@ -73,83 +76,70 @@
      */
     function watchDrag()
     {
-        if(!drag_el) {
+        if(!drag.length) {
             return;
         }
 
-        var left = drag_pos.x - (drag_el_size.width / 2);
-        var top = drag_pos.y - (drag_el_size.height / 2);
+        for(var d = 0; d<drag.length; d++) {
+            var left = drag[d].pos.x - (drag[d].size.width / 2);
+            var top = drag[d].pos.y - (drag[d].size.height / 2);
 
-        if(left < 0) {
-            left = 0;
-        }
-        if(top < 0) {
-            top = 0;
-        }
+            if(left < 0) {
+                left = 0;
+            }
+            if(top < 0) {
+                top = 0;
+            }
 
-        if(left > container_size.width - drag_el_size.width) {
-            left = container_size.width - drag_el_size.width;
-        }
-        if(top > container_size.height - drag_el_size.height) {
-            top = container_size.height - drag_el_size.height;
-        }
+            if(left > container_size.width - drag[d].size.width) {
+                left = container_size.width - drag[d].size.width;
+            }
+            if(top > container_size.height - drag[d].size.height) {
+                top = container_size.height - drag[d].size.height;
+            }
 
-        drag_el.style.left = left +'px';
-        drag_el.style.top = top +'px';
-        
-        setTimeout(watchDrag, 10);
+            drag[d].el.style.left = left +'px';
+            drag[d].el.style.top = top +'px';
+        }
     }
     
     /**
      * on tap
      */
     hammer.ontap = function(ev) {
-        var el = ev.originalEvent.target;
-        if(el.className.search('box') > -1) {
-            el.style.zIndex = zIndex++;
+        var touches = ev.originalEvent.touches || [ev.originalEvent];
+        for(var t=0; t<ev.touches.length; t++) {
+            var el = touches[t].target;
+
+            if(el.className.search('box') > -1) {
+                el.style.zIndex = zIndex++;
+            }
         }
     };
 
-    /**
-     * on drag start
-     */
-    hammer.ondragstart = function(ev) {
-        var el = ev.originalEvent.target;
-        if(el.className.search('box') > -1) {
-            drag_el = el;
-
-            drag_el.className += " active";
-            drag_el.style.zIndex = zIndex++;
-
-            drag_el_size = drag_el.getBoundingClientRect()
-
-            drag_pos = ev.position;
-
-            setTimeout(watchDrag, 10);
-        }
-    };
     
     /**
      * on drag
      */
     hammer.ondrag = function(ev) {
-        if(!drag_el) {
-            return;
+        drag = [];
+        var touches = ev.originalEvent.touches || [ev.originalEvent];
+        for(var t=0; t<touches.length; t++) {
+            var el = touches[t].target;
+
+            if(el && el.className.search('box') > -1) {
+                drag.push({
+                    el: el,
+                    size: { width: 100, height: 100 },
+                    pos: ev.touches[t]
+                });
+            }
         }
-        drag_pos = ev.position;
     };
 
-    /**
-     * on drag end
-     */
-    hammer.ondragend = function() {
-        if(!drag_el) {
-            return;
-        }
 
-        drag_el.className = drag_el.className.replace(/ active/g, '');
-        drag_el = null;
-    }
+    setInterval(watchDrag, 10);
+
 </script>
 </body>
 </html>
