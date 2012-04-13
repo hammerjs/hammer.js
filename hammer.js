@@ -139,13 +139,13 @@ function Hammer(element, options, undefined)
     function getXYfromEvent( event )
     {
         event = event || window.event;
-        
+
         // no touches, use the event pageX and pageY
         if(!event.touches) {
             var doc = document,
-            body = doc.body;
-            
-            return [{ 
+                body = doc.body;
+
+            return [{
                 x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
                 y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
             }];
@@ -188,14 +188,14 @@ function Hammer(element, options, undefined)
             self["on"+ eventName].call(self, params);
         }
     }
-    
-    
+
+
     /**
      * cancel event
      * @param   object  event
      * @return  void
      */
-     
+
     function cancelEvent(event){
         event = event || window.event;
         if(event.preventDefault){
@@ -251,7 +251,7 @@ function Hammer(element, options, undefined)
             var _distance_x = _pos.move[0].x - _pos.start[0].x;
             var _distance_y = _pos.move[0].y - _pos.start[0].y;
             _distance = Math.sqrt(_distance_x * _distance_x + _distance_y * _distance_y);
-            
+
             // drag
             // minimal movement required
             if(options.drag && (_distance > options.drag_min_distance) || _gesture == 'drag') {
@@ -344,23 +344,23 @@ function Hammer(element, options, undefined)
             // compare the kind of gesture by time
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
-            
+
             // dont fire when hold is fired
             if(options.hold && !(options.hold && options.hold_timeout > touch_time)) {
                 return;
             }
-            
+
             // when previous event was tap and the tap was max_interval ms ago
             var is_double_tap = (function(){
                 if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' && (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
                     var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
                     return (_prev_tap_pos && _pos.start && Math.max(x_distance, y_distance) < options.tap_double_distance);
-                    
+
                 }
                 return false;
             })();
-            
+
             if(is_double_tap) {
                 _gesture = 'double_tap';
                 _prev_tap_end_time = null;
@@ -431,7 +431,7 @@ function Hammer(element, options, undefined)
                     return false;
                 }
                 _pos.move = getXYfromEvent(event);
-                
+
                 if(!gestures.transform(event)) {
                     gestures.drag(event);
                 }
@@ -491,7 +491,7 @@ function Hammer(element, options, undefined)
     }
     // for non-touch
     else {
-        
+
         if(element.addEventListener){ // prevent old IE errors
             element.addEventListener("mouseout", function(event) {
                 if(!isInsideHammer(element, event.relatedTarget)) {
@@ -501,8 +501,8 @@ function Hammer(element, options, undefined)
             element.addEventListener("mouseup", handleEvents, false);
             element.addEventListener("mousedown", handleEvents, false);
             element.addEventListener("mousemove", handleEvents, false);
-            
-        // events for older IE
+
+            // events for older IE
         }else if(document.attachEvent){
             element.attachEvent("onmouseout", function(event) {
                 if(!isInsideHammer(element, event.relatedTarget)) {
@@ -523,16 +523,15 @@ function Hammer(element, options, undefined)
      * @return  bool    inside
      */
     function isInsideHammer(parent, child) {
-        
         // get related target for IE
-        if(!child && event.toElement){
-            child = event.toElement;
+        if(!child && window.event && window.event.toElement){
+            child = window.event.toElement;
         }
-        
+
         if(parent === child){
             return true;
         }
-        
+
         // loop over parentNodes of child until we find hammer element
         if(child){
             var node = child.parentNode;
@@ -542,7 +541,7 @@ function Hammer(element, options, undefined)
                 };
                 node = node.parentNode;
             }
-        }    
+        }
         return false;
     }
 
