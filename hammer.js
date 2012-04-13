@@ -525,8 +525,8 @@ function Hammer(element, options, undefined)
     function isInsideHammer(parent, child) {
         
         // get related target for IE
-        if(!child && event && event.toElement){
-            child = event.toElement;
+        if(!child && window.event && window.event.toElement){
+            child = window.event.toElement;
         }
         
         if(parent === child){
