@@ -31,9 +31,6 @@
 <script>
 
     var debug_el = $("#debug");
-    function debug(str) {
-        debug_el.prepend(str.toString() +"<br>");
-    }
 
     // disable the dragging of images on desktop browsers
     $("img").bind("dragstart", function() {
@@ -90,36 +87,37 @@
         var previousTranslateX = 0;
         var previousTranslateY = 0;
 
+        //Translate Origin variables
 
-        container.bind("dragstart", function(event) {
-            //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
-            //amount for each coordinates This works even when we are translating the first time because the initial
-            //values for these two variables is zero.
-            startX = event.position.x - previousTranslateX;
-            startY = event.position.y - previousTranslateY;
-        });
+        var tch1 = 0, 
+            tch2 = 0, 
+            tcX = 0, 
+            tcY = 0,
+            toX = 0,
+            toY = 0,
+            cssOrigin = "";
 
-        container.bind("drag", function(event) {
-            translateX = event.position.x - startX;
-            translateY = event.position.y - startY;
+        container.bind("transformstart", function(event){
 
-            transform();
-        });
+            //We save the initial midpoint of the first two touches to say where our transform origin is.
+            e = event
 
-        container.bind("dragend", function(event) {
-            //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
-            //and previousTranslateY when the second finger goes up
-            previousTranslateX = translateX;
-            previousTranslateY = translateY;
+            tch1 = [e.touches[0].x, e.touches[0].y],
+            tch2 = [e.touches[1].x, e.touches[1].y]
 
-            transform();
-        });
+            tcX = (tch1[0]+tch2[0])/2,
+            tcY = (tch1[1]+tch2[1])/2
+
+            toX = tcX
+            toY = tcY
+
+            cssOrigin = toX +"px "+ toY +"px";
+        })
 
         container.bind("transform", function(event) {
             scaleFactor = previousScaleFactor * event.scale;
             scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
-
-            transform();
+            transform(event);
         });
 
         container.bind("transformend", function(event) {
@@ -127,49 +125,19 @@
         });
 
 
-        function transform() {
+        function transform(e) {
             //We're going to scale the X and Y coordinates by the same amount
             var cssScale = "scale("+ scaleFactor +")";
 
-            //If translateX times -1 is lesser than zero, let's set it to zero. This takes care of the left bound
-            if((translateX * -1) < 0) {
-                translateX = 0;
-            }
-
-            //This is where we take care of the right bound. We compare translateX times -1 to (scaleFactor - 1) * displayWidth.
-            //If translateX is greater than that value, then we know that we've gone over the bound. So we set the value of
-            //translateX to (1 - scaleFactor) times the display width. Notice that the terms are interchanged; it's the same
-            //as doing -1 * (scaleFactor - 1) * displayWidth
-            else if((translateX * -1) > (scaleFactor - 1) * displayWidth) {
-                translateX = (1 - scaleFactor) * displayWidth;
-            }
-
-            if(translateY * -1 < 0) {
-                translateY = 0;
-            }
-
-            //We do the exact same thing for the bottom bound, except in this case we use the height of the display
-            else if((translateY * -1) > (scaleFactor - 1) * displayHeight) {
-                translateY = (1 - scaleFactor) * displayHeight;
-            }
-
-            //We need to divide by the scale factor here, otherwise we end up with excessive panning based on our zoom level
-            //because the translation amount also gets scaled according to how much we've zoomed into the canvas.
-            var cssTranslate = "translate("+ translateX / scaleFactor +"px, "+ translateY / scaleFactor +"px)";
-
             element.css({
-                webkitTransform: cssScale +" "+ cssTranslate,
-                webkitTransformOrigin: "0 0",
+                webkitTransform: cssScale,
+                webkitTransformOrigin: cssOrigin,
 
-                mozTransform: cssScale +" "+ cssTranslate,
-                mozTransformOrigin: "0 0",
-
-                oTransform: cssScale +" "+ cssTranslate,
-                oTransformOrigin: "0 0",
-
-                transform: cssScale +" "+ cssTranslate,
-                transformOrigin: "0 0"
+                transform: cssScale,
+                transformOrigin: cssOrigin,
             });
+
+            debug_el.text('TX: '+translateX+' TY: '+translateY+' '+element.css('transformOrigin'))
         }
 
     }
