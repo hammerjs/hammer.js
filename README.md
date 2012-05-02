@@ -75,6 +75,8 @@ Now, on every gesture that is performed on the container element, you'll receive
     hammer.ontransform = function(ev) { };
     hammer.ontransformend = function(ev) { };
 
+    hammer.onrelease = function(ev) { };
+
 A jQuery plugin is also available and can be found in this repos.
 
    ```<script src="http://eightmedia.github.com/hammer.js/jquery.hammer.js"></script>```
@@ -102,7 +104,7 @@ All gestures return:
 Besides these, the Transform gesture returns:
 
 - scale: The distance between two fingers since the start of an event as a multiplier of the initial distance. The initial value is 1.0. If less than 1.0 the gesture is pinch close to zoom out. If greater than 1.0 the gesture is pinch open to zoom in.
-- rotation: A delta rotation since the start of an event in degrees where clockwise is positive and counter-clockwise is negative. The initial value is 0.0.
+- rotation: A delta rotation since the start of an event in degrees where clockwise is positive and counter-clockwise is negative. The initial value is 0.0. For now this is only available on iOS.
 
 The Drag gesture also returns:
 
@@ -152,6 +154,9 @@ In addition to this the Transform and Drag gestures return start and end events.
 | iPad iOS 5                        | X   | X          | X    | X    | X         |
 | iPhone iOS 5                      | X   | X          | X    | X    | X         |
 |                                                                                |
+| **Android 4.0.3**                                                              |
+| Default browser                   | X   | X          | X    | X    | X         |
+|                                                                                |
 | **Android 2.2.3**                                                              |
 | Default browser                   | X   | X          | X    | X    |           |
 | Firefox 10                        | X   | X          | X    | X    |           |
@@ -164,9 +169,11 @@ In addition to this the Transform and Drag gestures return start and end events.
 | Kindle Fire                       | X   | X          | X    | X    | X         |
 | Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
 
+
 On a desktop browser the mouse can be used to simulate touch events with one finger.
-On Android 2 (and 3?) the default browser and Firefox 10 doesn't support multi-touch events, so there's no transform callback on Android.
+On Android 2 (and 3?) doesn't support multi-touch events, so there's no transform callback on these Android versions.
 Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and mouse events are badly supported.
+For now the transform rotation property is only available on iOS.
 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
 If you've tested hammer.js on a different device, please let us know.

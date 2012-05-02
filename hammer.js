@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.4
+ * version 0.5
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -27,6 +27,7 @@ function Hammer(element, options, undefined)
         tap                : true,
         tap_double         : true,
         tap_max_interval   : 300,
+        tap_max_distance   : 10,
         tap_double_distance: 20,
 
         hold               : true,
@@ -168,13 +169,40 @@ function Hammer(element, options, undefined)
 
     /**
      * calculate the angle between two points
-     * @param object pos1 { x: int, y: int }
-     * @param object pos2 { x: int, y: int }
+     * @param   object  pos1 { x: int, y: int }
+     * @param   object  pos2 { x: int, y: int }
      */
     function getAngle( pos1, pos2 )
     {
         return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
     }
+
+
+    /**
+     * calculate the scale size between two fingers
+     * @param   object  event_start
+     * @param   object  event_move
+     * @return  float   scale
+     */
+    function calculateScale(pos_start, pos_move)
+    {
+        if(pos_start.length == 2 && pos_move.length == 2) {
+            var x, y;
+
+            x = pos_start[0].x - pos_start[1].x;
+            y = pos_start[0].y - pos_start[1].y;
+            var start_distance = Math.sqrt((x*x) + (y*y));
+
+            x = pos_move[0].x - pos_move[1].x;
+            y = pos_move[0].y - pos_move[1].y;
+            var end_distance = Math.sqrt((x*x) + (y*y));
+
+            return end_distance / start_distance;
+        }
+
+        return 0;
+    }
+
 
     /**
      * trigger an event/callback by name with params
@@ -200,10 +228,12 @@ function Hammer(element, options, undefined)
      * @return  void
      */
 
-    function cancelEvent(event){
+    function cancelEvent(event)
+    {
         event = event || window.event;
         if(event.preventDefault){
             event.preventDefault();
+            event.stopPropagation();
         }else{
             event.returnValue = false;
             event.cancelBubble = true;
@@ -305,16 +335,16 @@ function Hammer(element, options, undefined)
         transform : function(event)
         {
             if(options.transform) {
-                var scale = event.scale || 1;
-                var rotation = event.rotation || 0;
 
                 if(countFingers(event) != 2) {
                     return false;
                 }
 
+                var rotation = event.rotation || 0;
+                var scale = calculateScale(_pos.start, _pos.move);
+
                 if(_gesture != 'drag' &&
-                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold
-                        || Math.abs(rotation) > options.rotation_treshold)) {
+                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold || Math.abs(rotation) > options.rotation_treshold)) {
                     _gesture = 'transform';
 
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
@@ -360,11 +390,14 @@ function Hammer(element, options, undefined)
 
             // when previous event was tap and the tap was max_interval ms ago
             var is_double_tap = (function(){
-                if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' && (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+                if (_prev_tap_pos &&
+                    options.tap_double &&
+                    _prev_gesture == 'tap' &&
+                    (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval)
+                {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
                     var y_distance = Math.abs(_prev_tap_pos[0].y - _pos.start[0].y);
                     return (_prev_tap_pos && _pos.start && Math.max(x_distance, y_distance) < options.tap_double_distance);
-
                 }
                 return false;
             })();
@@ -382,16 +415,22 @@ function Hammer(element, options, undefined)
 
             // single tap is single touch
             else {
-                _gesture = 'tap';
-                _prev_tap_end_time = now;
-                _prev_tap_pos = _pos.start;
+                var x_distance = (_pos.move) ? Math.abs(_pos.move[0].x - _pos.start[0].x) : 0;
+                var y_distance =  (_pos.move) ? Math.abs(_pos.move[0].y - _pos.start[0].y) : 0;
+                _distance = Math.max(x_distance, y_distance);
 
-                if(options.tap) {
-                    triggerEvent("tap", {
-                        originalEvent   : event,
-                        position        : _pos.start
-                    });
-                    cancelEvent(event);
+                if(_distance < options.tap_max_distance) {
+                    _gesture = 'tap';
+                    _prev_tap_end_time = now;
+                    _prev_tap_pos = _pos.start;
+
+                    if(options.tap) {
+                        triggerEvent("tap", {
+                            originalEvent   : event,
+                            position        : _pos.start
+                        });
+                        cancelEvent(event);
+                    }
                 }
             }
 
@@ -475,7 +514,7 @@ function Hammer(element, options, undefined)
                     triggerEvent("transformend", {
                         originalEvent   : event,
                         position        : _pos.center,
-                        scale           : event.scale,
+                        scale           : calculateScale(_pos.start, _pos.move),
                         rotation        : event.rotation
                     });
                 }
@@ -484,6 +523,12 @@ function Hammer(element, options, undefined)
                 }
 
                 _prev_gesture = _gesture;
+
+                // trigger release event
+                triggerEvent("release", {
+                    originalEvent   : event,
+                    gesture         : _gesture
+                });
 
                 // reset vars
                 reset();
