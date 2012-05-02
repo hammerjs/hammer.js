@@ -96,6 +96,7 @@ function Hammer(element, options, undefined)
     var _event_move;
     var _event_end;
 
+    var _has_touch = ('ontouchstart' in window);
 
     /**
      * angle to direction define
@@ -146,7 +147,7 @@ function Hammer(element, options, undefined)
         event = event || window.event;
 
         // no touches, use the event pageX and pageY
-        if(!event.touches) {
+        if(!_has_touch) {
             var doc = document,
                 body = doc.body;
 
@@ -180,8 +181,8 @@ function Hammer(element, options, undefined)
 
     /**
      * calculate the scale size between two fingers
-     * @param   object  event_start
-     * @param   object  event_move
+     * @param   object  pos_start
+     * @param   object  pos_move
      * @return  float   scale
      */
     function calculateScale(pos_start, pos_move)
@@ -198,6 +199,32 @@ function Hammer(element, options, undefined)
             var end_distance = Math.sqrt((x*x) + (y*y));
 
             return end_distance / start_distance;
+        }
+
+        return 0;
+    }
+
+
+    /**
+     * calculate the rotation degrees between two fingers
+     * @param   object  pos_start
+     * @param   object  pos_move
+     * @return  float   rotation
+     */
+    function calculateRotation(pos_start, pos_move)
+    {
+        if(pos_start.length == 2 && pos_move.length == 2) {
+            var x, y;
+
+            x = pos_start[0].x - pos_start[1].x;
+            y = pos_start[0].y - pos_start[1].y;
+            var start_rotation = Math.atan2(y, x) * 180 / Math.PI;
+
+            x = pos_move[0].x - pos_move[1].x;
+            y = pos_move[0].y - pos_move[1].y;
+            var end_rotation = Math.atan2(y, x) * 180 / Math.PI;
+
+            return end_rotation - start_rotation;
         }
 
         return 0;
@@ -335,12 +362,11 @@ function Hammer(element, options, undefined)
         transform : function(event)
         {
             if(options.transform) {
-
                 if(countFingers(event) != 2) {
                     return false;
                 }
 
-                var rotation = event.rotation || 0;
+                var rotation = calculateRotation(_pos.start, _pos.move);
                 var scale = calculateScale(_pos.start, _pos.move);
 
                 if(_gesture != 'drag' &&
@@ -515,7 +541,7 @@ function Hammer(element, options, undefined)
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : calculateScale(_pos.start, _pos.move),
-                        rotation        : event.rotation
+                        rotation        : calculateRotation(_pos.start, _pos.move)
                     });
                 }
                 else {
@@ -539,36 +565,17 @@ function Hammer(element, options, undefined)
 
     // bind events for touch devices
     // except for windows phone 7.5, it doesnt support touch events..!
-    if('ontouchstart' in window) {
-        element.addEventListener("touchstart", handleEvents, false);
-        element.addEventListener("touchmove", handleEvents, false);
-        element.addEventListener("touchend", handleEvents, false);
-        element.addEventListener("touchcancel", handleEvents, false);
+    if(_has_touch) {
+        addEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
     }
     // for non-touch
     else {
-
-        if(element.addEventListener){ // prevent old IE errors
-            element.addEventListener("mouseout", function(event) {
-                if(!isInsideHammer(element, event.relatedTarget)) {
-                    handleEvents(event);
-                }
-            }, false);
-            element.addEventListener("mouseup", handleEvents, false);
-            element.addEventListener("mousedown", handleEvents, false);
-            element.addEventListener("mousemove", handleEvents, false);
-
-            // events for older IE
-        }else if(document.attachEvent){
-            element.attachEvent("onmouseout", function(event) {
-                if(!isInsideHammer(element, event.relatedTarget)) {
-                    handleEvents(event);
-                }
-            }, false);
-            element.attachEvent("onmouseup", handleEvents);
-            element.attachEvent("onmousedown", handleEvents);
-            element.attachEvent("onmousemove", handleEvents);
-        }
+        addEvent(element, "mouseup mousedown mousemove", handleEvents);
+        addEvent(element, "mouseout", function(event) {
+            if(!isInsideHammer(element, event.relatedTarget)) {
+                handleEvents(event);
+            }
+        });
     }
 
 
@@ -625,7 +632,32 @@ function Hammer(element, options, undefined)
         return output;
     }
 
+
+    /**
+     * check if object is a function
+     * @param   object  obj
+     * @return  bool    is function
+     */
     function isFunction( obj ){
         return Object.prototype.toString.call( obj ) == "[object Function]";
+    }
+
+
+    /**
+     * attach event
+     * @param   node    element
+     * @param   string  types
+     * @param   object  callback
+     */
+    function addEvent(element, types, callback) {
+        types = types.split(" ");
+        for(var t= 0,len=types.length; t<len; t++) {
+            if(element.addEventListener){
+                element.addEventListener(types[t], callback, false);
+            }
+            else if(document.attachEvent){
+                element.attachEvent("on"+ types[t], callback);
+            }
+        }
     }
 }
