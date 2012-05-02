@@ -98,21 +98,18 @@
             cssOrigin = "";
 
         container.bind("transformstart", function(event){
-
             //We save the initial midpoint of the first two touches to say where our transform origin is.
-            e = event
+            tch1 = [event.touches[0].x, event.touches[0].y];
+            tch2 = [event.touches[1].x, event.touches[1].y];
 
-            tch1 = [e.touches[0].x, e.touches[0].y],
-            tch2 = [e.touches[1].x, e.touches[1].y]
+            tcX = (tch1[0]+tch2[0])/2;
+            tcY = (tch1[1]+tch2[1])/2;
 
-            tcX = (tch1[0]+tch2[0])/2,
-            tcY = (tch1[1]+tch2[1])/2
-
-            toX = tcX
-            toY = tcY
+            toX = tcX;
+            toY = tcY;
 
             cssOrigin = toX +"px "+ toY +"px";
-        })
+        });
 
         container.bind("transform", function(event) {
             scaleFactor = previousScaleFactor * event.scale;
@@ -134,7 +131,7 @@
                 webkitTransformOrigin: cssOrigin,
 
                 transform: cssScale,
-                transformOrigin: cssOrigin,
+                transformOrigin: cssOrigin
             });
 
             debug_el.text('TX: '+translateX+' TY: '+translateY+' '+element.css('transformOrigin'))
