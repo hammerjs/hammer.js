@@ -41,17 +41,29 @@
     };
 
     var debug_el = $("#debug");
-    function log(name, args) {
-        debug_el.prepend("<strong>"+ name +"</strong><br>");
+    function log(ev) {
+
+        debug_el.prepend(ev +"<br>");
+        return;
+
+        var html = [];
+        html.push(ev.type +"<blockquote>");
+
+        for(var p in ev) {
+            if(p != 'type') {
+                html.push(p +": "+ ev[p] +"<br>");
+            }
+        }
+        debug_el.prepend(html.join(' ') +"</blockquote><hr>");
     }
 
     $("#container").hammer({
-        prevent_default: false,
-        drag_vertical: false
-    })
-            .bind("hold tap doubletap transformstart transform transformend dragstart drag dragend", function(ev) {
-                log(ev.type);
-            });
+            prevent_default: false,
+            drag_vertical: false
+        })
+        .bind("hold tap doubletap transformstart transform transformend dragstart drag dragend release", function(ev) {
+            log(ev.type);
+        });
 
 </script>
 
