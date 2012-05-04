@@ -46,6 +46,7 @@ Simulate the drag/throw experience on iOS/Android. [Try it](http://eightmedia.gi
 
 ### Sites using Hammer.js
 [Eight Media](http://www.eight.nl)
+
 Want to add your site? Contact me at [Twitter](http://www.twitter.com/jorikdelaporik)
 
 
