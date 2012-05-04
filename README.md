@@ -41,6 +41,13 @@ We use hammer.js to generate beautiful traces with colorful balls. Balls! [Check
 ### Pinch to zoom
 We use hammer.js to zoom in and out on an image by pinching. [Check it out](http://eightmedia.github.com/hammer.js/zoom/)
 
+### Momentum
+Simulate the drag/throw experience on iOS/Android. [Try it](http://eightmedia.github.com/hammer.js/momentum/)
+
+### Sites using Hammer.js
+[Eight Media](http://www.eight.nl)
+Want to add your site? Contact me at [Twitter](http://www.twitter.com/jorikdelaporik)
+
 
 ## Documentation
 > So wave your hands in the air /
