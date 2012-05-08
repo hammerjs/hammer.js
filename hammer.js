@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.5
+ * version 0.5.1
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -97,6 +97,22 @@ function Hammer(element, options, undefined)
     var _event_end;
 
     var _has_touch = ('ontouchstart' in window);
+
+
+    /**
+     * option setter/getter
+     * @param   string  key
+     * @param   mixed   value
+     * @return  mixed   value
+     */
+    this.option = function(key, val) {
+        if(val != undefined) {
+            options[key] = val;
+        }
+
+        return options[key];
+    };
+
 
     /**
      * angle to direction define
