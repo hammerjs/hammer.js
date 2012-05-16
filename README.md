@@ -13,6 +13,7 @@ Hammer.js is a javascript library that can be used to control gestures on touch 
 - Double tap
 - Hold
 - Drag
+- Swipe
 - Transform (pinch)
 
 
