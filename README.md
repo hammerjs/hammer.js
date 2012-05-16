@@ -75,6 +75,7 @@ Now, on every gesture that is performed on the container element, you'll receive
     hammer.ondragstart = function(ev) { };
     hammer.ondrag = function(ev) { };
     hammer.ondragend = function(ev) { };
+    hammer.onswipe = function(ev) { };
 
     hammer.ontap = function(ev) { };
     hammer.ondoubletap = function(ev) { };
@@ -115,7 +116,7 @@ Besides these, the Transform gesture returns:
 - scale: The distance between two fingers since the start of an event as a multiplier of the initial distance. The initial value is 1.0. If less than 1.0 the gesture is pinch close to zoom out. If greater than 1.0 the gesture is pinch open to zoom in.
 - rotation: A delta rotation since the start of an event in degrees where clockwise is positive and counter-clockwise is negative. The initial value is 0.0.
 
-The Drag gesture also returns:
+The Drag and Swipe gesture also returns:
 
 - angle: The angle of the drag movement, where right is 0 degrees, left is -180 degrees, up is -90 degrees and down is 90 degrees. [This picture makes this approach somewhat clearer](http://paperjs.org/tutorials/geometry/vector-geometry/resources/Angles.gif)
 - direction: Based on the angle, we return a simplified direction, which can be either up, right, down or left.
@@ -134,7 +135,10 @@ In addition to this the Transform and Drag gestures return start and end events.
 | drag               | true          |                           |
 | drag_vertical      | true          |                           |
 | drag_horizontal    | true          |                           |
-| drag_min_distance  | 20            | pixels                    | 
+| drag_min_distance  | 20            | pixels                    |
+| swipe              | true          |                           |
+| swipe_time         | 200           | max ms of movement        |
+| swipe_min_distance | 20            | minimal movement          |
 | transform          | true          |                           |
 | scale_treshold     | 0.1           | how much scaling needs to be done before firing the transform event |                   
 | rotation_treshold  | 15            | degrees before firing the transform event | 
