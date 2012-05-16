@@ -190,6 +190,7 @@
             <li><img src="img/doubletap.png" width="90" height="90" alt="">Double Tap
             <li><img src="img/hold.png" width="90" height="90" alt="">Hold
             <li><img src="img/drag.png" width="90" height="90" alt="">Drag
+            <li><img src="img/drag.png" width="90" height="90" alt="">Swipe
             <li><img src="img/transform.png" width="90" height="90" alt="">Transform
         </ul>
     </div>
@@ -220,13 +221,14 @@
         shouts['dragstart'] = 'You started dragging me.';
         shouts['drag'] = 'You are dragging me.';
         shouts['dragend'] = 'You just dragged me.';
-        
+        shouts['swipe'] = 'You just swiped me.';
+
         container.onselectstart = function() { return false; }; // IE fix for doubletap
         
         var hammer = new Hammer(container, {
             tap_max_interval: 700 // seems to bee needed for IE8
         });
-        hammer.onhold = hammer.ontap = hammer.ondoubletap = hammer.ontransformstart = hammer.ontransform = hammer.ontransformend = hammer.ondragstart = hammer.ondrag = hammer.ondragend = shout;
+        hammer.onswipe = hammer.onhold = hammer.ontap = hammer.ondoubletap = hammer.ontransformstart = hammer.ontransform = hammer.ontransformend = hammer.ondragstart = hammer.ondrag = hammer.ondragend = shout;
         
         function shout(e){
             callout.innerHTML = 'Ooh! '+ shouts[e.type];
