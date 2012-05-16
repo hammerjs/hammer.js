@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.5.1
+ * version 0.6
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -12,6 +12,10 @@ function Hammer(element, options, undefined)
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
         css_hacks          : true,
+
+        swipe              : true,
+        swipe_time         : 200,   // ms
+        swipe_min_distance : 20, // pixels
 
         drag               : true,
         drag_vertical      : true,
@@ -319,6 +323,48 @@ function Hammer(element, options, undefined)
             }
         },
 
+        // swipe gesture
+        // fired on touchend
+        swipe : function(event)
+        {
+            if(!_pos.move) {
+                return;
+            }
+
+            // get the distance we moved
+            var _distance_x = _pos.move[0].x - _pos.start[0].x;
+            var _distance_y = _pos.move[0].y - _pos.start[0].y;
+            _distance = Math.sqrt(_distance_x*_distance_x + _distance_y*_distance_y);
+
+            // compare the kind of gesture by time
+            var now = new Date().getTime();
+            var touch_time = now - _touch_start_time;
+
+            if(options.swipe && (options.swipe_time > touch_time) && (_distance > options.swipe_min_distance)) {
+                // calculate the angle
+                _angle = getAngle(_pos.start[0], _pos.move[0]);
+                _direction = self.getDirectionFromAngle(_angle);
+
+                _gesture = 'swipe';
+
+                var position = { x: _pos.move[0].x - _offset.left,
+                    y: _pos.move[0].y - _offset.top };
+
+                var event_obj = {
+                    originalEvent   : event,
+                    position        : position,
+                    direction       : _direction,
+                    distance        : _distance,
+                    distanceX       : _distance_x,
+                    distanceY       : _distance_y,
+                    angle           : _angle
+                };
+
+                // normal slide event
+                triggerEvent("swipe", event_obj);
+            }
+        },
+
 
         // drag gesture
         // fired on mousemove
@@ -538,6 +584,11 @@ function Hammer(element, options, undefined)
 
                 _mousedown = false;
                 _event_end = event;
+
+
+                // swipe gesture
+                gestures.swipe(event);
+
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible

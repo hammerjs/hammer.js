@@ -1,6 +1,6 @@
 /*
  * Hammer.JS jQuery plugin
- * version 0.2
+ * version 0.3
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -13,7 +13,7 @@ jQuery.fn.hammer = function(options)
         var $el = jQuery(this);
         $el.data("hammer", hammer);
 
-        var events = ['hold','tap','doubletap','transformstart','transform','transformend','dragstart','drag','dragend','release'];
+        var events = ['hold','tap','doubletap','transformstart','transform','transformend','dragstart','drag','dragend','swipe','release'];
 
         for(var e=0; e<events.length; e++) {
             hammer['on'+ events[e]] = (function(el, eventName) {
