@@ -178,9 +178,9 @@ function Hammer(element, options, undefined)
         }
         // multitouch, return array with positions
         else {
-            var pos = [], src;
-            for(var t=0, len=event.touches.length; t<len; t++) {
-                src = event.touches[t];
+            var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
+            for(var t=0, len=touches.length; t<len; t++) {
+                src = touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
             return pos;
