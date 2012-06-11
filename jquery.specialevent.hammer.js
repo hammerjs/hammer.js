@@ -2,7 +2,7 @@
  * special event API with Hammer.JS
  * version 0.9
  * author: Damien Antipa
- * https://github.com/EightMedia/hammer.js
+ * https://github.com/dantipa/hammer.js
  */
 (function ($) {
     var hammerEvents = ['hold','tap','doubletap','transformstart','transform','transformend','dragstart','drag','dragend','swipe','release'];
