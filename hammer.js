@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.6
+ * version 0.6.1
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  */
@@ -178,9 +178,9 @@ function Hammer(element, options, undefined)
         }
         // multitouch, return array with positions
         else {
-            var pos = [], src;
-            for(var t=0, len=event.touches.length; t<len; t++) {
-                src = event.touches[t];
+            var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
+            for(var t=0, len=touches.length; t<len; t++) {
+                src = touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
             return pos;
@@ -584,7 +584,8 @@ function Hammer(element, options, undefined)
 
                 _mousedown = false;
                 _event_end = event;
-
+                
+                var dragging = _gesture == 'drag';
 
                 // swipe gesture
                 gestures.swipe(event);
@@ -592,7 +593,7 @@ function Hammer(element, options, undefined)
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible
-                if(_gesture == 'drag') {
+                if(dragging) {
                     triggerEvent("dragend", {
                         originalEvent   : event,
                         direction       : _direction,
