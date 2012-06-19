@@ -43,6 +43,7 @@
     });
 
 
+
     /**
      * ZoomView
      * Port of the android tutorial for zoom/pan
@@ -61,6 +62,9 @@
 
         element = $(element);
 
+
+        // prefixes
+        var vendorPrefixes = ["", "-webkit-", "-moz-", "-o-", "-ms-", "-khtml-"];
 
         var displayWidth = container.width();
         var displayHeight = container.height();
@@ -95,7 +99,9 @@
             tcY = 0,
             toX = 0,
             toY = 0,
-            cssOrigin = "";
+            cssOrigin;
+
+        var last_drag_event;
 
         container.bind("transformstart", function(event){
             //We save the initial midpoint of the first two touches to say where our transform origin is.
@@ -114,6 +120,7 @@
         container.bind("transform", function(event) {
             scaleFactor = previousScaleFactor * event.scale;
             scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
+
             transform(event);
         });
 
@@ -121,20 +128,39 @@
             previousScaleFactor = scaleFactor;
         });
 
+        container.bind("drag", function(event) {
+            cssOrigin = (toX + (toX-event.position.x) / scaleFactor) +"px " +
+                        (toY + (toY-event.position.y) / scaleFactor) +"px";
 
-        function transform(e) {
+            transform(event);
+            last_drag_event = event;
+        });
+
+        container.bind("dragend", function(event) {
+            toX += ((toX - last_drag_event.position.x) / scaleFactor);
+            toY += ((toY - last_drag_event.position.y) / scaleFactor);
+
+
+            cssOrigin = toX +"px "+ toY +"px";
+            transform(event);
+
+            debug_el.text('TX: '+toX+' TY: '+toY);
+        });
+
+
+        function transform(event) {
             //We're going to scale the X and Y coordinates by the same amount
             var cssScale = "scale("+ scaleFactor +")";
 
-            element.css({
-                webkitTransform: cssScale,
-                webkitTransformOrigin: cssOrigin,
-
-                transform: cssScale,
-                transformOrigin: cssOrigin
+            var props = {};
+            $(vendorPrefixes).each(function(i, vendor) {
+                props[vendor +"transform"] = cssScale;
+                props[vendor +"transform-origin"] = cssOrigin;
             });
+            element.css(props);
 
-            debug_el.text('TX: '+translateX+' TY: '+translateY+' '+element.css('transformOrigin'))
+
+            debug_el.text('TX: '+translateX+' TY: '+translateY+' '+element.css('-webkit-transform-origin'))
         }
 
     }

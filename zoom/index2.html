@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        #image {
+            -webkit-transform-origin: 0 0;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div id="wrap">
+    <img id="image" src="http://placekitten.com/640/480?image=1" />
+</div>
+
+
+<p>Zoom demo by <a href="http://www.mhluska.com">Maros Hluska</a> according to <a href="http://www.yuiblog.com/blog/2012/02/23/video-stephen-woods-html5-touch/">Stephen Woods' talk</a></p>
+
+<div id="debug"></div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="../hammer.js"></script>
+<script src="../jquery.hammer.js"></script>
+<script>
+
+    var debug_el = $("#debug");
+
+    // disable the dragging of images on desktop browsers
+    $("img").bind("dragstart", function() {
+        return false;
+    });
+
+
+    $(function() {
+        var hammer, height, image, offset, origin, prevScale, scale, screenOrigin, translate, width, wrap;
+
+        image = $('#image');
+        wrap = $('#wrap');
+        width = image.width();
+        height = image.height();
+        offset = wrap.offset();
+        origin = {
+            x: 0,
+            y: 0
+        };
+        screenOrigin = {
+            x: 0,
+            y: 0
+        };
+        translate = {
+            x: 0,
+            y: 0
+        };
+        scale = 1;
+        prevScale = 1;
+
+        hammer = image.hammer({
+            prevent_default: true,
+            scale_treshold: 0,
+            drag_min_distance: 0
+        });
+
+        hammer.bind('transformstart', function(event) {
+            screenOrigin.x = (event.originalEvent.touches[0].clientX + event.originalEvent.touches[1].clientX) / 2;
+            return screenOrigin.y = (event.originalEvent.touches[0].clientY + event.originalEvent.touches[1].clientY) / 2;
+        });
+
+        hammer.bind('transform', function(event) {
+            var newHeight, newWidth;
+            scale = prevScale * event.scale;
+
+            newWidth = image.width() * scale;
+            newHeight = image.height() * scale;
+
+            origin.x = screenOrigin.x - offset.left - translate.x;
+            origin.y = screenOrigin.y - offset.top - translate.y;
+
+            translate.x += -origin.x * (newWidth - width) / newWidth;
+            translate.y += -origin.y * (newHeight - height) / newHeight;
+
+            image.css('-webkit-transform', "scale3d(" + scale + ", " + scale + ", 1)");
+            wrap.css('-webkit-transform', "translate3d(" + translate.x + "px, " + translate.y + "px, 0)");
+            width = newWidth;
+
+            return height = newHeight;
+        });
+
+        hammer.bind('transformend', function(event) {
+            return prevScale = scale;
+        });
+
+    });
+
+</script>
+</body>
+</html>

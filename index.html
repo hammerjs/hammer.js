@@ -213,7 +213,7 @@
     
         var container = document.getElementById('touchme'),
         callout = document.getElementById('callout'),
-        shouts = []
+        shouts = {}
         shouts['hold'] = 'You are holding me.';
         shouts['tap'] = 'You just tapped me.';
         shouts['doubletap'] = 'You just tapped me. Twice.';
@@ -230,11 +230,16 @@
         var hammer = new Hammer(container, {
             tap_max_interval: 700 // seems to bee needed for IE8
         });
-        hammer.onswipe = hammer.onhold = hammer.ontap = hammer.ondoubletap = hammer.ontransformstart = hammer.ontransform = hammer.ontransformend = hammer.ondragstart = hammer.ondrag = hammer.ondragend = shout;
-        
+
         function shout(e){
             callout.innerHTML = 'Ooh! '+ shouts[e.type];
         }
+
+        var type;
+        for(type in shouts) {
+            hammer['on'+ type] = shout;
+        }
+
     </script>
     
     <script type="text/javascript">
