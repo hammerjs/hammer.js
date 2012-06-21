@@ -1,0 +1,13 @@
+{
+  "name": "hammer",
+  "version": "0.6.1",
+  "description": "A javascript library for multi-touch gestures",
+  "keywords": [ "touch" ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "http://github.com/EightMedia/hammer.js.git"
+    }
+  ],
+  "main": "hammer.js"
+}
