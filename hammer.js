@@ -389,6 +389,11 @@ function Hammer(element, options, undefined)
                     return;
                 }
 
+                var interim_angle = getAngle(_pos.interim || _pos.start[0], _pos.move[0]),
+                    interim_direction = self.getDirectionFromAngle(interim_angle);
+                _pos.interim = _pos.move[0];
+
+
                 _gesture = 'drag';
 
                 var position = { x: _pos.move[0].x - _offset.left,
@@ -401,7 +406,9 @@ function Hammer(element, options, undefined)
                     distance        : _distance,
                     distanceX       : _distance_x,
                     distanceY       : _distance_y,
-                    angle           : _angle
+                    angle           : _angle,
+                    interim_angle: interim_angle,
+                    interim_direction: interim_direction
                 };
 
                 // on the first time trigger the start event
