@@ -12,6 +12,7 @@ function Hammer(element, options, undefined)
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
         css_hacks          : true,
+        cancel_event       : true,
 
         swipe              : true,
         swipe_time         : 200,   // ms
@@ -277,6 +278,8 @@ function Hammer(element, options, undefined)
 
     function cancelEvent(event)
     {
+        if (!options.cancel_event) { return; };
+
         event = event || window.event;
         if(event.preventDefault){
             event.preventDefault();
