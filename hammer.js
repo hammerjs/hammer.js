@@ -3,6 +3,7 @@
  * version 0.6.1
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
+ * Licensed under the MIT license.
  */
 function Hammer(element, options, undefined)
 {
@@ -12,7 +13,6 @@ function Hammer(element, options, undefined)
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
         css_hacks          : true,
-        cancel_event       : true,
 
         swipe              : true,
         swipe_time         : 200,   // ms
@@ -124,8 +124,7 @@ function Hammer(element, options, undefined)
      * @param  float    angle
      * @return string   direction
      */
-    this.getDirectionFromAngle = function( angle )
-    {
+    this.getDirectionFromAngle = function( angle ) {
         var directions = {
             down: angle >= 45 && angle < 135, //90
             left: angle >= 135 || angle <= -135, //180
@@ -141,6 +140,22 @@ function Hammer(element, options, undefined)
             }
         }
         return direction;
+    };
+
+
+    /**
+     * destory events
+     * @return  void
+     */
+    this.destroy = function() {
+        if(_has_touch) {
+            removeEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
+        }
+        // for non-touch
+        else {
+            removeEvent(element, "mouseup mousedown mousemove", handleEvents);
+            removeEvent(element, "mouseout", handleMouseOut);
+        }
     };
 
 
@@ -179,9 +194,9 @@ function Hammer(element, options, undefined)
         }
         // multitouch, return array with positions
         else {
-            var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
-            for(var t=0, len=touches.length; t<len; t++) {
-                src = touches[t];
+            var pos = [], src;
+            for(var t=0, len=event.touches.length; t<len; t++) {
+                src = event.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
             return pos;
@@ -278,8 +293,6 @@ function Hammer(element, options, undefined)
 
     function cancelEvent(event)
     {
-        if (!options.cancel_event) { return; };
-
         event = event || window.event;
         if(event.preventDefault){
             event.preventDefault();
@@ -392,11 +405,6 @@ function Hammer(element, options, undefined)
                     return;
                 }
 
-                var interim_angle = getAngle(_pos.interim || _pos.start[0], _pos.move[0]),
-                    interim_direction = self.getDirectionFromAngle(interim_angle);
-                _pos.interim = _pos.move[0];
-
-
                 _gesture = 'drag';
 
                 var position = { x: _pos.move[0].x - _offset.left,
@@ -409,9 +417,7 @@ function Hammer(element, options, undefined)
                     distance        : _distance,
                     distanceX       : _distance_x,
                     distanceY       : _distance_y,
-                    angle           : _angle,
-                    interim_angle: interim_angle,
-                    interim_direction: interim_direction
+                    angle           : _angle
                 };
 
                 // on the first time trigger the start event
@@ -594,8 +600,7 @@ function Hammer(element, options, undefined)
 
                 _mousedown = false;
                 _event_end = event;
-                
-                var dragging = _gesture == 'drag';
+
 
                 // swipe gesture
                 gestures.swipe(event);
@@ -603,7 +608,7 @@ function Hammer(element, options, undefined)
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible
-                if(dragging) {
+                if(_gesture == 'drag') {
                     triggerEvent("dragend", {
                         originalEvent   : event,
                         direction       : _direction,
@@ -641,6 +646,13 @@ function Hammer(element, options, undefined)
     }
 
 
+    function handleMouseOut(event) {
+        if(!isInsideHammer(element, event.relatedTarget)) {
+            handleEvents(event);
+        }
+    }
+
+
     // bind events for touch devices
     // except for windows phone 7.5, it doesnt support touch events..!
     if(_has_touch) {
@@ -649,11 +661,7 @@ function Hammer(element, options, undefined)
     // for non-touch
     else {
         addEvent(element, "mouseup mousedown mousemove", handleEvents);
-        addEvent(element, "mouseout", function(event) {
-            if(!isInsideHammer(element, event.relatedTarget)) {
-                handleEvents(event);
-            }
-        });
+        addEvent(element, "mouseout", handleMouseOut);
     }
 
 
@@ -735,6 +743,25 @@ function Hammer(element, options, undefined)
             }
             else if(document.attachEvent){
                 element.attachEvent("on"+ types[t], callback);
+            }
+        }
+    }
+
+
+    /**
+     * detach event
+     * @param   node    element
+     * @param   string  types
+     * @param   object  callback
+     */
+    function removeEvent(element, types, callback) {
+        types = types.split(" ");
+        for(var t= 0,len=types.length; t<len; t++) {
+            if(element.removeEventListener){
+                element.removeEventListener(types[t], callback, false);
+            }
+            else if(document.detachEvent){
+                element.detachEvent("on"+ types[t], callback);
             }
         }
     }
