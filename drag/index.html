@@ -111,7 +111,7 @@
         for(var t=0; t<ev.touches.length; t++) {
             var el = touches[t].target;
 
-            if(el.className.search('box') > -1) {
+            if(el && el.className.search('box') > -1) {
                 el.style.zIndex = zIndex++;
             }
         }
