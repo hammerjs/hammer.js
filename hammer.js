@@ -1,8 +1,9 @@
 /*
  * Hammer.JS
- * version 0.6
+ * version 0.6.1
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
+ * Licensed under the MIT license.
  */
 function Hammer(element, options, undefined)
 {
@@ -123,8 +124,7 @@ function Hammer(element, options, undefined)
      * @param  float    angle
      * @return string   direction
      */
-    this.getDirectionFromAngle = function( angle )
-    {
+    this.getDirectionFromAngle = function( angle ) {
         var directions = {
             down: angle >= 45 && angle < 135, //90
             left: angle >= 135 || angle <= -135, //180
@@ -140,6 +140,22 @@ function Hammer(element, options, undefined)
             }
         }
         return direction;
+    };
+
+
+    /**
+     * destory events
+     * @return  void
+     */
+    this.destroy = function() {
+        if(_has_touch) {
+            removeEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
+        }
+        // for non-touch
+        else {
+            removeEvent(element, "mouseup mousedown mousemove", handleEvents);
+            removeEvent(element, "mouseout", handleMouseOut);
+        }
     };
 
 
@@ -630,6 +646,13 @@ function Hammer(element, options, undefined)
     }
 
 
+    function handleMouseOut(event) {
+        if(!isInsideHammer(element, event.relatedTarget)) {
+            handleEvents(event);
+        }
+    }
+
+
     // bind events for touch devices
     // except for windows phone 7.5, it doesnt support touch events..!
     if(_has_touch) {
@@ -638,11 +661,7 @@ function Hammer(element, options, undefined)
     // for non-touch
     else {
         addEvent(element, "mouseup mousedown mousemove", handleEvents);
-        addEvent(element, "mouseout", function(event) {
-            if(!isInsideHammer(element, event.relatedTarget)) {
-                handleEvents(event);
-            }
-        });
+        addEvent(element, "mouseout", handleMouseOut);
     }
 
 
@@ -724,6 +743,25 @@ function Hammer(element, options, undefined)
             }
             else if(document.attachEvent){
                 element.attachEvent("on"+ types[t], callback);
+            }
+        }
+    }
+
+
+    /**
+     * detach event
+     * @param   node    element
+     * @param   string  types
+     * @param   object  callback
+     */
+    function removeEvent(element, types, callback) {
+        types = types.split(" ");
+        for(var t= 0,len=types.length; t<len; t++) {
+            if(element.removeEventListener){
+                element.removeEventListener(types[t], callback, false);
+            }
+            else if(document.detachEvent){
+                element.detachEvent("on"+ types[t], callback);
             }
         }
     }
