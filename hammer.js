@@ -214,6 +214,17 @@ function Hammer(element, options, undefined)
         return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
     }
 
+    /**
+     * calculate the distance between two points
+     * @param   object  pos1 { x: int, y: int }
+     * @param   object  pos2 { x: int, y: int }
+     */
+    function getDistance( pos1, pos2 )
+    {
+        var x = pos2.x - pos1.x, y = pos2.y - pos1.y;
+        return Math.sqrt((x * x) + (y * y));
+    }
+
 
     /**
      * calculate the scale size between two fingers
@@ -224,16 +235,8 @@ function Hammer(element, options, undefined)
     function calculateScale(pos_start, pos_move)
     {
         if(pos_start.length == 2 && pos_move.length == 2) {
-            var x, y;
-
-            x = pos_start[0].x - pos_start[1].x;
-            y = pos_start[0].y - pos_start[1].y;
-            var start_distance = Math.sqrt((x*x) + (y*y));
-
-            x = pos_move[0].x - pos_move[1].x;
-            y = pos_move[0].y - pos_move[1].y;
-            var end_distance = Math.sqrt((x*x) + (y*y));
-
+            var start_distance = getDistance(pos_start[0], pos_start[1]);
+            var end_distance = getDistance(pos_move[0], pos_move[1]);
             return end_distance / start_distance;
         }
 
@@ -250,16 +253,8 @@ function Hammer(element, options, undefined)
     function calculateRotation(pos_start, pos_move)
     {
         if(pos_start.length == 2 && pos_move.length == 2) {
-            var x, y;
-
-            x = pos_start[0].x - pos_start[1].x;
-            y = pos_start[0].y - pos_start[1].y;
-            var start_rotation = Math.atan2(y, x) * 180 / Math.PI;
-
-            x = pos_move[0].x - pos_move[1].x;
-            y = pos_move[0].y - pos_move[1].y;
-            var end_rotation = Math.atan2(y, x) * 180 / Math.PI;
-
+            var start_rotation = getAngle(pos_start[1], pos_start[0]);
+            var end_rotation = getAngle(pos_move[1], pos_move[0]);
             return end_rotation - start_rotation;
         }
 
