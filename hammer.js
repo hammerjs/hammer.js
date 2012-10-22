@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.6.1
+ * version 0.6.2
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  * Licensed under the MIT license.
@@ -628,10 +628,13 @@ function Hammer(element, options, undefined)
 
                 _prev_gesture = _gesture;
 
-                // trigger release event
+                // trigger release event. 
+                // "release" by default doesn't return the co-ords where your 
+                // finger was released. "position" will return "the last touched co-ords"
                 triggerEvent("release", {
                     originalEvent   : event,
-                    gesture         : _gesture
+                    gesture         : _gesture,
+                    position        : _pos.move || _pos.start
                 });
 
                 // reset vars
