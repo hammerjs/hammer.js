@@ -449,11 +449,21 @@ function Hammer(element, options, undefined)
                     _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
                         y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
+                    if(_first)
+                        _pos.startCenter = _pos.center;
+
+                    var _distance_x = _pos.center.x - _pos.startCenter.x;
+                    var _distance_y = _pos.center.y - _pos.startCenter.y;
+                    _distance = Math.sqrt(_distance_x*_distance_x + _distance_y*_distance_y);
+
                     var event_obj = {
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : scale,
-                        rotation        : rotation
+                        rotation        : rotation,
+                        distance        : _distance,
+                        distanceX       : _distance_x,
+                        distanceY       : _distance_y,
                     };
 
                     // on the first time trigger the start event
@@ -619,7 +629,10 @@ function Hammer(element, options, undefined)
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : calculateScale(_pos.start, _pos.move),
-                        rotation        : calculateRotation(_pos.start, _pos.move)
+                        rotation        : calculateRotation(_pos.start, _pos.move),
+                        distance        : _distance,
+                        distanceX       : _distance_x,
+                        distanceY       : _distance_y
                     });
                 }
                 else {
