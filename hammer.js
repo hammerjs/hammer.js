@@ -144,7 +144,7 @@ function Hammer(element, options, undefined)
 
 
     /**
-     * destory events
+     * destroy events
      * @return  void
      */
     this.destroy = function() {
