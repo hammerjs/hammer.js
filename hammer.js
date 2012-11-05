@@ -565,6 +565,7 @@ function Hammer(element, options, undefined)
                     });
                 }
                 _setup();
+                _mousedown = true;
 
                 if(options.prevent_default) {
                     cancelEvent(event);
@@ -588,7 +589,11 @@ function Hammer(element, options, undefined)
                 _event_move = event;
                 _pos.move = getXYfromEvent(event);
 
-                if(!gestures.transform(event)) {
+                if (_has_touch) {
+                    _mousedown = true;
+                }
+
+                if(!gestures.transform(event) && _mousedown) {
                     gestures.drag(event);
                 }
                 break;
@@ -667,8 +672,6 @@ function Hammer(element, options, undefined)
                 top: box.top + scrollTop - clientTop,
                 left: box.left + scrollLeft - clientLeft
             };
-
-            _mousedown = true;
 
             // hold gesture
             gestures.hold(event);
