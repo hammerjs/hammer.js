@@ -1,6 +1,6 @@
 /*
  * Hammer.JS
- * version 0.6.2
+ * version 0.6.3
  * author: Eight Media
  * https://github.com/EightMedia/hammer.js
  * Licensed under the MIT license.
@@ -338,7 +338,8 @@ function Hammer(element, options, undefined)
         // fired on touchend
         swipe : function(event)
         {
-            if(!_pos.move) {
+            //Do not allow a swipe event to be fired when in a transform state.
+            if (!_pos.move || _gesture === "transform") {
                 return;
             }
 
