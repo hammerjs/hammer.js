@@ -16,18 +16,18 @@ function Hammer(element, options, undefined)
 
         swipe              : true,
         swipe_time         : 200,   // ms
-        swipe_min_distance : 20,   // pixels
+        swipe_min_distance : 20, // pixels
 
         drag               : true,
         drag_vertical      : true,
         drag_horizontal    : true,
         // minimum distance before the drag event starts
-        drag_min_distance  : 20,    // pixels
+        drag_min_distance  : 20, // pixels
 
         // pinch zoom and rotation
         transform          : true,
         scale_treshold     : 0.1,
-        rotation_treshold  : 15,    // degrees
+        rotation_treshold  : 15, // degrees
 
         tap                : true,
         tap_double         : true,
@@ -102,8 +102,6 @@ function Hammer(element, options, undefined)
     var _event_end;
 
     var _has_touch = ('ontouchstart' in window);
-
-    var _can_tap = false;
 
 
     /**
@@ -340,7 +338,8 @@ function Hammer(element, options, undefined)
         // fired on touchend
         swipe : function(event)
         {
-            if(!_pos.move) {
+            //Do not allow a swipe event to be fired when in a transform state.
+            if (!_pos.move || _gesture === "transform") {
                 return;
             }
 
@@ -437,34 +436,29 @@ function Hammer(element, options, undefined)
         transform : function(event)
         {
             if(options.transform) {
-                var count = countFingers(event);
-                if (count !== 2) {
+                if(countFingers(event) != 2) {
                     return false;
                 }
 
                 var rotation = calculateRotation(_pos.start, _pos.move);
                 var scale = calculateScale(_pos.start, _pos.move);
 
-                if (_gesture === 'transform' ||
-                    Math.abs(1 - scale) > options.scale_treshold ||
-                    Math.abs(rotation) > options.rotation_treshold) {
-
+                if(_gesture != 'drag' &&
+                    (_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold || Math.abs(rotation) > options.rotation_treshold)) {
                     _gesture = 'transform';
-                    _pos.center = {
-                        x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
-                        y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top
-                    };
+
+                    _pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
+                        y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
 
                     var event_obj = {
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : scale,
-                        rotation        : rotation,
-                        continuation    : !_can_tap // The user has gone from drag to zoom
+                        rotation        : rotation
                     };
 
                     // on the first time trigger the start event
-                    if (_first) {
+                    if(_first) {
                         triggerEvent("transformstart", event_obj);
                         _first = false;
                     }
@@ -539,7 +533,9 @@ function Hammer(element, options, undefined)
                     }
                 }
             }
+
         }
+
     };
 
 
@@ -549,23 +545,28 @@ function Hammer(element, options, undefined)
         {
             case 'mousedown':
             case 'touchstart':
-                var count = countFingers(event);
-                _can_tap = count === 1;
+                _pos.start = getXYfromEvent(event);
+                _touch_start_time = new Date().getTime();
+                _fingers = countFingers(event);
+                _first = true;
+                _event_start = event;
 
-                //We were dragging and now we are zooming.
-                if (count === 2 && _gesture === "drag") {
+                // borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
+                var box = element.getBoundingClientRect();
+                var clientTop  = element.clientTop  || document.body.clientTop  || 0;
+                var clientLeft = element.clientLeft || document.body.clientLeft || 0;
+                var scrollTop  = window.pageYOffset || element.scrollTop  || document.body.scrollTop;
+                var scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
 
-                    //The user needs to have the dragend to be fired to ensure that
-                    //there is proper cleanup from the drag and move onto transforming.
-                    triggerEvent("dragend", {
-                        originalEvent   : event,
-                        direction       : _direction,
-                        distance        : _distance,
-                        angle           : _angle
-                    });
-                }
-                _setup();
+                _offset = {
+                    top: box.top + scrollTop - clientTop,
+                    left: box.left + scrollLeft - clientLeft
+                };
+
                 _mousedown = true;
+
+                // hold gesture
+                gestures.hold(event);
 
                 if(options.prevent_default) {
                     cancelEvent(event);
@@ -574,26 +575,13 @@ function Hammer(element, options, undefined)
 
             case 'mousemove':
             case 'touchmove':
-                var count = countFingers(event);
-
-                //The user has gone from transforming to dragging.  The
-                //user needs to have the proper cleanup of the state and
-                //setup with the new "start" points.
-                if (!_mousedown && count <= 2) {
-                    _can_tap = false;
-
-                    reset();
-                    _setup();
+                if(!_mousedown) {
+                    return false;
                 }
-
                 _event_move = event;
                 _pos.move = getXYfromEvent(event);
 
-                if (_has_touch) {
-                    _mousedown = true;
-                }
-
-                if(!gestures.transform(event) && _mousedown) {
+                if(!gestures.transform(event)) {
                     gestures.drag(event);
                 }
                 break;
@@ -602,12 +590,17 @@ function Hammer(element, options, undefined)
             case 'mouseout':
             case 'touchcancel':
             case 'touchend':
+                if(!_mousedown || (_gesture != 'transform' && event.touches && event.touches.length > 0)) {
+                    return false;
+                }
 
                 _mousedown = false;
                 _event_end = event;
 
+
                 // swipe gesture
                 gestures.swipe(event);
+
 
                 // drag gesture
                 // dragstart is triggered, so dragend is possible
@@ -629,16 +622,16 @@ function Hammer(element, options, undefined)
                         scale           : calculateScale(_pos.start, _pos.move),
                         rotation        : calculateRotation(_pos.start, _pos.move)
                     });
-                } else if (_can_tap) {
+                }
+                else {
                     gestures.tap(_event_start);
                 }
 
                 _prev_gesture = _gesture;
 
-                // trigger release event
-                // "release" by default doesn't return the co-ords where your
+                // trigger release event. 
+                // "release" by default doesn't return the co-ords where your 
                 // finger was released. "position" will return "the last touched co-ords"
-
                 triggerEvent("release", {
                     originalEvent   : event,
                     gesture         : _gesture,
@@ -648,33 +641,6 @@ function Hammer(element, options, undefined)
                 // reset vars
                 reset();
                 break;
-        } // end switch
-
-        /**
-         * Performs a blank setup.
-         * @private
-         */
-        function _setup() {
-            _pos.start = getXYfromEvent(event);
-            _touch_start_time = new Date().getTime();
-            _fingers = countFingers(event);
-            _first = true;
-            _event_start = event;
-
-            // borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
-            var box = element.getBoundingClientRect();
-            var clientTop  = element.clientTop  || document.body.clientTop  || 0;
-            var clientLeft = element.clientLeft || document.body.clientLeft || 0;
-            var scrollTop  = window.pageYOffset || element.scrollTop  || document.body.scrollTop;
-            var scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
-
-            _offset = {
-                top: box.top + scrollTop - clientTop,
-                left: box.left + scrollLeft - clientLeft
-            };
-
-            // hold gesture
-            gestures.hold(event);
         }
     }
 
