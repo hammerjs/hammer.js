@@ -72,7 +72,7 @@ function Hammer(element, options, undefined)
     // holds the exact angle that has been moved
     var _angle = 0;
 
-    // holds the diraction that has been moved
+    // holds the direction that has been moved
     var _direction = 0;
 
     // holds position movement for sliding
@@ -144,7 +144,7 @@ function Hammer(element, options, undefined)
 
 
     /**
-     * destory events
+     * destroy events
      * @return  void
      */
     this.destroy = function() {
