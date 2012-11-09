@@ -72,7 +72,7 @@ function Hammer(element, options, undefined)
     // holds the exact angle that has been moved
     var _angle = 0;
 
-    // holds the diraction that has been moved
+    // holds the direction that has been moved
     var _direction = 0;
 
     // holds position movement for sliding
@@ -146,7 +146,7 @@ function Hammer(element, options, undefined)
 
 
     /**
-     * destory events
+     * destroy events
      * @return  void
      */
     this.destroy = function() {
@@ -455,12 +455,21 @@ function Hammer(element, options, undefined)
                         y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top
                     };
 
+                    if(_first)
+                        _pos.startCenter = _pos.center;
+
+                    var _distance_x = _pos.center.x - _pos.startCenter.x;
+                    var _distance_y = _pos.center.y - _pos.startCenter.y;
+                    _distance = Math.sqrt(_distance_x*_distance_x + _distance_y*_distance_y);
+
                     var event_obj = {
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : scale,
                         rotation        : rotation,
-                        continuation    : !_can_tap // The user has gone from drag to zoom
+                        distance        : _distance,
+                        distanceX       : _distance_x,
+                        distanceY       : _distance_y
                     };
 
                     // on the first time trigger the start event
@@ -624,7 +633,10 @@ function Hammer(element, options, undefined)
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : calculateScale(_pos.start, _pos.move),
-                        rotation        : calculateRotation(_pos.start, _pos.move)
+                        rotation        : calculateRotation(_pos.start, _pos.move),
+                        distance        : _distance,
+                        distanceX       : _distance_x,
+                        distanceY       : _distance_y
                     });
                 } else if (_can_tap) {
                     gestures.tap(_event_start);
