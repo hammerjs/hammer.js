@@ -464,7 +464,7 @@ function Hammer(element, options, undefined)
                         rotation        : rotation,
                         distance        : _distance,
                         distanceX       : _distance_x,
-                        distanceY       : _distance_y,
+                        distanceY       : _distance_y
                     };
 
                     // on the first time trigger the start event
