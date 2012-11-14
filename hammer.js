@@ -36,7 +36,11 @@ function Hammer(element, options, undefined)
         tap_double_distance: 20,
 
         hold               : true,
-        hold_timeout       : 500
+        hold_timeout       : 500,
+
+        // for desktop browsers using TUIO
+        use_tuio           : false
+
     };
     options = mergeObject(defaults, options);
 
@@ -101,7 +105,7 @@ function Hammer(element, options, undefined)
     var _event_move;
     var _event_end;
 
-    var _has_touch = ('ontouchstart' in window);
+    var _has_touch = ('ontouchstart' in window || options['use_tuio']);
 
 
     /**
@@ -630,10 +634,7 @@ function Hammer(element, options, undefined)
                         originalEvent   : event,
                         position        : _pos.center,
                         scale           : calculateScale(_pos.start, _pos.move),
-                        rotation        : calculateRotation(_pos.start, _pos.move),
-                        distance        : _distance,
-                        distanceX       : _distance_x,
-                        distanceY       : _distance_y
+                        rotation        : calculateRotation(_pos.start, _pos.move)
                     });
                 }
                 else {

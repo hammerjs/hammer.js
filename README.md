@@ -191,7 +191,10 @@ On a desktop browser the mouse can be used to simulate touch events with one fin
 On Android 2 (and 3?) doesn't support multi-touch events, so there's no transform callback on these Android versions.
 Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and mouse events are badly supported.
 
-Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
+This latest fork includes a feature that allows desktop browsers to react to touch events
+via TUIO. There are a couple of ways to get TUIO messages. One is using a plugin (see [MagicTouch](https://github.com/borismus/MagicTouch)), and another relies on node.js (see [tuiohost](https://github.com/acc3ptC/tuiohost)).
+
+Not all gestures are supported on every device. This matrix shows the support we have tested. This is of course far from extensive.
 If you've tested hammer.js on a different device, please let us know.
 
 
