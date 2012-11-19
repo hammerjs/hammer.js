@@ -608,6 +608,7 @@ function Hammer(element, options, undefined)
             case 'mouseout':
             case 'touchcancel':
             case 'touchend':
+                var callReset = true;
 
                 _mousedown = false;
                 _event_end = event;
@@ -638,6 +639,15 @@ function Hammer(element, options, undefined)
                         distanceX       : _distance_x,
                         distanceY       : _distance_y
                     });
+
+                    //If the user goes from transformation to drag there needs to be a
+                    //state reset so that way a dragstart/drag/dragend will be properly
+                    //fired.
+                    if (countFingers(event) === 1) {
+                        reset();
+                        _setup();
+                        callReset = false;
+                    }
                 } else if (_can_tap) {
                     gestures.tap(_event_start);
                 }
@@ -654,8 +664,10 @@ function Hammer(element, options, undefined)
                     position        : _pos.move || _pos.start
                 });
 
-                // reset vars
-                reset();
+                // reset vars if this was not a transform->drag touch end operation.
+                if (callReset) {
+                    reset();
+                }
                 break;
         } // end switch
 
