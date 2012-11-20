@@ -340,7 +340,7 @@ function Hammer(element, options, undefined)
         // fired on touchend
         swipe : function(event)
         {
-            if(!_pos.move) {
+            if(!_pos.move || _gesture === "transform") {
                 return;
             }
 
