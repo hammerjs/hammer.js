@@ -508,6 +508,7 @@ function Hammer(element, options, undefined)
                 if (_prev_tap_pos &&
                     options.tap_double &&
                     _prev_gesture == 'tap' &&
+                    _pos.start &&
                     (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval)
                 {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
