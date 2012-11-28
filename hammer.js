@@ -113,7 +113,7 @@ function Hammer(element, options, undefined)
      * @return  mixed   value
      */
     this.option = function(key, val) {
-        if(val != undefined) {
+        if(val !== undefined) {
             options[key] = val;
         }
 
@@ -397,8 +397,8 @@ function Hammer(element, options, undefined)
 
                 // check the movement and stop if we go in the wrong direction
                 var is_vertical = (_direction == 'up' || _direction == 'down');
-                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal))
-                    && (_distance > options.drag_min_distance)) {
+
+                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal)) && (_distance > options.drag_min_distance)) {
                     return;
                 }
 
@@ -508,6 +508,7 @@ function Hammer(element, options, undefined)
                 if (_prev_tap_pos &&
                     options.tap_double &&
                     _prev_gesture == 'tap' &&
+                    _pos.start &&
                     (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval)
                 {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
@@ -743,7 +744,7 @@ function Hammer(element, options, undefined)
             while(node !== null){
                 if(node === parent){
                     return true;
-                };
+                }
                 node = node.parentNode;
             }
         }
