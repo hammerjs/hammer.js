@@ -555,11 +555,12 @@ function Hammer(element, options, undefined)
 
     function handleEvents(event)
     {
+        var count;
         switch(event.type)
         {
             case 'mousedown':
             case 'touchstart':
-                var count = countFingers(event);
+                count = countFingers(event);
                 _can_tap = count === 1;
 
                 //We were dragging and now we are zooming.
@@ -583,7 +584,7 @@ function Hammer(element, options, undefined)
 
             case 'mousemove':
             case 'touchmove':
-                var count = countFingers(event);
+                count = countFingers(event);
 
                 //The user has gone from transforming to dragging.  The
                 //user needs to have the proper cleanup of the state and
@@ -631,6 +632,10 @@ function Hammer(element, options, undefined)
                 // transform
                 // transformstart is triggered, so transformed is possible
                 else if(_gesture == 'transform') {
+                    // define the transform distance
+                    var _distance_x = _pos.center.x - _pos.startCenter.x;
+                    var _distance_y = _pos.center.y - _pos.startCenter.y;
+                    
                     triggerEvent("transformend", {
                         originalEvent   : event,
                         position        : _pos.center,
