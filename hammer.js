@@ -113,7 +113,7 @@ function Hammer(element, options, undefined)
      * @return  mixed   value
      */
     this.option = function(key, val) {
-        if(val != undefined) {
+        if(val !== undefined) {
             options[key] = val;
         }
 
@@ -397,8 +397,8 @@ function Hammer(element, options, undefined)
 
                 // check the movement and stop if we go in the wrong direction
                 var is_vertical = (_direction == 'up' || _direction == 'down');
-                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal))
-                    && (_distance > options.drag_min_distance)) {
+
+                if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal)) && (_distance > options.drag_min_distance)) {
                     return;
                 }
 
@@ -508,6 +508,7 @@ function Hammer(element, options, undefined)
                 if (_prev_tap_pos &&
                     options.tap_double &&
                     _prev_gesture == 'tap' &&
+                    _pos.start &&
                     (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval)
                 {
                     var x_distance = Math.abs(_prev_tap_pos[0].x - _pos.start[0].x);
@@ -554,11 +555,12 @@ function Hammer(element, options, undefined)
 
     function handleEvents(event)
     {
+        var count;
         switch(event.type)
         {
             case 'mousedown':
             case 'touchstart':
-                var count = countFingers(event);
+                count = countFingers(event);
                 _can_tap = count === 1;
 
                 //We were dragging and now we are zooming.
@@ -582,7 +584,7 @@ function Hammer(element, options, undefined)
 
             case 'mousemove':
             case 'touchmove':
-                var count = countFingers(event);
+                count = countFingers(event);
 
                 //The user has gone from transforming to dragging.  The
                 //user needs to have the proper cleanup of the state and
@@ -630,6 +632,10 @@ function Hammer(element, options, undefined)
                 // transform
                 // transformstart is triggered, so transformed is possible
                 else if(_gesture == 'transform') {
+                    // define the transform distance
+                    var _distance_x = _pos.center.x - _pos.startCenter.x;
+                    var _distance_y = _pos.center.y - _pos.startCenter.y;
+                    
                     triggerEvent("transformend", {
                         originalEvent   : event,
                         position        : _pos.center,
@@ -743,7 +749,7 @@ function Hammer(element, options, undefined)
             while(node !== null){
                 if(node === parent){
                     return true;
-                };
+                }
                 node = node.parentNode;
             }
         }
