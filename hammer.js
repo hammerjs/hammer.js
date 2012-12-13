@@ -455,7 +455,7 @@ function Hammer(element, options, undefined)
                         y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top
                     };
 
-                    if(_first)
+                    if(_first || _pos.startCenter === undefined)
                         _pos.startCenter = _pos.center;
 
                     var _distance_x = _pos.center.x - _pos.startCenter.x;
