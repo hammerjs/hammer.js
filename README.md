@@ -164,6 +164,10 @@ In addition to this the Transform and Drag gestures return start and end events.
 | Chrome 16                         | X   | X          | X    | X    |           |
 | Safari 5                          | X   | X          | X    | X    |           |
 |                                                                                |
+| **BlackBerry**                                                                 |
+| BlackBerry 10                     | X   | X          | X    | X    | X         |
+| PlayBook                          | X   | X          | X    | X    | X         |
+|                                                                                |
 | **iOS**                                                                        |
 | iPad iOS 5                        | X   | X          | X    | X    | X         |
 | iPhone iOS 5                      | X   | X          | X    | X    | X         |
