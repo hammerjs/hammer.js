@@ -36,7 +36,10 @@ function Hammer(element, options, undefined)
         tap_double_distance: 20,
 
         hold               : true,
-        hold_timeout       : 500
+        hold_timeout       : 500,
+
+        // maximum of 2 finger touch. takes care of 3rd touch bugs
+        two_touch_max      : false
     };
     options = mergeObject(defaults, options);
 
@@ -197,7 +200,7 @@ function Hammer(element, options, undefined)
         // multitouch, return array with positions
         else {
             var pos = [], src;
-            for(var t=0, len=event.touches.length; t<len; t++) {
+            for(var t=0, len = options.two_touch_max ? Math.min(2, event.touches.length) : event.touches.length; t<len; t++) {
                 src = event.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
@@ -320,6 +323,9 @@ function Hammer(element, options, undefined)
         // fired on touchstart
         hold : function(event)
         {
+            if (options.two_touch_max && _fingers >= 3) {
+                return;
+            }
             // only when one finger is on the screen
             if(options.hold) {
                 _gesture = 'hold';
@@ -340,6 +346,9 @@ function Hammer(element, options, undefined)
         // fired on touchend
         swipe : function(event)
         {
+            if (options.two_touch_max && _fingers >= 3) {
+                return;
+            }
             if (!_pos.move || _gesture === "transform") {
                 return;
             }
@@ -383,6 +392,9 @@ function Hammer(element, options, undefined)
         // fired on mousemove
         drag : function(event)
         {
+            if (options.two_touch_max && _fingers >= 2) {
+                return;
+            }
             // get the distance we moved
             var _distance_x = _pos.move[0].x - _pos.start[0].x;
             var _distance_y = _pos.move[0].y - _pos.start[0].y;
@@ -438,7 +450,7 @@ function Hammer(element, options, undefined)
         {
             if(options.transform) {
                 var count = countFingers(event);
-                if (count !== 2) {
+                if (options.two_touch_max && count < 2) {
                     return false;
                 }
 
@@ -560,11 +572,15 @@ function Hammer(element, options, undefined)
         {
             case 'mousedown':
             case 'touchstart':
+                if (options.two_touch_max && _gesture === 'transform') {
+                    cancelEvent(event);
+                    return;
+                }
                 count = countFingers(event);
                 _can_tap = count === 1;
 
                 //We were dragging and now we are zooming.
-                if (count === 2 && _gesture === "drag") {
+                if (options.two_touch_max && count >= 2 && _gesture === "drag") {
 
                     //The user needs to have the dragend to be fired to ensure that
                     //there is proper cleanup from the drag and move onto transforming.
@@ -610,7 +626,11 @@ function Hammer(element, options, undefined)
             case 'mouseout':
             case 'touchcancel':
             case 'touchend':
-                var callReset = true;
+                _fingers = countFingers(event);
+                if (options.two_touch_max && _fingers >= 2) {
+                    return;
+                }
+                var callReset = options.two_touch_max ? _fingers < 2 : true;
 
                 _mousedown = false;
                 _event_end = event;
