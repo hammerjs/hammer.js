@@ -38,7 +38,7 @@ function Hammer(element, options, undefined)
         hold               : true,
         hold_timeout       : 500
     };
-    options = mergeObject(defaults, options);
+    options = mergeObject(defaults, Hammer.defaults || {}, options);
 
     // some css hacks
     (function() {
