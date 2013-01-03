@@ -9,7 +9,7 @@ function Hammer(element, options, undefined)
 {
     var self = this;
 
-    var defaults = {
+    var defaults = mergeObject({
         // prevent the default event or not... might be buggy when false
         prevent_default    : false,
         css_hacks          : true,
@@ -37,7 +37,7 @@ function Hammer(element, options, undefined)
 
         hold               : true,
         hold_timeout       : 500
-    };
+    }, Hammer.defaults || {});
     options = mergeObject(defaults, options);
 
     // some css hacks
