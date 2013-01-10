@@ -353,7 +353,7 @@ function Hammer(element, options, undefined)
             var now = new Date().getTime();
             var touch_time = now - _touch_start_time;
 
-            if(options.swipe && (options.swipe_time > touch_time) && (_distance > options.swipe_min_distance)) {
+            if(options.swipe && (options.swipe_time >= touch_time) && (_distance >= options.swipe_min_distance)) {
                 // calculate the angle
                 _angle = getAngle(_pos.start[0], _pos.move[0]);
                 _direction = self.getDirectionFromAngle(_angle);
