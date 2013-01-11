@@ -132,13 +132,13 @@ In addition to this the Transform and Drag gestures return start and end events.
 |                    | default |                           |
 |:-----------------------------------|:--------------------------|-----------------|
 | prevent_default    | false         | when true all default browser actions are blocked. For instance if you want to drag vertically, try setting this to true. |
-| css_hacks          | true          | css userSelect, touchCallout, userDrag, tapHighlightColor are added |
+| css_hacks          | true          | css userSelect, touchCallout, touchAction, userDrag, tapHighlightColor are added |
 | drag               | true          |                           |
 | drag_vertical      | true          |                           |
 | drag_horizontal    | true          |                           |
 | drag_min_distance  | 20            | pixels                    |
 | swipe              | true          |                           |
-| swipe_time         | 200           | max ms of movement        |
+| swipe_time         | 500           | max ms of movement        |
 | swipe_min_distance | 20            | minimal movement          |
 | transform          | true          |                           |
 | scale_treshold     | 0.1           | how much scaling needs to be done before firing the transform event |                   
@@ -157,6 +157,11 @@ In addition to this the Transform and Drag gestures return start and end events.
 | **Windows**                                                                    |
 | Internet Explorer 8               | X   | X          | X    | X    |           |
 | Internet Explorer 9               | X   | X          | X    | X    |           |
+| Internet Explorer 10              | X   | X          | X    | X    |           |
+|                                                                                |
+| **Windows Phone**                                                              |
+| Windows Phone 8                   | X   | X          | X    | X    |           |
+| Windows Phone 7.5                 | X   |            |      |      |           |
 |                                                                                |
 | **OSX**                                                                        |
 | Firefox 11                        | X   | X          | X    | X    |           |
@@ -171,6 +176,7 @@ In addition to this the Transform and Drag gestures return start and end events.
 | **iOS**                                                                        |
 | iPad iOS 5                        | X   | X          | X    | X    | X         |
 | iPhone iOS 5                      | X   | X          | X    | X    | X         |
+| iPhone/iPod iOS 6                 | X   | X          | X    | X    | X         |
 |                                                                                |
 | **Android 4**                                                                  |
 | Default browser                   | X   | X          | X    | X    | X         |
@@ -187,7 +193,6 @@ In addition to this the Transform and Drag gestures return start and end events.
 | Opera Mini 7.0                    | X   |            |      |      |           |
 |                                                                                |
 | **Others**                                                                     |
-| Windows Phone 7.5                 | X   |            |      |      |           |
 | Kindle Fire                       | X   | X          | X    | X    | X         |
 | Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
 
