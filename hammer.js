@@ -36,7 +36,9 @@ function Hammer(element, options, undefined)
         tap_double_distance: 20,
 
         hold               : true,
-        hold_timeout       : 500
+        hold_timeout       : 500,
+
+        allow_touch_and_mouse   : false
     }, Hammer.defaults || {});
     options = mergeObject(defaults, options);
 
@@ -151,11 +153,12 @@ function Hammer(element, options, undefined)
      * @return  void
      */
     this.destroy = function() {
-        if(_has_touch) {
+        if(_has_touch || options.allow_touch_and_mouse) {
             removeEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
         }
+
         // for non-touch
-        else {
+        if (!_has_touch || options.allow_touch_and_mouse) {
             removeEvent(element, "mouseup mousedown mousemove", handleEvents);
             removeEvent(element, "mouseout", handleMouseOut);
         }
@@ -718,11 +721,12 @@ function Hammer(element, options, undefined)
 
     // bind events for touch devices
     // except for windows phone 7.5, it doesnt support touch events..!
-    if(_has_touch) {
+    if(_has_touch || options.allow_touch_and_mouse) {
         addEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
     }
+
     // for non-touch
-    else {
+    if (!_has_touch || options.allow_touch_and_mouse) {
         addEvent(element, "mouseup mousedown mousemove", handleEvents);
         addEvent(element, "mouseout", handleMouseOut);
     }
