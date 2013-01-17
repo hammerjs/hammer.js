@@ -15,7 +15,7 @@ function Hammer(element, options, undefined)
         css_hacks          : true,
 
         swipe              : true,
-        swipe_time         : 200,   // ms
+        swipe_time         : 500,   // ms
         swipe_min_distance : 20,   // pixels
 
         drag               : true,
@@ -50,6 +50,7 @@ function Hammer(element, options, undefined)
         var css_props = {
             "userSelect": "none",
             "touchCallout": "none",
+            "touchAction": "none",
             "userDrag": "none",
             "tapHighlightColor": "rgba(0,0,0,0)"
         };
