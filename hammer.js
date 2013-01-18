@@ -178,6 +178,34 @@ function Hammer(element, options, undefined)
         return event.touches ? event.touches.length : 1;
     }
 
+    /**
+     * Gets the event xy positions from a mouse event.
+     * @param event
+     * @return {Array}
+     */
+    function getXYMouse(event) {
+        var doc = document,
+            body = doc.body;
+
+        return [{
+            x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
+            y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
+        }];
+    }
+
+    /**
+     * gets the event xy positions from touch event.
+     * @param event
+     * @return {Array}
+     */
+    function getXYTouch(event) {
+        var pos = [], src;
+        for(var t=0, len = options.two_touch_max ? Math.min(2, event.touches.length) : event.touches.length; t<len; t++) {
+            src = event.touches[t];
+            pos.push({ x: src.pageX, y: src.pageY });
+        }
+        return pos;
+    }
 
     /**
      * get the x and y positions from the event object
@@ -186,7 +214,7 @@ function Hammer(element, options, undefined)
      */
     function getXYfromEvent(event)
     {
-        var _fn = _mouse_xy;
+        var _fn = getXYMouse;
         event = event || window.event;
 
         // no touches, use the event pageX and pageY
@@ -194,29 +222,10 @@ function Hammer(element, options, undefined)
             if (options.allow_touch_and_mouse &&
                 event.touches !== undefined && event.touches.length > 0) {
 
-                _fn = _touch_xy;
+                _fn = getXYTouch;
             }
         } else {
-            _fn = _touch_xy;
-        }
-
-        function _mouse_xy(event) {
-            var doc = document,
-                body = doc.body;
-
-            return [{
-                x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
-                y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
-            }];
-        }
-
-        function _touch_xy(event) {
-            var pos = [], src;
-            for(var t=0, len = options.two_touch_max ? Math.min(2, event.touches.length) : event.touches.length; t<len; t++) {
-                src = event.touches[t];
-                pos.push({ x: src.pageX, y: src.pageY });
-            }
-            return pos;
+            _fn = getXYTouch;
         }
 
         return _fn(event);
