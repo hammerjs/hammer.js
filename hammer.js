@@ -184,12 +184,23 @@ function Hammer(element, options, undefined)
      * @param  event
      * @return array  [{ x: int, y: int }]
      */
-    function getXYfromEvent( event )
+    function getXYfromEvent(event)
     {
+        var _fn = _mouse_xy;
         event = event || window.event;
 
         // no touches, use the event pageX and pageY
-        if(!_has_touch) {
+        if (!_has_touch) {
+            if (options.allow_touch_and_mouse &&
+                event.touches !== undefined && event.touches.length > 0) {
+
+                _fn = _touch_xy;
+            }
+        } else {
+            _fn = _touch_xy;
+        }
+
+        function _mouse_xy(event) {
             var doc = document,
                 body = doc.body;
 
@@ -198,15 +209,17 @@ function Hammer(element, options, undefined)
                 y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
             }];
         }
-        // multitouch, return array with positions
-        else {
+
+        function _touch_xy(event) {
             var pos = [], src;
-            for(var t=0, len=event.touches.length; t<len; t++) {
+            for(var t=0, len = options.two_touch_max ? Math.min(2, event.touches.length) : event.touches.length; t<len; t++) {
                 src = event.touches[t];
                 pos.push({ x: src.pageX, y: src.pageY });
             }
             return pos;
         }
+
+        return _fn(event);
     }
 
 
