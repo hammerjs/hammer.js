@@ -20,25 +20,43 @@
     <div id="swipeme">
         Touch me :)
     </div>
-    <div id="output">
-    </div>
+    <h2>Actions</h2>
+    <form id="actions"></form>
+    <h2>Output</h2>
+    <div id="output"></div>
     <script>
+        var $sw ,
+            $output ,
+            actions = 'hold tap swipe doubletap transformstart transform transformend dragstart drag dragend swipe release';
+
+        function hammerLog( event ){
+            event.preventDefault();
+            $output.prepend( "Type: " + event.type + ", Fingers: " + event.touches.length + ", Direction: " + event.direction + "<br/>" );
+        }
+
         (function ($) {
-            var $sw = $('#swipeme'),
-                $output = $('#output');
-
-            $sw.on('hold tap swipe doubletap transformstart transform transformend dragstart drag dragend swipe release', function (event) {
-                event.preventDefault();
-
-                $output.prepend("Type: " + event.type + ", Fingers: " + event.touches.length + ", Direction: " + event.direction + "<br/>");
+        
+            // Setting Up The Actions Toggles
+            $.each( actions.split(' ') , function( k , v ){
+                $('#actions')
+                  .append( '<label><input type="checkbox" name="action" value="'+v+'" checked="checked" /> '+v+'</label>' );
             });
+            $('#actions')
+              .on('change','input',function(){
+                  if( $(this).is(':checked') ){
+                      $sw.on( $(this).val() , hammerLog );
+                  }else{
+                      $sw.off( $(this).val() , hammerLog );
+                  }
+              });
+        
+        
+            $sw = $( '#swipeme' );
+            $output = $( '#output' );
 
-            // this is how you unbind an event
-            /*$sw.on('swipe', function (event) {
-                event.preventDefault();
+            $sw
+              .on( actions ,  hammerLog );
 
-                $sw.off('tap');
-            });*/
         }(jQuery));
     </script>
 </body>
