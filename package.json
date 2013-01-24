@@ -1,10 +1,14 @@
 {
     "name":"hammer",
+    "title":"Hammer.JS",
+    "description":"A javascript library for multi-touch gestures",
     "version":"1.0.0",
     "license":"MIT",
-    "description":"A javascript library for multi-touch gestures",
-    "keywords":["touch"],
-    "contributors": ["J.Tangelder <jorik@eight.nl>"],
+    "keywords":["touch","gestures"],
+    "author": {
+        "name": "Jorik Tangelder",
+        "email": "jorik@eight.nl"
+    },
     "homepage": "http://eightmedia.github.com/hammer.js",
     "devDependencies":{
         "grunt":"~0.4.0",

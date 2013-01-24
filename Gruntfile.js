@@ -5,17 +5,20 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         meta: {
-            banner: '\n/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-                '<%= grunt.template.today("yyyy-mm-dd") %>\n ' + '<%= pkg.homepage ? "* " + pkg.homepage + "\n *\n " : "" %>' +
-                '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n' +
-                ' * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */'
+            banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
+                '<%= grunt.template.today("yyyy-mm-dd") %>\n ' + '<%= pkg.homepage ? "* " + pkg.homepage + "\\n *\\n " : "" %>' +
+                '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n' +
+                ' * Licensed under the <%= pkg.license %> license */\n\n'
         },
 
         concat: {
+            options: {
+                banner: '<%= meta.banner %>'
+            },
             dist: {
                 src: [
                     'src/intro.js',
-                    'src/hammer.js',
+                    'src/core.js',
                     'src/setup.js',
                     'src/instance.js',
                     'src/event.js',
@@ -35,6 +38,9 @@ module.exports = function(grunt) {
         },
 
         uglify: {
+            options: {
+                banner: '<%= meta.banner %>'
+            },
             build: {
                 files: {
                     'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
