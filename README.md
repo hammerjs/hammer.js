@@ -1,2 +1,2 @@
 Full rewrite of Hammer.JS.
-Faster, Smaller and more open, and custom gestures possible.
+lighter, smaller and more open, better events, and custom gestures possible.

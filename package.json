@@ -1,6 +1,7 @@
 {
   "name": "hammer",
   "version": "1.0.0",
+  "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.0",
     "grunt-contrib-concat": "~0.1.2rc6",
