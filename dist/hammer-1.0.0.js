@@ -414,10 +414,13 @@ var Gesture = hammer.Gesture = {
 };
 
 
-var Gestures = {};
+var Gestures = hammer.Gestures = {};
+
+
 
 // Hold gesture
 // Touch stays at the same place for x time
+// events: hold
 Gestures.Hold = {
     priority: 10,
     defaults: {
@@ -453,8 +456,10 @@ Gestures.Hold = {
 Gesture.registerGesture(Gestures.Hold);
 
 
+
 // Tap/DoubleTap gesture
 // Quick touch at a place or double at the same place
+// events: tap, doubletap
 Gestures.Tap = {
     priority: 100,
     defaults: {
