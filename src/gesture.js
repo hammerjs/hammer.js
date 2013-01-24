@@ -131,4 +131,3 @@ Hammer.gesture = {
         });
     }
 };
-

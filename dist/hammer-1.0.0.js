@@ -11,16 +11,13 @@ var Hammer = function(element, options) {
     return new Hammer.Instance(element, options || {});
 };
 
-
 // default settings
 Hammer.defaults = {
     // more settings are defined at gestures.js
 };
 
-
 // detect touchevents
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
-
 
 // direction defines
 Hammer.DIRECTION_DOWN = 'down';
@@ -28,14 +25,13 @@ Hammer.DIRECTION_LEFT = 'left';
 Hammer.DIRECTION_UP = 'up';
 Hammer.DIRECTION_RIGHT = 'right';
 
-
 // touch event defines
 Hammer.TOUCH_START = 'start';
 Hammer.TOUCH_MOVE = 'move';
 Hammer.TOUCH_END = 'end';
 
+// if the window events are set...
 Hammer.READY = false;
-
 
 /**
  * setup events to detect gestures on the document
@@ -52,6 +48,7 @@ function setup() {
     // Hammer is ready...
     Hammer.READY = true;
 }
+
 /**
  * create new hammer instance
  * @param   {HTMLElement}   element
@@ -112,8 +109,8 @@ Hammer.Instance.prototype = {
         return Hammer.event.off(this.element, gesture, handler);
     }
 };
-Hammer.event = {
 
+Hammer.event = {
     /**
      * on, off and trigger events can be overwritten for better browsercompat
      */
@@ -201,6 +198,7 @@ Hammer.event = {
         };
     }
 };
+
 Hammer.util = {
     /**
      * simple extend method
@@ -448,7 +446,6 @@ Hammer.gesture = {
     }
 };
 
-
 Hammer.gestures = {};
 
 
@@ -490,7 +487,6 @@ Hammer.gestures.Hold = {
 Hammer.gesture.registerGesture(Hammer.gestures.Hold);
 
 
-
 // Tap/DoubleTap gesture
 // Quick touch at a place or double at the same place
 // events: tap, doubletap
@@ -527,7 +523,6 @@ Hammer.gestures.Tap = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Tap);
-
 
 
 // Drag gesture
@@ -579,7 +574,6 @@ Hammer.gestures.Drag = {
 Hammer.gesture.registerGesture(Hammer.gestures.Drag);
 
 
-
 // Swipe gesture
 // Called after Hammer.gesture.Drag
 // events: swipe, swipeleft, swiperight, swipeup, swipedown
@@ -606,7 +600,6 @@ Hammer.gestures.Swipe = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
-
 
 
 // Transform gesture
@@ -674,7 +667,6 @@ Hammer.gestures.Transform = {
 Hammer.gesture.registerGesture(Hammer.gestures.Transform);
 
 
-
 // Release gesture
 // Called as last, tells the user has released the screen
 // events: release
@@ -687,6 +679,7 @@ Hammer.gestures.Release = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Release);
+
 // Expose Hammer to the global object
 window.Hammer = Hammer;
 

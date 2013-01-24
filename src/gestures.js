@@ -39,7 +39,6 @@ Hammer.gestures.Hold = {
 Hammer.gesture.registerGesture(Hammer.gestures.Hold);
 
 
-
 // Tap/DoubleTap gesture
 // Quick touch at a place or double at the same place
 // events: tap, doubletap
@@ -76,7 +75,6 @@ Hammer.gestures.Tap = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Tap);
-
 
 
 // Drag gesture
@@ -128,7 +126,6 @@ Hammer.gestures.Drag = {
 Hammer.gesture.registerGesture(Hammer.gestures.Drag);
 
 
-
 // Swipe gesture
 // Called after Hammer.gesture.Drag
 // events: swipe, swipeleft, swiperight, swipeup, swipedown
@@ -155,7 +152,6 @@ Hammer.gestures.Swipe = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
-
 
 
 // Transform gesture
@@ -221,7 +217,6 @@ Hammer.gestures.Transform = {
     }
 };
 Hammer.gesture.registerGesture(Hammer.gestures.Transform);
-
 
 
 // Release gesture

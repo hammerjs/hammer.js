@@ -1,5 +1,5 @@
+// if the window events are set...
 Hammer.READY = false;
-
 
 /**
  * setup events to detect gestures on the document

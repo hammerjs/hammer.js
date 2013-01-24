@@ -1,5 +1,4 @@
 Hammer.event = {
-
     /**
      * on, off and trigger events can be overwritten for better browsercompat
      */
