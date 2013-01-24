@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+        html {
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-touch-action: none;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+
+        body {
+            padding: 30px;
+        }
+
+    </style>
+</head>
+<body>
+<p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+</p>
+<div id="hitarea" class="well">
+    <h3>Hitarea</h3>
+    <p>
+    Sed sit amet tellus ac neque auctor facilisis. Nullam consectetur iaculis ligula, ut tincidunt elit porttitor sit amet.
+    In hac habitasse platea dictumst. Proin eget quam ac erat iaculis scelerisque non a mauris. Praesent at dui mi, nec luctus urna.
+    </p>
+
+    <div id="nested" class="well" style="background:rgba(0,0,255,.2)">
+        <h4>Nested Tap with stopPropagation</h4>
+        <p>
+        Curabitur felis elit, volutpat eu varius ac, hendrerit vel sem. Phasellus sapien lacus, vehicula a rhoncus a, dignissim at lectus.
+        </p>
+    </div>
+    <p>
+    Donec nisi ante, eleifend vitae luctus vel, auctor et nibh. Donec scelerisque urna id massa ultricies in facilisis purus rutrum.
+    Proin tristique luctus leo vitae feugiat. Donec sit amet ipsum mi, nec bibendum sem. Nullam sodales aliquet venenatis.
+    </p>
+</div>
+<p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+</p>
+<p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+</p>
+
+<h2>Event log</h2>
+<pre id="debug_log"></pre>
+
+    <script src="../dist/hammer-1.0.0.js"></script>
+    <script>
+
+        var logElement = document.getElementById('debug_log');
+
+        var debug = function(ev) {
+            var log = [this.id, ev.hammer.gesture, ev.hammer];
+            console.log(log);
+            logElement.innerHTML = log.join(" - ") +"\n" + logElement.innerHTML;
+        };
+
+        var hitarea = document.getElementById('hitarea');
+        Hammer(hitarea).on('tap doubletap swipe swipeleft dragstart drag dragend dragright pinch pinchin rotate rotateleft transformstart transform transformend', debug);
+
+
+        var nested = document.getElementById('nested');
+        Hammer(nested).on('tap', function(ev) {
+            debug.call(this, ev);
+            ev.stopPropagation();
+        });
+
+
+    </script>
+</body>
+</html>
