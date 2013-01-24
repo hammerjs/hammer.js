@@ -1,12 +1,16 @@
 {
-  "name": "hammer",
-  "version": "1.0.0",
-  "license": "MIT",
-  "devDependencies": {
-    "grunt": "~0.4.0",
-    "grunt-contrib-concat": "~0.1.2rc6",
-    "grunt-contrib-uglify": "~0.1.1rc6",
-    "grunt-contrib-jshint": "~0.1.x",
-    "grunt-contrib-watch": "~0.2.x"
+    "name":"hammer",
+    "version":"1.0.0",
+    "license":"MIT",
+    "description":"A javascript library for multi-touch gestures",
+    "keywords":["touch"],
+    "contributors": ["J.Tangelder <jorik@eight.nl>"],
+    "homepage": "http://eightmedia.github.com/hammer.js",
+    "devDependencies":{
+        "grunt":"~0.4.0",
+        "grunt-contrib-concat":"~0.1.2rc6",
+        "grunt-contrib-uglify":"~0.1.1rc6",
+        "grunt-contrib-jshint":"~0.1.x",
+        "grunt-contrib-watch":"~0.2.x"
     }
 }
