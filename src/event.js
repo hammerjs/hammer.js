@@ -1,4 +1,4 @@
-var Event = hammer.Event = {
+Hammer.event = {
 
     /**
      * on, off and trigger events can be overwritten for better browsercompat
@@ -28,26 +28,26 @@ var Event = hammer.Event = {
     /**
      * touch events with mouse fallback
      * @param   domElement      element
-     * @param   TOUCHTYPE       type        like hammer.TOUCH_MOVE
+     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
      * @param   callback
      */
     onTouch: function(element, type, callback) {
         var cb = function(ev) {
-            callback.call(this, Event.collectEventData(element, type, ev));
+            callback.call(this, Hammer.event.collectEventData(element, type, ev));
         };
 
         var events = {};
-        events[hammer.TOUCH_START]  = hammer.HAS_TOUCHEVENTS ? 'touchstart' : 'mousedown';
-        events[hammer.TOUCH_MOVE]   = hammer.HAS_TOUCHEVENTS ? 'touchmove' : 'mousemove';
-        events[hammer.TOUCH_END]    = hammer.HAS_TOUCHEVENTS ? 'touchend touchcancel' : 'mouseup';
+        events[Hammer.TOUCH_START]  = Hammer.HAS_TOUCHEVENTS ? 'touchstart' : 'mousedown';
+        events[Hammer.TOUCH_MOVE]   = Hammer.HAS_TOUCHEVENTS ? 'touchmove' : 'mousemove';
+        events[Hammer.TOUCH_END]    = Hammer.HAS_TOUCHEVENTS ? 'touchend touchcancel' : 'mouseup';
 
         // touchdevice
-        if(hammer.HAS_TOUCHEVENTS) {
-            Event.on(element, events[type], cb);
+        if(Hammer.HAS_TOUCHEVENTS) {
+            Hammer.event.on(element, events[type], cb);
         }
         // mouse
         else {
-            Event.on(element, events[type], function(ev) {
+            Hammer.event.on(element, events[type], function(ev) {
                 if(ev.which === 1) {
                     cb.apply(this, arguments);
                 }
@@ -57,9 +57,9 @@ var Event = hammer.Event = {
 
 
     /**
-     * collect event data for hammer js
+     * collect event data for Hammer js
      * @param   domElement      element
-     * @param   TOUCHTYPE       type        like hammer.TOUCH_MOVE
+     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
      * @param   Event           ev
      */
     collectEventData: function(element, type, ev) {
@@ -83,7 +83,7 @@ var Event = hammer.Event = {
             target: ev.target,
             touches: touches,
             originalEvent: ev,
-            center: Util.getCenter(touches)
+            center: Hammer.util.getCenter(touches)
         };
     }
 };

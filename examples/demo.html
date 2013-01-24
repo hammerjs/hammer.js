@@ -2,7 +2,7 @@
 <html>
 <head>
     <title></title>
-    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <style>
         html {
@@ -63,7 +63,6 @@
 
         var hitarea = document.getElementById('hitarea');
         Hammer(hitarea).on('tap doubletap swipe swipeleft dragstart drag dragend dragright pinch pinchin rotate rotateleft transformstart transform transformend', debug);
-
 
         var nested = document.getElementById('nested');
         Hammer(nested).on('tap', function(ev) {

@@ -1,55 +1,55 @@
-var Gesture = hammer.Gesture = {
-    // contains all gestures
-    gestures: [],
+Hammer.gesture = {
+    // contains all registred Hammer.gestures in the correct order
+    handlers: [],
 
-    // data per gesture detection session
+    // data per Hammer.gesture detection session
     current: null,
 
-    // store previous gesture data
+    // store previous Hammer.gesture data
     previous: null,
 
 
     /**
-     * start gesture detection
+     * start Hammer.gesture detection
      * @param   HammerInstane   inst
      * @param   Event           ev
      */
     startDetect: function(inst, ev) {
-        // already busy with an gesture detection on a element
-        if(Gesture.current) {
+        // already busy with an Hammer.gesture detection on a element
+        if(Hammer.gesture.current) {
             return;
         }
 
-        Gesture.current = {
-            inst: inst, // reference to HammerInstance we're working for
-            startEvent: Util.extend({}, ev), // start eventData for distances, timing etc
-            lastEvent: ev, // last eventData
-            gesture: false // current gesture we're in, can be 'tap', 'hold' etc
+        Hammer.gesture.current = {
+            inst        : inst, // reference to HammerInstance we're working for
+            startEvent  : Hammer.util.extend({}, ev), // start eventData for distances, timing etc
+            lastEvent   : ev, // last eventData
+            name        : false // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        Gesture.detect(ev);
+        Hammer.gesture.detect(ev);
     },
 
 
     /**
-     * gesture detection
+     * Hammer.gesture detection
      * @param   Event           ev
      */
     detect: function(ev) {
-        if(Gesture.current) {
+        if(Hammer.gesture.current) {
             // extend event data with calculations about scale, distance etc
-            var eventData = Gesture.extendEventData(ev);
+            var eventData = Hammer.gesture.extendEventData(ev);
 
             // store last event
-            Gesture.current.lastEvent = eventData;
+            Hammer.gesture.current.lastEvent = eventData;
 
-            // call gesture handles
-            for(var g=0,len=Gesture.gestures.length; g<len; g++) {
+            // call Hammer.gesture handles
+            for(var g=0,len=Hammer.gesture.handlers.length; g<len; g++) {
                 // if a handle returns false
                 // we stop with the detection
-                var retval = Gesture.gestures[g].handle(eventData.type, eventData, Gesture.current.inst);
+                var retval = Hammer.gesture.handlers[g](eventData.type, eventData, Hammer.gesture.current.inst);
                 if(retval === false) {
-                    Gesture.stop();
+                    Hammer.gesture.stop();
                     break;
                 }
             }
@@ -58,46 +58,49 @@ var Gesture = hammer.Gesture = {
 
 
     /**
-     * end gesture detection
+     * end Hammer.gesture detection
      * @param   Event           ev
      */
     endDetect: function(ev) {
-        Gesture.detect(ev);
-        Gesture.stop();
+        Hammer.gesture.detect(ev);
+        Hammer.gesture.stop();
     },
 
 
     /**
-     * clear the gesture vars
-     * this is called on endDetect, but can also be used when a final gesture has been detected
-     * to stop other gestures from being fired
+     * clear the Hammer.gesture vars
+     * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
+     * to stop other Hammer.gestures from being fired
      */
     stop: function() {
-        Gesture.previous = Util.extend({}, Gesture.current);
-        Gesture.current = null;
+        // clone current data to the store as the previous gesture
+        Hammer.gesture.previous = Hammer.util.extend({}, Hammer.gesture.current);
+
+        // reset the current
+        Hammer.gesture.current = null;
     },
 
 
     /**
-     * extend eventData for gestures
+     * extend eventData for Hammer.gestures
      * @param   object   eventData
      * @return  object
      */
     extendEventData: function(ev) {
-        var startEv = Gesture.current.startEvent;
+        var startEv = Hammer.gesture.current.startEvent;
 
-        Util.extend(ev, {
-            touchTime: (ev.time - startEv.time),
+        Hammer.util.extend(ev, {
+            touchTime   : (ev.time - startEv.time),
 
-            distance: Util.getDistance(startEv.center, ev.center),
-            distanceX: Util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
-            distanceY: Util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
-            direction: Util.getDirection(Util.getAngle(startEv.center, ev.center)),
+            distance    : Hammer.util.getDistance(startEv.center, ev.center),
+            distanceX   : Hammer.util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
+            distanceY   : Hammer.util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
+            direction   : Hammer.util.getDirection(Hammer.util.getAngle(startEv.center, ev.center)),
 
-            scale: Util.getScale(startEv.touches, ev.touches),
-            rotation: Util.getRotation(startEv.touches, ev.touches),
+            scale       : Hammer.util.getScale(startEv.touches, ev.touches),
+            rotation    : Hammer.util.getRotation(startEv.touches, ev.touches),
 
-            start: startEv  // start event data
+            start       : startEv  // start event data
         });
 
         return ev;
@@ -106,19 +109,20 @@ var Gesture = hammer.Gesture = {
 
     /**
      * register new gesture
+     * @param   Gesture instance, see gestures.js for documentation
      */
-    registerGesture: function(gs) {
-        // extend hammer default options with the gesture options
-        Util.extend(hammer.defaults, gs.defaults || {});
+    registerGesture: function(gesture) {
+        // extend Hammer default options with the Hammer.gesture options
+        Hammer.util.extend(Hammer.defaults, gesture.defaults || {});
 
         // set it's index
-        gs.priority = gs.priority || 1000;
+        gesture.priority = gesture.priority || 1000;
 
-        // add gesture to the list
-        Gesture.gestures.push(gs);
+        // add Hammer.gesture to the list
+        Hammer.gesture.handlers.push(gesture.handle);
 
         // sort the list by index
-        Gesture.gestures.sort(function(a, b) {
+        Hammer.gesture.handlers.sort(function(a, b) {
             if (a.priority < b.priority)
                 return -1;
             if (a.priority > b.priority)

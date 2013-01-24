@@ -1,4 +1,4 @@
-hammer.READY = false;
+Hammer.READY = false;
 
 
 /**
@@ -6,13 +6,13 @@ hammer.READY = false;
  * @return
  */
 function setup() {
-    if(hammer.READY) {
+    if(Hammer.READY) {
         return;
     }
 
-    Event.onTouch(window, hammer.TOUCH_MOVE, Gesture.detect);
-    Event.onTouch(window, hammer.TOUCH_END, Gesture.endDetect);
+    Hammer.event.onTouch(window, Hammer.TOUCH_MOVE, Hammer.gesture.detect);
+    Hammer.event.onTouch(window, Hammer.TOUCH_END, Hammer.gesture.endDetect);
 
-    // hammer is ready...
-    hammer.READY = true;
+    // Hammer is ready...
+    Hammer.READY = true;
 }

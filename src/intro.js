@@ -1,2 +1,2 @@
-window.Hammer = (function(hammer) {
-    'use strict';
+(function( window, undefined ) {
+    "use strict";

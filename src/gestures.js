@@ -1,11 +1,10 @@
-var Gestures = hammer.Gestures = {};
-
+Hammer.gestures = {};
 
 
 // Hold gesture
 // Touch stays at the same place for x time
 // events: hold
-Gestures.Hold = {
+Hammer.gestures.Hold = {
     priority: 10,
     defaults: {
         hold_timeout: 500
@@ -13,38 +12,38 @@ Gestures.Hold = {
     timer: null,
     handle: function(type, ev, inst) {
         switch(type) {
-            case hammer.TOUCH_START:
+            case Hammer.TOUCH_START:
                 // clear any running timers
-                clearTimeout(Gestures.Hold.timer);
+                clearTimeout(Hammer.gestures.Hold.timer);
 
                 // set the gesture so we can check in the timeout if it still is
-                Gesture.current.gesture = 'hold';
+                Hammer.gesture.current.name = 'hold';
 
                 // set timer and if after the timeout it still is hold,
                 // we trigger the hold event
-                Gestures.Hold.timer = setTimeout(function() {
-                    if(Gesture.current.gesture == 'hold') {
+                Hammer.gestures.Hold.timer = setTimeout(function() {
+                    if(Hammer.gesture.current.name == 'hold') {
                         inst.trigger("hold", ev);
                     }
                 }, inst.options.hold_timeout);
                 break;
 
             // when you move or end we clear the timer
-            case hammer.TOUCH_MOVE:
-            case hammer.TOUCH_END:
-                clearTimeout(Gestures.Hold.timer);
+            case Hammer.TOUCH_MOVE:
+            case Hammer.TOUCH_END:
+                clearTimeout(Hammer.gestures.Hold.timer);
                 break;
         }
     }
 };
-Gesture.registerGesture(Gestures.Hold);
+Hammer.gesture.registerGesture(Hammer.gestures.Hold);
 
 
 
 // Tap/DoubleTap gesture
 // Quick touch at a place or double at the same place
 // events: tap, doubletap
-Gestures.Tap = {
+Hammer.gestures.Tap = {
     priority: 100,
     defaults: {
         tap_max_touchtime  : 250,
@@ -54,7 +53,7 @@ Gestures.Tap = {
     },
     handle: function(type, ev, inst) {
         switch(type) {
-            case hammer.TOUCH_END:
+            case Hammer.TOUCH_END:
                 // when the touchtime is higher then the max touch time
                 // or when the moving distance is too much
                 if(ev.touchTime > inst.options.tap_max_touchtime ||
@@ -63,22 +62,22 @@ Gestures.Tap = {
                 }
 
                 // check if double tap
-                if(Gesture.previous && Gesture.previous.gesture == 'tap' &&
-                    (ev.time - Gesture.previous.lastEvent.time) < inst.options.doubletap_interval &&
+                if(Hammer.gesture.previous && Hammer.gesture.previous.gesture == 'tap' &&
+                    (ev.time - Hammer.gesture.previous.lastHammer.event.time) < inst.options.doubletap_interval &&
                     ev.distance < inst.options.doubletap_distance)
                 {
-                    Gesture.current.gesture = 'doubletap';
+                    Hammer.gesture.current.name = 'doubletap';
                 }
                 else {
-                    Gesture.current.gesture = 'tap';
+                    Hammer.gesture.current.name = 'tap';
                 }
 
-                inst.trigger(Gesture.current.gesture, ev);
+                inst.trigger(Hammer.gesture.current.name, ev);
                 break;
         }
     }
 };
-Gesture.registerGesture(Gestures.Tap);
+Hammer.gesture.registerGesture(Hammer.gestures.Tap);
 
 
 
@@ -86,7 +85,7 @@ Gesture.registerGesture(Gestures.Tap);
 // Quick touch at a place or double at the same place
 // events:  dragstart, drag, dragend,
 //          drapleft, dragright, dragup, dragdown
-Gestures.Drag = {
+Hammer.gestures.Drag = {
     priority: 50,
     defaults: {
         drag_min_distance : 10
@@ -96,20 +95,20 @@ Gestures.Drag = {
             first = false;
 
         switch(type) {
-            case hammer.TOUCH_MOVE:
+            case Hammer.TOUCH_MOVE:
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
                 if(ev.distance < inst.options.drag_min_distance &&
-                    Gesture.current.gesture != name) {
+                    Hammer.gesture.current.name != name) {
                     return;
                 }
 
                 // first time
-                if(Gesture.current.gesture != name) {
+                if(Hammer.gesture.current.name != name) {
                     inst.trigger('dragstart', ev);
                 }
 
-                Gesture.current.gesture = name;
+                Hammer.gesture.current.name = name;
                 inst.trigger(name, ev); // basic drag event
                 inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
 
@@ -117,8 +116,8 @@ Gestures.Drag = {
                 ev.originalEvent.preventDefault();
                 break;
 
-            case hammer.TOUCH_END:
-                if(Gesture.current.gesture == name) {
+            case Hammer.TOUCH_END:
+                if(Hammer.gesture.current.name == name) {
                     inst.trigger('dragend', ev);
 
                     // stop browser from scrolling
@@ -128,14 +127,14 @@ Gestures.Drag = {
         }
     }
 };
-Gesture.registerGesture(Gestures.Drag);
+Hammer.gesture.registerGesture(Hammer.gestures.Drag);
 
 
 
 // Swipe gesture
-// Called after Gesture.Drag
+// Called after Hammer.gesture.Drag
 // events: swipe, swipeleft, swiperight, swipeup, swipedown
-Gestures.Swipe = {
+Hammer.gestures.Swipe = {
     priority: 51,
     defaults: {
         swipe_min_time     : 150,
@@ -145,10 +144,10 @@ Gestures.Swipe = {
         var name = 'swipe';
 
         switch(type) {
-            case hammer.TOUCH_END:
+            case Hammer.TOUCH_END:
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
-                if(Gesture.current.gesture == 'drag' &&
+                if(Hammer.gesture.current.name == 'drag' &&
                     ev.touchTime > inst.options.swipe_min_time &&
                     ev.distance > inst.options.swipe_min_distance) {
 
@@ -159,16 +158,16 @@ Gestures.Swipe = {
         }
     }
 };
-Gesture.registerGesture(Gestures.Swipe);
+Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 
 
 
 // Transform gesture
-// Called before Gesture.Drag
+// Called before Hammer.gesture.Drag
 // events: transformstart, transform, transformend,
 //          pinch, pinchin, pinchout,
 //          rotate, rotateleft, rotateright
-Gestures.Transform = {
+Hammer.gestures.Transform = {
     priority: 45,
     defaults: {
         transform_min_scale     : .1,
@@ -179,21 +178,21 @@ Gestures.Transform = {
             first = false;
 
         switch(type) {
-            case hammer.TOUCH_MOVE:
+            case Hammer.TOUCH_MOVE:
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
                 if((ev.scale < inst.options.transform_min_scale ||
                    ev.rotation < inst.options.transform_min_rotate) &&
-                    Gesture.current.gesture != name) {
+                    Hammer.gesture.current.name != name) {
                     return;
                 }
 
                 // first time
-                if(Gesture.current.gesture != name) {
+                if(Hammer.gesture.current.name != name) {
                     inst.trigger('transformstart', ev);
                 }
 
-                Gesture.current.gesture = name;
+                Hammer.gesture.current.name = name;
                 inst.trigger(name, ev); // basic drag event
 
                 // trigger rotate event
@@ -215,8 +214,8 @@ Gestures.Transform = {
                 return false;
                 break;
 
-            case hammer.TOUCH_END:
-                if(Gesture.current.gesture == name) {
+            case Hammer.TOUCH_END:
+                if(Hammer.gesture.current.name == name) {
                     inst.trigger('transformend', ev);
 
                     // stop browser from scrolling
@@ -226,21 +225,21 @@ Gestures.Transform = {
         }
     }
 };
-Gesture.registerGesture(Gestures.Transform);
+Hammer.gesture.registerGesture(Hammer.gestures.Transform);
 
 
 
 // Release gesture
 // Called as last, tells the user has released the screen
 // events: release
-Gestures.Release = {
+Hammer.gestures.Release = {
     priority: 999,
     handle: function(type, ev, inst) {
         switch(type) {
-            case hammer.TOUCH_END:
+            case Hammer.TOUCH_END:
                 inst.trigger('release', ev);
                 break;
         }
     }
 };
-Gesture.registerGesture(Gestures.Release);
+Hammer.gesture.registerGesture(Hammer.gestures.Release);

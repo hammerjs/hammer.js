@@ -1,5 +1,4 @@
-var Util = hammer.Util = {
-
+Hammer.util = {
     /**
      * simple extend method
      * @param   Object      obj1
@@ -73,7 +72,7 @@ var Util = hammer.Util = {
 
         for(var key in directions){
             if(directions[key]) {
-                return hammer[key];
+                return Hammer[key];
             }
         }
         return null;
@@ -89,8 +88,8 @@ var Util = hammer.Util = {
     getScale: function(start, end) {
         // need two fingers...
         if(start.length == 2 && end.length == 2) {
-            return Util.getDistance(end[0], end[1]) /
-                Util.getDistance(start[0], start[1]);
+            return Hammer.util.getDistance(end[0], end[1]) /
+                Hammer.util.getDistance(start[0], start[1]);
         }
         return 0;
     },
@@ -105,8 +104,8 @@ var Util = hammer.Util = {
     getRotation: function(start, end) {
         // need two fingers
         if(start.length == 2 && end.length == 2) {
-            return Util.getAngle(end[1], end[0]) -
-                Util.getAngle(start[1], start[0]);
+            return Hammer.util.getAngle(end[1], end[0]) -
+                Hammer.util.getAngle(start[1], start[0]);
         }
         return 0;
     }

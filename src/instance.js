@@ -1,34 +1,60 @@
-function HammerInstance(el, options) {
+/**
+ * create new hammer instance
+ * @param   {HTMLElement}   element
+ * @param   {Object}        [options={}]
+ * @return  {Object}        instance
+ */
+Hammer.Instance = function(element, options) {
     var self = this;
 
-    this.element = el;
-    this.options = Util.extend(hammer.defaults, options);
+    this.element = element;
+    this.options = Hammer.util.extend(Hammer.defaults, options || {});
 
-    // setup hammerJS window events
+    // setup HammerJS window events
     setup();
 
     // start detection on touchstart
-    Event.onTouch(el, hammer.TOUCH_START, function(ev) {
-        Gesture.startDetect(self, ev);
+    Hammer.event.onTouch(element, Hammer.TOUCH_START, function(ev) {
+        Hammer.gesture.startDetect(self, ev);
     });
-}
 
-
-/**
- * trigger gesture event
- * @param   string      gesture
- * @param   object      ev
- * @return  {*}
- */
-HammerInstance.prototype.trigger = function(gesture, ev) {
-    ev.gesture = gesture;
-    return Event.trigger(this.element, gesture, ev);
+    // return instance
+    return this;
 };
 
-HammerInstance.prototype.on = function(gesture, callback) {
-    return Event.on(this.element, gesture, callback);
-};
 
-HammerInstance.prototype.off = function(gesture, callback) {
-    return Event.off(this.element, gesture, callback);
+Hammer.Instance.prototype = {
+    /**
+     * trigger gesture event
+     * @param   string      gesture
+     * @param   object      ev
+     * @return  {*}
+     */
+    trigger: function(gesture, ev) {
+        // put the gesture name in the event data
+        ev.gesture = gesture;
+        return Hammer.event.trigger(this.element, gesture, ev);
+    },
+
+
+    /**
+     * bind events to the instance
+     * @param   string      gestures
+     * @param   callback    callback
+     * @return  {*}
+     */
+    on: function(gesture, handler) {
+        return Hammer.event.on(this.element, gesture, handler);
+    },
+
+
+    /**
+     * unbind events to the instance
+     * @param   string      gestures
+     * @param   callback    callback
+     * @return  {*}
+     */
+    off: function(gesture, handler) {
+        return Hammer.event.off(this.element, gesture, handler);
+    }
 };
