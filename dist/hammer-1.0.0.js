@@ -503,28 +503,26 @@ Hammer.gestures.Tap = {
         doubletap_interval : 300
     },
     handle: function(type, ev, inst) {
-        switch(type) {
-            case Hammer.TOUCH_END:
-                // when the touchtime is higher then the max touch time
-                // or when the moving distance is too much
-                if(ev.touchTime > inst.options.tap_max_touchtime ||
-                    ev.distance > inst.options.tap_max_distance) {
-                    return;
-                }
+        if(type == Hammer.TOUCH_END) {
+            // when the touchtime is higher then the max touch time
+            // or when the moving distance is too much
+            if(ev.touchTime > inst.options.tap_max_touchtime ||
+                ev.distance > inst.options.tap_max_distance) {
+                return;
+            }
 
-                // check if double tap
-                if(Hammer.gesture.previous && Hammer.gesture.previous.gesture == 'tap' &&
-                    (ev.time - Hammer.gesture.previous.lastHammer.event.time) < inst.options.doubletap_interval &&
-                    ev.distance < inst.options.doubletap_distance)
-                {
-                    Hammer.gesture.current.name = 'doubletap';
-                }
-                else {
-                    Hammer.gesture.current.name = 'tap';
-                }
+            // check if double tap
+            if(Hammer.gesture.previous && Hammer.gesture.previous.gesture == 'tap' &&
+                (ev.time - Hammer.gesture.previous.lastHammer.event.time) < inst.options.doubletap_interval &&
+                ev.distance < inst.options.doubletap_distance)
+            {
+                Hammer.gesture.current.name = 'doubletap';
+            }
+            else {
+                Hammer.gesture.current.name = 'tap';
+            }
 
-                inst.trigger(Hammer.gesture.current.name, ev);
-                break;
+            inst.trigger(Hammer.gesture.current.name, ev);
         }
     }
 };
@@ -594,18 +592,16 @@ Hammer.gestures.Swipe = {
     handle: function(type, ev, inst) {
         var name = 'swipe';
 
-        switch(type) {
-            case Hammer.TOUCH_END:
-                // when the distance we moved is too small we skip this gesture
-                // or we can be already in dragging
-                if(Hammer.gesture.current.name == 'drag' &&
-                    ev.touchTime > inst.options.swipe_min_time &&
-                    ev.distance > inst.options.swipe_min_distance) {
+        if(type == Hammer.TOUCH_END) {
+            // when the distance we moved is too small we skip this gesture
+            // or we can be already in dragging
+            if(Hammer.gesture.current.name == 'drag' &&
+                ev.touchTime > inst.options.swipe_min_time &&
+                ev.distance > inst.options.swipe_min_distance) {
 
-                    inst.trigger(name, ev); // basic drag event
-                    inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
-                }
-                break;
+                inst.trigger(name, ev); // basic drag event
+                inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
+            }
         }
     }
 };
@@ -621,7 +617,7 @@ Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 Hammer.gestures.Transform = {
     priority: 45,
     defaults: {
-        transform_min_scale     : .1,
+        transform_min_scale     : 0.1,
         transform_min_rotation  : 15   // degrees
     },
     handle: function(type, ev, inst) {
@@ -663,7 +659,6 @@ Hammer.gestures.Transform = {
 
                 // stop other events
                 return false;
-                break;
 
             case Hammer.TOUCH_END:
                 if(Hammer.gesture.current.name == name) {
@@ -686,10 +681,8 @@ Hammer.gesture.registerGesture(Hammer.gestures.Transform);
 Hammer.gestures.Release = {
     priority: 999,
     handle: function(type, ev, inst) {
-        switch(type) {
-            case Hammer.TOUCH_END:
-                inst.trigger('release', ev);
-                break;
+        if(type ==  Hammer.TOUCH_END) {
+            inst.trigger('release', ev);
         }
     }
 };

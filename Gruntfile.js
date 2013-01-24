@@ -32,8 +32,11 @@ module.exports = function(grunt) {
         },
 
         jshint: {
+            options: {
+                browser: true
+            },
             files: {
-                src: ['Gruntfile.js', 'src/**/*.js']
+                src: ['Gruntfile.js', 'dist/<%= pkg.name %>-<%= pkg.version %>.js']
             }
         },
 
@@ -51,7 +54,7 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: 'src/*.js',
-                tasks: ['concat'],
+                tasks: ['concat','jshint'],
                 options: {
                     interrupt: true
                 }
@@ -68,7 +71,7 @@ module.exports = function(grunt) {
 
 
     // Default task(s).
-    grunt.registerTask('build', ['concat','uglify']);
+    grunt.registerTask('build', ['concat','jshint','uglify']);
     grunt.registerTask('default', ['watch']);
 
 };
