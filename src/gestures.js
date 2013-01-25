@@ -206,6 +206,19 @@ Hammer.gestures.Transform = {
 };
 
 
+// Touch gesture
+// Called as first, tells the user has touched the screen
+// events: release
+Hammer.gestures.Touch = {
+    priority: -Infinity,
+    handle: function(type, ev, inst) {
+        if(type ==  Hammer.TOUCH_START) {
+            inst.trigger('touch', ev);
+        }
+    }
+};
+
+
 // Release gesture
 // Called as last, tells the user has released the screen
 // events: release

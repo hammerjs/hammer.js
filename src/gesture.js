@@ -93,9 +93,11 @@ Hammer.gesture = {
         // if the touches change, set the new touches over the startEvent touches
         // this because touchevents don't have all the touches on touchstart, or the
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
-        if(startEv && ev.touches.length !== startEv.touches.length) {
+        if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = Hammer.util.extend({}, ev.touches, 1);
+
+            console.log('changed touches count');
         }
 
         Hammer.util.extend(ev, {

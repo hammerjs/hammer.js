@@ -62,9 +62,9 @@ Hammer.event = {
         };
 
         var events = {};
-        events[Hammer.TOUCH_START]  = Hammer.HAS_TOUCHEVENTS ? 'touchstart' : 'mousedown';
+        events[Hammer.TOUCH_START]  = Hammer.HAS_TOUCHEVENTS ? 'touchstart gesturestart gesturechange' : 'mousedown';
         events[Hammer.TOUCH_MOVE]   = Hammer.HAS_TOUCHEVENTS ? 'touchmove' : 'mousemove';
-        events[Hammer.TOUCH_END]    = Hammer.HAS_TOUCHEVENTS ? 'touchend touchcancel' : 'mouseup';
+        events[Hammer.TOUCH_END]    = Hammer.HAS_TOUCHEVENTS ? 'touchend touchcancel gestureend' : 'mouseup';
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS) {
@@ -82,6 +82,26 @@ Hammer.event = {
 
 
     /**
+     * create fake touchlist when there is no event.touches
+     * the extension hammer.debug adds multitouch for desktop available and overwrites this
+     * @param   TOUCHTYPE   type
+     * @param   Event       ev
+     */
+    createFakeTouchList: function(type, ev) {
+        var touches = [{
+            identifier: 1,
+            clientX: ev.clientX,
+            clientY: ev.clientY,
+            pageX: ev.pageX,
+            pageY: ev.pageY,
+            target: ev.target
+        }];
+
+        return touches;
+    },
+
+
+    /**
      * collect event data for Hammer js
      * @param   domElement      element
      * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
@@ -93,33 +113,7 @@ Hammer.event = {
         // create a fake touchlist when no touches are found
         // this would be with a mouse on a pc
         if(!touches) {
-            touches = [{
-                identifier: 1,
-                clientX: ev.clientX,
-                clientY: ev.clientY,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }];
-
-
-            // on touchstart we store the position of the mouse for multitouch
-            if(type == Hammer.TOUCH_START) {
-                Hammer.event._first_mouse_pos = {
-                    identifier: 2,
-                    clientX: ev.clientX,
-                    clientY: ev.clientY,
-                    pageX: ev.pageX,
-                    pageY: ev.pageY,
-                    target: ev.target
-                };
-            }
-
-            // @todo make this go in scale with the real mouse position
-            // when the ALT key is pressed, multitouch is possible on desktop
-            if(ev.altKey) {
-                touches.push(Hammer.event._first_mouse_pos);
-            }
+            touches = Hammer.event.createFakeTouchList(type, ev);
         }
 
         return {

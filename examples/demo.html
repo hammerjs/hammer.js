@@ -6,7 +6,10 @@
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <style>
         html {
+            user-select: none;
+            -moz-user-select: none;
             -webkit-user-select: none;
+
             -webkit-touch-callout: none;
             -webkit-touch-action: none;
             -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -41,23 +44,57 @@
         .hitarea {
             background: aliceblue;
             padding: 20px;
-            border: solid 3px #fff;
-        }
-
-        .hitarea-active {
-            border: solid 3px lightcoral;
+            border: solid #ccc 1px;
         }
 
         .hitarea-nested {
             background: lightblue;
         }
 
+        @media screen and (max-width:640px) {
+            body {
+                padding: 10px;
+            }
+
+            .sidebar {
+                float: none;
+                width: auto;
+                margin-bottom: 25px;
+            }
+
+            .sidebar li {
+                display: inline-block;
+                width: 30%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .sidebar li.property-gesture {
+                position: fixed;
+                right: 0;
+                top: 0;
+                background: lightgreen;
+                padding: 1px 4px;
+                width: auto;
+            }
+        }
+
+        @media screen and (max-width:480px) {
+            .sidebar li {
+                width: 49%;
+            }
+        }
+
     </style>
 </head>
 <body>
-<div class="sidebar well">
+<div class="sidebar well well-small">
     <h4>Events</h4>
+    <label>
+        <input type="checkbox" id="prevent-scroll-drag"> preventDefault on vertical drag
+    </label>
     <ul class="unstyled events" id="events-list">
+        <li>touch</li>
         <li>release</li>
         <li>hold</li>
         <li>tap</li>
@@ -90,7 +127,7 @@
     </ul>
     <h4>EventData</h4>
     <ul class="unstyled properties">
-        <li><strong>gesture</strong> <span id="log-prop-gesture"></span></li>
+        <li class="property-gesture"><strong>gesture</strong> <span id="log-prop-gesture"></span></li>
         <li><strong>center</strong> <span id="log-prop-center"></span></li>
         <li><strong>touchTime</strong> <span id="log-prop-touchTime"></span>ms</li>
         <li><strong>angle</strong> <span id="log-prop-angle"></span>&deg;</li>
@@ -105,9 +142,8 @@
     </ul>
 </div>
 
-<p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
-</p>
+<pre id="debug">-</pre>
+
 <div id="hitarea" class="hitarea">
     <h3>Hitarea</h3>
     <p>
@@ -140,15 +176,40 @@
     <script src="http://code.jquery.com/jquery.min.js"></script>
 
     <script src="../dist/hammer-1.0.0.js"></script>
+    <script src="../extensions/hammer.debug.js"></script>
+
     <script>
 
-        var event_log = $('#event-log')[0];
+
+        Hammer.debug.showTouches();
+
+        function getEl(id) {
+            return document.getElementById(id);
+        }
+
+
+        var event_log = getEl('event-log');
         var log_elements = {};
+        var prevent_scroll_drag = false;
+
+
+
+        var debug_el = getEl('debug');
+        function DEBUG() {
+            var args = Array.prototype.slice.call(arguments);
+            debug_el.innerText = args.join(' ');
+        }
+
+
+        $("#prevent-scroll-drag").click(function() {
+            prevent_scroll_drag = this.checked;
+        });
+
 
         function getLogElement(type, name) {
             var el = log_elements[type + name];
             if(!el) {
-                return log_elements[type + name] = $("#log-"+ type +"-"+ name)[0];
+                return log_elements[type + name] = getEl("log-"+ type +"-"+ name);
             }
             return el;
         }
@@ -159,7 +220,7 @@
 
             // add to the large event log at the bottom of the page
             var log = [this.id, gesture];
-            event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
+            //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
 
             // highlight gesture
@@ -179,9 +240,8 @@
                 getLogElement('prop', prop).innerText = value;
             }
 
-
             // stop browser from scrolling
-            if(gesture == 'transform' || gesture == 'drag' || gesture == 'dragleft' || gesture == 'dragright') {
+            if(gesture == 'transform' || gesture == 'dragleft' || gesture == 'dragright' || (gesture == 'drag' && prevent_scroll_drag)) {
                 ev.hammer.touchEvent.preventDefault();
             }
         }
@@ -198,11 +258,8 @@
 
 
         // hitareas
-        var hitarea = $('#hitarea')[0];
-        Hammer(hitarea).on(all_events.join(" "), logEvent);
-
-        var nested = $('#nested')[0];
-        Hammer(nested).on(all_events.join(" "), function(ev) {
+        Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
+        Hammer(getEl('nested')).on(all_events.join(" "), function(ev) {
             logEvent.call(this, ev);
             ev.stopPropagation();
         });
