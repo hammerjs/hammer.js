@@ -36,6 +36,12 @@
             width: 150px;
             font-size: 12px;
         }
+
+        .sidebar li {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .events li.active { background: lightgreen; }
 
         .properties li { white-space: nowrap; }
@@ -65,8 +71,6 @@
             .sidebar li {
                 display: inline-block;
                 width: 30%;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
             .sidebar li.property-gesture {
