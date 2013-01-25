@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0 - 2013-01-25
+/*! Hammer.JS - v1.0.0dev - 2013-01-25
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -496,8 +496,6 @@ Hammer.gesture = {
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = Hammer.util.extend({}, ev.touches, 1);
-
-            console.log('changed touches count');
         }
 
         Hammer.util.extend(ev, {

@@ -175,7 +175,7 @@
     <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
     <script src="http://code.jquery.com/jquery.min.js"></script>
 
-    <script src="../dist/hammer-1.0.0.js"></script>
+    <script src="../dist/hammer-1.0.0dev.js"></script>
     <script src="../extensions/hammer.debug.js"></script>
 
     <script>
@@ -241,7 +241,8 @@
             }
 
             // stop browser from scrolling
-            if(gesture == 'transform' || gesture == 'dragleft' || gesture == 'dragright' || (gesture == 'drag' && prevent_scroll_drag)) {
+            if(gesture == 'transform' || gesture == 'dragleft' || gesture == 'dragright' ||
+                (gesture == 'drag' && prevent_scroll_drag)) {
                 ev.hammer.touchEvent.preventDefault();
             }
         }

@@ -10,7 +10,7 @@
     Hammer.debug.showTouches = function() {
         // the circles under your fingers
         var template = '<div style="position:absolute;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
-            'background:rgba(255,255,255,.8);border-radius:20px;pointer-events:none;' +
+            'background:rgba(255,255,255,.3);border-radius:20px;pointer-events:none;' +
             'margin-top:-9px;margin-left:-9px;"></div>';
 
         // elements by identifier
@@ -58,35 +58,55 @@
      * @param   {Event}     ev
      * @return  {Array}     Touches
      */
+    var start_pos = false;
     Hammer.event.createFakeTouchList = function(type, ev) {
-        var touches = [{
-            identifier: 1,
-            clientX: ev.clientX,
-            clientY: ev.clientY,
-            pageX: ev.pageX,
-            pageY: ev.pageY,
-            target: ev.target
-        }];
+        var touches = [];
 
-        // on touchstart we store the position of the mouse for multitouch
-        if(type == Hammer.TOUCH_START) {
-            Hammer.event._first_mouse_pos = {
-                identifier: 2,
-                clientX: ev.clientX+50,
-                clientY: ev.clientY+50,
-                pageX: ev.pageX+50,
-                pageY: ev.pageY+50,
-                target: ev.target
-            };
-        }
-
-        // @todo make this go in scale with the real mouse position
         // when the shift key is pressed, multitouch is possible on desktop
         if(ev.shiftKey) {
-            touches.push(Hammer.event._first_mouse_pos);
-        }
+            // on touchstart we store the position of the mouse for multitouch
+            if(!start_pos) {
+                start_pos = {
+                    pageX: ev.pageX,
+                    pageY: ev.pageY,
+                    clientX: ev.clientX,
+                    clientY: ev.clientY
+                };
+            }
 
-        return touches;
+            var distance_x = start_pos.pageX - ev.pageX - 5;
+            var distance_y = start_pos.pageY - ev.pageY - -5;
+
+            var touches = [{
+                identifier: 1,
+                clientX: ev.clientX,
+                clientY: ev.clientY,
+                pageX: ev.pageX,
+                pageY: ev.pageY,
+                target: ev.target
+            }, {
+                // fake second touch in the opposite direction
+                identifier: 2,
+                clientX: start_pos.clientX + distance_x,
+                clientY: start_pos.clientY + distance_y,
+                pageX: start_pos.pageX + distance_x,
+                pageY: start_pos.pageY + distance_y,
+                target: ev.target
+            }];
+
+            return touches;
+        // normal single touch
+        } else {
+            start_pos = false;
+            return [{
+                identifier: 1,
+                clientX: ev.clientX,
+                clientY: ev.clientY,
+                pageX: ev.pageX,
+                pageY: ev.pageY,
+                target: ev.target
+            }];
+        }
     };
 
 })(window.Hammer);

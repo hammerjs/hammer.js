@@ -96,8 +96,6 @@ Hammer.gesture = {
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = Hammer.util.extend({}, ev.touches, 1);
-
-            console.log('changed touches count');
         }
 
         Hammer.util.extend(ev, {
