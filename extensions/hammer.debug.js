@@ -33,14 +33,15 @@
                         touch_elements[id] = $(template).appendTo(document.body);
                     }
 
+                    // Paul Irish says that translate is faster then left/top
                     touch_elements[id].css("transform", "translate3d("+touch.pageX+"px,"+touch.pageY+"px, 0)");
                 }
 
                 // remove unused touch elements
-                for(var id in touch_elements) {
-                    if(!touches_index[id]) {
-                        touch_elements[id].remove();
-                        delete touch_elements[id];
+                for(var key in touch_elements) {
+                    if(touch_elements.hasOwnProperty(key) && !touches_index[key]) {
+                        touch_elements[key].remove();
+                        delete touch_elements[key];
                     }
                 }
 
@@ -50,6 +51,7 @@
 
 
     /**
+     * overwrites Hammer.event.createFakeTouchList.
      * enable multitouch on the desktop by pressing the shiftkey
      * the other touch goes in the opposite direction so the center keeps at its place
      * it's recommended to enable Hammer.debug.showTouches for this one
@@ -60,6 +62,7 @@
      */
     var start_pos = false;
     Hammer.event.createFakeTouchList = function(type, ev) {
+        // this part is the same as in the original
         var touches = [{
             identifier: 1,
             clientX: ev.clientX,
@@ -70,6 +73,7 @@
         }];
 
         // when the shift key is pressed, multitouch is possible on desktop
+        // why shift? because ctrl and alt are taken by osx and linux
         if(ev.shiftKey) {
             // on touchstart we store the position of the mouse for multitouch
             if(!start_pos) {
@@ -81,11 +85,12 @@
                 };
             }
 
+            // small misplacement to fix NaN/Infinity issues
             var distance_x = start_pos.pageX - ev.pageX - 5;
             var distance_y = start_pos.pageY - ev.pageY - -5;
 
+            // fake second touch in the opposite direction
             touches.push({
-                // fake second touch in the opposite direction
                 identifier: 2,
                 clientX: start_pos.clientX + distance_x,
                 clientY: start_pos.clientY + distance_y,

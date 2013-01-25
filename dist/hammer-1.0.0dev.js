@@ -283,9 +283,7 @@ Hammer.util = {
             pageX: 0,
             pageY: 0,
             clientX: 0,
-            clientY: 0,
-            screenX: 0,
-            screenY: 0
+            clientY: 0
         };
 
         var minmax = {};

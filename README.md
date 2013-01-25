@@ -15,5 +15,5 @@ lighter, smaller and more open, better events, grunt, and custom gestures possib
 - Write Unit tests?
 - Write jQuery plugin
 - ~~Write Debug tool?~~
-- ~~Fix ALT key multitouch on desktop~~
+- ~~Shift key multitouch on desktop~~
 - Update website in gh-pages
