@@ -51,59 +51,69 @@
 
 
     /**
-     * overwrites Hammer.event.createFakeTouchList.
      * enable multitouch on the desktop by pressing the shiftkey
      * the other touch goes in the opposite direction so the center keeps at its place
      * it's recommended to enable Hammer.debug.showTouches for this one
-     *
-     * @param   TOUCHTYPE   type
-     * @param   {Event}     ev
-     * @return  {Array}     Touches
      */
-    var start_pos = false;
-    Hammer.event.createFakeTouchList = function(type, ev) {
-        // this part is the same as in the original
-        var touches = [{
-            identifier: 1,
-            clientX: ev.clientX,
-            clientY: ev.clientY,
-            pageX: ev.pageX,
-            pageY: ev.pageY,
-            target: ev.target
-        }];
+    Hammer.debug.fakeMultitouch = function() {
+        // keeps the start position to keep it centered
+        var start_pos = false;
 
-        // when the shift key is pressed, multitouch is possible on desktop
-        // why shift? because ctrl and alt are taken by osx and linux
-        if(ev.shiftKey) {
-            // on touchstart we store the position of the mouse for multitouch
-            if(!start_pos) {
-                start_pos = {
-                    pageX: ev.pageX,
-                    pageY: ev.pageY,
-                    clientX: ev.clientX,
-                    clientY: ev.clientY
-                };
+        /**
+         * overwrites Hammer.event.createFakeTouchList.
+         * @param   TOUCHTYPE   type
+         * @param   {Event}     ev
+         * @return  {Array}     Touches
+         */
+        Hammer.event.createFakeTouchList = function(type, ev) {
+            // this part is the same as in the original
+            var touches = [{
+                identifier: 1,
+                clientX: ev.clientX,
+                clientY: ev.clientY,
+                pageX: ev.pageX,
+                pageY: ev.pageY,
+                target: ev.target
+            }];
+
+            // reset on start of a new touch
+            if(type == Hammer.TOUCH_START) {
+                start_pos = false;
             }
 
-            // small misplacement to fix NaN/Infinity issues
-            var distance_x = start_pos.pageX - ev.pageX - 5;
-            var distance_y = start_pos.pageY - ev.pageY - -5;
+            // when the shift key is pressed, multitouch is possible on desktop
+            // why shift? because ctrl and alt are taken by osx and linux
+            if(ev.shiftKey) {
+                // on touchstart we store the position of the mouse for multitouch
+                if(!start_pos) {
+                    start_pos = {
+                        pageX: ev.pageX,
+                        pageY: ev.pageY,
+                        clientX: ev.clientX,
+                        clientY: ev.clientY
+                    };
+                }
 
-            // fake second touch in the opposite direction
-            touches.push({
-                identifier: 2,
-                clientX: start_pos.clientX + distance_x,
-                clientY: start_pos.clientY + distance_y,
-                pageX: start_pos.pageX + distance_x,
-                pageY: start_pos.pageY + distance_y,
-                target: ev.target
-            });
-        // normal single touch
-        } else {
-            start_pos = false;
-        }
+                // small misplacement to fix NaN/Infinity issues
+                var distance_x = start_pos.pageX - ev.pageX - 5;
+                var distance_y = start_pos.pageY - ev.pageY - -5;
 
-        return touches;
+                // fake second touch in the opposite direction
+                touches.push({
+                    identifier: 2,
+                    clientX: start_pos.clientX + distance_x,
+                    clientY: start_pos.clientY + distance_y,
+                    pageX: start_pos.pageX + distance_x,
+                    pageY: start_pos.pageY + distance_y,
+                    target: ev.target
+                });
+            // normal single touch
+            } else {
+                start_pos = false;
+            }
+
+            return touches;
+        };
     };
 
 })(window.Hammer);
