@@ -60,7 +60,14 @@
      */
     var start_pos = false;
     Hammer.event.createFakeTouchList = function(type, ev) {
-        var touches = [];
+        var touches = [{
+            identifier: 1,
+            clientX: ev.clientX,
+            clientY: ev.clientY,
+            pageX: ev.pageX,
+            pageY: ev.pageY,
+            target: ev.target
+        }];
 
         // when the shift key is pressed, multitouch is possible on desktop
         if(ev.shiftKey) {
@@ -77,14 +84,7 @@
             var distance_x = start_pos.pageX - ev.pageX - 5;
             var distance_y = start_pos.pageY - ev.pageY - -5;
 
-            var touches = [{
-                identifier: 1,
-                clientX: ev.clientX,
-                clientY: ev.clientY,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }, {
+            touches.push({
                 // fake second touch in the opposite direction
                 identifier: 2,
                 clientX: start_pos.clientX + distance_x,
@@ -92,21 +92,13 @@
                 pageX: start_pos.pageX + distance_x,
                 pageY: start_pos.pageY + distance_y,
                 target: ev.target
-            }];
-
-            return touches;
+            });
         // normal single touch
         } else {
             start_pos = false;
-            return [{
-                identifier: 1,
-                clientX: ev.clientX,
-                clientY: ev.clientY,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }];
         }
+
+        return touches;
     };
 
 })(window.Hammer);
