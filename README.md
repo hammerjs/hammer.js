@@ -14,6 +14,6 @@ lighter, smaller and more open, better events, grunt, and custom gestures possib
 - Measure speed difference of V1 with V2
 - Write Unit tests?
 - Write jQuery plugin
-- Write Debug tool?
-- Fix ALT key multitouch on desktop
+- ~~Write Debug tool?~~
+- ~~Fix ALT key multitouch on desktop~~
 - Update website in gh-pages
