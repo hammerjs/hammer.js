@@ -55,7 +55,7 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: 'src/*.js',
-                tasks: ['concat','jshint'],
+                tasks: ['concat'],
                 options: {
                     interrupt: true
                 }
@@ -73,6 +73,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('build', ['concat','jshint','uglify']);
-    grunt.registerTask('default', ['watch']);
+    grunt.registerTask('default', ['build','watch']);
 
 };

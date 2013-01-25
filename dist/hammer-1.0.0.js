@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0 - 2013-01-24
+/*! Hammer.JS - v1.0.0 - 2013-01-25
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -42,6 +42,15 @@ function setup() {
         return;
     }
 
+    // Register all gestures inside Hammer.gestures
+    for(var name in Hammer.gestures) {
+        if(Hammer.gestures.hasOwnProperty(name)) {
+            Hammer.gesture.registerGesture(Hammer.gestures[name]);
+        }
+    }
+
+
+    // Add touch events on the window
     Hammer.event.onTouch(window, Hammer.TOUCH_MOVE, Hammer.gesture.detect);
     Hammer.event.onTouch(window, Hammer.TOUCH_END, Hammer.gesture.endDetect);
 
@@ -137,14 +146,40 @@ Hammer.event = {
 
 
     /**
-     * touch events with mouse fallback
-     * @param   domElement      element
-     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
-     * @param   callback
+     * this holds the last move event,
+     * used to fix empty touchend issue
+     * see the onTouch event for an explanation
      */
-    onTouch: function(element, type, callback) {
-        var cb = function(ev) {
-            callback.call(this, Hammer.event.collectEventData(element, type, ev));
+    _last_move_event: {},
+
+
+    /**
+     * this holds the first mouse event,
+     * used for multitouch with mouse and keyboard
+     * see the onTouch event for an explanation
+     */
+    _first_mouse_pos: {},
+
+
+    /**
+     * touch events with mouse fallback
+     * @param   {HTMLElement}      element
+     * @param   {Constant}       type        like Hammer.TOUCH_MOVE
+     * @param   handler
+     */
+    onTouch: function(element, type, handler) {
+        var triggerHandler = function(ev) {
+            // because touchend has no touches, and we often want to use these in our gestures,
+            // we send the last move event as our eventData in touchend
+            if(type === Hammer.TOUCH_END) {
+                ev = Hammer.event._last_move_event;
+            }
+            // store the last move event
+            else {
+                Hammer.event._last_move_event = ev;
+            }
+
+            handler.call(this, Hammer.event.collectEventData(element, type, ev));
         };
 
         var events = {};
@@ -154,13 +189,13 @@ Hammer.event = {
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS) {
-            Hammer.event.on(element, events[type], cb);
+            Hammer.event.on(element, events[type], triggerHandler);
         }
         // mouse
         else {
             Hammer.event.on(element, events[type], function(ev) {
                 if(ev.which === 1) {
-                    cb.apply(this, arguments);
+                    triggerHandler.apply(this, arguments);
                 }
             });
         }
@@ -176,7 +211,8 @@ Hammer.event = {
     collectEventData: function(element, type, ev) {
         var touches = ev.touches;
 
-        // create a fake touchlist
+        // create a fake touchlist when no touches are found
+        // this would be with a mouse on a pc
         if(!touches) {
             touches = [{
                 identifier: 1,
@@ -186,6 +222,25 @@ Hammer.event = {
                 pageY: ev.pageY,
                 target: ev.target
             }];
+
+
+            // on touchstart we store the position of the mouse for multitouch
+            if(type == Hammer.TOUCH_START) {
+                Hammer.event._first_mouse_pos = {
+                    identifier: 2,
+                    clientX: ev.clientX,
+                    clientY: ev.clientY,
+                    pageX: ev.pageX,
+                    pageY: ev.pageY,
+                    target: ev.target
+                };
+            }
+
+            // @todo make this go in scale with the real mouse position
+            // when the ALT key is pressed, multitouch is possible on desktop
+            if(ev.altKey) {
+                touches.push(Hammer.event._first_mouse_pos);
+            }
         }
 
         return {
@@ -193,7 +248,7 @@ Hammer.event = {
             time: Date.now(),
             target: ev.target,
             touches: touches,
-            originalEvent: ev,
+            touchEvent: ev,
             center: Hammer.util.getCenter(touches)
         };
     }
@@ -201,26 +256,64 @@ Hammer.event = {
 
 Hammer.util = {
     /**
-     * simple extend method
-     * @param   Object      obj1
-     * @param   Object      obj2
-     * @return  Object      obj1
+     * extend method,
+     * also used for cloning when dest is an empty object
+     * @param   {Object}    dest
+     * @param   {Object}    src
+     * @param   {Number}    [depth=0]
+     * @return  {Object}    dest
      */
-    extend: function(obj1, obj2) {
-        for (var key in obj2) {
-            obj1[key] = obj2[key];
+    extend: function(dest, src, depth) {
+        depth = depth || 0;
+
+        for (var key in src) {
+            if(src.hasOwnProperty(key)) {
+                dest[key] = src[key];
+                if(depth && typeof(dest[key]) == 'object') {
+                    Hammer.util.extend(dest[key], src[key], depth-1);
+                }
+            }
         }
-        return obj1;
+        return dest;
     },
 
 
     /**
      * get the center of all the touches
-     * @param   TouchList   touches
-     * @return  Object      center  {pageX, pageY}
+     * @param   {TouchList}   touches
+     * @return  {Object}      center
      */
     getCenter: function(touches) {
-        return touches[0];
+        var props = {
+            pageX: 0,
+            pageY: 0,
+            clientX: 0,
+            clientY: 0,
+            screenX: 0,
+            screenY: 0
+        };
+
+        var minmax = {};
+
+        // walk the properties
+        for(var p in props) {
+            // set initial values
+            minmax[p] = {
+                min: Infinity,
+                max: -Infinity
+            };
+
+            // walk touches and get the min and max values
+            for(var t= 0,len=touches.length; t<len; t++) {
+                minmax[p].min = Math.min(touches[t][p], minmax[p].min);
+                minmax[p].max = Math.max(touches[t][p], minmax[p].max);
+            }
+
+            // calculate center
+            props[p] = Math.round((minmax[p].min + minmax[p].max) / 2);
+        }
+
+        return props;
     },
 
 
@@ -247,6 +340,25 @@ Hammer.util = {
 
 
     /**
+     * angle to direction define
+     * @param   Touch      touch1
+     * @param   Touch      touch2
+     * @return {Constant}  direction constant, like Hammer.DIRECTION_LEFT
+     */
+    getDirection: function(touch1, touch2) {
+        var x = Math.abs(touch1.pageX - touch2.pageX),
+            y = Math.abs(touch1.pageY - touch2.pageY);
+
+        if(x >= y) {
+            return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
+        }
+        else {
+            return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
+        }
+    },
+
+
+    /**
      * calculate the distance between two touches
      * @param   Touch      touch1
      * @param   Touch      touch2
@@ -259,29 +371,8 @@ Hammer.util = {
 
 
     /**
-     * angle to direction define
-     * @param  {Number}     angle
-     * @return {String}     int direction
-     */
-    getDirection: function(angle) {
-        var directions = {
-            DIRECTION_DOWN  : angle >= 45 && angle < 135,
-            DIRECTION_LEFT  : angle >= 135 || angle <= -135,
-            DIRECTION_UP    : angle < -45 && angle > -135,
-            DIRECTION_RIGHT : angle >= -45 && angle <= 45
-        };
-
-        for(var key in directions){
-            if(directions[key]) {
-                return Hammer[key];
-            }
-        }
-        return null;
-    },
-
-
-    /**
-     * calculate the scale size between two touchLists (fingers)
+     * calculate the scale factor between two touchLists (fingers)
+     * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
      * @param   TouchList   start
      * @param   TouchList   end
      * @return  float       scale
@@ -292,7 +383,7 @@ Hammer.util = {
             return Hammer.util.getDistance(end[0], end[1]) /
                 Hammer.util.getDistance(start[0], start[1]);
         }
-        return 0;
+        return 1;
     },
 
 
@@ -337,7 +428,7 @@ Hammer.gesture = {
         Hammer.gesture.current = {
             inst        : inst, // reference to HammerInstance we're working for
             startEvent  : Hammer.util.extend({}, ev), // start eventData for distances, timing etc
-            lastEvent   : ev, // last eventData
+            lastEvent   : false, // last eventData
             name        : false // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
@@ -354,9 +445,6 @@ Hammer.gesture = {
             // extend event data with calculations about scale, distance etc
             var eventData = Hammer.gesture.extendEventData(ev);
 
-            // store last event
-            Hammer.gesture.current.lastEvent = eventData;
-
             // call Hammer.gesture handles
             for(var g=0,len=Hammer.gesture.handlers.length; g<len; g++) {
                 // if a handle returns false
@@ -367,6 +455,9 @@ Hammer.gesture = {
                     break;
                 }
             }
+
+            // store last event
+            Hammer.gesture.current.lastEvent = eventData;
         }
     },
 
@@ -388,6 +479,7 @@ Hammer.gesture = {
      */
     stop: function() {
         // clone current data to the store as the previous gesture
+        // used for the double tap gesture, since this is an other gesture detect session
         Hammer.gesture.previous = Hammer.util.extend({}, Hammer.gesture.current);
 
         // reset the current
@@ -403,13 +495,23 @@ Hammer.gesture = {
     extendEventData: function(ev) {
         var startEv = Hammer.gesture.current.startEvent;
 
+        // if the touches change, set the new touches over the startEvent touches
+        // this because touchevents don't have all the touches on touchstart, or the
+        // user must place his fingers at the EXACT same time on the screen, which is not realistic
+        if(startEv && ev.touches.length !== startEv.touches.length) {
+            // extend 1 level deep to get the touchlist with the touch objects
+            startEv.touches = Hammer.util.extend({}, ev.touches, 1);
+        }
+
         Hammer.util.extend(ev, {
             touchTime   : (ev.time - startEv.time),
+
+            angle       : Hammer.util.getAngle(startEv.center, ev.center),
+            direction   : Hammer.util.getDirection(startEv.center, ev.center),
 
             distance    : Hammer.util.getDistance(startEv.center, ev.center),
             distanceX   : Hammer.util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
             distanceY   : Hammer.util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
-            direction   : Hammer.util.getDirection(Hammer.util.getAngle(startEv.center, ev.center)),
 
             scale       : Hammer.util.getScale(startEv.touches, ev.touches),
             rotation    : Hammer.util.getRotation(startEv.touches, ev.touches),
@@ -484,7 +586,6 @@ Hammer.gestures.Hold = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Hold);
 
 
 // Tap/DoubleTap gesture
@@ -500,6 +601,9 @@ Hammer.gestures.Tap = {
     },
     handle: function(type, ev, inst) {
         if(type == Hammer.TOUCH_END) {
+            // previous gesture, for the double tap since these are two different gesture detections
+            var prev = Hammer.gesture.previous;
+
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
             if(ev.touchTime > inst.options.tap_max_touchtime ||
@@ -508,10 +612,9 @@ Hammer.gestures.Tap = {
             }
 
             // check if double tap
-            if(Hammer.gesture.previous && Hammer.gesture.previous.gesture == 'tap' &&
-                (ev.time - Hammer.gesture.previous.lastHammer.event.time) < inst.options.doubletap_interval &&
-                ev.distance < inst.options.doubletap_distance)
-            {
+            if(prev && prev.name == 'tap' &&
+                (ev.time - prev.lastEvent.time) < inst.options.doubletap_interval &&
+                ev.distance < inst.options.doubletap_distance) {
                 Hammer.gesture.current.name = 'doubletap';
             }
             else {
@@ -522,7 +625,6 @@ Hammer.gestures.Tap = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Tap);
 
 
 // Drag gesture
@@ -555,23 +657,16 @@ Hammer.gestures.Drag = {
                 Hammer.gesture.current.name = name;
                 inst.trigger(name, ev); // basic drag event
                 inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
-
-                // stop browser from scrolling
-                ev.originalEvent.preventDefault();
                 break;
 
             case Hammer.TOUCH_END:
                 if(Hammer.gesture.current.name == name) {
                     inst.trigger('dragend', ev);
-
-                    // stop browser from scrolling
-                    ev.originalEvent.preventDefault();
                 }
                 break;
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Drag);
 
 
 // Swipe gesture
@@ -599,7 +694,6 @@ Hammer.gestures.Swipe = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 
 
 // Transform gesture
@@ -610,8 +704,10 @@ Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 Hammer.gestures.Transform = {
     priority: 45,
     defaults: {
+        // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
         transform_min_scale     : 0.1,
-        transform_min_rotation  : 15   // degrees
+        // rotation in degrees
+        transform_min_rotation  : 15
     },
     handle: function(type, ev, inst) {
         var name = 'transform',
@@ -619,11 +715,13 @@ Hammer.gestures.Transform = {
 
         switch(type) {
             case Hammer.TOUCH_MOVE:
+                var scale_threshold = Math.abs(1-ev.scale);
+                var rotation_threshold = Math.abs(ev.rotation);
+
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
-                if((ev.scale < inst.options.transform_min_scale ||
-                   ev.rotation < inst.options.transform_min_rotate) &&
-                    Hammer.gesture.current.name != name) {
+                if(scale_threshold < inst.options.transform_min_scale &&
+                    rotation_threshold < inst.options.transform_min_rotation) {
                     return;
                 }
 
@@ -636,49 +734,39 @@ Hammer.gestures.Transform = {
                 inst.trigger(name, ev); // basic drag event
 
                 // trigger rotate event
-                if(Math.abs(ev.rotate) > inst.options.transform_min_rotate) {
+                if(rotation_threshold > inst.options.transform_min_rotation) {
                     inst.trigger('rotate', ev);
-                    inst.trigger('rotate'+ev.direction, ev);  // direction event, like rotateleft
+                    inst.trigger('rotate'+ ev.direction, ev);  // direction event, like rotateleft
                 }
 
                 // trigger pinch event
-                if(Math.abs(ev.scale) > inst.options.transform_min_scale) {
+                if(scale_threshold > inst.options.transform_min_scale) {
                     inst.trigger('pinch', ev);
-                    inst.trigger('pinch'+ (ev.scale > 0) ? 'in' : 'out', ev);  // direction event, like pinchin
+                    inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);  // direction event, like pinchin
                 }
-
-                // stop browser from scrolling
-                ev.originalEvent.preventDefault();
-
-                // stop other events
-                return false;
+                break;
 
             case Hammer.TOUCH_END:
                 if(Hammer.gesture.current.name == name) {
                     inst.trigger('transformend', ev);
-
-                    // stop browser from scrolling
-                    ev.originalEvent.preventDefault();
                 }
                 break;
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Transform);
 
 
 // Release gesture
 // Called as last, tells the user has released the screen
 // events: release
 Hammer.gestures.Release = {
-    priority: 999,
+    priority: Infinity,
     handle: function(type, ev, inst) {
         if(type ==  Hammer.TOUCH_END) {
             inst.trigger('release', ev);
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Release);
 
 // Expose Hammer to the global object
 window.Hammer = Hammer;

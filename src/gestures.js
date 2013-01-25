@@ -36,7 +36,6 @@ Hammer.gestures.Hold = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Hold);
 
 
 // Tap/DoubleTap gesture
@@ -52,6 +51,9 @@ Hammer.gestures.Tap = {
     },
     handle: function(type, ev, inst) {
         if(type == Hammer.TOUCH_END) {
+            // previous gesture, for the double tap since these are two different gesture detections
+            var prev = Hammer.gesture.previous;
+
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
             if(ev.touchTime > inst.options.tap_max_touchtime ||
@@ -60,10 +62,9 @@ Hammer.gestures.Tap = {
             }
 
             // check if double tap
-            if(Hammer.gesture.previous && Hammer.gesture.previous.gesture == 'tap' &&
-                (ev.time - Hammer.gesture.previous.lastHammer.event.time) < inst.options.doubletap_interval &&
-                ev.distance < inst.options.doubletap_distance)
-            {
+            if(prev && prev.name == 'tap' &&
+                (ev.time - prev.lastEvent.time) < inst.options.doubletap_interval &&
+                ev.distance < inst.options.doubletap_distance) {
                 Hammer.gesture.current.name = 'doubletap';
             }
             else {
@@ -74,7 +75,6 @@ Hammer.gestures.Tap = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Tap);
 
 
 // Drag gesture
@@ -107,23 +107,16 @@ Hammer.gestures.Drag = {
                 Hammer.gesture.current.name = name;
                 inst.trigger(name, ev); // basic drag event
                 inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
-
-                // stop browser from scrolling
-                ev.originalEvent.preventDefault();
                 break;
 
             case Hammer.TOUCH_END:
                 if(Hammer.gesture.current.name == name) {
                     inst.trigger('dragend', ev);
-
-                    // stop browser from scrolling
-                    ev.originalEvent.preventDefault();
                 }
                 break;
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Drag);
 
 
 // Swipe gesture
@@ -151,7 +144,6 @@ Hammer.gestures.Swipe = {
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 
 
 // Transform gesture
@@ -162,8 +154,10 @@ Hammer.gesture.registerGesture(Hammer.gestures.Swipe);
 Hammer.gestures.Transform = {
     priority: 45,
     defaults: {
+        // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
         transform_min_scale     : 0.1,
-        transform_min_rotation  : 15   // degrees
+        // rotation in degrees
+        transform_min_rotation  : 15
     },
     handle: function(type, ev, inst) {
         var name = 'transform',
@@ -171,11 +165,13 @@ Hammer.gestures.Transform = {
 
         switch(type) {
             case Hammer.TOUCH_MOVE:
+                var scale_threshold = Math.abs(1-ev.scale);
+                var rotation_threshold = Math.abs(ev.rotation);
+
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
-                if((ev.scale < inst.options.transform_min_scale ||
-                   ev.rotation < inst.options.transform_min_rotate) &&
-                    Hammer.gesture.current.name != name) {
+                if(scale_threshold < inst.options.transform_min_scale &&
+                    rotation_threshold < inst.options.transform_min_rotation) {
                     return;
                 }
 
@@ -188,46 +184,36 @@ Hammer.gestures.Transform = {
                 inst.trigger(name, ev); // basic drag event
 
                 // trigger rotate event
-                if(Math.abs(ev.rotate) > inst.options.transform_min_rotate) {
+                if(rotation_threshold > inst.options.transform_min_rotation) {
                     inst.trigger('rotate', ev);
-                    inst.trigger('rotate'+ev.direction, ev);  // direction event, like rotateleft
+                    inst.trigger('rotate'+ ev.direction, ev);  // direction event, like rotateleft
                 }
 
                 // trigger pinch event
-                if(Math.abs(ev.scale) > inst.options.transform_min_scale) {
+                if(scale_threshold > inst.options.transform_min_scale) {
                     inst.trigger('pinch', ev);
-                    inst.trigger('pinch'+ (ev.scale > 0) ? 'in' : 'out', ev);  // direction event, like pinchin
+                    inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);  // direction event, like pinchin
                 }
-
-                // stop browser from scrolling
-                ev.originalEvent.preventDefault();
-
-                // stop other events
-                return false;
+                break;
 
             case Hammer.TOUCH_END:
                 if(Hammer.gesture.current.name == name) {
                     inst.trigger('transformend', ev);
-
-                    // stop browser from scrolling
-                    ev.originalEvent.preventDefault();
                 }
                 break;
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Transform);
 
 
 // Release gesture
 // Called as last, tells the user has released the screen
 // events: release
 Hammer.gestures.Release = {
-    priority: 999,
+    priority: Infinity,
     handle: function(type, ev, inst) {
         if(type ==  Hammer.TOUCH_END) {
             inst.trigger('release', ev);
         }
     }
 };
-Hammer.gesture.registerGesture(Hammer.gestures.Release);

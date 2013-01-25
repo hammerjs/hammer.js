@@ -10,6 +10,15 @@ function setup() {
         return;
     }
 
+    // Register all gestures inside Hammer.gestures
+    for(var name in Hammer.gestures) {
+        if(Hammer.gestures.hasOwnProperty(name)) {
+            Hammer.gesture.registerGesture(Hammer.gestures[name]);
+        }
+    }
+
+
+    // Add touch events on the window
     Hammer.event.onTouch(window, Hammer.TOUCH_MOVE, Hammer.gesture.detect);
     Hammer.event.onTouch(window, Hammer.TOUCH_END, Hammer.gesture.endDetect);
 

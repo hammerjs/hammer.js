@@ -25,14 +25,40 @@ Hammer.event = {
 
 
     /**
-     * touch events with mouse fallback
-     * @param   domElement      element
-     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
-     * @param   callback
+     * this holds the last move event,
+     * used to fix empty touchend issue
+     * see the onTouch event for an explanation
      */
-    onTouch: function(element, type, callback) {
-        var cb = function(ev) {
-            callback.call(this, Hammer.event.collectEventData(element, type, ev));
+    _last_move_event: {},
+
+
+    /**
+     * this holds the first mouse event,
+     * used for multitouch with mouse and keyboard
+     * see the onTouch event for an explanation
+     */
+    _first_mouse_pos: {},
+
+
+    /**
+     * touch events with mouse fallback
+     * @param   {HTMLElement}      element
+     * @param   {Constant}       type        like Hammer.TOUCH_MOVE
+     * @param   handler
+     */
+    onTouch: function(element, type, handler) {
+        var triggerHandler = function(ev) {
+            // because touchend has no touches, and we often want to use these in our gestures,
+            // we send the last move event as our eventData in touchend
+            if(type === Hammer.TOUCH_END) {
+                ev = Hammer.event._last_move_event;
+            }
+            // store the last move event
+            else {
+                Hammer.event._last_move_event = ev;
+            }
+
+            handler.call(this, Hammer.event.collectEventData(element, type, ev));
         };
 
         var events = {};
@@ -42,13 +68,13 @@ Hammer.event = {
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS) {
-            Hammer.event.on(element, events[type], cb);
+            Hammer.event.on(element, events[type], triggerHandler);
         }
         // mouse
         else {
             Hammer.event.on(element, events[type], function(ev) {
                 if(ev.which === 1) {
-                    cb.apply(this, arguments);
+                    triggerHandler.apply(this, arguments);
                 }
             });
         }
@@ -64,7 +90,8 @@ Hammer.event = {
     collectEventData: function(element, type, ev) {
         var touches = ev.touches;
 
-        // create a fake touchlist
+        // create a fake touchlist when no touches are found
+        // this would be with a mouse on a pc
         if(!touches) {
             touches = [{
                 identifier: 1,
@@ -74,6 +101,25 @@ Hammer.event = {
                 pageY: ev.pageY,
                 target: ev.target
             }];
+
+
+            // on touchstart we store the position of the mouse for multitouch
+            if(type == Hammer.TOUCH_START) {
+                Hammer.event._first_mouse_pos = {
+                    identifier: 2,
+                    clientX: ev.clientX,
+                    clientY: ev.clientY,
+                    pageX: ev.pageX,
+                    pageY: ev.pageY,
+                    target: ev.target
+                };
+            }
+
+            // @todo make this go in scale with the real mouse position
+            // when the ALT key is pressed, multitouch is possible on desktop
+            if(ev.altKey) {
+                touches.push(Hammer.event._first_mouse_pos);
+            }
         }
 
         return {
@@ -81,7 +127,7 @@ Hammer.event = {
             time: Date.now(),
             target: ev.target,
             touches: touches,
-            originalEvent: ev,
+            touchEvent: ev,
             center: Hammer.util.getCenter(touches)
         };
     }

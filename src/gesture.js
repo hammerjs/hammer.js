@@ -23,7 +23,7 @@ Hammer.gesture = {
         Hammer.gesture.current = {
             inst        : inst, // reference to HammerInstance we're working for
             startEvent  : Hammer.util.extend({}, ev), // start eventData for distances, timing etc
-            lastEvent   : ev, // last eventData
+            lastEvent   : false, // last eventData
             name        : false // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
@@ -40,9 +40,6 @@ Hammer.gesture = {
             // extend event data with calculations about scale, distance etc
             var eventData = Hammer.gesture.extendEventData(ev);
 
-            // store last event
-            Hammer.gesture.current.lastEvent = eventData;
-
             // call Hammer.gesture handles
             for(var g=0,len=Hammer.gesture.handlers.length; g<len; g++) {
                 // if a handle returns false
@@ -53,6 +50,9 @@ Hammer.gesture = {
                     break;
                 }
             }
+
+            // store last event
+            Hammer.gesture.current.lastEvent = eventData;
         }
     },
 
@@ -74,6 +74,7 @@ Hammer.gesture = {
      */
     stop: function() {
         // clone current data to the store as the previous gesture
+        // used for the double tap gesture, since this is an other gesture detect session
         Hammer.gesture.previous = Hammer.util.extend({}, Hammer.gesture.current);
 
         // reset the current
@@ -89,13 +90,23 @@ Hammer.gesture = {
     extendEventData: function(ev) {
         var startEv = Hammer.gesture.current.startEvent;
 
+        // if the touches change, set the new touches over the startEvent touches
+        // this because touchevents don't have all the touches on touchstart, or the
+        // user must place his fingers at the EXACT same time on the screen, which is not realistic
+        if(startEv && ev.touches.length !== startEv.touches.length) {
+            // extend 1 level deep to get the touchlist with the touch objects
+            startEv.touches = Hammer.util.extend({}, ev.touches, 1);
+        }
+
         Hammer.util.extend(ev, {
             touchTime   : (ev.time - startEv.time),
+
+            angle       : Hammer.util.getAngle(startEv.center, ev.center),
+            direction   : Hammer.util.getDirection(startEv.center, ev.center),
 
             distance    : Hammer.util.getDistance(startEv.center, ev.center),
             distanceX   : Hammer.util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
             distanceY   : Hammer.util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
-            direction   : Hammer.util.getDirection(Hammer.util.getAngle(startEv.center, ev.center)),
 
             scale       : Hammer.util.getScale(startEv.touches, ev.touches),
             rotation    : Hammer.util.getRotation(startEv.touches, ev.touches),

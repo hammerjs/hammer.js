@@ -16,20 +16,106 @@
             padding: 30px;
         }
 
+        #center-pos {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            overflow: hidden;
+            border-radius: 30px;
+            border: solid 1px rgba(0,0,0,.3);
+            margin-left: -16px;
+            margin-top: -16px;
+            pointer-events: none;
+        }
+
+        .sidebar {
+            float: right;
+            width: 150px;
+            font-size: 12px;
+        }
+        .events li.active { background: lightgreen; }
+
+        .properties li { white-space: nowrap; }
+        .properties span { margin-left: 5px; }
+
+        .hitarea {
+            background: aliceblue;
+            padding: 20px;
+            border: solid 3px #fff;
+        }
+
+        .hitarea-active {
+            border: solid 3px lightcoral;
+        }
+
+        .hitarea-nested {
+            background: lightblue;
+        }
+
     </style>
 </head>
 <body>
+<div class="sidebar well">
+    <h4>Events</h4>
+    <ul class="unstyled events" id="events-list">
+        <li>release</li>
+        <li>hold</li>
+        <li>tap</li>
+        <li>doubletap</li>
+
+        <li>dragstart</li>
+        <li>drag</li>
+        <li>dragleft</li>
+        <li>dragright</li>
+        <li>dragup</li>
+        <li>dragdown</li>
+        <li>dragend</li>
+
+
+        <li>swipe</li>
+        <li>swipeleft</li>
+        <li>swiperight</li>
+        <li>swipeup</li>
+        <li>swipedown</li>
+
+        <li>transformstart</li>
+        <li>transform</li>
+        <li>transformend</li>
+        <li>pinch</li>
+        <li>pinchin</li>
+        <li>pinchout</li>
+        <li>rotate</li>
+        <li>rotateleft</li>
+        <li>rotateright</li>
+    </ul>
+    <h4>EventData</h4>
+    <ul class="unstyled properties">
+        <li><strong>gesture</strong> <span id="log-prop-gesture"></span></li>
+        <li><strong>center</strong> <span id="log-prop-center"></span></li>
+        <li><strong>touchTime</strong> <span id="log-prop-touchTime"></span>ms</li>
+        <li><strong>angle</strong> <span id="log-prop-angle"></span>&deg;</li>
+        <li><strong>direction</strong> <span id="log-prop-direction"></span></li>
+
+        <li><strong>distance</strong> <span id="log-prop-distance"></span>px</li>
+        <li><strong>distanceX</strong> <span id="log-prop-distanceX"></span>px</li>
+        <li><strong>distanceY</strong> <span id="log-prop-distanceY"></span>px</li>
+
+        <li><strong>scale</strong>  <span id="log-prop-scale"></span></li>
+        <li><strong>rotation</strong> <span id="log-prop-rotation"></span>&deg;</li>
+    </ul>
+</div>
+
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
 </p>
-<div id="hitarea" class="well">
+<div id="hitarea" class="hitarea">
     <h3>Hitarea</h3>
     <p>
     Sed sit amet tellus ac neque auctor facilisis. Nullam consectetur iaculis ligula, ut tincidunt elit porttitor sit amet.
     In hac habitasse platea dictumst. Proin eget quam ac erat iaculis scelerisque non a mauris. Praesent at dui mi, nec luctus urna.
     </p>
 
-    <div id="nested" class="well" style="background:rgba(0,0,255,.2)">
+    <div id="nested" class="hitarea hitarea-nested">
         <h4>Nested Tap with stopPropagation</h4>
         <p>
         Curabitur felis elit, volutpat eu varius ac, hendrerit vel sem. Phasellus sapien lacus, vehicula a rhoncus a, dignissim at lectus.
@@ -48,28 +134,78 @@
 </p>
 
 <h2>Event log</h2>
-<pre id="debug_log"></pre>
+<pre id="event-log"></pre>
+
+    <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+    <script src="http://code.jquery.com/jquery.min.js"></script>
 
     <script src="../dist/hammer-1.0.0.js"></script>
     <script>
 
-        var logElement = document.getElementById('debug_log');
+        var event_log = $('#event-log')[0];
+        var log_elements = {};
 
-        var debug = function(ev) {
-            var log = [this.id, ev.hammer.gesture, ev.hammer];
-            console.log(log);
-            logElement.innerHTML = log.join(" - ") +"\n" + logElement.innerHTML;
-        };
+        function getLogElement(type, name) {
+            var el = log_elements[type + name];
+            if(!el) {
+                return log_elements[type + name] = $("#log-"+ type +"-"+ name)[0];
+            }
+            return el;
+        }
 
-        var hitarea = document.getElementById('hitarea');
-        Hammer(hitarea).on('tap doubletap swipe swipeleft dragstart drag dragend dragright pinch pinchin rotate rotateleft transformstart transform transformend', debug);
 
-        var nested = document.getElementById('nested');
-        Hammer(nested).on('tap', function(ev) {
-            debug.call(this, ev);
-            ev.stopPropagation();
+        function logEvent(ev) {
+            var gesture = ev.hammer.gesture;
+
+            // add to the large event log at the bottom of the page
+            var log = [this.id, gesture];
+            event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
+
+
+            // highlight gesture
+            var event_el = getLogElement('gesture', gesture);
+            event_el.className = "active";
+
+
+            // log properties
+            var properties = ['gesture','center','touchTime','angle','direction',
+                'distance','distanceX','distanceY','scale','rotation'];
+            for(var i= 0,len=properties.length; i<len; i++) {
+                var prop = properties[i];
+                var value = ev.hammer[prop];
+                if(prop == 'center') {
+                    value = value.pageX +"x"+ value.pageY;
+                }
+                getLogElement('prop', prop).innerText = value;
+            }
+
+
+            // stop browser from scrolling
+            if(gesture == 'transform' || gesture == 'drag' || gesture == 'dragleft' || gesture == 'dragright') {
+                ev.hammer.touchEvent.preventDefault();
+            }
+        }
+
+
+        // get all the events
+        var all_events = [];
+        $("#events-list li").each(function() {
+            var li = $(this);
+            var type = li.text();
+            li.attr("id", "log-gesture-"+type);
+            all_events.push(type);
         });
 
+
+        // hitareas
+        var hitarea = $('#hitarea')[0];
+        Hammer(hitarea).on(all_events.join(" "), logEvent);
+
+        var nested = $('#nested')[0];
+        Hammer(nested).on(all_events.join(" "), function(ev) {
+            logEvent.call(this, ev);
+            ev.stopPropagation();
+        });
 
     </script>
 </body>
