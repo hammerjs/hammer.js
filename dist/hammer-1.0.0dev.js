@@ -45,7 +45,7 @@ function setup() {
     // Register all gestures inside Hammer.gestures
     for(var name in Hammer.gestures) {
         if(Hammer.gestures.hasOwnProperty(name)) {
-            Hammer.gesture.registerGesture(Hammer.gestures[name]);
+            Hammer.gesture.register(Hammer.gestures[name]);
         }
     }
 
@@ -514,7 +514,7 @@ Hammer.gesture = {
      * register new gesture
      * @param   Gesture instance, see gestures.js for documentation
      */
-    registerGesture: function(gesture) {
+    register: function(gesture) {
         // extend Hammer default options with the Hammer.gesture options
         Hammer.util.extend(Hammer.defaults, gesture.defaults || {});
 
@@ -678,6 +678,22 @@ Hammer.gestures.Swipe = {
                 inst.trigger(name, ev); // basic drag event
                 inst.trigger(name + ev.direction, ev);  // direction event, like dragdown
             }
+        }
+    }
+};
+
+
+// Pull page down gesture
+// Used for Pull-to-Refresh gesture
+// Called after Hammer.gesture.Drag
+// events: pulldown
+Hammer.gestures.PullDown = {
+    priority: 52,
+    handle: function(type, ev, inst) {
+        if(Hammer.gesture.current.name == 'drag' &&
+            ev.direction == Hammer.DIRECTION_DOWN &&
+            window.scrollY == 0) {
+            inst.trigger('pulldown', ev);
         }
     }
 };

@@ -13,7 +13,7 @@ function setup() {
     // Register all gestures inside Hammer.gestures
     for(var name in Hammer.gestures) {
         if(Hammer.gestures.hasOwnProperty(name)) {
-            Hammer.gesture.registerGesture(Hammer.gestures[name]);
+            Hammer.gesture.register(Hammer.gestures[name]);
         }
     }
 

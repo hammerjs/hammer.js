@@ -16,7 +16,7 @@
         // elements by identifier
         var touch_elements = {};
 
-        Hammer.gesture.registerGesture({
+        Hammer.gesture.register({
             priority: 0,
             handle: function(type, ev, inst) {
                 // get touches by ID
