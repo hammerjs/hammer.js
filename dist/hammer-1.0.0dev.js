@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0dev - 2013-01-25
+/*! Hammer.JS - v1.0.0dev - 2013-01-26
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -194,7 +194,7 @@ Hammer.event = {
         // mouse
         else {
             Hammer.event.on(element, events[type], function(ev) {
-                if(ev.which === 1) {
+                if(ev.which === 1) { // left mouse button must be pressed
                     triggerHandler.apply(this, arguments);
                 }
             });
@@ -209,16 +209,12 @@ Hammer.event = {
      * @param   Event       ev
      */
     createFakeTouchList: function(type, ev) {
-        var touches = [{
+        return [{
             identifier: 1,
-            clientX: ev.clientX,
-            clientY: ev.clientY,
             pageX: ev.pageX,
             pageY: ev.pageY,
             target: ev.target
         }];
-
-        return touches;
     },
 
 
@@ -281,9 +277,7 @@ Hammer.util = {
     getCenter: function(touches) {
         var props = {
             pageX: 0,
-            pageY: 0,
-            clientX: 0,
-            clientY: 0
+            pageY: 0
         };
 
         var minmax = {};

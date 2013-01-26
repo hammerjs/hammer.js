@@ -66,16 +66,6 @@
          * @return  {Array}     Touches
          */
         Hammer.event.createFakeTouchList = function(type, ev) {
-            // this part is the same as in the original
-            var touches = [{
-                identifier: 1,
-                clientX: ev.clientX,
-                clientY: ev.clientY,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }];
-
             // reset on start of a new touch
             if(type == Hammer.TOUCH_START) {
                 start_pos = false;
@@ -88,31 +78,37 @@
                 if(!start_pos) {
                     start_pos = {
                         pageX: ev.pageX,
-                        pageY: ev.pageY,
-                        clientX: ev.clientX,
-                        clientY: ev.clientY
+                        pageY: ev.pageY
                     };
                 }
 
                 // small misplacement to fix NaN/Infinity issues
-                var distance_x = start_pos.pageX - ev.pageX - 5;
-                var distance_y = start_pos.pageY - ev.pageY - -5;
+                var distance_x = start_pos.pageX - ev.pageX;
+                var distance_y = start_pos.pageY - ev.pageY;
 
                 // fake second touch in the opposite direction
-                touches.push({
-                    identifier: 2,
-                    clientX: start_pos.clientX + distance_x,
-                    clientY: start_pos.clientY + distance_y,
-                    pageX: start_pos.pageX + distance_x,
-                    pageY: start_pos.pageY + distance_y,
-                    target: ev.target
-                });
+                return [{
+                        identifier: 1,
+                        pageX: start_pos.pageX - distance_x - 50,
+                        pageY: start_pos.pageY - distance_y - -50,
+                        target: ev.target
+                    },{
+                        identifier: 2,
+                        pageX: start_pos.pageX + distance_x - -50,
+                        pageY: start_pos.pageY + distance_y - 50,
+                        target: ev.target
+                    }];
+
             // normal single touch
             } else {
                 start_pos = false;
+                return [{
+                    identifier: 1,
+                    pageX: ev.pageX,
+                    pageY: ev.pageY,
+                    target: ev.target
+                }];
             }
-
-            return touches;
         };
     };
 
