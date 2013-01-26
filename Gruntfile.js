@@ -60,6 +60,14 @@ module.exports = function(grunt) {
                     interrupt: true
                 }
             }
+        },
+
+        connect: {
+            server: {
+                options: {
+                    hostname: "0.0.0.0"
+                }
+            }
         }
     });
 
@@ -69,10 +77,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-connect');
 
 
     // Default task(s).
     grunt.registerTask('build', ['concat','jshint','uglify']);
-    grunt.registerTask('default', ['watch']);
+    grunt.registerTask('default', ['connect','watch']);
 
 };
