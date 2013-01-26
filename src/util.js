@@ -31,9 +31,7 @@ Hammer.util = {
     getCenter: function(touches) {
         var props = {
             pageX: 0,
-            pageY: 0,
-            clientX: 0,
-            clientY: 0
+            pageY: 0
         };
 
         var minmax = {};

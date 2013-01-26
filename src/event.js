@@ -73,7 +73,7 @@ Hammer.event = {
         // mouse
         else {
             Hammer.event.on(element, events[type], function(ev) {
-                if(ev.which === 1) {
+                if(ev.which === 1) { // left mouse button must be pressed
                     triggerHandler.apply(this, arguments);
                 }
             });
@@ -88,16 +88,12 @@ Hammer.event = {
      * @param   Event       ev
      */
     createFakeTouchList: function(type, ev) {
-        var touches = [{
+        return [{
             identifier: 1,
-            clientX: ev.clientX,
-            clientY: ev.clientY,
             pageX: ev.pageX,
             pageY: ev.pageY,
             target: ev.target
         }];
-
-        return touches;
     },
 
 
