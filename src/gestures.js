@@ -146,6 +146,22 @@ Hammer.gestures.Swipe = {
 };
 
 
+// Pull page down gesture
+// Used for Pull-to-Refresh gesture
+// Called after Hammer.gesture.Drag
+// events: pulldown
+Hammer.gestures.PullDown = {
+    priority: 52,
+    handle: function(type, ev, inst) {
+        if(Hammer.gesture.current.name == 'drag' &&
+            ev.direction == Hammer.DIRECTION_DOWN &&
+            window.scrollY == 0) {
+            inst.trigger('pulldown', ev);
+        }
+    }
+};
+
+
 // Transform gesture
 // Called before Hammer.gesture.Drag
 // events: transformstart, transform, transformend,

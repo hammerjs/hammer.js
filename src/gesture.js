@@ -122,7 +122,7 @@ Hammer.gesture = {
      * register new gesture
      * @param   Gesture instance, see gestures.js for documentation
      */
-    registerGesture: function(gesture) {
+    register: function(gesture) {
         // extend Hammer default options with the Hammer.gesture options
         Hammer.util.extend(Hammer.defaults, gesture.defaults || {});
 
