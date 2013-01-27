@@ -4,7 +4,15 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
-    stop_browser_behavior: true
+    stop_browser_behavior: true,
+    stop_browser_behavior_props: {
+        "userSelect": "none",
+        "touchCallout": "none",
+        "touchAction": "none",
+        "userDrag": "none",
+        "tapHighlightColor": "rgba(0,0,0,0)"
+    }
+
     // more settings are defined at gestures.js
 };
 

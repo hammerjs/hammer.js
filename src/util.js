@@ -139,5 +139,29 @@ Hammer.util = {
                 this.getAngle(start[1], start[0]);
         }
         return 0;
+    },
+
+
+    /**
+     * stop browser default behavior with css props
+     * @param   Hammer.Instance inst
+     * @return {*}
+     */
+    stopBrowserBehavior: function stopBrowserBehavior(inst) {
+        var prop,
+            vendors = ['webkit','moz','o',''],
+            css_props = inst.options.stop_browser_behavior_props;
+
+        for(var i = 0; i < vendors.length; i++) {
+            for(var p in css_props) {
+                if(css_props.hasOwnProperty(p)) {
+                    prop = p;
+                    if(vendors[i]) {
+                        prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+                    }
+                    inst.element.style[prop] = css_props[p];
+                }
+            }
+        }
     }
 };

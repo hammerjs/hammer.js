@@ -13,7 +13,15 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
-    stop_browser_behavior: true
+    stop_browser_behavior: true,
+    stop_browser_behavior_props: {
+        "userSelect": "none",
+        "touchCallout": "none",
+        "touchAction": "none",
+        "userDrag": "none",
+        "tapHighlightColor": "rgba(0,0,0,0)"
+    }
+
     // more settings are defined at gestures.js
 };
 
@@ -81,7 +89,7 @@ Hammer.Instance = function(element, options) {
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.stop_browser_behavior) {
-        this.stopBrowserBehavior();
+        Hammer.util.stopBrowserBehavior(this);
     }
 
     // start detection on touchstart
@@ -95,32 +103,6 @@ Hammer.Instance = function(element, options) {
 
 
 Hammer.Instance.prototype = {
-    stopBrowserBehavior: function stopBrowserBehavior() {
-        var prop,
-            vendors = ['webkit','moz','o',''],
-            css = {
-                "userSelect": "none",
-                "touchCallout": "none",
-                "touchAction": "none",
-                "userDrag": "none",
-                "tapHighlightColor": "rgba(0,0,0,0)"
-            };
-
-        for(var i = 0; i < vendors.length; i++) {
-            for(var p in css) {
-                if(css.hasOwnProperty(p)) {
-                    prop = p;
-                    if(vendors[i]) {
-                        prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-                    }
-                    this.element.style[prop] = css[p];
-                }
-            }
-        }
-
-        return this;
-    },
-
     /**
      * trigger gesture event
      * @param   string      gesture
@@ -447,6 +429,30 @@ Hammer.util = {
                 this.getAngle(start[1], start[0]);
         }
         return 0;
+    },
+
+
+    /**
+     * stop browser default behavior with css props
+     * @param   Hammer.Instance inst
+     * @return {*}
+     */
+    stopBrowserBehavior: function stopBrowserBehavior(inst) {
+        var prop,
+            vendors = ['webkit','moz','o',''],
+            css_props = inst.options.stop_browser_behavior_props;
+
+        for(var i = 0; i < vendors.length; i++) {
+            for(var p in css_props) {
+                if(css_props.hasOwnProperty(p)) {
+                    prop = p;
+                    if(vendors[i]) {
+                        prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+                    }
+                    inst.element.style[prop] = css_props[p];
+                }
+            }
+        }
     }
 };
 
