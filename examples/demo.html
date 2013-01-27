@@ -104,13 +104,11 @@
         <li>tap</li>
         <li>doubletap</li>
 
-        <li>dragstart</li>
         <li>drag</li>
         <li>dragleft</li>
         <li>dragright</li>
         <li>dragup</li>
         <li>dragdown</li>
-        <li>dragend</li>
 
         <li>swipe</li>
         <li>swipeleft</li>
@@ -120,15 +118,11 @@
 
         <li>pulldown</li>
 
-        <li>transformstart</li>
         <li>transform</li>
-        <li>transformend</li>
+        <li>rotate</li>
         <li>pinch</li>
         <li>pinchin</li>
         <li>pinchout</li>
-        <li>rotate</li>
-        <li>rotateleft</li>
-        <li>rotateright</li>
     </ul>
     <h4>EventData</h4>
     <ul class="unstyled properties">
@@ -171,7 +165,10 @@
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
 </p>
 <p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+    Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+</p>
+<p>
+    Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
 </p>
 
 <h2>Event log</h2>
@@ -186,8 +183,10 @@
     <script>
 
 
-        Hammer.debug.showTouches();
-        Hammer.debug.fakeMultitouch();
+        if(!Hammer.HAS_TOUCHEVENTS) {
+            Hammer.debug.showTouches();
+            Hammer.debug.fakeMultitouch();
+        }
 
         function getEl(id) {
             return document.getElementById(id);
@@ -222,15 +221,13 @@
 
 
         function logEvent(ev) {
-            var gesture = ev.hammer.gesture;
-
             // add to the large event log at the bottom of the page
-            var log = [this.id, gesture];
+            var log = [this.id, ev.gesture];
             //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
 
             // highlight gesture
-            var event_el = getLogElement('gesture', gesture);
+            var event_el = getLogElement('gesture', ev.gesture);
             event_el.className = "active";
 
 
@@ -239,7 +236,7 @@
                 'distance','distanceX','distanceY','scale','rotation'];
             for(var i= 0,len=properties.length; i<len; i++) {
                 var prop = properties[i];
-                var value = ev.hammer[prop];
+                var value = ev[prop];
                 if(prop == 'center') {
                     value = value.pageX +"x"+ value.pageY;
                 }
@@ -247,9 +244,9 @@
             }
 
             // stop browser from scrolling
-            if(gesture == 'transform' || gesture == 'dragleft' || gesture == 'dragright' ||
-                (gesture == 'drag' && prevent_scroll_drag)) {
-                ev.hammer.touchEvent.preventDefault();
+            if(ev.gesture == 'transform' || ev.gesture == 'dragleft' || ev.gesture == 'dragright' ||
+                (ev.gesture == 'drag' && prevent_scroll_drag)) {
+                ev.srcEvent.preventDefault();
             }
         }
 
@@ -266,9 +263,10 @@
 
         // hitareas
         Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
+
         Hammer(getEl('nested')).on(all_events.join(" "), function(ev) {
             logEvent.call(this, ev);
-            ev.stopPropagation();
+            ev.srcEvent.stopPropagation();
         });
 
     </script>

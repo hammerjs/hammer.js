@@ -30,10 +30,11 @@ Hammer.Instance.prototype = {
      * @param   object      ev
      * @return  {*}
      */
-    trigger: function(gesture, ev) {
+    trigger: function triggerInstance(gesture, ev) {
         // put the gesture name in the event data
         ev.gesture = gesture;
-        return Hammer.event.trigger(this.element, gesture, ev);
+        Hammer.event.trigger(this, gesture, ev);
+        return this;
     },
 
 
@@ -43,8 +44,9 @@ Hammer.Instance.prototype = {
      * @param   callback    callback
      * @return  {*}
      */
-    on: function(gesture, handler) {
-        return Hammer.event.on(this.element, gesture, handler);
+    on: function onInstance(gesture, handler) {
+        Hammer.event.on(this, gesture, handler);
+        return this;
     },
 
 
@@ -54,7 +56,8 @@ Hammer.Instance.prototype = {
      * @param   callback    callback
      * @return  {*}
      */
-    off: function(gesture, handler) {
-        return Hammer.event.off(this.element, gesture, handler);
+    off: function offInstance(gesture, handler) {
+        Hammer.event.off(this, gesture, handler);
+        return this;
     }
 };
