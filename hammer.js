@@ -36,7 +36,9 @@ function Hammer(element, options, undefined)
         tap_double_distance: 20,
 
         hold               : true,
-        hold_timeout       : 500
+        hold_timeout       : 500,
+
+        allow_touch_and_mouse   : false
     }, Hammer.defaults || {});
     options = mergeObject(defaults, options);
 
@@ -151,11 +153,12 @@ function Hammer(element, options, undefined)
      * @return  void
      */
     this.destroy = function() {
-        if(_has_touch) {
+        if(_has_touch || options.allow_touch_and_mouse) {
             removeEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
         }
+
         // for non-touch
-        else {
+        if (!_has_touch || options.allow_touch_and_mouse) {
             removeEvent(element, "mouseup mousedown mousemove", handleEvents);
             removeEvent(element, "mouseout", handleMouseOut);
         }
@@ -175,35 +178,57 @@ function Hammer(element, options, undefined)
         return event.touches ? event.touches.length : 1;
     }
 
+    /**
+     * Gets the event xy positions from a mouse event.
+     * @param event
+     * @return {Array}
+     */
+    function getXYMouse(event) {
+        var doc = document,
+            body = doc.body;
+
+        return [{
+            x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
+            y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
+        }];
+    }
+
+    /**
+     * gets the event xy positions from touch event.
+     * @param event
+     * @return {Array}
+     */
+    function getXYTouch(event) {
+        var pos = [], src;
+        for(var t=0, len = options.two_touch_max ? Math.min(2, event.touches.length) : event.touches.length; t<len; t++) {
+            src = event.touches[t];
+            pos.push({ x: src.pageX, y: src.pageY });
+        }
+        return pos;
+    }
 
     /**
      * get the x and y positions from the event object
      * @param  event
      * @return array  [{ x: int, y: int }]
      */
-    function getXYfromEvent( event )
+    function getXYfromEvent(event)
     {
+        var _fn = getXYMouse;
         event = event || window.event;
 
         // no touches, use the event pageX and pageY
-        if(!_has_touch) {
-            var doc = document,
-                body = doc.body;
+        if (!_has_touch) {
+            if (options.allow_touch_and_mouse &&
+                event.touches !== undefined && event.touches.length > 0) {
 
-            return [{
-                x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
-                y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
-            }];
-        }
-        // multitouch, return array with positions
-        else {
-            var pos = [], src;
-            for(var t=0, len=event.touches.length; t<len; t++) {
-                src = event.touches[t];
-                pos.push({ x: src.pageX, y: src.pageY });
+                _fn = getXYTouch;
             }
-            return pos;
+        } else {
+            _fn = getXYTouch;
         }
+
+        return _fn(event);
     }
 
 
@@ -718,11 +743,12 @@ function Hammer(element, options, undefined)
 
     // bind events for touch devices
     // except for windows phone 7.5, it doesnt support touch events..!
-    if(_has_touch) {
+    if(_has_touch || options.allow_touch_and_mouse) {
         addEvent(element, "touchstart touchmove touchend touchcancel", handleEvents);
     }
+
     // for non-touch
-    else {
+    if (!_has_touch || options.allow_touch_and_mouse) {
         addEvent(element, "mouseup mousedown mousemove", handleEvents);
         addEvent(element, "mouseout", handleMouseOut);
     }
