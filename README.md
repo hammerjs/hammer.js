@@ -1,3 +1,5 @@
+[I´m busy building a new version of Hammer.js, check out the V2 branch! Your input is welcome.](https://github.com/EightMedia/hammer.js/tree/v2)
+
 # Hammer.js
 
 ## A javascript library for multi-touch gestures
