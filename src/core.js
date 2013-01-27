@@ -4,6 +4,7 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
+    stop_browser_behavior: true
     // more settings are defined at gestures.js
 };
 

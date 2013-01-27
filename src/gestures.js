@@ -1,4 +1,4 @@
-Hammer.gestures = {};
+Hammer.gestures = Hammer.gestures || {};
 
 
 // Hold gesture
@@ -173,7 +173,7 @@ Hammer.gestures.Transform = {
     },
     handler: function transformGesture(type, ev, inst) {
         // at least multitouch
-        if(ev.touches < 2) {
+        if(ev.touches.length < 2) {
             return;
         }
 
