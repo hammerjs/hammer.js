@@ -132,18 +132,14 @@
     </ul>
 </div>
 
-<pre id="debug" class="hidden">-</pre>
+<pre id="debug"">-</pre>
 
 <div id="hitarea" class="hitarea">
     <h3>Hitarea</h3>
-    <p>Press shift on your desktop for multitouch.</p>
-
-    <div id="nested" class="hitarea hitarea-nested">
-        <h4>Nested Tap with stopPropagation</h4>
-        <p>
-        Curabitur felis elit, volutpat eu varius ac, hendrerit vel sem. Phasellus sapien lacus, vehicula a rhoncus a, dignissim at lectus.
-        </p>
-    </div>
+    <p><strong>Press shift on your desktop for multitouch.</strong></p>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+    </p>
     <p>
     Donec nisi ante, eleifend vitae luctus vel, auctor et nibh. Donec scelerisque urna id massa ultricies in facilisis purus rutrum.
     Proin tristique luctus leo vitae feugiat. Donec sit amet ipsum mi, nec bibendum sem. Nullam sodales aliquet venenatis.
@@ -252,10 +248,6 @@
         // hitareas
         Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
 
-        Hammer(getEl('nested')).on(all_events.join(" "), function(ev) {
-            logEvent.call(this, ev);
-            ev.srcEvent.stopPropagation();
-        });
 
     </script>
 </body>

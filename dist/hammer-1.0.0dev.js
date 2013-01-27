@@ -714,10 +714,8 @@ Hammer.gestures.Drag = {
         if(type == Hammer.TOUCH_MOVE){
             // when the distance we moved is too small we skip this gesture
             // or we can be already in dragging
-            // when we are transforming, the dragging is also ended
-            if((ev.distance < inst.options.drag_min_distance &&
-                Hammer.gesture.current.name != this.name) ||
-                Hammer.gesture.current.name == 'transform') {
+            if(ev.distance < inst.options.drag_min_distance &&
+                Hammer.gesture.current.name != this.name) {
                 return;
             }
 
@@ -788,11 +786,7 @@ Hammer.gestures.Transform = {
     },
     handler: function transformGesture(type, ev, inst) {
         // at least multitouch
-        if(ev.touches.length < 2) {
-            return;
-        }
-
-        if(type == Hammer.TOUCH_MOVE) {
+        if(type == Hammer.TOUCH_MOVE && ev.touches.length == 2) {
             var scale_threshold = Math.abs(1-ev.scale);
             var rotation_threshold = Math.abs(ev.rotation);
 
