@@ -680,22 +680,24 @@ function Hammer(element, options, undefined)
                         _setup();
                         callReset = false;
                     }
-                } else if (_can_tap) {
+                } else if (_can_tap && event.type != 'mouseout') {
                     gestures.tap(_event_start);
                 }
-
-                _prev_gesture = _gesture;
-
-                // trigger release event
-                // "release" by default doesn't return the co-ords where your
-                // finger was released. "position" will return "the last touched co-ords"
-
-                triggerEvent("release", {
-                    originalEvent   : event,
-                    gesture         : _gesture,
-                    position        : _pos.move || _pos.start
-                });
-
+                
+                if (_gesture !== null) {
+	                _prev_gesture = _gesture;
+	
+	                // trigger release event
+	                // "release" by default doesn't return the co-ords where your
+	                // finger was released. "position" will return "the last touched co-ords"
+	
+	                triggerEvent("release", {
+	                    originalEvent   : event,
+	                    gesture         : _gesture,
+	                    position        : _pos.move || _pos.start
+	                });
+                }
+                
                 // reset vars if this was not a transform->drag touch end operation.
                 if (callReset) {
                     reset();
