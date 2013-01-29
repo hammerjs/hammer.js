@@ -1,3 +1,11 @@
+/**
+ * this holds the last move event,
+ * used to fix empty touchend issue
+ * see the onTouch event for an explanation
+ */
+var last_move_event = {};
+
+
 Hammer.event = {
     /**
      * these event methods are based on MicroEvent
@@ -34,9 +42,7 @@ Hammer.event = {
             return;
         }
         for(var i = 0; i < obj._events[event].length; i++){
-            if(obj._events[event][i].call(obj, data) === false) {
-                return false;
-            }
+            obj._events[event][i].call(obj, data);
         }
     },
 
@@ -56,14 +62,6 @@ Hammer.event = {
 
 
     /**
-     * this holds the last move event,
-     * used to fix empty touchend issue
-     * see the onTouch event for an explanation
-     */
-    _last_move_event: {},
-
-
-    /**
      * touch events with mouse fallback
      * @param   {HTMLElement}      element
      * @param   {Constant}       type        like Hammer.TOUCH_MOVE
@@ -80,14 +78,15 @@ Hammer.event = {
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
             if(type === Hammer.TOUCH_END) {
-                ev = self._last_move_event;
+                ev = last_move_event;
             }
             // store the last move event
             else {
-                self._last_move_event = ev;
+                last_move_event = ev;
             }
             handler.call(this, self.collectEventData(element, type, ev));
         };
+
 
         // determine the eventtype we want to set
         var event_types;
@@ -100,6 +99,7 @@ Hammer.event = {
         else {
             event_types = ['mousedown', 'mousemove', 'mouseup'];
         }
+
 
         var events ={};
         events[Hammer.TOUCH_START]  = event_types[0];
