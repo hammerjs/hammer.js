@@ -56,15 +56,27 @@ module.exports = (grunt) ->
         options:
           hostname: "0.0.0.0"
 
+    # generate nice source docs
+    yuidoc:
+      dist:
+        name: '<%= pkg.title %>'
+        description: '<%= pkg.description %>'
+        version: '<%= pkg.version %>'
+        url: '<%= pkg.homepage %>'
+        options:
+          paths  : "src"
+          outdir : "docs"
+
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
+  grunt.loadNpmTasks 'grunt-contrib-yuidoc'
   grunt.loadNpmTasks 'grunt-contrib-connect'
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['concat', 'jshint', 'uglify']
+  grunt.registerTask 'build', ['concat', 'jshint', 'yuidoc', 'uglify']
   grunt.registerTask 'default', ['connect', 'watch']
