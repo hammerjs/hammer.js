@@ -29,7 +29,7 @@ Hammer.gesture = {
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        self.detect(ev);
+        return self.detect(ev);
     },
 
 
@@ -38,7 +38,9 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     detect: function detect(ev) {
-        var self = Hammer.gesture;
+        var self = Hammer.gesture,
+            retval;
+
         if(self.current) {
             // extend event data with calculations about scale, distance etc
             var eventData = self.extendEventData(ev);
@@ -54,7 +56,7 @@ Hammer.gesture = {
                 if(inst_options[gesture.name] !== false) {
                     // if a handle returns false
                     // we stop with the detection
-                    var retval = gesture.handler.call(gesture, eventData.type, eventData, self.current.inst);
+                    retval = gesture.handler.call(gesture, eventData.type, eventData, self.current.inst);
                     if(retval === false) {
                         self.stop();
                         break;

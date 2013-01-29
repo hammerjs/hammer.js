@@ -34,7 +34,9 @@ Hammer.event = {
             return;
         }
         for(var i = 0; i < obj._events[event].length; i++){
-            obj._events[event][i].call(obj, data);
+            if(obj._events[event][i].call(obj, data) === false) {
+                return false;
+            }
         }
     },
 
@@ -84,7 +86,6 @@ Hammer.event = {
             else {
                 self._last_move_event = ev;
             }
-
             handler.call(this, self.collectEventData(element, type, ev));
         };
 

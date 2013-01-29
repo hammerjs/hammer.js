@@ -96,7 +96,7 @@ Hammer.Instance = function(element, options) {
 
     // start detection on touchstart
     Hammer.event.onTouch(element, Hammer.TOUCH_START, function(ev) {
-        Hammer.gesture.startDetect(self, ev);
+        return Hammer.gesture.startDetect(self, ev);
     });
 
     // return instance
@@ -179,7 +179,9 @@ Hammer.event = {
             return;
         }
         for(var i = 0; i < obj._events[event].length; i++){
-            obj._events[event][i].call(obj, data);
+            if(obj._events[event][i].call(obj, data) === false) {
+                return false;
+            }
         }
     },
 
@@ -229,7 +231,6 @@ Hammer.event = {
             else {
                 self._last_move_event = ev;
             }
-
             handler.call(this, self.collectEventData(element, type, ev));
         };
 
@@ -509,7 +510,7 @@ Hammer.gesture = {
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        self.detect(ev);
+        return self.detect(ev);
     },
 
 
@@ -518,7 +519,9 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     detect: function detect(ev) {
-        var self = Hammer.gesture;
+        var self = Hammer.gesture,
+            retval;
+
         if(self.current) {
             // extend event data with calculations about scale, distance etc
             var eventData = self.extendEventData(ev);
@@ -534,7 +537,7 @@ Hammer.gesture = {
                 if(inst_options[gesture.name] !== false) {
                     // if a handle returns false
                     // we stop with the detection
-                    var retval = gesture.handler.call(gesture, eventData.type, eventData, self.current.inst);
+                    retval = gesture.handler.call(gesture, eventData.type, eventData, self.current.inst);
                     if(retval === false) {
                         self.stop();
                         break;
