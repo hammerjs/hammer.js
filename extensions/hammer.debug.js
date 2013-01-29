@@ -68,7 +68,10 @@
          */
         Hammer.event.getTouchList = function(type, ev) {
             // Android, iOS etc
-            if(ev.touches) {
+            if(Hammer.HAS_POINTEREVENTS) {
+                return Hammer.PointerEvent.getPointers();
+            }
+            else if(Hammer.HAS_TOUCHEVENTS) {
                 return ev.touches;
             }
 

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0dev - 2013-01-28
+/*! Hammer.JS - v1.0.0dev - 2013-01-29
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -215,6 +215,11 @@ Hammer.event = {
     onTouch: function onTouch(element, type, handler) {
         var self = this;
         var triggerHandler = function(ev) {
+            // PointerEvents update
+            if(Hammer.HAS_POINTEREVENTS) {
+                Hammer.PointerEvent.updatePointer(type, ev);
+            }
+
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
             if(type === Hammer.TOUCH_END) {
@@ -230,7 +235,10 @@ Hammer.event = {
 
         // determine the eventtype we want to set
         var event_types;
-        if(Hammer.HAS_TOUCHEVENTS) {
+        if(Hammer.HAS_POINTEREVENTS) {
+            event_types = ['MSPointerDown', 'MSPointerMove', 'MSPointerUp MSPointerCancel'];
+        }
+        else if(Hammer.HAS_TOUCHEVENTS) {
             event_types = ['touchstart', 'touchmove', 'touchend touchcancel'];
         }
         else {
@@ -244,7 +252,7 @@ Hammer.event = {
 
 
         // touchdevice
-        if(Hammer.HAS_TOUCHEVENTS) {
+        if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
             this.bindDom(element, events[type], triggerHandler);
         }
         // mouse
@@ -263,12 +271,13 @@ Hammer.event = {
      * @param   TOUCHTYPE   type
      * @param   Event       ev
      */
-    getTouchList: function createTouchList(type, ev) {
-        // Android, iOS etc
-        if(ev.touches) {
+    getTouchList: function getTouchList(type, ev) {
+        if(Hammer.HAS_POINTEREVENTS) {
+            return Hammer.PointerEvent.getPointers();
+        }
+        else if(Hammer.HAS_TOUCHEVENTS) {
             return ev.touches;
         }
-        // Old school mouse
         else {
             return [{
                 identifier: 1,
