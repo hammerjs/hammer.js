@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0dev - 2013-01-27
+/*! Hammer.JS - v1.0.0dev - 2013-01-28
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -18,6 +18,7 @@ Hammer.defaults = {
         "userSelect": "none",
         "touchCallout": "none",
         "touchAction": "none",
+        "contentZooming": "none",
         "userDrag": "none",
         "tapHighlightColor": "rgba(0,0,0,0)"
     }
@@ -26,6 +27,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
+Hammer.HAS_POINTEREVENTS = window.navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // direction defines
@@ -226,10 +228,20 @@ Hammer.event = {
             handler.call(this, self.collectEventData(element, type, ev));
         };
 
-        var events = {};
-        events[Hammer.TOUCH_START]  = Hammer.HAS_TOUCHEVENTS ? 'touchstart gesturestart gesturechange' : 'mousedown';
-        events[Hammer.TOUCH_MOVE]   = Hammer.HAS_TOUCHEVENTS ? 'touchmove' : 'mousemove';
-        events[Hammer.TOUCH_END]    = Hammer.HAS_TOUCHEVENTS ? 'touchend touchcancel' : 'mouseup';
+        // determine the eventtype we want to set
+        var event_types;
+        if(Hammer.HAS_TOUCHEVENTS) {
+            event_types = ['touchstart', 'touchmove', 'touchend touchcancel'];
+        }
+        else {
+            event_types = ['mousedown', 'mousemove', 'mouseup'];
+        }
+
+        var events ={};
+        events[Hammer.TOUCH_START]  = event_types[0];
+        events[Hammer.TOUCH_MOVE]   = event_types[1];
+        events[Hammer.TOUCH_END]    = event_types[2];
+
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS) {
@@ -247,18 +259,25 @@ Hammer.event = {
 
 
     /**
-     * create fake touchlist when there is no event.touches
-     * the extension hammer.debug adds multitouch for desktop available and overwrites this
+     * create touchlist depending on the event
      * @param   TOUCHTYPE   type
      * @param   Event       ev
      */
-    createFakeTouchList: function createFakeTouchList(type, ev) {
-        return [{
-            identifier: 1,
-            pageX: ev.pageX,
-            pageY: ev.pageY,
-            target: ev.target
-        }];
+    getTouchList: function createTouchList(type, ev) {
+        // Android, iOS etc
+        if(ev.touches) {
+            return ev.touches;
+        }
+        // Old school mouse
+        else {
+            return [{
+                identifier: 1,
+                pageX: ev.pageX,
+                pageY: ev.pageY,
+                target: ev.target
+            }];
+        }
+
     },
 
 
@@ -269,13 +288,7 @@ Hammer.event = {
      * @param   Event           ev
      */
     collectEventData: function collectEventData(element, type, ev) {
-        var touches = ev.touches;
-
-        // create a fake touchlist when no touches are found
-        // this would be with a mouse on a pc
-        if(!touches) {
-            touches = this.createFakeTouchList(type, ev);
-        }
+        var touches = this.getTouchList(type, ev);
 
         return {
             type    : type,
@@ -786,9 +799,9 @@ Hammer.gestures.Transform = {
     index: 45,
     defaults: {
         // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-        transform_min_scale     : 0.05,
+        transform_min_scale     : 0.01,
         // rotation in degrees
-        transform_min_rotation  : 5
+        transform_min_rotation  : 1
     },
     handler: function transformGesture(type, ev, inst) {
         // at least multitouch

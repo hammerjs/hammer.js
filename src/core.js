@@ -9,6 +9,7 @@ Hammer.defaults = {
         "userSelect": "none",
         "touchCallout": "none",
         "touchAction": "none",
+        "contentZooming": "none",
         "userDrag": "none",
         "tapHighlightColor": "rgba(0,0,0,0)"
     }
@@ -17,6 +18,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
+Hammer.HAS_POINTEREVENTS = window.navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // direction defines

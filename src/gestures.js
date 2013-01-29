@@ -165,9 +165,9 @@ Hammer.gestures.Transform = {
     index: 45,
     defaults: {
         // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-        transform_min_scale     : 0.05,
+        transform_min_scale     : 0.01,
         // rotation in degrees
-        transform_min_rotation  : 5
+        transform_min_rotation  : 1
     },
     handler: function transformGesture(type, ev, inst) {
         // at least multitouch

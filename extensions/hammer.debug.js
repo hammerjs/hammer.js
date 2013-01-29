@@ -61,12 +61,17 @@
         var start_pos = false;
 
         /**
-         * overwrites Hammer.event.createFakeTouchList.
+         * overwrites Hammer.event.getTouchList.
          * @param   TOUCHTYPE   type
          * @param   {Event}     ev
          * @return  {Array}     Touches
          */
-        Hammer.event.createFakeTouchList = function(type, ev) {
+        Hammer.event.getTouchList = function(type, ev) {
+            // Android, iOS etc
+            if(ev.touches) {
+                return ev.touches;
+            }
+
             // reset on start of a new touch
             if(type == Hammer.TOUCH_START) {
                 start_pos = false;

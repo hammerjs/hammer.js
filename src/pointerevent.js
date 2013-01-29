@@ -1,0 +1,3 @@
+Hammer.PointerEvent = {
+
+}
