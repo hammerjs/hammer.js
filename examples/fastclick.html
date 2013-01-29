@@ -47,7 +47,7 @@
      */
     function fastClick(el, handler) {
         el.addEventListener("click", function(ev) {
-            return false;
+            ev.preventDefault();
         }, false);
         Hammer(el).on("tap doubletap", handler);
     }
@@ -58,7 +58,7 @@
      * @return {*}
      */
     jQuery.fn.fastClick = function(handler) {
-        this.click(function() { return false; });
+        this.click(function(ev) { ev.preventDefault(); });
         Hammer(this[0]).on("tap doubletap", handler);
         return this;
     };
@@ -72,9 +72,9 @@
 
     fastClick(fast, toggleBody);
     $fast.fastClick(toggleBody);
-    normal.addEventListener("click", function() {
+    normal.addEventListener("click", function(ev) {
         toggleBody();
-        return false;
+        ev.preventDefault();
     }, false);
 
 
