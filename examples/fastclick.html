@@ -49,7 +49,7 @@
         el.addEventListener("click", function(ev) {
             return false;
         }, false);
-        Hammer(el).on("tap", handler);
+        Hammer(el).on("tap doubletap", handler);
     }
 
     /**
@@ -59,7 +59,7 @@
      */
     jQuery.fn.fastClick = function(handler) {
         this.click(function() { return false; });
-        Hammer(this[0]).on("tap", handler);
+        Hammer(this[0]).on("tap doubletap", handler);
         return this;
     };
 
