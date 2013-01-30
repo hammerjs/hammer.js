@@ -160,7 +160,7 @@
         hold: false
     })
         .on("touch dragdown release", function pullToRefresh(ev) {
-            var breakpoint = 100;
+            var breakpoint = 80;
 
             switch(ev.gesture) {
                 // reset element on start
@@ -198,12 +198,13 @@
                     // stop browser scrolling
                     ev.srcEvent.preventDefault();
 
-                    pullrefresh_el.style.height = (ev.distanceY*.4) +"px";
+                    var height = (ev.distanceY*.4);
+                    pullrefresh_el.style.height = height +"px";
 
                     pullrefresh_el.className = 'slidedown';
                     pullrefresh_icon_el.className = 'icon arrow';
 
-                    if(ev.distanceY >= breakpoint){
+                    if(height >= breakpoint){
                         pullrefresh_icon_el.className = 'icon arrow arrow-up';
                         pullrefresh_el.className = 'slidedown breakpoint';
                     }
