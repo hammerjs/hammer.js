@@ -28,9 +28,7 @@
         }
 
         .highlight {
-            animation: highlight 1s;
-            -moz-animation: highlight 1s;
-            -webkit-animation: highlight 1s;
+            background: #fff68d;
         }
 
         .hero-unit {
@@ -69,33 +67,31 @@
 
 </div>
 
-<script src="http://code.jquery.com/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../dist/hammer-1.0.0dev.js"></script>
 <script src="../extensions/jquery.hammer.js"></script>
-<script src="../extensions/hammer.debug.js"></script>
 <!--<script src="../extensions/jquery.hammer.js"></script>-->
 
 <script>
 
     function highlight(el) {
-        $(el).removeClass("highlight");
         setTimeout(function() {
-            $(el).addClass("highlight");
-        }, 1);
+            el.className = el.className.replace("highlight", "");
+        }, 100);
+        el.className = el.className + " highlight";
     }
 
     var toucharea = $(".toucharea").hammer();
 
     // the whole area
     toucharea.on("tap", function(ev) {
-        console.log(ev);
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
-    toucharea.on("tap", "ul li, h1", function(ev) {
-        console.log(ev);
+    toucharea.on("tap", "ul li", function(ev) {
         highlight(this);
+        ev.preventDefault();
         ev.stopPropagation();
     });
 

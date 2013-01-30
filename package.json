@@ -16,7 +16,6 @@
         "grunt-contrib-concat":"~0.1.2rc6",
         "grunt-contrib-uglify":"~0.1.1rc6",
         "grunt-contrib-jshint":"~0.1.x",
-        "grunt-contrib-yuidoc":"~0.4.x",
         "grunt-contrib-watch":"~0.2.x"
     }
 }

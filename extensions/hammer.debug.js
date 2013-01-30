@@ -62,11 +62,11 @@
 
         /**
          * overwrites Hammer.event.getTouchList.
-         * @param   TOUCHTYPE   type
          * @param   {Event}     ev
+         * @param   TOUCHTYPE   type
          * @return  {Array}     Touches
          */
-        Hammer.event.getTouchList = function(type, ev) {
+        Hammer.event.getTouchList = function(ev, type) {
             // Android, iOS etc
             if(Hammer.HAS_POINTEREVENTS) {
                 return Hammer.PointerEvent.getPointers();

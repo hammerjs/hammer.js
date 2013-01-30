@@ -13,6 +13,7 @@ Hammer.Instance = function(element, options) {
     setup();
 
     this.element = element;
+    this._events = {};
 
     // merge options
     this.options = Hammer.util.extend(
@@ -36,28 +37,23 @@ Hammer.Instance = function(element, options) {
 
 Hammer.Instance.prototype = {
     /**
-     * trigger gesture event
-     * @param   string      gesture
-     * @param   object      ev
-     * @return  {*}
-     */
-    trigger: function triggerInstance(gesture, ev) {
-        // put the gesture name in the event data
-        ev.gesture = gesture;
-        Hammer.event.trigger(this, gesture, ev);
-        return this;
-    },
-
-
-    /**
+     * these event methods are based on MicroEvent
+     * the on, off and trigger event are only used by the inst
+     * https://github.com/jeromeetienne/microevent.js
+     *
      * bind events to the instance
      * @param   string      gestures
      * @param   callback    callback
      * @return  {*}
      */
-    on: function onInstance(gesture, handler) {
-        Hammer.event.on(this, gesture, handler);
-        return this;
+    on: function onEvent(gestures, handler){
+        var ev, t;
+        gestures = gestures.split(" ");
+        for(t=0; t<gestures.length; t++) {
+            ev = gestures[t];
+            this._events[ev] = this._events[ev]	|| [];
+            this._events[ev].push(handler);
+        }
     },
 
 
@@ -67,8 +63,32 @@ Hammer.Instance.prototype = {
      * @param   callback    callback
      * @return  {*}
      */
-    off: function offInstance(gesture, handler) {
-        Hammer.event.off(this, gesture, handler);
-        return this;
+    off: function offEvent(gestures, handler){
+        var ev, t;
+        gestures = gestures.split(" ");
+        for(t=0; t<gestures.length; t++) {
+            ev = gestures[t];
+            if(ev in this._events === false) {
+                return;
+            }
+            this._events[ev].splice(this._events[ev].indexOf(handler), 1);
+        }
+    },
+
+    /**
+     * trigger gesture event
+     * @param   string      type
+     * @param   object      ev
+     * @return  {*}
+     */
+    trigger: function triggerEvent(gesture, data){
+        data.gesture = gesture;
+
+        if(gesture in this._events === false) {
+            return;
+        }
+        for(var i = 0; i < this._events[gesture].length; i++){
+            this._events[gesture][i].call(this, data);
+        }
     }
 };
