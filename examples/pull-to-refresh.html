@@ -142,27 +142,6 @@
 <script>
 
 
-    /**
-     * Pull page down
-     * Used for Pull-to-Refresh gestures
-     * Called after Hammer.gesture.Drag
-     * @events  pulldown
-     */
-    Hammer.gesture.register({
-        name: 'pulldown',
-        index: 52,
-        handler: function pulldownGesture(type, ev, inst) {
-            if(Hammer.gesture.current.name == 'drag' &&
-                    ev.direction == Hammer.DIRECTION_DOWN &&
-                    window.scrollY === 0) {
-                inst.trigger(this.name, ev);
-            }
-        }
-    });
-
-
-
-
     function getEl(id) {
         return document.getElementById(id);
     }
@@ -170,7 +149,6 @@
     var pullrefresh_el = getEl('pullrefresh');
     var pullrefresh_icon_el = getEl('pullrefresh-icon');
     var image_el = getEl('random-image');
-
 
     var is_pulling_down = false;
     var is_over_breakpoint = false;
@@ -181,7 +159,7 @@
         tap: false,
         hold: false
     })
-        .on("touch pulldown release", function pullToRefresh(ev) {
+        .on("touch dragdown release", function pullToRefresh(ev) {
             var breakpoint = 100;
 
             switch(ev.gesture) {
@@ -213,11 +191,14 @@
                     }
                     break;
 
-                case 'pulldown':
+                case 'dragdown':
+                    if(window.scrollY > 0) {
+                        return;
+                    }
                     // stop browser scrolling
                     ev.srcEvent.preventDefault();
 
-                    pullrefresh_el.style.height = ev.distanceY +"px";
+                    pullrefresh_el.style.height = (ev.distanceY*.4) +"px";
 
                     pullrefresh_el.className = 'slidedown';
                     pullrefresh_icon_el.className = 'icon arrow';
