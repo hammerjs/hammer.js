@@ -898,25 +898,6 @@ Hammer.gestures.Swipe = {
 
 
 /**
- * Pull page down
- * Used for Pull-to-Refresh gestures
- * Called after Hammer.gesture.Drag
- * @events  pulldown
- */
-Hammer.gestures.PullDown = {
-    name: 'pulldown',
-    index: 52,
-    handler: function pulldownGesture(type, ev, inst) {
-        if(Hammer.gesture.current.name == 'drag' &&
-            ev.direction == Hammer.DIRECTION_DOWN &&
-            window.scrollY === 0) {
-            inst.trigger(this.name, ev);
-        }
-    }
-};
-
-
-/**
  * Transform
  * User want to scale or rotate with 2 fingers
  * @events  transform, pinch, pinchin, pinchout, rotate

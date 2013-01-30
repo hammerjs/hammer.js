@@ -141,6 +141,28 @@
 
 <script>
 
+
+    /**
+     * Pull page down
+     * Used for Pull-to-Refresh gestures
+     * Called after Hammer.gesture.Drag
+     * @events  pulldown
+     */
+    Hammer.gesture.register({
+        name: 'pulldown',
+        index: 52,
+        handler: function pulldownGesture(type, ev, inst) {
+            if(Hammer.gesture.current.name == 'drag' &&
+                    ev.direction == Hammer.DIRECTION_DOWN &&
+                    window.scrollY === 0) {
+                inst.trigger(this.name, ev);
+            }
+        }
+    });
+
+
+
+
     function getEl(id) {
         return document.getElementById(id);
     }
