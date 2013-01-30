@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+    <style>
+        body { padding: 0; }
+
+        #container {
+            padding: 20px;
+        }
+
+        @keyframes rotate{ 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
+        @-moz-keyframes rotate{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(360deg); } }
+        @-webkit-keyframes rotate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(360deg); } }
+
+        #pullrefresh {
+            display: none;
+            overflow: hidden;
+            position: relative;
+            background: #ccc;
+            box-shadow: 0 -5px 10px #bbb inset;
+        }
+
+        #pullrefresh.loading,
+        #pullrefresh.slidedown,
+        #pullrefresh.slideup {
+            display: block;
+        }
+
+        #pullrefresh.loading,
+        #pullrefresh.slideup {
+            transition: height .3s;
+            -o-transition: height .3s;
+            -moz-transition: height .3s;
+            -webkit-transition: height .3s;
+        }
+
+        #pullrefresh.slideup {
+            height: 0 !important;
+        }
+
+        #pullrefresh.loading {
+            height: 60px !important;
+        }
+
+        #pullrefresh .message {
+            position: absolute;
+            left: 0;
+            bottom: 20px;
+            right: 0;
+            color: #777;
+            text-align: center;
+            text-shadow: 1px 1px 0 #dfdfdf;
+            font-weight: bold;
+        }
+
+        #pullrefresh.slidedown .message span:after { content: "Pull to refresh..."; }
+        #pullrefresh.slidedown.breakpoint .message span:after { content: "Release to refresh..."; }
+        #pullrefresh.loading .message span:after { content: "Loading new image..."; }
+
+        #pullrefresh .icon {
+            position: absolute;
+            left: 20px;
+        }
+
+        #pullrefresh .icon.arrow {
+            background: url(assets/img/arrow.png) no-repeat;
+            width: 71px;
+            height: 28px;
+            bottom: 10px;
+
+            transform: rotate(90deg);
+            transition: transform .3s;
+            -o-transform: rotate(90deg);
+            -o-transition: -o-transform .3s;
+            -moz-transform: rotate(90deg);
+            -moz-transition: -moz-transform .3s;
+            -webkit-transform: rotate(90deg);
+            -webkit-transition: -webkit-transform .3s;
+        }
+
+        #pullrefresh .icon.arrow.arrow-up {
+            transform: rotate(-90deg);
+            -o-transform: rotate(-90deg);
+            -moz-transform: rotate(-90deg);
+            -webkit-transform: rotate(-90deg);
+        }
+
+        #pullrefresh .icon.loading {
+            background: url(assets/img/spinner.png) no-repeat;
+            width: 19px;
+            height: 19px;
+            background-size: 100%;
+            bottom: 0;
+
+            animation: rotate 1s linear infinite;
+            -moz-animation: rotate 1s linear infinite;
+            -webkit-animation: rotate 1s linear infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="pullrefresh">
+    <div class="message">
+        <div id="pullrefresh-icon" class="icon arrow arrow-down"></div>
+        <span></span>
+    </div>
+</div>
+
+<div id="container">
+    <h4>Pull-to-Refresh <small>random images</small></h4>
+    <p>
+        <img id="random-image" class="img-rounded" src="http://lorempixel.com/800/600/">
+    </p>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+    </p>
+    <p>
+        Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+    </p>
+    <p>
+        Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+    </p>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+    </p>
+    <p>
+        Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+    </p>
+    <p>
+        Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+    </p>
+</div>
+
+<script src="../dist/hammer-1.0.0dev.js"></script>
+
+<script>
+
+    function getEl(id) {
+        return document.getElementById(id);
+    }
+
+    var pullrefresh_el = getEl('pullrefresh');
+    var pullrefresh_icon_el = getEl('pullrefresh-icon');
+    var image_el = getEl('random-image');
+
+
+    var is_pulling_down = false;
+    var is_over_breakpoint = false;
+
+    Hammer(getEl('container'), {
+        transform: false,
+        swipe: false,
+        tap: false,
+        hold: false
+    })
+        .on("touch pulldown release", function pullToRefresh(ev) {
+            var breakpoint = 100;
+
+            switch(ev.gesture) {
+                // reset element on start
+                case 'touch':
+                    pullrefresh_el.className = '';
+                    break;
+
+                // on release we check how far we dragged
+                case 'release':
+                    if(pullrefresh_el.className) {
+                        if(ev.distanceY >= breakpoint) {
+                            pullrefresh_el.className = 'loading';
+                            pullrefresh_icon_el.className = 'icon loading';
+
+                            // a small timeout to demo the loading state
+                            setTimeout(function() {
+                                var preload = new Image();
+                                preload.onload = function() {
+                                    image_el.src = this.src;
+                                    pullrefresh_el.className = 'slideup';
+                                };
+                                preload.src = 'http://lorempixel.com/800/600/?'+ Date.now();
+                            }, 1000);
+                        }
+                        else {
+                            pullrefresh_el.className = 'slideup';
+                        }
+                    }
+                    break;
+
+                case 'pulldown':
+                    // stop browser scrolling
+                    ev.srcEvent.preventDefault();
+
+                    pullrefresh_el.style.height = ev.distanceY +"px";
+
+                    pullrefresh_el.className = 'slidedown';
+                    pullrefresh_icon_el.className = 'icon arrow';
+
+                    if(ev.distanceY >= breakpoint){
+                        pullrefresh_icon_el.className = 'icon arrow arrow-up';
+                        pullrefresh_el.className = 'slidedown breakpoint';
+                    }
+                    break;
+            }
+        });
+
+</script>
+
+</body>
+</html>
