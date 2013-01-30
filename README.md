@@ -1,4 +1,4 @@
-[I´m busy building a new version of Hammer.js, check out the V2 branch! Your input is welcome.](https://github.com/EightMedia/hammer.js/tree/v2)
+[We're busy with creating a v2 of Hammer.js, and need YOUR help. Check it out!](http://eightmedia.github.com/hammer.js/v2/)
 
 # Hammer.js
 
