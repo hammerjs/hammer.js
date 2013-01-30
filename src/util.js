@@ -1,6 +1,6 @@
 var PI = Math.PI;
 
-Hammer.util = {
+Hammer.utils = {
     /**
      * extend method,
      * also used for cloning when dest is an empty object

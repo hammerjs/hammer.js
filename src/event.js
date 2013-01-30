@@ -133,7 +133,7 @@ Hammer.event = {
             target  : ev.target,
             touches : touches,
             srcEvent: ev,
-            center  : Hammer.util.getCenter(touches)
+            center  : Hammer.utils.getCenter(touches)
         };
     }
 };

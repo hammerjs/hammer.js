@@ -41,6 +41,9 @@ Hammer.TOUCH_START = 'start';
 Hammer.TOUCH_MOVE = 'move';
 Hammer.TOUCH_END = 'end';
 
+// plugins namespace
+Hammer.plugins = {};
+
 // if the window events are set...
 Hammer.READY = false;
 
@@ -86,13 +89,13 @@ Hammer.Instance = function(element, options) {
     this._events = {};
 
     // merge options
-    this.options = Hammer.util.extend(
-        Hammer.util.extend({}, Hammer.defaults),
+    this.options = Hammer.utils.extend(
+        Hammer.utils.extend({}, Hammer.defaults),
         options || {});
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.stop_browser_behavior) {
-        Hammer.util.stopBrowserBehavior(this);
+        Hammer.utils.stopBrowserBehavior(this);
     }
 
     // start detection on touchstart
@@ -298,14 +301,14 @@ Hammer.event = {
             target  : ev.target,
             touches : touches,
             srcEvent: ev,
-            center  : Hammer.util.getCenter(touches)
+            center  : Hammer.utils.getCenter(touches)
         };
     }
 };
 
 var PI = Math.PI;
 
-Hammer.util = {
+Hammer.utils = {
     /**
      * extend method,
      * also used for cloning when dest is an empty object
@@ -497,7 +500,7 @@ Hammer.gesture = {
 
         self.current = {
             inst        : inst, // reference to HammerInstance we're working for
-            startEvent  : Hammer.util.extend({}, ev), // start eventData for distances, timing etc
+            startEvent  : Hammer.utils.extend({}, ev), // start eventData for distances, timing etc
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
@@ -562,7 +565,7 @@ Hammer.gesture = {
     stop: function stop() {
         // clone current data to the store as the previous gesture
         // used for the double tap gesture, since this is an other gesture detect session
-        this.previous = Hammer.util.extend({}, this.current);
+        this.previous = Hammer.utils.extend({}, this.current);
 
         // reset the current
         this.current = null;
@@ -582,21 +585,21 @@ Hammer.gesture = {
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
-            startEv.touches = Hammer.util.extend({}, ev.touches, 1);
+            startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
         }
 
-        Hammer.util.extend(ev, {
+        Hammer.utils.extend(ev, {
             touchTime   : (ev.time - startEv.time),
 
-            angle       : Hammer.util.getAngle(startEv.center, ev.center),
-            direction   : Hammer.util.getDirection(startEv.center, ev.center),
+            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
+            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
 
-            distance    : Hammer.util.getDistance(startEv.center, ev.center),
-            distanceX   : Hammer.util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
-            distanceY   : Hammer.util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
+            distance    : Hammer.utils.getDistance(startEv.center, ev.center),
+            distanceX   : Hammer.utils.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
+            distanceY   : Hammer.utils.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
 
-            scale       : Hammer.util.getScale(startEv.touches, ev.touches),
-            rotation    : Hammer.util.getRotation(startEv.touches, ev.touches),
+            scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
+            rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
 
             startEvent  : startEv
         });
@@ -617,7 +620,7 @@ Hammer.gesture = {
         }
 
         // extend Hammer default options with the Hammer.gesture options
-        Hammer.util.extend(Hammer.defaults, options);
+        Hammer.utils.extend(Hammer.defaults, options);
 
         // set it's index
         gesture.index = gesture.index || 1000;
@@ -728,13 +731,21 @@ Hammer.gestures = Hammer.gestures || {};
  *
  * after the gesture detection session has been completed (user has released the screen)
  * the Hammer.gesture.current object is copied into Hammer.gesture.previous,
- * this is usefull for gestures like doubletap, where you need to know if the previous
- * gesture was a tap
+ * this is usefull for gestures like doubletap, where you need to know if the
+ * previous gesture was a tap
  *
  * options that have been set by the instance can be received by calling inst.options
  *
  * You can trigger a gesture event by calling inst.trigger("mygesture", event).
  * The first param is the name of your gesture, the second the event argument
+ *
+ *
+ * Register gestures
+ * --------------------
+ * When an gesture is added to the Hammer.gestures object, it is auto registered
+ * at the setup of the first Hammer instance. You can also call Hammer.gesture.register
+ * manually and pass your gesture object as a param
+ *
  */
 
 /**

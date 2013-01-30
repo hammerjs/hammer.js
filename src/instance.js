@@ -16,13 +16,13 @@ Hammer.Instance = function(element, options) {
     this._events = {};
 
     // merge options
-    this.options = Hammer.util.extend(
-        Hammer.util.extend({}, Hammer.defaults),
+    this.options = Hammer.utils.extend(
+        Hammer.utils.extend({}, Hammer.defaults),
         options || {});
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.stop_browser_behavior) {
-        Hammer.util.stopBrowserBehavior(this);
+        Hammer.utils.stopBrowserBehavior(this);
     }
 
     // start detection on touchstart

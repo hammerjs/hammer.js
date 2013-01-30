@@ -31,3 +31,6 @@ Hammer.DIRECTION_RIGHT = 'right';
 Hammer.TOUCH_START = 'start';
 Hammer.TOUCH_MOVE = 'move';
 Hammer.TOUCH_END = 'end';
+
+// plugins namespace
+Hammer.plugins = {};

@@ -24,7 +24,7 @@ Hammer.gesture = {
 
         self.current = {
             inst        : inst, // reference to HammerInstance we're working for
-            startEvent  : Hammer.util.extend({}, ev), // start eventData for distances, timing etc
+            startEvent  : Hammer.utils.extend({}, ev), // start eventData for distances, timing etc
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
@@ -89,7 +89,7 @@ Hammer.gesture = {
     stop: function stop() {
         // clone current data to the store as the previous gesture
         // used for the double tap gesture, since this is an other gesture detect session
-        this.previous = Hammer.util.extend({}, this.current);
+        this.previous = Hammer.utils.extend({}, this.current);
 
         // reset the current
         this.current = null;
@@ -109,21 +109,21 @@ Hammer.gesture = {
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
-            startEv.touches = Hammer.util.extend({}, ev.touches, 1);
+            startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
         }
 
-        Hammer.util.extend(ev, {
+        Hammer.utils.extend(ev, {
             touchTime   : (ev.time - startEv.time),
 
-            angle       : Hammer.util.getAngle(startEv.center, ev.center),
-            direction   : Hammer.util.getDirection(startEv.center, ev.center),
+            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
+            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
 
-            distance    : Hammer.util.getDistance(startEv.center, ev.center),
-            distanceX   : Hammer.util.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
-            distanceY   : Hammer.util.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
+            distance    : Hammer.utils.getDistance(startEv.center, ev.center),
+            distanceX   : Hammer.utils.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
+            distanceY   : Hammer.utils.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
 
-            scale       : Hammer.util.getScale(startEv.touches, ev.touches),
-            rotation    : Hammer.util.getRotation(startEv.touches, ev.touches),
+            scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
+            rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
 
             startEvent  : startEv
         });
@@ -144,7 +144,7 @@ Hammer.gesture = {
         }
 
         // extend Hammer default options with the Hammer.gesture options
-        Hammer.util.extend(Hammer.defaults, options);
+        Hammer.utils.extend(Hammer.defaults, options);
 
         // set it's index
         gesture.index = gesture.index || 1000;

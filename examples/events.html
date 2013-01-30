@@ -162,14 +162,15 @@
     <script src="http://code.jquery.com/jquery.min.js"></script>
 
     <script src="../dist/hammer-1.0.0dev.js?a"></script>
-    <script src="../extensions/hammer.debug.js"></script>
+    <script src="../plugins/hammer.fakemultitouch.js"></script>
+    <script src="../plugins/hammer.showtouches.js"></script>
 
     <script>
 
 
         if(!Hammer.HAS_TOUCHEVENTS) {
-            Hammer.debug.showTouches();
-            Hammer.debug.fakeMultitouch();
+            Hammer.plugins.showTouches();
+            Hammer.plugins.fakeMultitouch();
         }
 
         function getEl(id) {
