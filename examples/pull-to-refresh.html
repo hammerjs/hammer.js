@@ -8,7 +8,9 @@
     <style>
         body { padding: 0; }
 
+            /* pull down is a translate3d y position */
         #container {
+            position: relative;
             padding: 20px;
             -webkit-transition: -webkit-transform 0ms;
             transform: translate3d(0,0,0) scale3d(1,1,1);
@@ -18,6 +20,7 @@
             -webkit-backface-visibility: hidden;
         }
 
+            /* slide up with small animation */
         #container.pullrefresh-slideup,
         #container.pullrefresh-loading {
             -o-transition: -o-transform .3s;
@@ -25,10 +28,7 @@
             -webkit-transition: -webkit-transform .3s;
         }
 
-        @keyframes rotate{ 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
-        @-moz-keyframes rotate{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(360deg); } }
-        @-webkit-keyframes rotate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(360deg); } }
-
+            /* place the pullrefresh box above the container */
         #pullrefresh {
             display: block;
             overflow: hidden;
@@ -52,15 +52,19 @@
             font-weight: bold;
         }
 
+            /* change message with css */
         #pullrefresh .message span:after { content: "Pull to refresh..."; }
         .pullrefresh-breakpoint #pullrefresh .message span:after { content: "Release to refresh..."; }
         .pullrefresh-loading #pullrefresh .message span:after { content: "Loading new image..."; }
 
+
+            /* icon */
         #pullrefresh .icon {
             position: absolute;
             left: 20px;
         }
 
+            /* arrow icon */
         #pullrefresh .icon.arrow {
             background: url(assets/img/arrow.png) no-repeat;
             width: 71px;
@@ -85,6 +89,13 @@
             -webkit-transform: rotate(-90deg);
         }
 
+            /* spinner icon */
+            /* rotate spinner with css animation */
+        @keyframes rotate{ 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
+        @-o-keyframes rotate{ 0%{ -o-transform: rotate(0deg); } 100%{ -o-transform: rotate(360deg); } }
+        @-moz-keyframes rotate{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(360deg); } }
+        @-webkit-keyframes rotate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(360deg); } }
+
         #pullrefresh .icon.loading {
             background: url(assets/img/spinner.png) no-repeat;
             width: 19px;
@@ -93,6 +104,7 @@
             bottom: 0;
 
             animation: rotate 1s linear infinite;
+            -o-animation: rotate 1s linear infinite;
             -moz-animation: rotate 1s linear infinite;
             -webkit-animation: rotate 1s linear infinite;
         }
@@ -142,6 +154,10 @@
 
 <script>
 
+
+    /**
+     * requestAnimationFrame and cancel polyfill
+     */
     (function() {
         var lastTime = 0;
         var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -168,6 +184,161 @@
     }());
 
 
+    /**
+     * pull to refresh
+     * @type {*}
+     */
+    var PullToRefresh = (function() {
+        function Main(container, slidebox, slidebox_icon, handler) {
+            var self = this;
+
+            this.breakpoint = 80;
+
+            this.container = container;
+            this.slidebox = slidebox;
+            this.slidebox_icon = slidebox_icon;
+            this.handler = handler;
+
+            this._slidedown_height = 0;
+            this._anim = null;
+
+            Hammer(this.container).on("touch dragdown release", function(ev) {
+                self.handleHammer(ev);
+            });
+        };
+
+
+        /**
+         * Handle HammerJS callback
+         * @param ev
+         */
+        Main.prototype.handleHammer = function(ev) {
+            var self = this;
+
+            switch(ev.gesture) {
+                // reset element on start
+                case 'touch':
+                    this.hide();
+                    break;
+
+                // on release we check how far we dragged
+                case 'release':
+                    // cancel animation
+                    cancelAnimationFrame(this._anim);
+
+                    // over the breakpoint, trigger the callback
+                    if(ev.distanceY >= this.breakpoint) {
+                        container_el.className = 'pullrefresh-loading';
+                        pullrefresh_icon_el.className = 'icon loading';
+
+                        this.setHeight(60);
+                        this.handler.call(this);
+                    }
+                    // just hide it
+                    else {
+                        pullrefresh_el.className = 'slideup';
+                        container_el.className = 'pullrefresh-slideup';
+
+                        this.hide();
+                    }
+                    break;
+
+                // when we dragdown
+                case 'dragdown':
+                    // if we are not at the top move down
+                    var scrollY = window.scrollY;
+                    if(scrollY > 5) {
+                        return;
+                    } else if(scrollY !== 0) {
+                        window.scrollTo(0,0);
+                    }
+
+                    // no requestAnimationFrame instance is running, start one
+                    if(!this._anim) {
+                        this.updateHeight();
+                    }
+
+                    // stop browser scrolling
+                    ev.srcEvent.preventDefault();
+
+                    // update slidedown height
+                    // it will be updated when requestAnimationFrame is called
+                    this._slidedown_height = (ev.distanceY*.4);
+                    break;
+            }
+        };
+
+
+        /**
+         * when we set the height, we just change the container y
+         * @param   {Number}    height
+         */
+        Main.prototype.setHeight = function(height) {
+            this.container.style.transform = 'translate3d(0,'+height+'px,0) ';
+            this.container.style.oTransform = 'translate3d(0,'+height+'px,0)';
+            this.container.style.mozTransform = 'translate3d(0,'+height+'px,0)';
+            this.container.style.webkitTransform = 'translate3d(0,'+height+'px,0) scale3d(1,1,1)';
+
+        };
+
+
+        /**
+         * hide the pullrefresh message and reset the vars
+         */
+        Main.prototype.hide = function() {
+            container_el.className = '';
+            this._slidedown_height = 0;
+            this.setHeight(0);
+            cancelAnimationFrame(this._anim);
+            this._anim = null;
+        };
+
+
+        /**
+         * hide the pullrefresh message and reset the vars
+         */
+        Main.prototype.slideUp = function() {
+            var self = this;
+            cancelAnimationFrame(this._anim);
+
+            pullrefresh_el.className = 'slideup';
+            container_el.className = 'pullrefresh-slideup';
+
+            this.setHeight(0);
+
+            setTimeout(function() {
+                self.hide();
+            }, 500);
+        };
+
+
+        /**
+         * update the height of the slidedown message
+         */
+        Main.prototype.updateHeight = function() {
+            var self = this;
+
+            this.setHeight(this._slidedown_height);
+
+            if(this._slidedown_height >= this.breakpoint){
+                this.slidebox.className = 'breakpoint';
+                this.slidebox_icon.className = 'icon arrow arrow-up';
+            }
+            else {
+                this.slidebox.className = '';
+                this.slidebox_icon.className = 'icon arrow';
+            }
+
+            this._anim = requestAnimationFrame(function() {
+                self.updateHeight();
+            });
+        };
+
+        return Main;
+    })();
+
+
+
     function getEl(id) {
         return document.getElementById(id);
     }
@@ -177,87 +348,21 @@
     var pullrefresh_icon_el = getEl('pullrefresh-icon');
     var image_el = getEl('random-image');
 
-    var slidedown_height = 0;
-    var slidedown_breakpoint = 80;
-    var anim = null;
+    var refresh = new PullToRefresh(container_el, pullrefresh_el, pullrefresh_icon_el);
 
-    function setTranslate3dHeigt(el, height) {
-        el.style.transform = 'translate3d(0,'+height+'px,0) ';
-        el.style.oTransform = 'translate3d(0,'+height+'px,0)';
-        el.style.mozTransform = 'translate3d(0,'+height+'px,0)';
-        el.style.webkitTransform = 'translate3d(0,'+height+'px,0) scale3d(1,1,1)';
-    }
-
-    function updateSlideDown() {
-        setTranslate3dHeigt(container_el, slidedown_height);
-
-        if(slidedown_height >= slidedown_breakpoint){
-            pullrefresh_icon_el.className = 'icon arrow arrow-up';
-            pullrefresh_el.className = 'breakpoint';
-        }
-        else {
-            pullrefresh_icon_el.className = 'icon arrow';
-            pullrefresh_el.className = '';
-        }
-
-        anim = requestAnimationFrame(updateSlideDown);
-    }
-
-    Hammer(getEl('container'), {
-        transform: false,
-        swipe: false,
-        tap: false,
-        hold: false
-    })
-        .on("touch dragdown release", function pullToRefresh(ev) {
-            switch(ev.gesture) {
-                // reset element on start
-                case 'touch':
-                    container_el.className = '';
-                    slidedown_height = 0;
-                    updateSlideDown();
-                    break;
-
-                // on release we check how far we dragged
-                case 'release':
-                    cancelAnimationFrame(anim);
-
-                    if(ev.distanceY >= slidedown_breakpoint) {
-                        container_el.className = 'pullrefresh-loading';
-                        pullrefresh_icon_el.className = 'icon loading';
-
-                        setTranslate3dHeigt(container_el, 60);
-
-                        // a small timeout to demo the loading state
-                        setTimeout(function() {
-                            var preload = new Image();
-                            preload.onload = function() {
-                                image_el.src = this.src;
-                                pullrefresh_el.className = 'slideup';
-                                container_el.className = 'pullrefresh-slideup';
-                                setTranslate3dHeigt(container_el, 0);
-                            };
-                            preload.src = 'http://lorempixel.com/800/600/?'+ Date.now();
-                        }, 1000);
-                    }
-                    else {
-                        pullrefresh_el.className = 'slideup';
-                        container_el.className = 'pullrefresh-slideup';
-                        setTranslate3dHeigt(container_el, 0);
-                    }
-                    break;
-
-                case 'dragdown':
-                    if(window.scrollY > 0) {
-                        return;
-                    }
-                    // stop browser scrolling
-                    ev.srcEvent.preventDefault();
-
-                    slidedown_height = (ev.distanceY*.4);
-                    break;
-            }
-        });
+    // update image onrefresh
+    refresh.handler = function() {
+        var self = this;
+        // a small timeout to demo the loading state
+        setTimeout(function() {
+            var preload = new Image();
+            preload.onload = function() {
+                image_el.src = this.src;
+                self.slideUp();
+            };
+            preload.src = 'http://lorempixel.com/800/600/?'+ (new Date().getTime());
+        }, 1000);
+    };
 
 </script>
 
