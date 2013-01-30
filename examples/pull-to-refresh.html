@@ -10,6 +10,19 @@
 
         #container {
             padding: 20px;
+            -webkit-transition: -webkit-transform 0ms;
+            transform: translate3d(0,0,0) scale3d(1,1,1);
+            -o-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -moz-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-backface-visibility: hidden;
+        }
+
+        #container.pullrefresh-slideup,
+        #container.pullrefresh-loading {
+            -o-transition: -o-transform .3s;
+            -moz-transition: -moz-transform .3s;
+            -webkit-transition: -webkit-transform .3s;
         }
 
         @keyframes rotate{ 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
@@ -17,33 +30,15 @@
         @-webkit-keyframes rotate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(360deg); } }
 
         #pullrefresh {
-            display: none;
+            display: block;
             overflow: hidden;
-            position: relative;
+            position: absolute;
+            top: -490px;
+            left: 0;
+            width: 100%;
+            height: 490px;
             background: #ccc;
             box-shadow: 0 -5px 10px #bbb inset;
-        }
-
-        #pullrefresh.loading,
-        #pullrefresh.slidedown,
-        #pullrefresh.slideup {
-            display: block;
-        }
-
-        #pullrefresh.loading,
-        #pullrefresh.slideup {
-            transition: height .3s;
-            -o-transition: height .3s;
-            -moz-transition: height .3s;
-            -webkit-transition: height .3s;
-        }
-
-        #pullrefresh.slideup {
-            height: 0 !important;
-        }
-
-        #pullrefresh.loading {
-            height: 60px !important;
         }
 
         #pullrefresh .message {
@@ -57,9 +52,9 @@
             font-weight: bold;
         }
 
-        #pullrefresh.slidedown .message span:after { content: "Pull to refresh..."; }
-        #pullrefresh.slidedown.breakpoint .message span:after { content: "Release to refresh..."; }
-        #pullrefresh.loading .message span:after { content: "Loading new image..."; }
+        #pullrefresh .message span:after { content: "Pull to refresh..."; }
+        .pullrefresh-breakpoint #pullrefresh .message span:after { content: "Release to refresh..."; }
+        .pullrefresh-loading #pullrefresh .message span:after { content: "Loading new image..."; }
 
         #pullrefresh .icon {
             position: absolute;
@@ -80,6 +75,7 @@
             -moz-transition: -moz-transform .3s;
             -webkit-transform: rotate(90deg);
             -webkit-transition: -webkit-transform .3s;
+            -webkit-backface-visibility: hidden;
         }
 
         #pullrefresh .icon.arrow.arrow-up {
@@ -105,53 +101,107 @@
 </head>
 <body>
 
-<div id="pullrefresh">
-    <div class="message">
-        <div id="pullrefresh-icon" class="icon arrow arrow-down"></div>
-        <span></span>
+
+<div id="container">
+
+    <div id="pullrefresh">
+        <div class="message">
+            <div id="pullrefresh-icon" class="icon arrow arrow-down"></div>
+            <span></span>
+        </div>
+    </div>
+
+    <div id="content">
+        <h4>Pull-to-Refresh <small>random images</small></h4>
+        <p>
+            <img id="random-image" class="img-rounded" src="http://lorempixel.com/800/600/">
+        </p>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+        </p>
+        <p>
+            Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+        </p>
+        <p>
+            Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+        </p>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+        </p>
+        <p>
+            Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+        </p>
+        <p>
+            Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+        </p>
     </div>
 </div>
 
-<div id="container">
-    <h4>Pull-to-Refresh <small>random images</small></h4>
-    <p>
-        <img id="random-image" class="img-rounded" src="http://lorempixel.com/800/600/">
-    </p>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
-    </p>
-    <p>
-        Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
-    </p>
-    <p>
-        Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
-    </p>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
-    </p>
-    <p>
-        Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
-    </p>
-    <p>
-        Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
-    </p>
-</div>
 
 <script src="../dist/hammer-1.0.0dev.js"></script>
 
 <script>
+
+    (function() {
+        var lastTime = 0;
+        var vendors = ['ms', 'moz', 'webkit', 'o'];
+        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+            window.cancelAnimationFrame =
+                    window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+        }
+
+        if (!window.requestAnimationFrame)
+            window.requestAnimationFrame = function(callback, element) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                        timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+
+        if (!window.cancelAnimationFrame)
+            window.cancelAnimationFrame = function(id) {
+                clearTimeout(id);
+            };
+    }());
 
 
     function getEl(id) {
         return document.getElementById(id);
     }
 
+    var container_el = getEl('container');
     var pullrefresh_el = getEl('pullrefresh');
     var pullrefresh_icon_el = getEl('pullrefresh-icon');
     var image_el = getEl('random-image');
 
-    var is_pulling_down = false;
-    var is_over_breakpoint = false;
+    var slidedown_height = 0;
+    var slidedown_breakpoint = 80;
+    var anim = null;
+
+    function setTranslate3dHeigt(el, height) {
+        el.style.transform = 'translate3d(0,'+height+'px,0) ';
+        el.style.oTransform = 'translate3d(0,'+height+'px,0)';
+        el.style.mozTransform = 'translate3d(0,'+height+'px,0)';
+        el.style.webkitTransform = 'translate3d(0,'+height+'px,0) scale3d(1,1,1)';
+    }
+
+    function updateSlideDown() {
+        setTranslate3dHeigt(container_el, slidedown_height);
+
+        if(slidedown_height >= slidedown_breakpoint){
+            pullrefresh_icon_el.className = 'icon arrow arrow-up';
+            pullrefresh_el.className = 'breakpoint';
+        }
+        else {
+            pullrefresh_icon_el.className = 'icon arrow';
+            pullrefresh_el.className = '';
+        }
+
+        anim = requestAnimationFrame(updateSlideDown);
+    }
 
     Hammer(getEl('container'), {
         transform: false,
@@ -160,34 +210,40 @@
         hold: false
     })
         .on("touch dragdown release", function pullToRefresh(ev) {
-            var breakpoint = 80;
-
             switch(ev.gesture) {
                 // reset element on start
                 case 'touch':
-                    pullrefresh_el.className = '';
+                    container_el.className = '';
+                    slidedown_height = 0;
+                    updateSlideDown();
                     break;
 
                 // on release we check how far we dragged
                 case 'release':
-                    if(pullrefresh_el.className) {
-                        if(ev.distanceY >= breakpoint) {
-                            pullrefresh_el.className = 'loading';
-                            pullrefresh_icon_el.className = 'icon loading';
+                    cancelAnimationFrame(anim);
 
-                            // a small timeout to demo the loading state
-                            setTimeout(function() {
-                                var preload = new Image();
-                                preload.onload = function() {
-                                    image_el.src = this.src;
-                                    pullrefresh_el.className = 'slideup';
-                                };
-                                preload.src = 'http://lorempixel.com/800/600/?'+ Date.now();
-                            }, 1000);
-                        }
-                        else {
-                            pullrefresh_el.className = 'slideup';
-                        }
+                    if(ev.distanceY >= slidedown_breakpoint) {
+                        container_el.className = 'pullrefresh-loading';
+                        pullrefresh_icon_el.className = 'icon loading';
+
+                        setTranslate3dHeigt(container_el, 60);
+
+                        // a small timeout to demo the loading state
+                        setTimeout(function() {
+                            var preload = new Image();
+                            preload.onload = function() {
+                                image_el.src = this.src;
+                                pullrefresh_el.className = 'slideup';
+                                container_el.className = 'pullrefresh-slideup';
+                                setTranslate3dHeigt(container_el, 0);
+                            };
+                            preload.src = 'http://lorempixel.com/800/600/?'+ Date.now();
+                        }, 1000);
+                    }
+                    else {
+                        pullrefresh_el.className = 'slideup';
+                        container_el.className = 'pullrefresh-slideup';
+                        setTranslate3dHeigt(container_el, 0);
                     }
                     break;
 
@@ -198,16 +254,7 @@
                     // stop browser scrolling
                     ev.srcEvent.preventDefault();
 
-                    var height = (ev.distanceY*.4);
-                    pullrefresh_el.style.height = height +"px";
-
-                    pullrefresh_el.className = 'slidedown';
-                    pullrefresh_icon_el.className = 'icon arrow';
-
-                    if(height >= breakpoint){
-                        pullrefresh_icon_el.className = 'icon arrow arrow-up';
-                        pullrefresh_el.className = 'slidedown breakpoint';
-                    }
+                    slidedown_height = (ev.distanceY*.4);
                     break;
             }
         });
