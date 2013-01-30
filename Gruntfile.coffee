@@ -41,6 +41,7 @@ module.exports = (grunt) ->
       build:
         files:
           'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
+          'dist/<%= pkg.name %>-latest.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
 
     # watch for changes
     watch:
