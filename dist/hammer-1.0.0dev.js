@@ -638,10 +638,110 @@ Hammer.gesture = {
 
 Hammer.gestures = Hammer.gestures || {};
 
+/**
+ * Custom gestures
+ * ==============================
+ *
+ * Gesture object
+ * --------------------
+ * The object structure of a gesture:
+ *
+ * { name: 'mygesture',
+ *   index: 1337,
+ *   defaults: {
+ *     mygesture_option: true
+ *   }
+ *   handler: function(type, ev, inst) {
+ *     // trigger gesture event
+ *     inst.trigger(this.name, ev);
+ *   }
+ * }
 
-// Hold gesture
-// Touch stays at the same place for x time
-// events: hold
+ * @param   {String}    name
+ * this should be the name of the gesture, lowercase
+ * it is also being used to disable/enable the gesture per instance config.
+ *
+ * @param   {Number}    [index=1000]
+ * the index of the gesture, where it is going to be in the stack of gestures detection
+ * like when you build an gesture that depends on the drag gesture, it is a good
+ * idea to place it after the index of the drag gesture.
+ *
+ * @param   {Object}    [defaults={}]
+ * the default settings of the gesture. these are added to the instance settings,
+ * and can be overruled per instance. you can also add the name of the gesture,
+ * but this is also added by default (and set to true).
+ *
+ * @param   {Function}  handler
+ * this handles the gesture detection of your custom gesture and receives the
+ * following arguments:
+ *      @param  {String}    type
+ *      matches Hammer.TOUCH_START|MOVE|END
+ *
+ *      @param  {Object}    event
+ *      event data containing the following properties:
+ *          time        {Number}        time the event occurred
+ *          target      {HTMLElement}   target element
+ *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
+ *          center      {Object}        center position of the touches
+ *                                      contains pageX and pageY
+ *          touchTime   {Number}        the total time of the touches in the screen
+ *          angle       {Number}        the angle we are moving
+ *          direction   {String}        the direction we are moving.
+ *                                      matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
+ *          distance    {Number}        the distance we haved moved
+ *          distanceX   {Number}        the distance on x axis we haved moved
+ *          distanceY   {Number}        the distance on y axis we haved moved
+ *          scale       {Number}        scaling of the touches, needs 2 touches
+ *          rotation    {Number}        rotation of the touches, needs 2 touches
+ *          srcEvent    {Object}        the source event, like TouchStart or MouseDown *
+ *          startEvent  {Object}        contains the same properties as above,
+ *                                      but from the first touch. this is used to calculate
+ *                                      distances, touchTime, scaling etc
+ *
+ *      @param  {Hammer.Instance}    inst
+ *      the instance we are doing the detection for. you can get the options from
+ *      the inst.options object and trigger the gesture event by calling inst.trigger
+ *
+ *
+ * Handle gestures
+ * --------------------
+ * inside the handler you can get/set Hammer.gesture.current. This is the current
+ * detection session. It has the following properties
+ *      @param  {String}    name
+ *      contains the name of the gesture we have detected. it has not a real function,
+ *      only to check in other gestures if something is detected.
+ *      like in the drag gesture we set it to 'drag' and in the swipe gesture we can
+ *      check if the current gesture is 'drag' by accessing Hammer.gesture.current.name
+ *
+ *      @readonly
+ *      @param  {Hammer.Instance}    inst
+ *      the instance we do the detection for
+ *
+ *      @readonly
+ *      @param  {Object}    startEvent
+ *      contains the properties of the first gesture detection in this session.
+ *      Used for calculations about timing, distance, etc.
+ *
+ *      @readonly
+ *      @param  {Object}    lastEvent
+ *      contains all the properties of the last gesture detect in this session.
+ *
+ * after the gesture detection session has been completed (user has released the screen)
+ * the Hammer.gesture.current object is copied into Hammer.gesture.previous,
+ * this is usefull for gestures like doubletap, where you need to know if the previous
+ * gesture was a tap
+ *
+ * options that have been set by the instance can be received by calling inst.options
+ *
+ * You can trigger a gesture event by calling inst.trigger("mygesture", event).
+ * The first param is the name of your gesture, the second the event argument
+ */
+
+/**
+ * Hold
+ * Touch stays at the same place for x time
+ * @events  hold
+ */
 Hammer.gestures.Hold = {
     name: 'hold',
     index: 10,
@@ -678,9 +778,11 @@ Hammer.gestures.Hold = {
 };
 
 
-// Tap/DoubleTap gesture
-// Quick touch at a place or double at the same place
-// events: tap, doubletap
+/**
+ * Tap/DoubleTap
+ * Quick touch at a place or double at the same place
+ * @events  tap, doubletap
+ */
 Hammer.gestures.Tap = {
     name: 'tap',
     index: 100,
@@ -718,10 +820,13 @@ Hammer.gestures.Tap = {
 };
 
 
-// Drag gesture
-// Quick touch at a place or double at the same place
-// events:  dragstart, drag, dragend,
-//          drapleft, dragright, dragup, dragdown
+/**
+ * Drag
+ * Move with x fingers (default 1) around on the page. Blocking the scrolling when
+ * moving left and right is a good practice. When all the drag events are blocking
+ * you disable scrolling on that area.
+ * @events  drag, drapleft, dragright, dragup, dragdown
+ */
 Hammer.gestures.Drag = {
     name: 'drag',
     index: 50,
@@ -751,14 +856,17 @@ Hammer.gestures.Drag = {
 };
 
 
-// Swipe gesture
-// Called after Hammer.gesture.Drag
-// events: swipe, swipeleft, swiperight, swipeup, swipedown
+/**
+ * Swipe
+ * called after dragging ends and the user moved for x ms a small distance
+ * @events  swipe, swipeleft, swiperight, swipeup, swipedown
+ */
 Hammer.gestures.Swipe = {
     name: 'swipe',
     index: 51,
     defaults: {
         swipe_min_time     : 150,
+        swipe_max_time     : 500,
         swipe_min_distance : 20
     },
     handler: function swipeGesture(type, ev, inst) {
@@ -767,20 +875,23 @@ Hammer.gestures.Swipe = {
             // or we can be already in dragging
             if(Hammer.gesture.current.name == 'drag' &&
                 ev.touchTime > inst.options.swipe_min_time &&
+                ev.touchTime < inst.options.swipe_max_time &&
                 ev.distance > inst.options.swipe_min_distance) {
-
-                inst.trigger(this.name, ev); // basic drag event
-                inst.trigger(this.name + ev.direction, ev);  // direction event, like dragdown
+                // trigger swipe events
+                inst.trigger(this.name, ev);
+                inst.trigger(this.name + ev.direction, ev);
             }
         }
     }
 };
 
 
-// Pull page down gesture
-// Used for Pull-to-Refresh gesture
-// Called after Hammer.gesture.Drag
-// events: pulldown
+/**
+ * Pull page down
+ * Used for Pull-to-Refresh gestures
+ * Called after Hammer.gesture.Drag
+ * @events  pulldown
+ */
 Hammer.gestures.PullDown = {
     name: 'pulldown',
     index: 52,
@@ -794,11 +905,11 @@ Hammer.gestures.PullDown = {
 };
 
 
-// Transform gesture
-// Called before Hammer.gesture.Drag
-// events: transformstart, transform, transformend,
-//          pinch, pinchin, pinchout,
-//          rotate, rotateleft, rotateright
+/**
+ * Transform
+ * User want to scale or rotate with 2 fingers
+ * @events  transform, pinch, pinchin, pinchout, rotate
+ */
 Hammer.gestures.Transform = {
     name: 'transform',
     index: 45,
@@ -839,9 +950,11 @@ Hammer.gestures.Transform = {
 };
 
 
-// Touch gesture
-// Called as first, tells the user has touched the screen
-// events: release
+/**
+ * Touch
+ * Called as first, tells the user has touched the screen
+ * @events  touch
+ */
 Hammer.gestures.Touch = {
     name: 'touch',
     index: -Infinity,
@@ -853,9 +966,11 @@ Hammer.gestures.Touch = {
 };
 
 
-// Release gesture
-// Called as last, tells the user has released the screen
-// events: release
+/**
+ * Release
+ * Called as last, tells the user has released the screen
+ * @events  release
+ */
 Hammer.gestures.Release = {
     name: 'release',
     index: Infinity,

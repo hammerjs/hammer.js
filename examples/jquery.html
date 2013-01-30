@@ -54,6 +54,7 @@
             <h1>Touch me</h1>
             <p>The tap event will be fired. Notice in the sourcecode that event delegation is also supported.<br>
             In the console you can see the event data.</p>
+            <h4>List items with stopPropagation</h4>
             <ul>
                 <li>List item 1</li>
                 <li>List item 2</li>
@@ -91,7 +92,6 @@
     // on elements in the toucharea, with a stopPropagation
     toucharea.on("tap", "ul li", function(ev) {
         highlight(this);
-        ev.preventDefault();
         ev.stopPropagation();
     });
 
