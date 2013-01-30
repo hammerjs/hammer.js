@@ -90,13 +90,21 @@ Hammer.gestures = Hammer.gestures || {};
  *
  * after the gesture detection session has been completed (user has released the screen)
  * the Hammer.gesture.current object is copied into Hammer.gesture.previous,
- * this is usefull for gestures like doubletap, where you need to know if the previous
- * gesture was a tap
+ * this is usefull for gestures like doubletap, where you need to know if the
+ * previous gesture was a tap
  *
  * options that have been set by the instance can be received by calling inst.options
  *
  * You can trigger a gesture event by calling inst.trigger("mygesture", event).
  * The first param is the name of your gesture, the second the event argument
+ *
+ *
+ * Register gestures
+ * --------------------
+ * When an gesture is added to the Hammer.gestures object, it is auto registered
+ * at the setup of the first Hammer instance. You can also call Hammer.gesture.register
+ * manually and pass your gesture object as a param
+ *
  */
 
 /**
