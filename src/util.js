@@ -119,8 +119,8 @@ Hammer.utils = {
     getScale: function getScale(start, end) {
         // need two fingers...
         if(start.length >= 2 && end.length >= 2) {
-            return this.getDistance(start[0], start[1]) /
-                this.getDistance(end[0], end[1]);
+            return this.getDistance(end[0], end[1]) /
+                this.getDistance(start[0], start[1]);
         }
         return 1;
     },
