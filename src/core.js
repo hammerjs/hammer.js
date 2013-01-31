@@ -4,14 +4,13 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
-    stop_browser_behavior: true,
-    stop_browser_behavior_props: {
-        "userSelect": "none",
-        "touchCallout": "none",
-        "touchAction": "none",
-        "contentZooming": "none",
-        "userDrag": "none",
-        "tapHighlightColor": "rgba(0,0,0,0)"
+    stop_browser_behavior: {    // set to false to disable this
+        userSelect: "none", // this also triggers onselectstart=false for IE
+        touchCallout: "none",
+        touchAction: "none",
+        contentZooming: "none",
+        userDrag: "none",
+        tapHighlightColor: "rgba(0,0,0,0)"
     }
 
     // more settings are defined at gestures.js
@@ -20,6 +19,10 @@ Hammer.defaults = {
 // detect touchevents
 Hammer.HAS_POINTEREVENTS = window.navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
+
+// eventtypes per touchevent (start, move, end)
+// are filled by Hammer.event.determineEventTypes on setup
+Hammer.EVENT_TYPES = {};
 
 // direction defines
 Hammer.DIRECTION_DOWN = 'down';

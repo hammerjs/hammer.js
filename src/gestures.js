@@ -202,11 +202,18 @@ Hammer.gestures.Drag = {
     index: 50,
     defaults: {
         drag_min_distance : 10,
-        drag_max_touches  : 1   // set 0 for unlimited, but this can conflict with transform
+        // set 0 for unlimited, but this can conflict with transform
+        drag_max_touches  : 1,
+        // prevent default browser behavior when dragging occurs
+        // be careful with it, it makes the element a blocking element
+        // when you are using the drag gesture, it is a good practice to set this true
+        drag_block_horizontal   : false,
+        drag_block_vertical     : false
     },
     handler: function dragGesture(type, ev, inst) {
         // max touches
-        if(inst.options.drag_max_touches > 0 && ev.touches.length > inst.options.drag_max_touches) {
+        if(inst.options.drag_max_touches > 0 &&
+            ev.touches.length > inst.options.drag_max_touches) {
             return;
         }
 
@@ -221,6 +228,16 @@ Hammer.gestures.Drag = {
             Hammer.gesture.current.name = this.name;
             inst.trigger(this.name, ev); // basic drag event
             inst.trigger(this.name + ev.direction, ev);  // direction event, like dragdown
+
+            // block the browser events
+            if( (inst.options.drag_block_vertical && (
+                    ev.direction == Hammer.DIRECTION_UP ||
+                    ev.direction == Hammer.DIRECTION_DOWN)) ||
+                (inst.options.drag_block_horizontal && (
+                    ev.direction == Hammer.DIRECTION_LEFT ||
+                    ev.direction == Hammer.DIRECTION_RIGHT))) {
+                ev.preventDefault();
+            }
         }
     }
 };
@@ -237,7 +254,7 @@ Hammer.gestures.Swipe = {
     defaults: {
         swipe_min_time     : 150,
         swipe_max_time     : 500,
-        swipe_min_distance : 20
+        swipe_min_distance : 30
     },
     handler: function swipeGesture(type, ev, inst) {
         if(type == Hammer.TOUCH_END) {
@@ -268,9 +285,18 @@ Hammer.gestures.Transform = {
         // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
         transform_min_scale     : 0.01,
         // rotation in degrees
-        transform_min_rotation  : 1
+        transform_min_rotation  : 1,
+        // prevent default browser behavior when two touches are on the screen
+        // but it makes the element a blocking element
+        // when you are using the transform gesture, it is a good practice to set this true
+        transform_always_block  : false
     },
     handler: function transformGesture(type, ev, inst) {
+        // prevent default when two fingers are on the screen
+        if(inst.options.transform_always_block && ev.touches.length == 2) {
+            ev.preventDefault();
+        }
+
         // at least multitouch
         if(type == Hammer.TOUCH_MOVE && ev.touches.length == 2) {
             var scale_threshold = Math.abs(1-ev.scale);

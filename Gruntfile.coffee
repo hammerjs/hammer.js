@@ -27,6 +27,15 @@ module.exports = (grunt) ->
           'src/outro.js']
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
 
+    # copy src to latest version
+    copy:
+      latest:
+        src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
+        dest: 'dist/<%= pkg.name %>-latest.js'
+      latestmin:
+        src: ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
+        dest: 'dist/<%= pkg.name %>-latest.min.js'
+
     # check for optimisations and errors
     jshint:
       options:
@@ -47,7 +56,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: 'src/*.js'
-        tasks: ['concat']
+        tasks: ['concat','copy:latest']
         options:
           interrupt: true
 
@@ -59,6 +68,7 @@ module.exports = (grunt) ->
 
 
   # Load tasks
+  grunt.loadNpmTasks 'grunt-contrib-copy'
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
@@ -67,5 +77,5 @@ module.exports = (grunt) ->
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['concat', 'jshint', 'uglify']
-  grunt.registerTask 'default', ['connect', 'watch']
+  grunt.registerTask 'build', ['concat','jshint','uglify','copy']
+  grunt.registerTask 'default', ['connect','watch']

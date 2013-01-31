@@ -54,33 +54,13 @@ Hammer.event = {
             handler.call(this, self.collectEventData(element, type, ev));
         };
 
-
-        // determine the eventtype we want to set
-        var event_types;
-        if(Hammer.HAS_POINTEREVENTS) {
-            event_types = ['MSPointerDown', 'MSPointerMove', 'MSPointerUp MSPointerCancel'];
-        }
-        else if(Hammer.HAS_TOUCHEVENTS) {
-            event_types = ['touchstart', 'touchmove', 'touchend touchcancel'];
-        }
-        else {
-            event_types = ['mousedown', 'mousemove', 'mouseup'];
-        }
-
-
-        var events ={};
-        events[Hammer.TOUCH_START]  = event_types[0];
-        events[Hammer.TOUCH_MOVE]   = event_types[1];
-        events[Hammer.TOUCH_END]    = event_types[2];
-
-
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, events[type], triggerHandler);
+            this.bindDom(element, Hammer.EVENT_TYPES[type], triggerHandler);
         }
         // mouse
         else {
-            this.bindDom(element, events[type], function(ev) {
+            this.bindDom(element, Hammer.EVENT_TYPES[type], function(ev) {
                 // left mouse button must be pressed
                 // ev.button === 1 is for IE
                 if(ev.which === 1 || ev.button === 1) {
@@ -93,6 +73,39 @@ Hammer.event = {
                 }
             });
         }
+    },
+
+
+    /**
+     * we have different events for each device/browser
+     * determine what we need and set them in the Hammer.EVENT_TYPES constant
+     */
+    determineEventTypes: function determineEventTypes() {
+        // determine the eventtype we want to set
+        var types;
+        if(Hammer.HAS_POINTEREVENTS) {
+            types = [
+                'MSPointerDown',
+                'MSPointerMove',
+                'MSPointerUp MSPointerCancel'
+            ];
+        }
+        else if(Hammer.HAS_TOUCHEVENTS) {
+            types = [
+                'touchstart',
+                'touchmove',
+                'touchend touchcancel'];
+        }
+        else {
+            types = [
+                'mousedown',
+                'mousemove',
+                'mouseup'];
+        }
+
+        Hammer.EVENT_TYPES[Hammer.TOUCH_START]  = types[0];
+        Hammer.EVENT_TYPES[Hammer.TOUCH_MOVE]   = types[1];
+        Hammer.EVENT_TYPES[Hammer.TOUCH_END]    = types[2];
     },
 
 
@@ -133,7 +146,8 @@ Hammer.event = {
             target  : ev.target,
             touches : touches,
             srcEvent: ev,
-            center  : Hammer.utils.getCenter(touches)
+            center  : Hammer.utils.getCenter(touches),
+            preventDefault: function() { return ev.preventDefault(); }
         };
     }
 };

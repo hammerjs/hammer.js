@@ -22,7 +22,7 @@ Hammer.Instance = function(element, options) {
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.stop_browser_behavior) {
-        Hammer.utils.stopBrowserBehavior(this);
+        Hammer.utils.stopDefaultBrowserBehavior(this);
     }
 
     // start detection on touchstart

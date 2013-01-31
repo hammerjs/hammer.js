@@ -118,9 +118,9 @@ Hammer.utils = {
      */
     getScale: function getScale(start, end) {
         // need two fingers...
-        if(start.length == 2 && end.length == 2) {
-            return this.getDistance(end[0], end[1]) /
-                this.getDistance(start[0], start[1]);
+        if(start.length >= 2 && end.length >= 2) {
+            return this.getDistance(start[0], start[1]) /
+                this.getDistance(end[0], end[1]);
         }
         return 1;
     },
@@ -147,11 +147,16 @@ Hammer.utils = {
      * @param   Hammer.Instance inst
      * @return {*}
      */
-    stopBrowserBehavior: function stopBrowserBehavior(inst) {
+    stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,
-            vendors = ['webkit','moz','o',''],
-            css_props = inst.options.stop_browser_behavior_props;
+            vendors = ['webkit','khtml','moz','ms','o',''],
+            css_props = inst.options.stop_browser_behavior;
 
+        if(!css_props) {
+            return;
+        }
+
+        // with css properties for modern browsers
         for(var i = 0; i < vendors.length; i++) {
             for(var p in css_props) {
                 if(css_props.hasOwnProperty(p)) {
@@ -162,6 +167,13 @@ Hammer.utils = {
                     inst.element.style[prop] = css_props[p];
                 }
             }
+        }
+
+        // also the disable onselectstart
+        if(css_props.userSelect == 'none') {
+            inst.element.onselectstart = function() {
+                return false;
+            };
         }
     }
 };

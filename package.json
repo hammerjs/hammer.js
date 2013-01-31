@@ -12,6 +12,7 @@
     "homepage": "http://eightmedia.github.com/hammer.js",
     "devDependencies":{
         "grunt":"~0.4.0",
+        "grunt-contrib-copy":"~0.4.0rc7",
         "grunt-contrib-connect":"~0.1.1rc6",
         "grunt-contrib-concat":"~0.1.2rc6",
         "grunt-contrib-uglify":"~0.1.1rc6",

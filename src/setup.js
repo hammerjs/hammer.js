@@ -10,6 +10,9 @@ function setup() {
         return;
     }
 
+    // find what eventtypes we add listeners to
+    Hammer.event.determineEventTypes();
+
     // Register all gestures inside Hammer.gestures
     for(var name in Hammer.gestures) {
         if(Hammer.gestures.hasOwnProperty(name)) {
@@ -21,6 +24,6 @@ function setup() {
     Hammer.event.onTouch(window, Hammer.TOUCH_MOVE, Hammer.gesture.detect);
     Hammer.event.onTouch(window, Hammer.TOUCH_END, Hammer.gesture.endDetect);
 
-    // Hammer is ready...
+    // Hammer is ready...!
     Hammer.READY = true;
 }

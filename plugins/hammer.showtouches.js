@@ -32,7 +32,10 @@
                     }
 
                     // Paul Irish says that translate is faster then left/top
-                    touch_elements[id].css("transform", "translate3d("+touch.pageX+"px,"+touch.pageY+"px, 0)");
+                    touch_elements[id].css({
+                        left: touch.pageX,
+                        top: touch.pageY
+                    });
                 }
 
                 // remove unused touch elements
