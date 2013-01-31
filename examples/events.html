@@ -85,8 +85,8 @@
 <body>
 <div class="sidebar well well-small">
     <h4>Events</h4>
-    <label>
-        <input type="checkbox" id="prevent-scroll-drag"> preventDefault on vertical drag
+    <label class="checkbox">
+        <input type="checkbox" id="prevent-scroll-drag"> Block vertical drag
     </label>
     <ul class="unstyled events" id="events-list">
         <li>touch</li>
@@ -106,8 +106,6 @@
         <li>swiperight</li>
         <li>swipeup</li>
         <li>swipedown</li>
-
-        <li>pulldown</li>
 
         <li>transform</li>
         <li>rotate</li>
@@ -193,16 +191,8 @@
     var prevent_scroll_drag = false;
 
 
-
-    var debug_el = getEl('debug');
-    function DEBUG() {
-        var args = Array.prototype.slice.call(arguments);
-        debug_el.innerText = args.join(' ');
-    }
-
-
     $("#prevent-scroll-drag").click(function() {
-        prevent_scroll_drag = this.checked;
+        hammertime.options.drag_block_vertical = this.checked;
     });
 
 
@@ -248,12 +238,11 @@
     });
 
 
-    // hitareas
-    Hammer(getEl('hitarea'), {
+    // start!
+    var hammertime = Hammer(getEl('hitarea'), {
         transform_always_block: true,
         drag_block_horizontal: true
-    })
-        .on(all_events.join(" "), logEvent);
+    }).on(all_events.join(" "), logEvent);
 
 
 </script>

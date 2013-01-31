@@ -208,6 +208,7 @@
 
             this._slidedown_height = 0;
             this._anim = null;
+            this._dragged_down = false;
 
             Hammer(this.container).on("touch dragdown release", function(ev) {
                 self.handleHammer(ev);
@@ -230,6 +231,10 @@
 
                 // on release we check how far we dragged
                 case 'release':
+                    if(!this._dragged_down) {
+                        return;
+                    }
+
                     // cancel animation
                     cancelAnimationFrame(this._anim);
 
@@ -252,6 +257,8 @@
 
                 // when we dragdown
                 case 'dragdown':
+                    this._dragged_down = true;
+
                     // if we are not at the top move down
                     var scrollY = window.scrollY;
                     if(scrollY > 5) {
@@ -310,6 +317,7 @@
             this.setHeight(0);
             cancelAnimationFrame(this._anim);
             this._anim = null;
+            this._dragged_down = false;
         };
 
 
