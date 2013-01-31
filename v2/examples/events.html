@@ -158,98 +158,108 @@
 <h2>Event log</h2>
 <pre id="event-log"></pre>
 
-    <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
-    <script src="http://code.jquery.com/jquery.min.js"></script>
+<!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+<script src="http://code.jquery.com/jquery.min.js"></script>
 
-    <script src="http://raw.github.com/EightMedia/hammer.js/v2/dist/hammer-1.0.0dev.js"></script>
-    <script src="http://raw.github.com/EightMedia/hammer.js/v2/plugins/hammer.fakemultitouch.js"></script>
-    <script src="http://raw.github.com/EightMedia/hammer.js/v2/plugins/hammer.showtouches.js"></script>
-
-    <script>
+<script src="../dist/hammer-latest.js"></script>
+<script src="../plugins/hammer.fakemultitouch.js"></script>
+<script src="../plugins/hammer.showtouches.js"></script>
 
 
-        if(!Hammer.HAS_TOUCHEVENTS) {
-            Hammer.plugins.showTouches();
-            Hammer.plugins.fakeMultitouch();
+<!--[if !IE]> -->
+<script>
+    // show touches doesnt work well in older IE versions due lack of support of
+    // the pointer-event css property
+    if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
+        Hammer.plugins.showTouches();
+    }
+</script>
+<!-- <![endif]-->
+
+
+<script>
+
+    if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
+        Hammer.plugins.fakeMultitouch();
+    }
+
+    function getEl(id) {
+        return document.getElementById(id);
+    }
+
+
+    var event_log = getEl('event-log');
+    var log_elements = {};
+    var prevent_scroll_drag = false;
+
+
+
+    var debug_el = getEl('debug');
+    function DEBUG() {
+        var args = Array.prototype.slice.call(arguments);
+        debug_el.innerText = args.join(' ');
+    }
+
+
+    $("#prevent-scroll-drag").click(function() {
+        prevent_scroll_drag = this.checked;
+    });
+
+
+    function getLogElement(type, name) {
+        var el = log_elements[type + name];
+        if(!el) {
+            return log_elements[type + name] = getEl("log-"+ type +"-"+ name);
         }
-
-        function getEl(id) {
-            return document.getElementById(id);
-        }
+        return el;
+    }
 
 
-        var event_log = getEl('event-log');
-        var log_elements = {};
-        var prevent_scroll_drag = false;
+    function logEvent(ev) {
+        // add to the large event log at the bottom of the page
+        var log = [this.id, ev.gesture];
+        //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
 
-
-        var debug_el = getEl('debug');
-        function DEBUG() {
-            var args = Array.prototype.slice.call(arguments);
-            debug_el.innerText = args.join(' ');
-        }
+        // highlight gesture
+        var event_el = getLogElement('gesture', ev.gesture);
+        event_el.className = "active";
 
 
-        $("#prevent-scroll-drag").click(function() {
-            prevent_scroll_drag = this.checked;
-        });
-
-
-        function getLogElement(type, name) {
-            var el = log_elements[type + name];
-            if(!el) {
-                return log_elements[type + name] = getEl("log-"+ type +"-"+ name);
+        // log properties
+        var properties = ['gesture','center','touchTime','angle','direction',
+            'distance','distanceX','distanceY','scale','rotation'];
+        for(var i= 0,len=properties.length; i<len; i++) {
+            var prop = properties[i];
+            var value = ev[prop];
+            if(prop == 'center') {
+                value = value.pageX +"x"+ value.pageY;
             }
-            return el;
+            getLogElement('prop', prop).innerText = value;
         }
 
-
-        function logEvent(ev) {
-            // add to the large event log at the bottom of the page
-            var log = [this.id, ev.gesture];
-            //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
-
-
-            // highlight gesture
-            var event_el = getLogElement('gesture', ev.gesture);
-            event_el.className = "active";
-
-
-            // log properties
-            var properties = ['gesture','center','touchTime','angle','direction',
-                'distance','distanceX','distanceY','scale','rotation'];
-            for(var i= 0,len=properties.length; i<len; i++) {
-                var prop = properties[i];
-                var value = ev[prop];
-                if(prop == 'center') {
-                    value = value.pageX +"x"+ value.pageY;
-                }
-                getLogElement('prop', prop).innerText = value;
-            }
-
-            // stop browser from scrolling
-            if(ev.gesture == 'transform' || ev.gesture == 'dragleft' || ev.gesture == 'dragright' ||
-                (ev.gesture == 'drag' && prevent_scroll_drag)) {
-                ev.srcEvent.preventDefault();
-            }
+        // stop browser from scrolling
+        if(ev.gesture == 'transform' || ev.gesture == 'dragleft' || ev.gesture == 'dragright' ||
+            (ev.gesture == 'drag' && prevent_scroll_drag)) {
+            ev.srcEvent.preventDefault();
         }
+    }
 
 
-        // get all the events
-        var all_events = [];
-        $("#events-list li").each(function() {
-            var li = $(this);
-            var type = li.text();
-            li.attr("id", "log-gesture-"+type);
-            all_events.push(type);
-        });
+    // get all the events
+    var all_events = [];
+    $("#events-list li").each(function() {
+        var li = $(this);
+        var type = li.text();
+        li.attr("id", "log-gesture-"+type);
+        all_events.push(type);
+    });
 
 
-        // hitareas
-        Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
+    // hitareas
+    Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
 
 
-    </script>
+</script>
 </body>
 </html>
