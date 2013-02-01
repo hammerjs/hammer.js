@@ -134,7 +134,7 @@ Hammer.utils = {
      */
     getRotation: function getRotation(start, end) {
         // need two fingers
-        if(start.length == 2 && end.length == 2) {
+        if(start.length >= 2 && end.length >= 2) {
             return this.getAngle(end[1], end[0]) -
                 this.getAngle(start[1], start[0]);
         }

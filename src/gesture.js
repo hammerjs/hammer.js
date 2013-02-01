@@ -16,20 +16,19 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     startDetect: function startDetect(inst, ev) {
-        var self = Hammer.gesture;
         // already busy with an Hammer.gesture detection on a element
-        if(self.current) {
+        if(this.current) {
             return;
         }
 
-        self.current = {
+        this.current = {
             inst        : inst, // reference to HammerInstance we're working for
             startEvent  : Hammer.utils.extend({}, ev), // start eventData for distances, timing etc
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        return self.detect(ev);
+        return this.detect(ev);
     },
 
 
@@ -38,35 +37,33 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     detect: function detect(ev) {
-        var self = Hammer.gesture,
-            retval;
+        if(!this.current) {
+            return;
+        }
 
-        if(self.current) {
-            // extend event data with calculations about scale, distance etc
-            var eventData = self.extendEventData(ev);
+        // extend event data with calculations about scale, distance etc
+        var eventData = this.extendEventData(ev);
 
-            // instance options
-            var inst_options = self.current.inst.options;
+        // instance options
+        var inst_options = this.current.inst.options;
 
-            // call Hammer.gesture handles
-            for(var g=0,len=self.gestures.length; g<len; g++) {
-                var gesture = self.gestures[g];
+        // call Hammer.gesture handles
+        for(var g=0,len=this.gestures.length; g<len; g++) {
+            var gesture = this.gestures[g];
 
-                // only when the instance options have enabled this gesture
-                if(inst_options[gesture.name] !== false) {
-                    // if a handle returns false
-                    // we stop with the detection
-                    retval = gesture.handler.call(gesture, eventData.type, eventData, self.current.inst);
-                    if(retval === false) {
-                        self.stop();
-                        break;
-                    }
+            // only when the instance options have enabled this gesture
+            if(inst_options[gesture.name] !== false) {
+                // if a handle returns false
+                // we stop with the detection
+                if(gesture.handler.call(gesture, eventData.type, eventData, this.current.inst) === false) {
+                    this.stop();
+                    break;
                 }
             }
-
-            // store as previous event event
-            self.current.lastEvent = eventData;
         }
+
+        // store as previous event event
+        this.current.lastEvent = eventData;
     },
 
 
@@ -75,9 +72,8 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     endDetect: function endDetect(ev) {
-        var self = Hammer.gesture;
-        self.detect(ev);
-        self.stop();
+        this.detect(ev);
+        this.stop();
     },
 
 
