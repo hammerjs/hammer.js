@@ -37,22 +37,15 @@ Hammer.Instance = function(element, options) {
 
 Hammer.Instance.prototype = {
     /**
-     * these event methods are based on MicroEvent
-     * the on, off and trigger event are only used by the inst
-     * https://github.com/jeromeetienne/microevent.js
-     *
      * bind events to the instance
      * @param   string      gestures
      * @param   callback    callback
      * @return  {*}
      */
     on: function onEvent(gestures, handler){
-        var ev, t;
         gestures = gestures.split(" ");
-        for(t=0; t<gestures.length; t++) {
-            ev = gestures[t];
-            this._events[ev] = this._events[ev]	|| [];
-            this._events[ev].push(handler);
+        for(var t=0; t<gestures.length; t++) {
+            this.element.addEventListener(gestures[t], handler, false);
         }
     },
 
@@ -64,31 +57,24 @@ Hammer.Instance.prototype = {
      * @return  {*}
      */
     off: function offEvent(gestures, handler){
-        var ev, t;
         gestures = gestures.split(" ");
-        for(t=0; t<gestures.length; t++) {
-            ev = gestures[t];
-            if(ev in this._events === false) {
-                return;
-            }
-            this._events[ev].splice(this._events[ev].indexOf(handler), 1);
+        for(var t=0; t<gestures.length; t++) {
+            this.element.removeEventListener(gestures[t], handler, false);
         }
     },
 
     /**
      * trigger gesture event
-     * @param   string      type
-     * @param   object      ev
+     * @param   string      gesture
+     * @param   object      eventData
      * @return  {*}
      */
-    trigger: function triggerEvent(gesture, data){
-        data.gesture = gesture;
-
-        if(gesture in this._events === false) {
-            return;
-        }
-        for(var i = 0; i < this._events[gesture].length; i++){
-            this._events[gesture][i].call(this, data);
-        }
+    trigger: function triggerEvent(gesture, eventData){
+        // trigger DOM event
+        var event = document.createEvent("Event");
+		event.initEvent(gesture, true, true);
+		event.gesture = eventData;
+		//event.gesture.type = gesture;
+		return this.element.dispatchEvent(event);
     }
 };

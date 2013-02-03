@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-01
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-03
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -116,22 +116,15 @@ Hammer.Instance = function(element, options) {
 
 Hammer.Instance.prototype = {
     /**
-     * these event methods are based on MicroEvent
-     * the on, off and trigger event are only used by the inst
-     * https://github.com/jeromeetienne/microevent.js
-     *
      * bind events to the instance
      * @param   string      gestures
      * @param   callback    callback
      * @return  {*}
      */
     on: function onEvent(gestures, handler){
-        var ev, t;
         gestures = gestures.split(" ");
-        for(t=0; t<gestures.length; t++) {
-            ev = gestures[t];
-            this._events[ev] = this._events[ev]	|| [];
-            this._events[ev].push(handler);
+        for(var t=0; t<gestures.length; t++) {
+            this.element.addEventListener(gestures[t], handler, false);
         }
     },
 
@@ -143,32 +136,25 @@ Hammer.Instance.prototype = {
      * @return  {*}
      */
     off: function offEvent(gestures, handler){
-        var ev, t;
         gestures = gestures.split(" ");
-        for(t=0; t<gestures.length; t++) {
-            ev = gestures[t];
-            if(ev in this._events === false) {
-                return;
-            }
-            this._events[ev].splice(this._events[ev].indexOf(handler), 1);
+        for(var t=0; t<gestures.length; t++) {
+            this.element.removeEventListener(gestures[t], handler, false);
         }
     },
 
     /**
      * trigger gesture event
-     * @param   string      type
-     * @param   object      ev
+     * @param   string      gesture
+     * @param   object      eventData
      * @return  {*}
      */
-    trigger: function triggerEvent(gesture, data){
-        data.gesture = gesture;
-
-        if(gesture in this._events === false) {
-            return;
-        }
-        for(var i = 0; i < this._events[gesture].length; i++){
-            this._events[gesture][i].call(this, data);
-        }
+    trigger: function triggerEvent(gesture, eventData){
+        // trigger DOM event
+        var event = document.createEvent("Event");
+		event.initEvent(gesture, true, true);
+		event.gesture = eventData;
+		//event.gesture.type = gesture;
+		return this.element.dispatchEvent(event);
     }
 };
 
@@ -209,8 +195,8 @@ Hammer.event = {
      * @param   handler
      */
     onTouch: function onTouch(element, type, handler) {
-        var self = this;
-        var triggerHandler = function(ev) {
+		var self = this;
+        function triggerHandler(ev) {
             // PointerEvents update
             if(Hammer.HAS_POINTEREVENTS) {
                 Hammer.PointerEvent.updatePointer(type, ev);
@@ -225,8 +211,8 @@ Hammer.event = {
             else {
                 last_move_event = ev;
             }
-            handler.call(this, self.collectEventData(element, type, ev));
-        };
+            handler.call(Hammer.gesture, self.collectEventData(element, type, ev));
+        }
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
@@ -321,7 +307,9 @@ Hammer.event = {
             touches : touches,
             srcEvent: ev,
             center  : Hammer.utils.getCenter(touches),
-            preventDefault: function() { return ev.preventDefault(); }
+            preventDefault: function() {
+                return ev.preventDefault();
+            }
         };
     }
 };
@@ -785,13 +773,14 @@ Hammer.gestures.Hold = {
     name: 'hold',
     index: 10,
     defaults: {
-        hold_timeout: 500
+        hold_timeout: 500,
+        hold_threshold: 2
     },
     timer: null,
     handler: function holdGesture(type, ev, inst) {
+        var self = this;
         switch(type) {
             case Hammer.TOUCH_START:
-                var self = this;
                 // clear any running timers
                 clearTimeout(this.timer);
 
@@ -801,14 +790,19 @@ Hammer.gestures.Hold = {
                 // set timer and if after the timeout it still is hold,
                 // we trigger the hold event
                 this.timer = setTimeout(function() {
-                    if(Hammer.gesture.current.name == self.name) {
-                        inst.trigger(self.name, ev);
+                    if(Hammer.gesture.current.name == 'hold') {
+                        inst.trigger('hold', ev);
                     }
                 }, inst.options.hold_timeout);
                 break;
 
             // when you move or end we clear the timer
             case Hammer.TOUCH_MOVE:
+                if(ev.distance > inst.options.hold_treshold) {
+                    clearTimeout(this.timer);
+                }
+                break;
+
             case Hammer.TOUCH_END:
                 clearTimeout(this.timer);
                 break;

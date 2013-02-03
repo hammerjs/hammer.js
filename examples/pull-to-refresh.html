@@ -223,7 +223,7 @@
         Main.prototype.handleHammer = function(ev) {
             var self = this;
 
-            switch(ev.gesture) {
+            switch(ev.type) {
                 // reset element on start
                 case 'touch':
                     this.hide();
@@ -239,7 +239,7 @@
                     cancelAnimationFrame(this._anim);
 
                     // over the breakpoint, trigger the callback
-                    if(ev.distanceY >= this.breakpoint) {
+                    if(ev.gesture.distanceY >= this.breakpoint) {
                         container_el.className = 'pullrefresh-loading';
                         pullrefresh_icon_el.className = 'icon loading';
 
@@ -273,11 +273,11 @@
                     }
 
                     // stop browser scrolling
-                    ev.srcEvent.preventDefault();
+                    ev.gesture.srcEvent.preventDefault();
 
                     // update slidedown height
                     // it will be updated when requestAnimationFrame is called
-                    this._slidedown_height = (ev.distanceY*.4);
+                    this._slidedown_height = (ev.gesture.distanceY*.4);
                     break;
             }
         };

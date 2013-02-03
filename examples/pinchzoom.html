@@ -65,10 +65,10 @@
         mRotation= 1, mLastRotation;
 
     hammertime.on('touch drag transform release', function(ev) {
-        switch(ev.gesture) {
+        switch(ev.type) {
             case 'touch':
-                x = ev.center.pageX;
-                y = ev.center.pageY;
+                x = ev.gesture.center.pageX;
+                y = ev.gesture.center.pageY;
 
                 mLastTouchX = x;
                 mLastTouchY = y;
@@ -77,8 +77,8 @@
                 break;
 
             case 'drag':
-                x = ev.center.pageX;
-                y = ev.center.pageY;
+                x = ev.gesture.center.pageX;
+                y = ev.gesture.center.pageY;
 
                 dx = x - mLastTouchX;
                 dy = y - mLastTouchY;
@@ -91,8 +91,8 @@
                 break;
 
             case 'transform':
-                mRotation = mLastRotation + ev.rotation;
-                mScaleFactor = mLastScaleFactor * ev.scale;
+                mRotation = mLastRotation + ev.gesture.rotation;
+                mScaleFactor = mLastScaleFactor * ev.gesture.scale;
                 mScaleFactor = Math.max(1, Math.min(mScaleFactor, 10));
                 break;
 

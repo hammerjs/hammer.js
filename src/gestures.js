@@ -116,13 +116,14 @@ Hammer.gestures.Hold = {
     name: 'hold',
     index: 10,
     defaults: {
-        hold_timeout: 500
+        hold_timeout: 500,
+        hold_threshold: 2
     },
     timer: null,
     handler: function holdGesture(type, ev, inst) {
+        var self = this;
         switch(type) {
             case Hammer.TOUCH_START:
-                var self = this;
                 // clear any running timers
                 clearTimeout(this.timer);
 
@@ -132,14 +133,19 @@ Hammer.gestures.Hold = {
                 // set timer and if after the timeout it still is hold,
                 // we trigger the hold event
                 this.timer = setTimeout(function() {
-                    if(Hammer.gesture.current.name == self.name) {
-                        inst.trigger(self.name, ev);
+                    if(Hammer.gesture.current.name == 'hold') {
+                        inst.trigger('hold', ev);
                     }
                 }, inst.options.hold_timeout);
                 break;
 
             // when you move or end we clear the timer
             case Hammer.TOUCH_MOVE:
+                if(ev.distance > inst.options.hold_treshold) {
+                    clearTimeout(this.timer);
+                }
+                break;
+
             case Hammer.TOUCH_END:
                 clearTimeout(this.timer);
                 break;

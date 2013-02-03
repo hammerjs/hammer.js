@@ -32,10 +32,11 @@
      * @param gesture
      * @param data
      */
-    Hammer.Instance.prototype.trigger = function(gesture, data){
-        var event = jQuery.Event(gesture, data);
-        event.type = gesture;
-        $(this.element).trigger(event);
+    Hammer.Instance.prototype.trigger = function(gesture, eventData){
+        $(eventData.srcEvent.target).trigger({
+            type: gesture,
+            gesture: eventData
+        });
     };
 
 

@@ -207,11 +207,11 @@
 
     function logEvent(ev) {
         // add to the large event log at the bottom of the page
-        var log = [this.id, ev.gesture];
+        var log = [this.id, ev.type];
         //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
         // highlight gesture
-        var event_el = getLogElement('gesture', ev.gesture);
+        var event_el = getLogElement('gesture', ev.type);
         event_el.className = "active";
 
         // log properties
@@ -219,7 +219,7 @@
             'distance','distanceX','distanceY','scale','rotation'];
         for(var i= 0,len=properties.length; i<len; i++) {
             var prop = properties[i];
-            var value = ev[prop];
+            var value = ev.gesture[prop];
             if(prop == 'center') {
                 value = value.pageX +"x"+ value.pageY;
             }

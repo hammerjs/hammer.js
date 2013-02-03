@@ -35,8 +35,8 @@ Hammer.event = {
      * @param   handler
      */
     onTouch: function onTouch(element, type, handler) {
-        var self = this;
-        var triggerHandler = function(ev) {
+		var self = this;
+        function triggerHandler(ev) {
             // PointerEvents update
             if(Hammer.HAS_POINTEREVENTS) {
                 Hammer.PointerEvent.updatePointer(type, ev);
@@ -51,8 +51,8 @@ Hammer.event = {
             else {
                 last_move_event = ev;
             }
-            handler.call(this, self.collectEventData(element, type, ev));
-        };
+            handler.call(Hammer.gesture, self.collectEventData(element, type, ev));
+        }
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
@@ -147,7 +147,9 @@ Hammer.event = {
             touches : touches,
             srcEvent: ev,
             center  : Hammer.utils.getCenter(touches),
-            preventDefault: function() { return ev.preventDefault(); }
+            preventDefault: function() {
+                return ev.preventDefault();
+            }
         };
     }
 };
