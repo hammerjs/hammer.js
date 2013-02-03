@@ -81,15 +81,17 @@
         el.className = el.className + " highlight";
     }
 
-    var toucharea = $(".toucharea").hammer();
+    var hammertime = $(".toucharea").hammer();
 
     // the whole area
-    toucharea.on("tap", function(ev) {
+    hammertime.on("tap", function(ev) {
+        console.log(ev);
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
-    toucharea.on("tap", "ul li", function(ev) {
+    hammertime.on("tap", "li", function(ev) {
+        console.log('nested', ev);
         highlight(this);
         ev.stopPropagation();
     });
