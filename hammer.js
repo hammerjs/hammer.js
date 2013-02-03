@@ -650,9 +650,18 @@ function Hammer(element, options, undefined)
                 _event_move = event;
                 _pos.move = getXYfromEvent(event);
 
+                // CP
+                // there is an issue here
+                // if a transform is no triggered, it's possible
+                // to have a 2 fingers drag. But if gesture.transform become
+                // valid because of treshold. the dragend will not be triggerd
+                // and worst the _first will not be true and the transformstart
+                // will not be initialized and it will not _pos.startCenter will be 
+                // undefined
                 if(!gestures.transform(event)) {
                     gestures.drag(event);
                 }
+
                 break;
 
             case 'mouseup':
