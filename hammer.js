@@ -475,6 +475,29 @@ function Hammer(element, options, undefined)
                     Math.abs(1 - scale) > options.scale_treshold ||
                     Math.abs(rotation) > options.rotation_treshold) {
 
+
+                    // CP
+                    // there is an issue here
+                    // if a transform is no triggered, it's possible
+                    // to have a 2 fingers drag. But if gesture.transform become
+                    // valid because of treshold. the dragend will not be triggerd
+                    // and worst the _first will not be true and the transformstart
+                    // will not be initialized and it will not _pos.startCenter will be 
+                    // undefined
+                    // so reset drag if it was
+                    // if gesture is drag
+                    // reset to transform
+                    if (_gesture === 'drag') {
+                        triggerEvent("dragend", {
+                            originalEvent   : event,
+                            direction       : _direction,
+                            distance        : _distance,
+                            angle           : _angle
+                        });
+
+                        _first = true;
+                    }
+
                     _gesture = 'transform';
                     _pos.center = {
                         x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
