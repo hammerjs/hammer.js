@@ -56,7 +56,7 @@
                 el.data("hammer", Hammer(this, options || {}));
             }
             // change the options
-            else if(options) {
+            else if(inst && options) {
                 Hammer.utils.extend(inst.options, options);
             }
         });
