@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-03
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-04
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -40,9 +40,9 @@ Hammer.DIRECTION_UP = 'up';
 Hammer.DIRECTION_RIGHT = 'right';
 
 // touch event defines
-Hammer.TOUCH_START = 'start';
-Hammer.TOUCH_MOVE = 'move';
-Hammer.TOUCH_END = 'end';
+Hammer.EVENT_START = 'start';
+Hammer.EVENT_MOVE = 'move';
+Hammer.EVENT_END = 'end';
 
 // plugins namespace
 Hammer.plugins = {};
@@ -70,8 +70,8 @@ function setup() {
     }
 
     // Add touch events on the window
-    Hammer.event.onTouch(window, Hammer.TOUCH_MOVE, Hammer.gesture.detect);
-    Hammer.event.onTouch(window, Hammer.TOUCH_END, Hammer.gesture.endDetect);
+    Hammer.event.onTouch(window, Hammer.EVENT_MOVE, Hammer.gesture.detect);
+    Hammer.event.onTouch(window, Hammer.EVENT_END, Hammer.gesture.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;
@@ -92,7 +92,6 @@ Hammer.Instance = function(element, options) {
     setup();
 
     this.element = element;
-    this._events = {};
 
     // merge options
     this.options = Hammer.utils.extend(
@@ -105,7 +104,7 @@ Hammer.Instance = function(element, options) {
     }
 
     // start detection on touchstart
-    Hammer.event.onTouch(element, Hammer.TOUCH_START, function(ev) {
+    Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
         return Hammer.gesture.startDetect(self, ev);
     });
 
@@ -153,7 +152,6 @@ Hammer.Instance.prototype = {
         var event = document.createEvent("Event");
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		//event.gesture.type = gesture;
 		return this.element.dispatchEvent(event);
     }
 };
@@ -191,36 +189,36 @@ Hammer.event = {
     /**
      * touch events with mouse fallback
      * @param   {HTMLElement}      element
-     * @param   {Constant}       type        like Hammer.TOUCH_MOVE
+     * @param   {Constant}       eventType        like Hammer.EVENT_MOVE
      * @param   handler
      */
-    onTouch: function onTouch(element, type, handler) {
+    onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
         function triggerHandler(ev) {
             // PointerEvents update
             if(Hammer.HAS_POINTEREVENTS) {
-                Hammer.PointerEvent.updatePointer(type, ev);
+                Hammer.PointerEvent.updatePointer(eventType, ev);
             }
 
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
-            if(type === Hammer.TOUCH_END) {
+            if(eventType === Hammer.EVENT_END) {
                 ev = last_move_event;
             }
             // store the last move event
             else {
                 last_move_event = ev;
             }
-            handler.call(Hammer.gesture, self.collectEventData(element, type, ev));
+            handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
         }
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[type], triggerHandler);
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
         }
         // mouse
         else {
-            this.bindDom(element, Hammer.EVENT_TYPES[type], function(ev) {
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // left mouse button must be pressed
                 // ev.button === 1 is for IE
                 if(ev.which === 1 || ev.button === 1) {
@@ -263,9 +261,9 @@ Hammer.event = {
                 'mouseup'];
         }
 
-        Hammer.EVENT_TYPES[Hammer.TOUCH_START]  = types[0];
-        Hammer.EVENT_TYPES[Hammer.TOUCH_MOVE]   = types[1];
-        Hammer.EVENT_TYPES[Hammer.TOUCH_END]    = types[2];
+        Hammer.EVENT_TYPES[Hammer.EVENT_START]  = types[0];
+        Hammer.EVENT_TYPES[Hammer.EVENT_MOVE]   = types[1];
+        Hammer.EVENT_TYPES[Hammer.EVENT_END]    = types[2];
     },
 
 
@@ -273,7 +271,7 @@ Hammer.event = {
      * create touchlist depending on the event
      * @param   Event       ev
      */
-    getTouchList: function getTouchList(ev, type) {
+    getTouchList: function getTouchList(ev, eventType) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getPointers();
         }
@@ -294,21 +292,21 @@ Hammer.event = {
     /**
      * collect event data for Hammer js
      * @param   domElement      element
-     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
+     * @param   TOUCHTYPE       eventType        like Hammer.EVENT_MOVE
      * @param   Event           ev
      */
-    collectEventData: function collectEventData(element, type, ev) {
-        var touches = this.getTouchList(ev, type);
+    collectEventData: function collectEventData(element, eventType, ev) {
+        var touches = this.getTouchList(ev, eventType);
 
         return {
-            type    : type,
-            time    : new Date().getTime(), // for IE
-            target  : ev.target,
-            touches : touches,
-            srcEvent: ev,
-            center  : Hammer.utils.getCenter(touches),
-            preventDefault: function() {
-                return ev.preventDefault();
+            center      : Hammer.utils.getCenter(touches),
+            time        : new Date().getTime(), // for IE
+            target      : ev.target,
+            touches     : touches,
+            eventType   : eventType,
+            srcEvent    : ev,
+            preventDefault: function() { 
+                return this.srcEvent.preventDefault(); 
             }
         };
     }
@@ -551,7 +549,7 @@ Hammer.gesture = {
             if(inst_options[gesture.name] !== false) {
                 // if a handle returns false
                 // we stop with the detection
-                if(gesture.handler.call(gesture, eventData.type, eventData, this.current.inst) === false) {
+                if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
                     this.stop();
                     break;
                 }
@@ -693,25 +691,22 @@ Hammer.gestures = Hammer.gestures || {};
  * @param   {Function}  handler
  * this handles the gesture detection of your custom gesture and receives the
  * following arguments:
- *      @param  {String}    type
- *      matches Hammer.TOUCH_START|MOVE|END
  *
- *      @param  {Object}    event
+ *      @param  {Object}    eventData
  *      event data containing the following properties:
  *          time        {Number}        time the event occurred
  *          target      {HTMLElement}   target element
  *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
- *          center      {Object}        center position of the touches
- *                                      contains pageX and pageY
+ *          center      {Object}        center position of the touches. contains pageX and pageY
  *          touchTime   {Number}        the total time of the touches in the screen
  *          angle       {Number}        the angle we are moving
- *          direction   {String}        the direction we are moving.
- *                                      matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
+ *          direction   {String}        the direction we are moving. matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
  *          distance    {Number}        the distance we haved moved
  *          distanceX   {Number}        the distance on x axis we haved moved
  *          distanceY   {Number}        the distance on y axis we haved moved
  *          scale       {Number}        scaling of the touches, needs 2 touches
- *          rotation    {Number}        rotation of the touches, needs 2 touches
+ *          rotation    {Number}        rotation of the touches, needs 2 touches *
+ *          eventType   {String}        matches Hammer.EVENT_START|MOVE|END
  *          srcEvent    {Object}        the source event, like TouchStart or MouseDown *
  *          startEvent  {Object}        contains the same properties as above,
  *                                      but from the first touch. this is used to calculate
@@ -777,10 +772,10 @@ Hammer.gestures.Hold = {
         hold_threshold: 2
     },
     timer: null,
-    handler: function holdGesture(type, ev, inst) {
+    handler: function holdGesture(ev, inst) {
         var self = this;
-        switch(type) {
-            case Hammer.TOUCH_START:
+        switch(ev.eventType) {
+            case Hammer.EVENT_START:
                 // clear any running timers
                 clearTimeout(this.timer);
 
@@ -797,13 +792,13 @@ Hammer.gestures.Hold = {
                 break;
 
             // when you move or end we clear the timer
-            case Hammer.TOUCH_MOVE:
+            case Hammer.EVENT_MOVE:
                 if(ev.distance > inst.options.hold_treshold) {
                     clearTimeout(this.timer);
                 }
                 break;
 
-            case Hammer.TOUCH_END:
+            case Hammer.EVENT_END:
                 clearTimeout(this.timer);
                 break;
         }
@@ -825,8 +820,8 @@ Hammer.gestures.Tap = {
         doubletap_distance : 20,
         doubletap_interval : 300
     },
-    handler: function tapGesture(type, ev, inst) {
-        if(type == Hammer.TOUCH_END) {
+    handler: function tapGesture(ev, inst) {
+        if(ev.eventType == Hammer.EVENT_END) {
             // previous gesture, for the double tap since these are two different gesture detections
             var prev = Hammer.gesture.previous;
 
@@ -873,14 +868,14 @@ Hammer.gestures.Drag = {
         drag_block_horizontal   : false,
         drag_block_vertical     : false
     },
-    handler: function dragGesture(type, ev, inst) {
+    handler: function dragGesture(ev, inst) {
         // max touches
         if(inst.options.drag_max_touches > 0 &&
             ev.touches.length > inst.options.drag_max_touches) {
             return;
         }
 
-        if(type == Hammer.TOUCH_MOVE){
+        if(ev.eventType == Hammer.EVENT_MOVE){
             // when the distance we moved is too small we skip this gesture
             // or we can be already in dragging
             if(ev.distance < inst.options.drag_min_distance &&
@@ -919,8 +914,8 @@ Hammer.gestures.Swipe = {
         swipe_max_time     : 500,
         swipe_min_distance : 30
     },
-    handler: function swipeGesture(type, ev, inst) {
-        if(type == Hammer.TOUCH_END) {
+    handler: function swipeGesture(ev, inst) {
+        if(ev.eventType == Hammer.EVENT_END) {
             // when the distance we moved is too small we skip this gesture
             // or we can be already in dragging
             if(Hammer.gesture.current.name == 'drag' &&
@@ -954,14 +949,14 @@ Hammer.gestures.Transform = {
         // when you are using the transform gesture, it is a good practice to set this true
         transform_always_block  : false
     },
-    handler: function transformGesture(type, ev, inst) {
+    handler: function transformGesture(ev, inst) {
         // prevent default when two fingers are on the screen
         if(inst.options.transform_always_block && ev.touches.length == 2) {
             ev.preventDefault();
         }
 
         // at least multitouch
-        if(type == Hammer.TOUCH_MOVE && ev.touches.length == 2) {
+        if(ev.eventType == Hammer.EVENT_MOVE && ev.touches.length == 2) {
             var scale_threshold = Math.abs(1-ev.scale);
             var rotation_threshold = Math.abs(ev.rotation);
 
@@ -998,8 +993,8 @@ Hammer.gestures.Transform = {
 Hammer.gestures.Touch = {
     name: 'touch',
     index: -Infinity,
-    handler: function touchGesture(type, ev, inst) {
-        if(type ==  Hammer.TOUCH_START) {
+    handler: function touchGesture(ev, inst) {
+        if(ev.eventType ==  Hammer.EVENT_START) {
             inst.trigger(this.name, ev);
         }
     }
@@ -1014,8 +1009,8 @@ Hammer.gestures.Touch = {
 Hammer.gestures.Release = {
     name: 'release',
     index: Infinity,
-    handler: function releaseGesture(type, ev, inst) {
-        if(type ==  Hammer.TOUCH_END) {
+    handler: function releaseGesture(ev, inst) {
+        if(ev.eventType ==  Hammer.EVENT_END) {
             inst.trigger(this.name, ev);
         }
     }
