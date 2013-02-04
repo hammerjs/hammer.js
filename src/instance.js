@@ -13,7 +13,6 @@ Hammer.Instance = function(element, options) {
     setup();
 
     this.element = element;
-    this._events = {};
 
     // merge options
     this.options = Hammer.utils.extend(
@@ -26,7 +25,7 @@ Hammer.Instance = function(element, options) {
     }
 
     // start detection on touchstart
-    Hammer.event.onTouch(element, Hammer.TOUCH_START, function(ev) {
+    Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
         return Hammer.gesture.startDetect(self, ev);
     });
 
@@ -74,7 +73,6 @@ Hammer.Instance.prototype = {
         var event = document.createEvent("Event");
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		//event.gesture.type = gesture;
 		return this.element.dispatchEvent(event);
     }
 };

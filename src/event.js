@@ -31,36 +31,36 @@ Hammer.event = {
     /**
      * touch events with mouse fallback
      * @param   {HTMLElement}      element
-     * @param   {Constant}       type        like Hammer.TOUCH_MOVE
+     * @param   {Constant}       eventType        like Hammer.EVENT_MOVE
      * @param   handler
      */
-    onTouch: function onTouch(element, type, handler) {
+    onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
         function triggerHandler(ev) {
             // PointerEvents update
             if(Hammer.HAS_POINTEREVENTS) {
-                Hammer.PointerEvent.updatePointer(type, ev);
+                Hammer.PointerEvent.updatePointer(eventType, ev);
             }
 
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
-            if(type === Hammer.TOUCH_END) {
+            if(eventType === Hammer.EVENT_END) {
                 ev = last_move_event;
             }
             // store the last move event
             else {
                 last_move_event = ev;
             }
-            handler.call(Hammer.gesture, self.collectEventData(element, type, ev));
+            handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
         }
 
         // touchdevice
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[type], triggerHandler);
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
         }
         // mouse
         else {
-            this.bindDom(element, Hammer.EVENT_TYPES[type], function(ev) {
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // left mouse button must be pressed
                 // ev.button === 1 is for IE
                 if(ev.which === 1 || ev.button === 1) {
@@ -103,9 +103,9 @@ Hammer.event = {
                 'mouseup'];
         }
 
-        Hammer.EVENT_TYPES[Hammer.TOUCH_START]  = types[0];
-        Hammer.EVENT_TYPES[Hammer.TOUCH_MOVE]   = types[1];
-        Hammer.EVENT_TYPES[Hammer.TOUCH_END]    = types[2];
+        Hammer.EVENT_TYPES[Hammer.EVENT_START]  = types[0];
+        Hammer.EVENT_TYPES[Hammer.EVENT_MOVE]   = types[1];
+        Hammer.EVENT_TYPES[Hammer.EVENT_END]    = types[2];
     },
 
 
@@ -113,7 +113,7 @@ Hammer.event = {
      * create touchlist depending on the event
      * @param   Event       ev
      */
-    getTouchList: function getTouchList(ev, type) {
+    getTouchList: function getTouchList(ev, eventType) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getPointers();
         }
@@ -134,21 +134,21 @@ Hammer.event = {
     /**
      * collect event data for Hammer js
      * @param   domElement      element
-     * @param   TOUCHTYPE       type        like Hammer.TOUCH_MOVE
+     * @param   TOUCHTYPE       eventType        like Hammer.EVENT_MOVE
      * @param   Event           ev
      */
-    collectEventData: function collectEventData(element, type, ev) {
-        var touches = this.getTouchList(ev, type);
+    collectEventData: function collectEventData(element, eventType, ev) {
+        var touches = this.getTouchList(ev, eventType);
 
         return {
-            type    : type,
-            time    : new Date().getTime(), // for IE
-            target  : ev.target,
-            touches : touches,
-            srcEvent: ev,
-            center  : Hammer.utils.getCenter(touches),
-            preventDefault: function() {
-                return ev.preventDefault();
+            center      : Hammer.utils.getCenter(touches),
+            time        : new Date().getTime(), // for IE
+            target      : ev.target,
+            touches     : touches,
+            eventType   : eventType,
+            srcEvent    : ev,
+            preventDefault: function() { 
+                return this.srcEvent.preventDefault(); 
             }
         };
     }

@@ -31,9 +31,9 @@ Hammer.DIRECTION_UP = 'up';
 Hammer.DIRECTION_RIGHT = 'right';
 
 // touch event defines
-Hammer.TOUCH_START = 'start';
-Hammer.TOUCH_MOVE = 'move';
-Hammer.TOUCH_END = 'end';
+Hammer.EVENT_START = 'start';
+Hammer.EVENT_MOVE = 'move';
+Hammer.EVENT_END = 'end';
 
 // plugins namespace
 Hammer.plugins = {};

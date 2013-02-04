@@ -19,7 +19,7 @@ Hammer.PointerEvent = {
      * @param   Object      ev
      */
     updatePointer: function(type, ev) {
-        if(type == Hammer.TOUCH_END) {
+        if(type == Hammer.EVENT_END) {
             delete this.pointers[ev.pointerId];
         }
         else {

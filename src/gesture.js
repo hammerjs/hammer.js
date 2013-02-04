@@ -55,7 +55,7 @@ Hammer.gesture = {
             if(inst_options[gesture.name] !== false) {
                 // if a handle returns false
                 // we stop with the detection
-                if(gesture.handler.call(gesture, eventData.type, eventData, this.current.inst) === false) {
+                if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
                     this.stop();
                     break;
                 }
