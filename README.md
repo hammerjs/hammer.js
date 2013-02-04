@@ -2,7 +2,7 @@
 
 http://eightmedia.github.com/hammer.js/v2/
 
-Lighter, smaller and more open, better events, grunt, and custom gestures possible.
+Lighter, smaller and more open, trigger DOM events, grunt, and custom gestures possible.
 
 It needs some testing on Windows8 with touch/mouse. I've added support for it, but am not able to test it...
 
