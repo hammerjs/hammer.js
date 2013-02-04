@@ -2,12 +2,12 @@
     /**
      * bind dom events
      * this overwrites addEventListener
-     * @param el
+     * @param elements
      * @param types
      * @param handler
      */
-    Hammer.event.bindDom = function(el, types, handler) {
-        $(el).on(types, function(ev) {
+    Hammer.event.bindDom = function(element, eventTypes, handler) {
+        $(element).on(eventTypes, function(ev) {
             handler.call(this, ev.originalEvent);
         });
     };
@@ -42,15 +42,22 @@
 
     /**
      * jQuery plugin
-     * @param   object  config
+     * create instance of Hammer and watch for gestures,
+     * and when called again you can change the options
+     * @param   object      [options={}]
      * @return  jQuery
      */
-    $.fn.hammer = function(config) {
+    $.fn.hammer = function(options) {
         return this.each(function() {
             var el = $(this);
-            if(!el.data("hammer")) {
-                var inst = Hammer(this, config || {});
-                el.data("hammer", inst);
+            var inst = el.data("hammer");
+            // start new hammer instance
+            if(!inst) {
+                el.data("hammer", Hammer(this, options || {}));
+            }
+            // change the options
+            else if(options) {
+                Hammer.utils.extend(inst.options, options);
             }
         });
     };
