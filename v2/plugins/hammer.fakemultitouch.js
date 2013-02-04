@@ -14,7 +14,7 @@
          * @param   TOUCHTYPE   type
          * @return  {Array}     Touches
          */
-        Hammer.event.getTouchList = function(ev, type) {
+        Hammer.event.getTouchList = function(ev, eventType) {
             // Android, iOS etc
             if(Hammer.HAS_POINTEREVENTS) {
                 return Hammer.PointerEvent.getPointers();
@@ -24,7 +24,7 @@
             }
 
             // reset on start of a new touch
-            if(type == Hammer.TOUCH_START) {
+            if(eventType == Hammer.EVENT_START) {
                 start_pos = false;
             }
 
