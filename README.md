@@ -1,4 +1,4 @@
-# Hammer.js v2
+# Hammer.js v2 (release candidate)
 ### A javascript library for multi-touch gestures
 
 > I told you, homeboy /
