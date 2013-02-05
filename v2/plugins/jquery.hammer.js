@@ -2,13 +2,31 @@
     /**
      * bind dom events
      * this overwrites addEventListener
-     * @param el
+     * @param elements
      * @param types
      * @param handler
      */
-    Hammer.event.bindDom = function(el, types, handler) {
-        $(el).on(types, function(ev) {
-            handler.call(this, ev.originalEvent);
+    Hammer.event.bindDom = function(element, eventTypes, handler) {
+        $(element).on(eventTypes, function(ev) {
+            var data = ev.originalEvent;
+
+            // IE pageX fix
+            if(!data.pageX) {
+                data.pageX = ev.pageX;
+                data.pageY = ev.pageY;
+            }
+
+            // IE target fix
+            if(!data.target) {
+                data.target = ev.target;
+            }
+
+            // IE button fix
+            if(data.button === 1) {
+                data.which = data.button;
+            }
+
+            handler.call(this, data);
         });
     };
 
@@ -32,24 +50,32 @@
      * @param gesture
      * @param data
      */
-    Hammer.Instance.prototype.trigger = function(gesture, data){
-        var event = jQuery.Event(gesture, data);
-        event.type = gesture;
-        $(this.element).trigger(event);
+    Hammer.Instance.prototype.trigger = function(gesture, eventData){
+        $(eventData.srcEvent.target).trigger({
+            type: gesture,
+            gesture: eventData
+        });
     };
 
 
     /**
      * jQuery plugin
-     * @param   object  config
+     * create instance of Hammer and watch for gestures,
+     * and when called again you can change the options
+     * @param   object      [options={}]
      * @return  jQuery
      */
-    $.fn.hammer = function(config) {
+    $.fn.hammer = function(options) {
         return this.each(function() {
             var el = $(this);
-            if(!el.data("hammer")) {
-                var inst = Hammer(this, config || {});
-                el.data("hammer", inst);
+            var inst = el.data("hammer");
+            // start new hammer instance
+            if(!inst) {
+                el.data("hammer", Hammer(this, options || {}));
+            }
+            // change the options
+            else if(inst && options) {
+                Hammer.utils.extend(inst.options, options);
             }
         });
     };

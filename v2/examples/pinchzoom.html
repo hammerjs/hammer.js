@@ -59,41 +59,41 @@
 
     var x, y,
         dx, yx,
-        mLastTouchX, mLastTouchY,
-        mPosX=0, mPosY=0,
-        mScaleFactor= 1, mLastScaleFactor,
-        mRotation= 1, mLastRotation;
+        last_touchX, last_touchY,
+        posX=0, posY=0,
+        scale= 1, last_scale,
+        rotation= 1, last_rotation;
 
     hammertime.on('touch drag transform release', function(ev) {
-        switch(ev.gesture) {
+        switch(ev.type) {
             case 'touch':
-                x = ev.center.pageX;
-                y = ev.center.pageY;
+                x = ev.gesture.center.pageX;
+                y = ev.gesture.center.pageY;
 
-                mLastTouchX = x;
-                mLastTouchY = y;
-                mLastScaleFactor = mScaleFactor;
-                mLastRotation = mRotation;
+                last_touchX = x;
+                last_touchY = y;
+                last_scale = scale;
+                last_rotation = rotation;
                 break;
 
             case 'drag':
-                x = ev.center.pageX;
-                y = ev.center.pageY;
+                x = ev.gesture.center.pageX;
+                y = ev.gesture.center.pageY;
 
-                dx = x - mLastTouchX;
-                dy = y - mLastTouchY;
+                dx = x - last_touchX;
+                dy = y - last_touchY;
 
-                mPosX += dx;
-                mPosY += dy;
+                posX += dx;
+                posY += dy;
 
-                mLastTouchX = x;
-                mLastTouchY = y;
+                last_touchX = x;
+                last_touchY = y;
                 break;
 
             case 'transform':
-                mRotation = mLastRotation + ev.rotation;
-                mScaleFactor = mLastScaleFactor * ev.scale;
-                mScaleFactor = Math.max(1, Math.min(mScaleFactor, 10));
+                rotation = last_rotation + ev.gesture.rotation;
+                scale = last_scale * ev.gesture.scale;
+                scale = Math.max(1, Math.min(scale, 10));
                 break;
 
             case 'release':
@@ -103,9 +103,14 @@
 
         // transform!
         var transform =
-                "translate3d("+mPosX+"px,"+mPosY+"px, 0) " +
-                "scale3d("+mScaleFactor+","+mScaleFactor+", 0) " +
-                "rotate("+mRotation+"deg) ";
+                "translate3d("+posX+"px,"+posY+"px, 0) " +
+                "scale3d("+scale+","+scale+", 0) " +
+                "rotate("+rotation+"deg) ";
+
+        rect.style.transform = transform;
+        rect.style.oTransform = transform;
+        rect.style.msTransform = transform;
+        rect.style.mozTransform = transform;
         rect.style.webkitTransform = transform;
     });
 

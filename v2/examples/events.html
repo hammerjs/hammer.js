@@ -85,8 +85,8 @@
 <body>
 <div class="sidebar well well-small">
     <h4>Events</h4>
-    <label>
-        <input type="checkbox" id="prevent-scroll-drag"> preventDefault on vertical drag
+    <label class="checkbox">
+        <input type="checkbox" id="prevent-scroll-drag"> Block vertical drag
     </label>
     <ul class="unstyled events" id="events-list">
         <li>touch</li>
@@ -106,8 +106,6 @@
         <li>swiperight</li>
         <li>swipeup</li>
         <li>swipedown</li>
-
-        <li>pulldown</li>
 
         <li>transform</li>
         <li>rotate</li>
@@ -193,16 +191,8 @@
     var prevent_scroll_drag = false;
 
 
-
-    var debug_el = getEl('debug');
-    function DEBUG() {
-        var args = Array.prototype.slice.call(arguments);
-        debug_el.innerText = args.join(' ');
-    }
-
-
     $("#prevent-scroll-drag").click(function() {
-        prevent_scroll_drag = this.checked;
+        hammertime.options.drag_block_vertical = this.checked;
     });
 
 
@@ -217,31 +207,23 @@
 
     function logEvent(ev) {
         // add to the large event log at the bottom of the page
-        var log = [this.id, ev.gesture];
+        var log = [this.id, ev.type];
         //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
-
         // highlight gesture
-        var event_el = getLogElement('gesture', ev.gesture);
+        var event_el = getLogElement('gesture', ev.type);
         event_el.className = "active";
-
 
         // log properties
         var properties = ['gesture','center','touchTime','angle','direction',
             'distance','distanceX','distanceY','scale','rotation'];
         for(var i= 0,len=properties.length; i<len; i++) {
             var prop = properties[i];
-            var value = ev[prop];
+            var value = ev.gesture[prop];
             if(prop == 'center') {
                 value = value.pageX +"x"+ value.pageY;
             }
             getLogElement('prop', prop).innerText = value;
-        }
-
-        // stop browser from scrolling
-        if(ev.gesture == 'transform' || ev.gesture == 'dragleft' || ev.gesture == 'dragright' ||
-            (ev.gesture == 'drag' && prevent_scroll_drag)) {
-            ev.srcEvent.preventDefault();
         }
     }
 
@@ -256,8 +238,11 @@
     });
 
 
-    // hitareas
-    Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
+    // start!
+    var hammertime = Hammer(getEl('hitarea'), {
+        transform_always_block: true,
+        drag_block_horizontal: true
+    }).on(all_events.join(" "), logEvent);
 
 
 </script>

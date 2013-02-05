@@ -55,13 +55,16 @@
             <p>The tap event will be fired. Notice in the sourcecode that event delegation is also supported.<br>
             In the console you can see the event data.</p>
             <h4>List items with stopPropagation</h4>
-            <ul>
+            <ul id="items">
                 <li>List item 1</li>
                 <li>List item 2</li>
                 <li>List item 3</li>
                 <li>List item 4</li>
                 <li>List item 5</li>
             </ul>
+            <p>
+                <a href="#" id="add-list-item" class="btn btn-success">Add list item</a>
+            </p>    
         </div>
     </div>
 
@@ -81,16 +84,26 @@
         el.className = el.className + " highlight";
     }
 
-    var toucharea = $(".toucharea").hammer();
+    var hammertime = $(".toucharea").hammer();
 
     // the whole area
-    toucharea.on("tap", function(ev) {
+    hammertime.on("tap", function(ev) {
+        if(window.console) { console.log(ev); }
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
-    toucharea.on("tap", "ul li", function(ev) {
+    hammertime.on("tap", "li", function(ev) {
+        if(window.console) { console.log('nested', ev); }
         highlight(this);
+        ev.stopPropagation();
+    });
+
+
+    // on dynamic items
+    $("#add-list-item").on("tap", function(ev) {
+        $("#items").append("<li>Dynamic added listitem");
+        ev.preventDefault();
         ev.stopPropagation();
     });
 
