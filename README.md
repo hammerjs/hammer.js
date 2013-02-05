@@ -48,11 +48,11 @@ Events can be added/removed with the on and off methods, just like you would in 
 Event delegation is also possible when you use the jQuery plugin.
 
     $('#test_el').hammer().on("tap", ".nested_el", function(event) {
-        console.log(this);
+        console.log(this, event);
     });
 
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some then for others.
-These properties are available in ````event.gesture````
+The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
     time        {Number}        time the event occurred
     target      {HTMLElement}   target element
