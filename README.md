@@ -130,7 +130,7 @@ Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
 If you've tested hammer.js on a different device, please let us know.
 
-Transform gesture is available on Windows and OSX with the hammer.fakemultitouch.js plugin.
+* Transform gesture is available on Windows and OSX with the hammer.fakemultitouch.js plugin.
 
 
 ## Todo
