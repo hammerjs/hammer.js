@@ -1,4 +1,10 @@
-# Lighter, smaller and more open, trigger DOM events, grunt, and custom gestures possible.
+# Hammertime! - Hammerjs v2
+
+- DOM Events
+- Debug plugins
+- Custom gestures api
+- jQuery plugin with events delegation (the on/off methods) available
+- Efficient code, lower memory usage
 
 http://eightmedia.github.com/hammer.js/v2/
 
