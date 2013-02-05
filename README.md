@@ -73,6 +73,18 @@ The gesture that was triggered is found in ````event.type````. Following propert
                                 distances, touchTime, scaling etc
 
 You can write your own gestures, you can find examples and documentation about this in gestures.js.
+The following gestures are available, you can find options for it in gestures.js
+
+- hold
+- tap
+- doubletap
+- drag, dragup, dragdown, dragleft, dragright
+- swipe, swipeup, swipedown, swipeleft, swiperight
+- transform
+- rotate
+- pinch, pinchin, pinchout
+- touch (gesture detection starts)
+- release (gesture detection ends)
 
 
 ## Compatibility
