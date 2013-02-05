@@ -58,12 +58,11 @@ Hammer.event = {
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
         }
-        // mouse
+        // mouse events
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // left mouse button must be pressed
-                // ev.button === 1 is for IE
-                if(ev.which === 1 || ev.button === 1) {
+                if(ev.which === 1) {
                     mousedown = true;
                     triggerHandler.apply(this, arguments);
                 }

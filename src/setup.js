@@ -21,8 +21,8 @@ function setup() {
     }
 
     // Add touch events on the window
-    Hammer.event.onTouch(window, Hammer.EVENT_MOVE, Hammer.gesture.detect);
-    Hammer.event.onTouch(window, Hammer.EVENT_END, Hammer.gesture.endDetect);
+    Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.gesture.detect);
+    Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.gesture.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;

@@ -88,13 +88,13 @@
 
     // the whole area
     hammertime.on("tap", function(ev) {
-        console.log(ev);
+        if(window.console) { console.log(ev); }
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
     hammertime.on("tap", "li", function(ev) {
-        console.log('nested', ev);
+        if(window.console) { console.log('nested', ev); }
         highlight(this);
         ev.stopPropagation();
     });

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-04
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-05
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
@@ -70,8 +70,8 @@ function setup() {
     }
 
     // Add touch events on the window
-    Hammer.event.onTouch(window, Hammer.EVENT_MOVE, Hammer.gesture.detect);
-    Hammer.event.onTouch(window, Hammer.EVENT_END, Hammer.gesture.endDetect);
+    Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.gesture.detect);
+    Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.gesture.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;
@@ -216,12 +216,11 @@ Hammer.event = {
         if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
         }
-        // mouse
+        // mouse events
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // left mouse button must be pressed
-                // ev.button === 1 is for IE
-                if(ev.which === 1 || ev.button === 1) {
+                if(ev.which === 1) {
                     mousedown = true;
                     triggerHandler.apply(this, arguments);
                 }

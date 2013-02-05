@@ -8,7 +8,25 @@
      */
     Hammer.event.bindDom = function(element, eventTypes, handler) {
         $(element).on(eventTypes, function(ev) {
-            handler.call(this, ev.originalEvent);
+            var data = ev.originalEvent;
+
+            // IE pageX fix
+            if(!data.pageX) {
+                data.pageX = ev.pageX;
+                data.pageY = ev.pageY;
+            }
+
+            // IE target fix
+            if(!data.target) {
+                data.target = ev.target;
+            }
+
+            // IE button fix
+            if(data.button === 1) {
+                data.which = data.button;
+            }
+
+            handler.call(this, data);
         });
     };
 
