@@ -5,6 +5,7 @@
 - Custom gestures api
 - jQuery plugin with events delegation (the on/off methods) available
 - Efficient code, lower memory usage
+- IE8 and older compatibility with jQuery plugin
 
 http://eightmedia.github.com/hammer.js/v2/
 
@@ -34,4 +35,4 @@ It needs some testing on Windows8 with touch/mouse. I've added support for it, b
 - ~~Write Debug tool?~~
 - ~~Shift key multitouch on desktop~~
 - Update website in gh-pages
-- Still not compatible with IE8 and older, should fix this?
+- ~~Still not compatible with IE8 and older, should fix this?~~
