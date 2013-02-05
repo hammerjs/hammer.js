@@ -8,13 +8,11 @@
 
 
 ## Demo
-
 [Watch the demo's](http://eightmedia.github.com/hammer.js/v2/). 
 It always needs some testing with all kind of devices, please contribute!
 
 
 ## Why the rewrite
-
 - The previous Hammer.js became old, and too much of a hobby project: Inefficient code, bad documentation.
 - It wasn't possible to add custom gestures, or change anything about the (inner) working of the gestures.
 - It needed DOM events, to use with event event delegation.
@@ -23,13 +21,57 @@ It always needs some testing with all kind of devices, please contribute!
 
 
 ## New features in v2
-
 - DOM Events
 - Debug plugins
 - Custom gestures api
 - jQuery plugin with events delegation (the on/off methods) available
 - Efficient code, lower memory usage
 - IE8 and older compatibility with jQuery plugin
+
+
+## How to use it
+Hammer became simpler to use, with an jQuery-like API. You dont need to add the new keyword, and the eventlisteners are chainable.
+
+    var element = document.getElementById('test_el');
+    var hammertime = Hammer(element).on("tap", function(event) {
+        alert('hello!');
+    });
+
+You can change the default settings by adding an second argument with options
+
+    var hammertime = Hammer(element, {
+        drag: false,
+        transform: false
+    });
+
+Events can be added/removed with the on and off methods, just like you would in jQuery.
+Event delegation is also possible when you use the jQuery plugin.
+
+    $('#test_el').hammer().on("tap", ".nested_el", function(event) {
+        console.log(this);
+    });
+
+The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some then for others.
+These properties are available in ````event.gesture````
+
+    time        {Number}        time the event occurred
+    target      {HTMLElement}   target element
+    touches     {Array}         touches (fingers, pointers, mouse) on the screen
+    center      {Object}        center position of the touches. contains pageX and pageY
+    touchTime   {Number}        the total time of the touches in the screen
+    angle       {Number}        the angle we are moving
+    direction   {String}        the direction we are moving. matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
+    distance    {Number}        the distance we haved moved
+    distanceX   {Number}        the distance on x axis we haved moved
+    distanceY   {Number}        the distance on y axis we haved moved
+    scale       {Number}        scaling of the touches, needs 2 touches
+    rotation    {Number}        rotation of the touches, needs 2 touches *
+    eventType   {String}        matches Hammer.EVENT_START|MOVE|END
+    srcEvent    {Object}        the source event, like TouchStart or MouseDown *
+    startEvent  {Object}        contains the same properties as above,
+                                but from the first touch. this is used to calculate
+                                distances, touchTime, scaling etc
+
 
 
 ## Compatibility
