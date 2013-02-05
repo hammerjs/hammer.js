@@ -24,7 +24,7 @@ It needs some testing on Windows8 with touch/mouse. I've added support for it, b
 ## Todo
 
 - Better code documentation, JSDOC?
-- Better readme
+- Add how to use info
 - ~~Documentation about custom gestures~~
 - Test on devices
 - Fix demo's
@@ -36,3 +36,6 @@ It needs some testing on Windows8 with touch/mouse. I've added support for it, b
 - ~~Shift key multitouch on desktop~~
 - Update website in gh-pages
 - ~~Still not compatible with IE8 and older, should fix this?~~
+
+
+## Browser support
