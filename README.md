@@ -72,6 +72,7 @@ The gesture that was triggered is found in ````event.type````. Following propert
                                 but from the first touch. this is used to calculate
                                 distances, touchTime, scaling etc
 
+You can write your own gestures, you can find examples and documentation about this in gestures.js.
 
 
 ## Compatibility
@@ -97,14 +98,9 @@ The gesture that was triggered is found in ````event.type````. Following propert
 |                                                                                |
 | **Android 2**                                                                  |
 | Default browser                   | X   | X          | X    | X    |           |
-| Firefox 10                        | X   | X          | X    | X    |           |
-| Opera Mobile 12                   | X   | X          | X    | X    |           |
-| Opera Mini 6.5                    | X   |            |      |      |           |
-| Opera Mini 7.0                    | X   |            |      |      |           |
-|                                                                                |
-| **Windows Phone**                                                              |
-| Windows Phone 8                   | X   | X          | X    | X    |           |
-| Windows Phone 7.5                 | X   |            |      |      |           |
+| Firefox                           | X   | X          | X    | X    |           |
+| Opera Mobile                      | X   | X          | X    | X    |           |
+| Opera Mini                        | X   |            |      |      |           |
 |                                                                                |
 | **Others**                                                                     |
 | Kindle Fire                       | X   | X          | X    | X    | X         |
@@ -134,19 +130,9 @@ If you've tested hammer.js on a different device, please let us know.
 
 
 ## Todo
-- Better code documentation, JSDOC?
-- Add how to use info
-- ~~Documentation about custom gestures~~
-- Test on devices
-- Fix demo's
-- ~~Explain why the rewrite~~
-- Measure speed difference of V1 with V2
-- Write Unit tests?
-- ~~Write jQuery plugin~~
-- ~~Write Debug tool?~~
-- ~~Shift key multitouch on desktop~~
 - Update website in gh-pages
-- ~~Still not compatible with IE8 and older, should fix this?~~
+- More demo's
+- Measure speed difference of V1 with V2
 
 
 ## Further notes
