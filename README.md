@@ -1,5 +1,5 @@
-[We're busy with creating a v2 of Hammer.js, and need YOUR help. Check it out!](http://eightmedia.github.com/hammer.js/v2/)
-
+#[New Hammer.js is coming soon, check it out!](https://github.com/EightMedia/hammer.js/tree/v2)
+---
 # Hammer.js
 
 ## A javascript library for multi-touch gestures
