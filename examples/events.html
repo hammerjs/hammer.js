@@ -223,6 +223,9 @@
             if(prop == 'center') {
                 value = value.pageX +"x"+ value.pageY;
             }
+            else if(prop == 'gesture') {
+                value = ev.type;
+            }
             getLogElement('prop', prop).innerText = value;
         }
     }

@@ -41,7 +41,6 @@ test('utils.extend.clone', function() {
     deepEqual(dest, {foo:true}, 'Clone reference');
 });
 
-
 test('utils.extend.clone.deep', function() {
     expect(1);
 

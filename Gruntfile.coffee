@@ -54,7 +54,6 @@ module.exports = (grunt) ->
       build:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
 
-
     # minify the sourcecode
     uglify:
       options:

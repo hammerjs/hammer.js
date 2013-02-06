@@ -641,6 +641,8 @@ Hammer.gesture = {
             }
             return 0;
         });
+
+        return this.gestures;
     }
 };
 
