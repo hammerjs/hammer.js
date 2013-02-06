@@ -1,11 +1,11 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-05
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-06
  * http://eightmedia.github.com/hammer.js
  *
- * Copyright (c) 2013 Jorik Tangelder <jorik@eight.nl>;
+ * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
 
 (function( window, undefined ) {
-    "use strict";
+    'use strict';
 
 var Hammer = function(element, options) {
     return new Hammer.Instance(element, options || {});
@@ -14,19 +14,19 @@ var Hammer = function(element, options) {
 // default settings
 Hammer.defaults = {
     stop_browser_behavior: {    // set to false to disable this
-        userSelect: "none", // this also triggers onselectstart=false for IE
-        touchCallout: "none",
-        touchAction: "none",
-        contentZooming: "none",
-        userDrag: "none",
-        tapHighlightColor: "rgba(0,0,0,0)"
+        userSelect: 'none', // this also triggers onselectstart=false for IE
+        touchCallout: 'none',
+        touchAction: 'none',
+        contentZooming: 'none',
+        userDrag: 'none',
+        tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
     // more settings are defined at gestures.js
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = window.navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // eventtypes per touchevent (start, move, end)
@@ -121,7 +121,7 @@ Hammer.Instance.prototype = {
      * @return  {*}
      */
     on: function onEvent(gestures, handler){
-        gestures = gestures.split(" ");
+        gestures = gestures.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.addEventListener(gestures[t], handler, false);
         }
@@ -135,7 +135,7 @@ Hammer.Instance.prototype = {
      * @return  {*}
      */
     off: function offEvent(gestures, handler){
-        gestures = gestures.split(" ");
+        gestures = gestures.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.removeEventListener(gestures[t], handler, false);
         }
@@ -149,7 +149,7 @@ Hammer.Instance.prototype = {
      */
     trigger: function triggerEvent(gesture, eventData){
         // trigger DOM event
-        var event = document.createEvent("Event");
+        var event = document.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
 		return this.element.dispatchEvent(event);
@@ -179,7 +179,7 @@ Hammer.event = {
      * @param handler
      */
     bindDom: function(element, types, handler) {
-        types = types.split(" ");
+        types = types.split(' ');
         for(var t=0; t<types.length; t++) {
             element.addEventListener(types[t], handler, false);
         }
@@ -269,8 +269,9 @@ Hammer.event = {
     /**
      * create touchlist depending on the event
      * @param   Event       ev
+     * @param   String      EVENT_TYPE
      */
-    getTouchList: function getTouchList(ev, eventType) {
+    getTouchList: function getTouchList(ev/*, eventType*/) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getPointers();
         }
@@ -304,8 +305,8 @@ Hammer.event = {
             touches     : touches,
             eventType   : eventType,
             srcEvent    : ev,
-            preventDefault: function() { 
-                return this.srcEvent.preventDefault(); 
+            preventDefault: function() {
+                return this.srcEvent.preventDefault();
             }
         };
     }
@@ -339,17 +340,6 @@ Hammer.utils = {
 
 
     /**
-     * faster Math.abs alternative
-     * @param   value
-     * @return  value
-     */
-    fastAbs: function fastAbs(value) {
-        // equivalent to Math.abs();
-        return (value ^ (value >> 31)) - (value >> 31);
-    },
-
-
-    /**
      * get the center of all the touches
      * @param   {TouchList}   touches
      * @return  {Object}      center
@@ -375,7 +365,7 @@ Hammer.utils = {
      * @param   Number      pos2
      */
     getSimpleDistance: function getSimpleDistance(pos1, pos2) {
-        return this.fastAbs(pos2 - pos1);
+        return Math.abs(pos2 - pos1);
     },
 
 
@@ -398,8 +388,8 @@ Hammer.utils = {
      * @return {Constant}  direction constant, like Hammer.DIRECTION_LEFT
      */
     getDirection: function getDirection(touch1, touch2) {
-        var x = this.fastAbs(touch1.pageX - touch2.pageX),
-            y = this.fastAbs(touch1.pageY - touch2.pageY);
+        var x = Math.abs(touch1.pageX - touch2.pageX),
+            y = Math.abs(touch1.pageY - touch2.pageY);
 
         if(x >= y) {
             return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
@@ -643,12 +633,16 @@ Hammer.gesture = {
 
         // sort the list by index
         this.gestures.sort(function(a, b) {
-            if (a.index < b.index)
+            if (a.index < b.index) {
                 return -1;
-            if (a.index > b.index)
+            }
+            if (a.index > b.index) {
                 return 1;
+            }
             return 0;
         });
+
+        return this.gestures;
     }
 };
 
@@ -772,7 +766,6 @@ Hammer.gestures.Hold = {
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
-        var self = this;
         switch(ev.eventType) {
             case Hammer.EVENT_START:
                 // clear any running timers
@@ -1017,5 +1010,10 @@ Hammer.gestures.Release = {
 
 // Expose Hammer to the global object
 window.Hammer = Hammer;
+
+// requireJS module definition
+if (typeof window.define === 'function' && window.define.amd) {
+	window.define('hammer', [], function() { return Hammer; });
+}
 
 })(window);
