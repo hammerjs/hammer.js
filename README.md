@@ -28,6 +28,7 @@ It always needs some testing with all kind of devices, please contribute!
 - Efficient code, lower memory usage
 - IE8 and older compatibility with jQuery plugin
 - More events for faster implementation
+- AMD support (RequireJS)
 
 
 ## How to use it
