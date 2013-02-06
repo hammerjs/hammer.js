@@ -118,7 +118,6 @@ Hammer.gestures.Hold = {
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
-        var self = this;
         switch(ev.eventType) {
             case Hammer.EVENT_START:
                 // clear any running timers

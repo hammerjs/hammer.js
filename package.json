@@ -3,13 +3,25 @@
     "title":"Hammer.JS",
     "description":"A javascript library for multi-touch gestures",
     "version":"1.0.0rc1",
-    "license":"MIT",
+    "homepage": "http://eightmedia.github.com/hammer.js",
+    "licenses": [{
+        "type": "MIT",
+        "url": "https://github.com/eightmedia/hammer.js/blob/master/LICENSE"
+    }],
+
     "keywords":["touch","gestures"],
     "author": {
         "name": "Jorik Tangelder",
-        "email": "jorik@eight.nl"
+        "email": "j.tangelder@gmail.com"
     },
-    "homepage": "http://eightmedia.github.com/hammer.js",
+
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/eightmedia/hammer.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/eightmedia/hammer.js/issues"
+    },
     "devDependencies":{
         "grunt":"~0.4.0",
         "grunt-notify":"~0.1.3",
@@ -19,5 +31,12 @@
         "grunt-contrib-uglify":"~0.1.1rc6",
         "grunt-contrib-jshint":"~0.1.x",
         "grunt-contrib-watch":"~0.2.x"
+    },
+    "main": "Gruntfile.coffee",
+    "engines": {
+        "node": ">=0.8.0"
+    },
+    "scripts": {
+        "test": "grunt test"
     }
 }

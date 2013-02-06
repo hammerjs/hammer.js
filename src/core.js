@@ -5,12 +5,12 @@ var Hammer = function(element, options) {
 // default settings
 Hammer.defaults = {
     stop_browser_behavior: {    // set to false to disable this
-        userSelect: "none", // this also triggers onselectstart=false for IE
-        touchCallout: "none",
-        touchAction: "none",
-        contentZooming: "none",
-        userDrag: "none",
-        tapHighlightColor: "rgba(0,0,0,0)"
+        userSelect: 'none', // this also triggers onselectstart=false for IE
+        touchCallout: 'none',
+        touchAction: 'none',
+        contentZooming: 'none',
+        userDrag: 'none',
+        tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
     // more settings are defined at gestures.js

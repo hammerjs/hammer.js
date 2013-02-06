@@ -21,7 +21,7 @@ Hammer.event = {
      * @param handler
      */
     bindDom: function(element, types, handler) {
-        types = types.split(" ");
+        types = types.split(' ');
         for(var t=0; t<types.length; t++) {
             element.addEventListener(types[t], handler, false);
         }
@@ -111,8 +111,9 @@ Hammer.event = {
     /**
      * create touchlist depending on the event
      * @param   Event       ev
+     * @param   String      EVENT_TYPE
      */
-    getTouchList: function getTouchList(ev, eventType) {
+    getTouchList: function getTouchList(ev/*, eventType*/) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getPointers();
         }
@@ -146,8 +147,8 @@ Hammer.event = {
             touches     : touches,
             eventType   : eventType,
             srcEvent    : ev,
-            preventDefault: function() { 
-                return this.srcEvent.preventDefault(); 
+            preventDefault: function() {
+                return this.srcEvent.preventDefault();
             }
         };
     }

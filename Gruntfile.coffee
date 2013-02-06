@@ -7,7 +7,7 @@ module.exports = (grunt) ->
       banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
       '<%= grunt.template.today("yyyy-mm-dd") %>\n ' + '<%= pkg.homepage ? "* " + pkg.homepage + "\\n *\\n " : "" %>' +
       '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n' +
-      ' * Licensed under the <%= pkg.license %> license */\n\n'
+      ' * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
     # concat src files
     concat:
@@ -42,6 +42,20 @@ module.exports = (grunt) ->
         browser: true
       files:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
+        options:
+          curly: true
+          expr: true
+          newcap: true
+          quotmark: 'single'
+          regexdash: true
+          trailing: true
+          undef: true
+          unused: true
+          maxerr: 100
+          eqnull: true
+          sub: false
+          browser: true
+          predef: ["define"]
 
     # minify the sourcecode
     uglify:
