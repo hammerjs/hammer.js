@@ -74,8 +74,13 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
+  grunt.loadNpmTasks 'grunt-notify'
 
 
   # Default task(s).
   grunt.registerTask 'build', ['concat','jshint','uglify','copy']
   grunt.registerTask 'default', ['connect','watch']
+
+
+  # osx notifications
+  grunt.task.run 'notify_hooks'
