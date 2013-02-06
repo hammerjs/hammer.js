@@ -149,7 +149,7 @@ If you've tested hammer.js on a different device, please let us know.
 
 
 ## Further notes
-Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
+Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
 Add your feature suggestions and bug reports on [Github](http://github.com/eightmedia/hammer.js/issues).
 
