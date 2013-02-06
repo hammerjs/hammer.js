@@ -1,4 +1,4 @@
-# Hammer.js v2
+# Hammer.js v2 (release candidate)
 ### A javascript library for multi-touch gestures
 
 > I told you, homeboy /
@@ -27,6 +27,7 @@ It always needs some testing with all kind of devices, please contribute!
 - jQuery plugin with events delegation (the on/off methods) available
 - Efficient code, lower memory usage
 - IE8 and older compatibility with jQuery plugin
+- More events for faster implementation
 
 
 ## How to use it
@@ -48,11 +49,11 @@ Events can be added/removed with the on and off methods, just like you would in 
 Event delegation is also possible when you use the jQuery plugin.
 
     $('#test_el').hammer().on("tap", ".nested_el", function(event) {
-        console.log(this);
+        console.log(this, event);
     });
 
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some then for others.
-These properties are available in ````event.gesture````
+The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
     time        {Number}        time the event occurred
     target      {HTMLElement}   target element
@@ -72,6 +73,19 @@ These properties are available in ````event.gesture````
                                 but from the first touch. this is used to calculate
                                 distances, touchTime, scaling etc
 
+You can write your own gestures, you can find examples and documentation about this in gestures.js.
+The following gestures are available, you can find options for it in gestures.js
+
+- hold
+- tap
+- doubletap
+- drag, dragup, dragdown, dragleft, dragright
+- swipe, swipeup, swipedown, swipeleft, swiperight
+- transform
+- rotate
+- pinch, pinchin, pinchout
+- touch (gesture detection starts)
+- release (gesture detection ends)
 
 
 ## Compatibility
@@ -97,14 +111,9 @@ These properties are available in ````event.gesture````
 |                                                                                |
 | **Android 2**                                                                  |
 | Default browser                   | X   | X          | X    | X    |           |
-| Firefox 10                        | X   | X          | X    | X    |           |
-| Opera Mobile 12                   | X   | X          | X    | X    |           |
-| Opera Mini 6.5                    | X   |            |      |      |           |
-| Opera Mini 7.0                    | X   |            |      |      |           |
-|                                                                                |
-| **Windows Phone**                                                              |
-| Windows Phone 8                   | X   | X          | X    | X    |           |
-| Windows Phone 7.5                 | X   |            |      |      |           |
+| Firefox                           | X   | X          | X    | X    |           |
+| Opera Mobile                      | X   | X          | X    | X    |           |
+| Opera Mini                        | X   |            |      |      |           |
 |                                                                                |
 | **Others**                                                                     |
 | Kindle Fire                       | X   | X          | X    | X    | X         |
@@ -130,27 +139,17 @@ Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
 If you've tested hammer.js on a different device, please let us know.
 
-Transform gesture is available on Windows and OSX with the hammer.fakemultitouch.js plugin.
+* Transform gesture is available on Windows and OSX with the hammer.fakemultitouch.js plugin.
 
 
 ## Todo
-- Better code documentation, JSDOC?
-- Add how to use info
-- ~~Documentation about custom gestures~~
-- Test on devices
-- Fix demo's
-- ~~Explain why the rewrite~~
-- Measure speed difference of V1 with V2
-- Write Unit tests?
-- ~~Write jQuery plugin~~
-- ~~Write Debug tool?~~
-- ~~Shift key multitouch on desktop~~
 - Update website in gh-pages
-- ~~Still not compatible with IE8 and older, should fix this?~~
+- More demo's
+- Measure speed difference of V1 with V2
 
 
 ## Further notes
-Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed further by everyone at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
+Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
 Add your feature suggestions and bug reports on [Github](http://github.com/eightmedia/hammer.js/issues).
 
