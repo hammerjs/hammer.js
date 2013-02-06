@@ -51,3 +51,26 @@ test('utils.extend.clone.deep', function() {
 
     deepEqual(dest, {foo:{bar:true}}, 'Deep clone reference');
 });
+
+
+/**
+ * math functions
+ */
+test('utils.math.scale', function() {
+    expect(0);
+
+    var normal_touches = [
+        { pageX: 60, pageY: 220 },
+        { pageX: 190, pageY: 75 }
+    ];
+    var wide_touches = [
+        { pageX: 10, pageY: 240 },
+        { pageX: 0, pageY: 200 }
+    ];
+    var narrow_touches = [
+        { pageX: 120, pageY: 160 },
+        { pageX: 150, pageY: 125 }
+    ];
+
+    //equal(Hammer.utils.scale({}))
+});

@@ -39,23 +39,21 @@ module.exports = (grunt) ->
     # check for optimisations and errors
     jshint:
       options:
+        curly: true
+        expr: true
+        newcap: true
+        quotmark: 'single'
+        regexdash: true
+        trailing: true
+        undef: true
+        unused: true
+        maxerr: 100
+        eqnull: true
+        sub: false
         browser: true
-      files:
+      build:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
-        options:
-          curly: true
-          expr: true
-          newcap: true
-          quotmark: 'single'
-          regexdash: true
-          trailing: true
-          undef: true
-          unused: true
-          maxerr: 100
-          eqnull: true
-          sub: false
-          browser: true
-          predef: ["exports"]
+
 
     # minify the sourcecode
     uglify:
@@ -82,7 +80,7 @@ module.exports = (grunt) ->
 
     # tests
     qunit:
-      all: ['test/**/*.html']
+      all: ['tests/**/*.html']
 
 
   # Load tasks
@@ -97,10 +95,6 @@ module.exports = (grunt) ->
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['concat','jshint','uglify','copy']
-  grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'test', ['qunit']
-
-
-  # osx notifications
-  grunt.task.run 'notify_hooks'
+  grunt.registerTask 'build', ['notify_hooks','concat','jshint','uglify','copy']
+  grunt.registerTask 'default', ['notify_hooks','connect','watch']
+  grunt.registerTask 'test', ['jshint','qunit']
