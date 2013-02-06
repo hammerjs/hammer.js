@@ -1,4 +1,5 @@
-# Hammer.js v2 (release candidate)
+# Hammer.js v2 (release candidate)  [![Build Status](https://travis-ci.org/eightmedia/hammer.js.png)](https://travis-ci.org/eightmedia/hammer.js/)
+
 ### A javascript library for multi-touch gestures
 
 > I told you, homeboy /
