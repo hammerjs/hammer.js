@@ -55,7 +55,7 @@ module.exports = (grunt) ->
           eqnull: true
           sub: false
           browser: true
-          predef: ["define"]
+          predef: ["exports"]
 
     # minify the sourcecode
     uglify:
@@ -80,6 +80,10 @@ module.exports = (grunt) ->
         options:
           hostname: "0.0.0.0"
 
+    # tests
+    qunit:
+      all: ['test/**/*.html']
+
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-copy'
@@ -88,12 +92,14 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
+  grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-notify'
 
 
   # Default task(s).
   grunt.registerTask 'build', ['concat','jshint','uglify','copy']
   grunt.registerTask 'default', ['connect','watch']
+  grunt.registerTask 'test', ['qunit']
 
 
   # osx notifications

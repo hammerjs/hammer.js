@@ -17,7 +17,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = window.navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // eventtypes per touchevent (start, move, end)

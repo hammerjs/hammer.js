@@ -26,17 +26,6 @@ Hammer.utils = {
 
 
     /**
-     * faster Math.abs alternative
-     * @param   value
-     * @return  value
-     */
-    fastAbs: function fastAbs(value) {
-        // equivalent to Math.abs();
-        return (value ^ (value >> 31)) - (value >> 31);
-    },
-
-
-    /**
      * get the center of all the touches
      * @param   {TouchList}   touches
      * @return  {Object}      center
@@ -62,7 +51,7 @@ Hammer.utils = {
      * @param   Number      pos2
      */
     getSimpleDistance: function getSimpleDistance(pos1, pos2) {
-        return this.fastAbs(pos2 - pos1);
+        return Math.abs(pos2 - pos1);
     },
 
 
@@ -85,8 +74,8 @@ Hammer.utils = {
      * @return {Constant}  direction constant, like Hammer.DIRECTION_LEFT
      */
     getDirection: function getDirection(touch1, touch2) {
-        var x = this.fastAbs(touch1.pageX - touch2.pageX),
-            y = this.fastAbs(touch1.pageY - touch2.pageY);
+        var x = Math.abs(touch1.pageX - touch2.pageX),
+            y = Math.abs(touch1.pageY - touch2.pageY);
 
         if(x >= y) {
             return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
