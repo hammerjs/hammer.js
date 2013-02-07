@@ -71,37 +71,41 @@ A step by step guide on how to use hammer.js:
 
 * Hammertime! Bind hammer to a container element:
 
-```var hammer = new Hammer(document.getElementById("container"));```
+```js
+var hammer = new Hammer(document.getElementById("container"));
+```
 
 Now, on every gesture that is performed on the container element, you'll receive a callback object with information on the gesture.
+```js
+hammer.ondragstart = function(ev) { };
+hammer.ondrag = function(ev) { };
+hammer.ondragend = function(ev) { };
+hammer.onswipe = function(ev) { };
 
-    hammer.ondragstart = function(ev) { };
-    hammer.ondrag = function(ev) { };
-    hammer.ondragend = function(ev) { };
-    hammer.onswipe = function(ev) { };
+hammer.ontap = function(ev) { };
+hammer.ondoubletap = function(ev) { };
+hammer.onhold = function(ev) { };
 
-    hammer.ontap = function(ev) { };
-    hammer.ondoubletap = function(ev) { };
-    hammer.onhold = function(ev) { };
+hammer.ontransformstart = function(ev) { };
+hammer.ontransform = function(ev) { };
+hammer.ontransformend = function(ev) { };
 
-    hammer.ontransformstart = function(ev) { };
-    hammer.ontransform = function(ev) { };
-    hammer.ontransformend = function(ev) { };
-
-    hammer.onrelease = function(ev) { };
-
+hammer.onrelease = function(ev) { };
+```
 A jQuery plugin is also available and can be found in this repos.
 
-   ```<script src="http://eightmedia.github.com/hammer.js/jquery.hammer.js"></script>```
-
-    $("#element")
-       .hammer({
-            // options...
-       })
-       .bind("tap", function(ev) {
-            console.log(ev);
-       });
-
+```html
+<script src="http://eightmedia.github.com/hammer.js/jquery.hammer.js"></script>
+```
+```js
+$("#element")
+   .hammer({
+        // options...
+   })
+   .bind("tap", function(ev) {
+        console.log(ev);
+   });
+```
 
 [Brian Rinaldi](https://twitter.com/remotesynth) has written a blogpost about Hammer.js, it explains things a bit more and has a nice looking demo. [Read it here.](http://www.remotesynthesis.com/post.cfm/add-gesture-support-to-your-web-application-via-hammer-js)
 
