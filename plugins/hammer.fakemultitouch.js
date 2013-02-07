@@ -39,7 +39,6 @@
                     };
                 }
 
-                // small misplacement to fix NaN/Infinity issues
                 var distance_x = start_pos.pageX - ev.pageX;
                 var distance_y = start_pos.pageY - ev.pageY;
 
