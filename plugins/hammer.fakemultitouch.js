@@ -54,9 +54,9 @@
                     pageY: start_pos.pageY + distance_y - 50,
                     target: ev.target
                 }];
-
-                // normal single touch
-            } else {
+            } 
+            // normal single touch
+            else {
                 start_pos = false;
                 return [{
                     identifier: 1,
