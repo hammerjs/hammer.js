@@ -16,9 +16,9 @@ It always needs some testing with all kind of devices, please contribute!
 ## Why the rewrite
 - The previous Hammer.js became old, and too much of a hobby project: Inefficient code, bad documentation.
 - It wasn't possible to add custom gestures, or change anything about the (inner) working of the gestures.
-- It needed DOM events, to use with event event delegation.
+- It needed DOM events, to use with event delegation.
 - Windows8 has touch AND mouse, so the Pointer Events API needs to be implemented.
-- Did I mentioned the code was inefficient? Now a Hammer instance is light, and only contains the methods it should.
+- Did I mention the code was inefficient? Now a Hammer instance is light, and only contains the methods it should.
 
 
 ## New features in v2
@@ -33,7 +33,7 @@ It always needs some testing with all kind of devices, please contribute!
 
 
 ## How to use it
-Hammer became simpler to use, with an jQuery-like API. You dont need to add the new keyword, and the eventlisteners are chainable.
+Hammer became simpler to use, with an jQuery-like API. You don't need to add the new keyword, and the eventlisteners are chainable.
 
     var element = document.getElementById('test_el');
     var hammertime = Hammer(element).on("tap", function(event) {
@@ -54,7 +54,7 @@ Event delegation is also possible when you use the jQuery plugin.
         console.log(this, event);
     });
 
-The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some then for others.
+The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some than for others.
 The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
     time        {Number}        time the event occurred
@@ -135,7 +135,7 @@ The following gestures are available, you can find options for it in gestures.js
 
 
 On a desktop browser the mouse can be used to simulate touch events with one finger.
-On Android 2 (and 3?) doesn't support multi-touch events, so there's no transform callback on these Android versions.
+Android 2 (and 3?) doesn't support multi-touch events, so there's no transform callback on these Android versions.
 Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and mouse events are badly supported.
 
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
