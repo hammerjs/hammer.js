@@ -21,6 +21,7 @@ module.exports = (grunt) ->
           'src/setup.js'
           'src/instance.js'
           'src/event.js'
+          'src/pointerevent.js'
           'src/utils.js'
           'src/gesture.js'
           'src/gestures.js'

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-06
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-11
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -309,6 +309,36 @@ Hammer.event = {
                 return this.srcEvent.preventDefault();
             }
         };
+    }
+};
+
+Hammer.PointerEvent = {
+    pointers: {},
+
+    /**
+     * get a list of pointers
+     * @return  {Array}     Pointers
+     */
+    getPointers: function() {
+        var pointers = [];
+        for(var p in this.pointers) {
+            pointers.push(p);
+        }
+        return pointers;
+    },
+
+    /**
+     * update the position of a pointer
+     * @param   EVENTTYPE   type
+     * @param   Object      ev
+     */
+    updatePointer: function(type, ev) {
+        if(type == Hammer.EVENT_END) {
+            delete this.pointers[ev.pointerId];
+        }
+        else {
+            this.pointers[ev.pointerId] = ev;
+        }
     }
 };
 
