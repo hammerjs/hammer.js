@@ -86,7 +86,7 @@
 <div class="sidebar well well-small">
     <h4>Events</h4>
     <label class="checkbox">
-        <input type="checkbox" id="prevent-scroll-drag"> Block vertical drag
+        <input type="checkbox" checked id="prevent-default"> block browser behavior (preventDefault)
     </label>
     <ul class="unstyled events" id="events-list">
         <li>touch</li>
@@ -191,11 +191,11 @@
 
     var event_log = getEl('event-log');
     var log_elements = {};
-    var prevent_scroll_drag = false;
+    var prevent_scroll_drag = true;
 
 
-    $("#prevent-scroll-drag").click(function() {
-        hammertime.options.drag_block_vertical = this.checked;
+    $("#prevent-default").click(function() {
+        prevent_scroll_drag = this.checked;
     });
 
 
@@ -231,6 +231,11 @@
             }
             getLogElement('prop', prop).innerText = value;
         }
+
+        // prevent browser behavior, makes the element blocking
+        if(prevent_scroll_drag) {
+            ev.gesture.preventDefault();
+        }
     }
 
 
@@ -245,10 +250,7 @@
 
 
     // start!
-    var hammertime = Hammer(getEl('hitarea'), {
-        transform_always_block: true,
-        drag_block_horizontal: true
-    }).on(all_events.join(" "), logEvent);
+    var hammertime = Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
 
 
 </script>
