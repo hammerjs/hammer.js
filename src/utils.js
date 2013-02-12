@@ -46,12 +46,15 @@ Hammer.utils = {
 
 
     /**
-     * calculate the distance between two points
+     * calculate the velocity between two points
      * @param   Number      pos1
      * @param   Number      pos2
      */
-    getSimpleDistance: function getSimpleDistance(pos1, pos2) {
-        return Math.abs(pos2 - pos1);
+    getVelocity: function getSimpleDistance(delta_time, dx, dy) {
+        return {
+            x: Math.abs(dx / delta_time) || 0,
+            y: Math.abs(dy / delta_time) || 0
+        };
     },
 
 

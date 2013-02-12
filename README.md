@@ -57,23 +57,25 @@ Event delegation is also possible when you use the jQuery plugin.
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some than for others.
 The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
-    time        {Number}        time the event occurred
+    timestamp   {Number}        time the event occurred
     target      {HTMLElement}   target element
     touches     {Array}         touches (fingers, pointers, mouse) on the screen
     center      {Object}        center position of the touches. contains pageX and pageY
-    touchTime   {Number}        the total time of the touches in the screen
+    deltaTime   {Number}        the total time of the touches in the screen
+    deltaX      {Number}        the delta on x axis we haved moved
+    deltaY      {Number}        the delta on y axis we haved moved
+    velocityX   {Number}        the velocity on the x
+    velocityY   {Number}        the velocity on y
     angle       {Number}        the angle we are moving
     direction   {String}        the direction we are moving. matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
     distance    {Number}        the distance we haved moved
-    distanceX   {Number}        the distance on x axis we haved moved
-    distanceY   {Number}        the distance on y axis we haved moved
     scale       {Number}        scaling of the touches, needs 2 touches
     rotation    {Number}        rotation of the touches, needs 2 touches *
     eventType   {String}        matches Hammer.EVENT_START|MOVE|END
     srcEvent    {Object}        the source event, like TouchStart or MouseDown *
     startEvent  {Object}        contains the same properties as above,
                                 but from the first touch. this is used to calculate
-                                distances, touchTime, scaling etc
+                                distances, deltaTime, scaling etc
 
 You can write your own gestures, you can find examples and documentation about this in gestures.js.
 The following gestures are available, you can find options for it in gestures.js

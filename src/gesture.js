@@ -108,15 +108,23 @@ Hammer.gesture = {
             startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
         }
 
-        Hammer.utils.extend(ev, {
-            touchTime   : (ev.time - startEv.time),
+        var delta_time = ev.timestamp - startEv.timestamp,
+            delta_x = ev.center.pageX - startEv.center.pageX,
+            delta_y = ev.center.pageY - startEv.center.pageY,
+            velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
-            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
-            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
+        Hammer.utils.extend(ev, {
+            deltaTime   : delta_time,
+
+            deltaX      : delta_x,
+            deltaY      : delta_y,
+
+            velocityX   : velocity.x,
+            velocityY   : velocity.y,
 
             distance    : Hammer.utils.getDistance(startEv.center, ev.center),
-            distanceX   : Hammer.utils.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
-            distanceY   : Hammer.utils.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
+            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
+            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
 
             scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
             rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),

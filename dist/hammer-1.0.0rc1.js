@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-11
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-12
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -300,7 +300,7 @@ Hammer.event = {
 
         return {
             center      : Hammer.utils.getCenter(touches),
-            time        : new Date().getTime(), // for IE
+            timestamp   : ev.timestamp || new Date().getTime(), // for IE
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,
@@ -390,12 +390,15 @@ Hammer.utils = {
 
 
     /**
-     * calculate the distance between two points
+     * calculate the velocity between two points
      * @param   Number      pos1
      * @param   Number      pos2
      */
-    getSimpleDistance: function getSimpleDistance(pos1, pos2) {
-        return Math.abs(pos2 - pos1);
+    getVelocity: function getSimpleDistance(delta_time, dx, dy) {
+        return {
+            x: Math.abs(dx / delta_time) || 0,
+            y: Math.abs(dy / delta_time) || 0
+        };
     },
 
 
@@ -621,15 +624,23 @@ Hammer.gesture = {
             startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
         }
 
-        Hammer.utils.extend(ev, {
-            touchTime   : (ev.time - startEv.time),
+        var delta_time = ev.timestamp - startEv.timestamp,
+            delta_x = ev.center.pageX - startEv.center.pageX,
+            delta_y = ev.center.pageY - startEv.center.pageY,
+            velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
-            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
-            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
+        Hammer.utils.extend(ev, {
+            deltaTime   : delta_time,
+
+            deltaX      : delta_x,
+            deltaY      : delta_y,
+
+            velocityX   : velocity.x,
+            velocityY   : velocity.y,
 
             distance    : Hammer.utils.getDistance(startEv.center, ev.center),
-            distanceX   : Hammer.utils.getSimpleDistance(startEv.center.pageX, ev.center.pageX),
-            distanceY   : Hammer.utils.getSimpleDistance(startEv.center.pageY, ev.center.pageY),
+            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
+            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
 
             scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
             rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
@@ -717,23 +728,25 @@ Hammer.gestures = Hammer.gestures || {};
  *
  *      @param  {Object}    eventData
  *      event data containing the following properties:
- *          time        {Number}        time the event occurred
+ *          timestamp   {Number}        time the event occurred
  *          target      {HTMLElement}   target element
  *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
  *          center      {Object}        center position of the touches. contains pageX and pageY
- *          touchTime   {Number}        the total time of the touches in the screen
+ *          deltaTime   {Number}        the total time of the touches in the screen
+ *          deltaX      {Number}        the delta on x axis we haved moved
+ *          deltaY      {Number}        the delta on y axis we haved moved
+ *          velocityX   {Number}        the velocity on the x
+ *          velocityY   {Number}        the velocity on y
  *          angle       {Number}        the angle we are moving
  *          direction   {String}        the direction we are moving. matches Hammer.DIRECTION_UP|DOWN|LEFT|RIGHT
  *          distance    {Number}        the distance we haved moved
- *          distanceX   {Number}        the distance on x axis we haved moved
- *          distanceY   {Number}        the distance on y axis we haved moved
  *          scale       {Number}        scaling of the touches, needs 2 touches
  *          rotation    {Number}        rotation of the touches, needs 2 touches *
  *          eventType   {String}        matches Hammer.EVENT_START|MOVE|END
  *          srcEvent    {Object}        the source event, like TouchStart or MouseDown *
  *          startEvent  {Object}        contains the same properties as above,
  *                                      but from the first touch. this is used to calculate
- *                                      distances, touchTime, scaling etc
+ *                                      distances, deltaTime, scaling etc
  *
  *      @param  {Hammer.Instance}    inst
  *      the instance we are doing the detection for. you can get the options from
@@ -849,7 +862,7 @@ Hammer.gestures.Tap = {
 
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
-            if(ev.touchTime > inst.options.tap_max_touchtime ||
+            if(ev.deltaTime > inst.options.tap_max_touchtime ||
                 ev.distance > inst.options.tap_max_distance) {
                 return;
             }
@@ -925,25 +938,29 @@ Hammer.gestures.Drag = {
 
 /**
  * Swipe
- * called after dragging ends and the user moved for x ms a small distance
+ * triggers swipe events when the end velocity is above the threshold
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
 Hammer.gestures.Swipe = {
     name: 'swipe',
     index: 51,
     defaults: {
-        swipe_min_time     : 150,
-        swipe_max_time     : 500,
-        swipe_min_distance : 30
+        // set 0 for unlimited, but this can conflict with transform
+        swipe_max_touches  : 1,
+        swipe_velocity     : 0.75
     },
     handler: function swipeGesture(ev, inst) {
         if(ev.eventType == Hammer.EVENT_END) {
+            // max touches
+            if(inst.options.swipe_max_touches > 0 &&
+                ev.touches.length > inst.options.swipe_max_touches) {
+                return;
+            }
+
             // when the distance we moved is too small we skip this gesture
             // or we can be already in dragging
-            if(Hammer.gesture.current.name == 'drag' &&
-                ev.touchTime > inst.options.swipe_min_time &&
-                ev.touchTime < inst.options.swipe_max_time &&
-                ev.distance > inst.options.swipe_min_distance) {
+            if(ev.velocityX > inst.options.swipe_velocity ||
+                ev.velocityY > inst.options.swipe_velocity) {
                 // trigger swipe events
                 inst.trigger(this.name, ev);
                 inst.trigger(this.name + ev.direction, ev);

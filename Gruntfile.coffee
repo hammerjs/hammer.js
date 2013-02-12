@@ -95,6 +95,6 @@ module.exports = (grunt) ->
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['notify_hooks','concat','jshint','uglify','copy']
+  grunt.registerTask 'build', ['notify_hooks','concat','test','uglify','copy']
   grunt.registerTask 'default', ['notify_hooks','connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
