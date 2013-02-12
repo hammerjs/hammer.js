@@ -3,14 +3,14 @@
 <head>
     <title>Hammer.js</title>
     <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <!--<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">-->
     <style>
         body {
             padding: 30px;
         }
 
     #slideshow {
-        width: 510px;
+        max-width: 510px;
         height: 310px;
         overflow: hidden;
         position:relative;
@@ -36,7 +36,6 @@
 
     #slideshow ul li {
         float: left;
-        width: 510px;
         height: 310px;
         overflow:hidden;
     }
@@ -46,7 +45,6 @@
     }
 
     #overview {
-        width: 510px;
         text-align: center;
         padding: 10px 0;
     }
@@ -186,26 +184,25 @@
 
 
 
-    var hammer = new Hammer($("#slideshow").get(0));
+    var hammer = Hammer($("#slideshow").get(0));
     var slideshow = new Slideshow("#slideshow ul", "#overview li");
 
 
     // ondrag we preview the next/prev slide
-    hammer.on('dragleft dragright release', function(ev) {
-        var left = 0;
+    hammer.on('dragleft dragright swipeleft swiperight release', function(ev) {
+        switch(ev.type) {
+            case 'swipeleft':
+                slideshow.next();
+                break;
 
-        switch(ev.gesture) {
+            case 'swiperight':
+                slideshow.prev();
+                break;
+
             case 'dragleft':
             case 'dragright':
-                // determine which direction we need to show the preview
-                if(ev.direction == 'left') {
-                    left = 0 - ev.distance;
-                } else if(ev.direction == 'right') {
-                    left = ev.distance;
-                }
-
                 // just move the marginLeft
-                slideshow.getContainer().css({ marginLeft: left });
+                slideshow.getContainer().css({ marginLeft: ev.gesture.deltaX });
                 break;
 
             case 'release':
@@ -213,10 +210,10 @@
                 slideshow.getContainer().css({ marginLeft: 0 });
 
                 // if we moved the slide 100px then navigate
-                if(Math.abs(ev.distance) > 100) {
-                    if(ev.direction == 'right') {
+                if(Math.abs(ev.gesture.deltaX) > (slideshow.getContainer().parent().width()/2)) {
+                    if(ev.gesture.direction == 'right') {
                         slideshow.prev();
-                    } else if(ev.direction == 'left') {
+                    } else if(ev.gesture.direction == 'left') {
                         slideshow.next();
                     }
                 }

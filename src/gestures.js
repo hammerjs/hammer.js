@@ -116,7 +116,7 @@ Hammer.gestures.Hold = {
     index: 10,
     defaults: {
         hold_timeout: 500,
-        hold_threshold: 2
+        hold_threshold: 3
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
@@ -180,7 +180,7 @@ Hammer.gestures.Tap = {
 
             // check if double tap
             if(prev && prev.name == 'tap' &&
-                (ev.time - prev.lastEvent.time) < inst.options.doubletap_interval &&
+                (ev.timestamp - prev.lastEvent.timestamp) < inst.options.doubletap_interval &&
                 ev.distance < inst.options.doubletap_distance) {
                 Hammer.gesture.current.name = 'doubletap';
             }
@@ -258,7 +258,7 @@ Hammer.gestures.Swipe = {
     defaults: {
         // set 0 for unlimited, but this can conflict with transform
         swipe_max_touches  : 1,
-        swipe_velocity     : 0.75
+        swipe_velocity     : 0.7
     },
     handler: function swipeGesture(ev, inst) {
         if(ev.eventType == Hammer.EVENT_END) {
