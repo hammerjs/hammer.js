@@ -57,47 +57,25 @@
 
     var rect = document.getElementById('rect');
 
-    var x, y,
-        dx, yx,
-        last_touchX, last_touchY,
-        posX=0, posY=0,
-        scale= 1, last_scale,
+    var posX=0, posY=0,
+        scale=1, last_scale,
         rotation= 1, last_rotation;
 
-    hammertime.on('touch drag transform release', function(ev) {
+    hammertime.on('touch drag transform', function(ev) {
         switch(ev.type) {
             case 'touch':
-                x = ev.gesture.center.pageX;
-                y = ev.gesture.center.pageY;
-
-                last_touchX = x;
-                last_touchY = y;
                 last_scale = scale;
                 last_rotation = rotation;
                 break;
 
             case 'drag':
-                x = ev.gesture.center.pageX;
-                y = ev.gesture.center.pageY;
-
-                dx = x - last_touchX;
-                dy = y - last_touchY;
-
-                posX += dx;
-                posY += dy;
-
-                last_touchX = x;
-                last_touchY = y;
+                posX = ev.gesture.deltaX;
+                posY = ev.gesture.deltaY;
                 break;
 
             case 'transform':
                 rotation = last_rotation + ev.gesture.rotation;
-                scale = last_scale * ev.gesture.scale;
-                scale = Math.max(1, Math.min(scale, 10));
-                break;
-
-            case 'release':
-
+                scale = Math.max(1, Math.min(last_scale * ev.gesture.scale, 10));
                 break;
         }
 

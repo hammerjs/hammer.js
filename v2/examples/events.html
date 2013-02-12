@@ -117,13 +117,16 @@
     <ul class="unstyled properties">
         <li class="property-gesture"><strong>gesture</strong> <span id="log-prop-gesture"></span></li>
         <li><strong>center</strong> <span id="log-prop-center"></span></li>
-        <li><strong>touchTime</strong> <span id="log-prop-touchTime"></span>ms</li>
         <li><strong>angle</strong> <span id="log-prop-angle"></span>&deg;</li>
         <li><strong>direction</strong> <span id="log-prop-direction"></span></li>
-
         <li><strong>distance</strong> <span id="log-prop-distance"></span>px</li>
-        <li><strong>distanceX</strong> <span id="log-prop-distanceX"></span>px</li>
-        <li><strong>distanceY</strong> <span id="log-prop-distanceY"></span>px</li>
+
+        <li><strong>deltaTime</strong> <span id="log-prop-deltaTime"></span>ms</li>
+        <li><strong>deltaX</strong> <span id="log-prop-deltaX"></span>px</li>
+        <li><strong>deltaY</strong> <span id="log-prop-deltaY"></span>px</li>
+
+        <li><strong>velocityX</strong> <span id="log-prop-velocityX"></span></li>
+        <li><strong>velocityY</strong> <span id="log-prop-velocityY"></span></li>
 
         <li><strong>scale</strong>  <span id="log-prop-scale"></span></li>
         <li><strong>rotation</strong> <span id="log-prop-rotation"></span>&deg;</li>
@@ -215,8 +218,8 @@
         event_el.className = "active";
 
         // log properties
-        var properties = ['gesture','center','touchTime','angle','direction',
-            'distance','distanceX','distanceY','scale','rotation'];
+        var properties = ['gesture','center','deltaTime','angle','direction',
+            'distance','deltaX','deltaY','velocityX','velocityY','scale','rotation'];
         for(var i= 0,len=properties.length; i<len; i++) {
             var prop = properties[i];
             var value = ev.gesture[prop];
