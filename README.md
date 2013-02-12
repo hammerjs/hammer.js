@@ -35,24 +35,30 @@ It always needs some testing with all kind of devices, please contribute!
 ## How to use it
 Hammer became simpler to use, with an jQuery-like API. You don't need to add the new keyword, and the eventlisteners are chainable.
 
+````js
     var element = document.getElementById('test_el');
     var hammertime = Hammer(element).on("tap", function(event) {
         alert('hello!');
     });
+````
 
 You can change the default settings by adding an second argument with options
 
+````js
     var hammertime = Hammer(element, {
         drag: false,
         transform: false
     });
+````
 
 Events can be added/removed with the on and off methods, just like you would in jQuery.
 Event delegation is also possible when you use the jQuery plugin.
 
+````js
     $('#test_el').hammer().on("tap", ".nested_el", function(event) {
         console.log(this, event);
     });
+````
 
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some than for others.
 The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
