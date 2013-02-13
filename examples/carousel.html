@@ -166,7 +166,7 @@
                 container.css("transform", "translate("+ percent +"%,0)");
             }
             else {
-                container.style.left = percent+"%";
+                container.css("left", percent+"%");
             }
         };
 
@@ -190,7 +190,7 @@
                     self.setContainerOffset(drag_offset + pane_offset);
 
                     // disable browser scrolling
-                    ev.gesture.preventDefault();
+                    ev.preventDefault();
                     break;
 
                 case 'swipeleft':
