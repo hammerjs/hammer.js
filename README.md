@@ -21,7 +21,7 @@ It always needs some testing with all kind of devices, please contribute!
 - Did I mention the code was inefficient? Now a Hammer instance is light, and only contains the methods it should.
 
 
-## New features in v2
+## Features in v2
 - DOM Events
 - Debug plugins
 - Custom gestures api
@@ -33,7 +33,7 @@ It always needs some testing with all kind of devices, please contribute!
 - AMD support (RequireJS)
 
 
-## How to use it
+## Getting Started
 Hammer became simpler to use, with an jQuery-like API. You don't need to add the new keyword, and the eventlisteners are chainable.
 
 ````js
@@ -126,11 +126,17 @@ The following gestures are available, you can find options for it in gestures.js
 | Opera Mobile                      | X   | X          | X    | X    |           |
 | Opera Mini                        | X   |            |      |      |           |
 |                                                                                |
+| **Windows 8**                                                                  |
+| Internet Explorer 10              | X   | X          | X    | X    | Unkown    |
+|                                                                                |
+| **Windows Phone 7.5**                                                          |
+| Internet Explorer                 | X   |            |      |      |           |
+|                                                                                |
 | **Others**                                                                     |
 | Kindle Fire                       | X   | X          | X    | X    | X         |
 | Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
 |                                                                                |
-| **Windows**                                                                    |
+| **Windows Dekstop**                                                            |
 | Internet Explorer 7               | X   | X          | X    | X    | X*        |
 | Internet Explorer 8               | X   | X          | X    | X    | X*        |
 | Internet Explorer 9               | X   | X          | X    | X    | X*        |
@@ -142,15 +148,13 @@ The following gestures are available, you can find options for it in gestures.js
 | Chrome                            | X   | X          | X    | X    | X*        |
 | Safari                            | X   | X          | X    | X    | X*        |
 
+Android 2 doesn't support multi-touch events, so there's no transform callback on these Android versions.
+Windows Phone 7.5 doesnt support touch and minimal mouse events.
 
-On a desktop browser the mouse can be used to simulate touch events with one finger.
-Android 2 (and 3?) doesn't support multi-touch events, so there's no transform callback on these Android versions.
-Firefox 1.1 (Nokia N900) and Windows Phone 7.5 doesnt support touch events, and mouse events are badly supported.
-
-Not all gestures are supported on every device. This matrix shows the support we have tested. This is ofcourse far from extensive.
+Not all gestures are supported on every device. This matrix shows the support we have tested. This is of course far from extensive.
 If you've tested hammer.js on a different device, please let us know.
 
-* Transform gesture is available on Windows and OSX with the hammer.fakemultitouch.js plugin.
+* Multitouch gestures are available with the hammer.fakemultitouch.js plugin.
 
 
 ## Todo
@@ -160,9 +164,11 @@ If you've tested hammer.js on a different device, please let us know.
 - Tests
 
 
+## Contributing
+In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using grunt.
+
+
 ## Further notes
 Created by [Jorik Tangelder](http://twitter.com/jorikdelaporik) and developed at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
-Add your feature suggestions and bug reports on [Github](http://github.com/eightmedia/hammer.js/issues).
-
-We recommend listening to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
+It's recommend to listen to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
