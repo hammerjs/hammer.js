@@ -27,6 +27,11 @@ module.exports = (grunt) ->
           'src/gestures.js'
           'src/outro.js']
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+      jquery:
+        src: [
+          'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+          'plugins/jquery.hammer.js']
+        dest: 'dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js'
 
     # copy src to latest version
     copy:
@@ -36,6 +41,12 @@ module.exports = (grunt) ->
       latestmin:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
         dest: 'dist/<%= pkg.name %>-latest.min.js'
+      jquery:
+        src: ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js']
+        dest: 'dist/jquery.<%= pkg.name %>-latest.js'
+      jquerymin:
+        src: ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.min.js']
+        dest: 'dist/jquery.<%= pkg.name %>-latest.min.js'
 
     # check for optimisations and errors
     jshint:
@@ -63,13 +74,13 @@ module.exports = (grunt) ->
         files:
           'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
           'dist/<%= pkg.name %>-latest.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
-          'plugins/jquery.hammer.min.js': ['plugins/jquery.hammer.js']
+          'dist/jquery.<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js']
 
     # watch for changes
     watch:
       scripts:
         files: 'src/*.js'
-        tasks: ['concat','copy:latest']
+        tasks: ['concat:dist','copy:latest']
         options:
           interrupt: true
 

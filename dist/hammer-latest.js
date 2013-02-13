@@ -326,9 +326,21 @@ Hammer.event = {
             touches     : touches,
             eventType   : eventType,
             srcEvent    : ev,
+
+            /**
+             * prevent the browser default actions
+             * mostly used to disable scrolling of the browser
+             * @return {*}
+             */
             preventDefault: function() {
                 return this.srcEvent.preventDefault();
             },
+
+            /**
+             * immediately stop gesture detection
+             * might be useful after a swipe was detected
+             * @return {*}
+             */
             stop: function() {
                 return Hammer.gesture.stop();
             }
