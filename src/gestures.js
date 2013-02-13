@@ -301,7 +301,7 @@ Hammer.gestures.Transform = {
     },
     handler: function transformGesture(ev, inst) {
         // prevent default when two fingers are on the screen
-        if(inst.options.transform_always_block && ev.touches.length == 2) {
+        if(inst.options.transform_always_block) {
             ev.preventDefault();
         }
 
@@ -343,7 +343,19 @@ Hammer.gestures.Transform = {
 Hammer.gestures.Touch = {
     name: 'touch',
     index: -Infinity,
+    defaults: {
+        // call preventDefault at touchstart, and makes the element blocking by
+        // disabling the scrolling of the page, but it improves gestures like
+        // transforming and dragging.
+        // be careful with using this, it can be very annoying for users to be stuck
+        // on the page
+        prevent_default: false
+    },
     handler: function touchGesture(ev, inst) {
+        if(inst.options.prevent_default) {
+            ev.preventDefault();
+        }
+
         if(ev.eventType ==  Hammer.EVENT_START) {
             inst.trigger(this.name, ev);
         }
