@@ -12,9 +12,10 @@ module.exports = (grunt) ->
     # concat src files
     concat:
       options:
-        banner: '<%= meta.banner %>'
         separator: '\n\n'
       dist:
+        options:
+          banner: '<%= meta.banner %>'
         src: [
           'src/intro.js'
           'src/core.js'

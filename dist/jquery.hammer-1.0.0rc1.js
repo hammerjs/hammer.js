@@ -4,12 +4,6 @@
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
 
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-13
- * http://eightmedia.github.com/hammer.js
- *
- * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
- * Licensed under the MIT license */
-
 (function( window, undefined ) {
     'use strict';
 
