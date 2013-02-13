@@ -224,7 +224,7 @@ Hammer.event = {
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // touch must be down or a touch element
-                if(ev.type.match(/down/i) &&
+                if(ev.type.match(/down|move/i) &&
                     (ev.which === 1 || (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH))) {
                     touchdown = true;
                 }

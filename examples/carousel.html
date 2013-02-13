@@ -94,6 +94,35 @@
 
 
     /**
+     * requestAnimationFrame and cancel polyfill
+     */
+    (function() {
+        var lastTime = 0;
+        var vendors = ['ms', 'moz', 'webkit', 'o'];
+        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+            window.cancelAnimationFrame =
+                    window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+        }
+
+        if (!window.requestAnimationFrame)
+            window.requestAnimationFrame = function(callback, element) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                        timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+
+        if (!window.cancelAnimationFrame)
+            window.cancelAnimationFrame = function(id) {
+                clearTimeout(id);
+            };
+    }());
+
+
+    /**
     * super simple carousel
     * animation between panes happens with css transitions
     */
@@ -110,14 +139,19 @@
 
         var current_pane = 0;
 
+        var _anim;
+        var _offset;
+
 
         /**
          * initial
          */
         this.init = function() {
-            this.setPaneDimensions();
+            setPaneDimensions();
+
             $(window).on("load resize orientationchange", function() {
-                self.setPaneDimensions();
+                setPaneDimensions();
+                updateOffset();
             })
         };
 
@@ -125,7 +159,7 @@
         /**
          * set the pane dimensions and scale the container
          */
-        this.setPaneDimensions = function() {
+        function setPaneDimensions() {
             pane_width = element.width();
             panes.each(function() {
                 $(this).width(pane_width);
@@ -139,17 +173,20 @@
          * @param   {Number}    index
          */
         this.showPane = function( index ) {
+            cancelAnimationFrame(_anim);
+            _anim = null;
+
             // between the bounds
             index = Math.max(0, Math.min(index, pane_count-1));
             current_pane = index;
 
             var offset = -((100/pane_count)*current_pane);
-            this.setContainerOffset(offset, true);
+            setContainerOffset(offset, true);
         };
 
 
         var timer = null;
-        this.setContainerOffset = function(percent, animate) {
+        function setContainerOffset(percent, animate) {
             if(animate) {
                 clearTimeout(timer);
                 container.addClass("animate");
@@ -159,6 +196,7 @@
                 container.removeClass("animate");
             }, 200);
 
+
             if(Modernizr.csstransforms3d) {
                 container.css("transform", "translate3d("+ percent +"%,0,0) scale3d(1,1,1)");
             }
@@ -166,15 +204,28 @@
                 container.css("transform", "translate("+ percent +"%,0)");
             }
             else {
-                container.css("left", percent+"%");
+                var px = ((pane_width*pane_count) / 100) * percent;
+                container.css("left", px+"px");
             }
-        };
+        }
 
         this.next = function() { return this.showPane(current_pane+1, true); };
         this.prev = function() { return this.showPane(current_pane-1, true); };
 
 
-        element.hammer().on("release dragleft dragright swipeleft swiperight", function(ev) {
+        /**
+         * update the height of the slidedown message
+         */
+        function updateOffset() {
+            setContainerOffset(_offset);
+            _anim = requestAnimationFrame(function() {
+                updateOffset();
+            });
+        }
+
+
+
+        function handleHammer(ev) {
             switch(ev.type) {
                 case 'dragright':
                 case 'dragleft':
@@ -187,7 +238,12 @@
                         drag_offset *= .4;
                     }
 
-                    self.setContainerOffset(drag_offset + pane_offset);
+                    _offset = drag_offset + pane_offset;
+
+                    // no requestAnimationFrame instance is running, start one
+                    if(!_anim) {
+                        updateOffset();
+                    }
 
                     // disable browser scrolling
                     ev.preventDefault();
@@ -217,7 +273,9 @@
                     }
                     break;
             }
-        })
+        }
+
+        element.hammer().on("release dragleft dragright swipeleft swiperight", handleHammer);
     }
 
 
