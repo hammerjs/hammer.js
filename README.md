@@ -100,55 +100,54 @@ The following gestures are available, you can find options for it in gestures.js
 
 
 ## Compatibility
-|                                   | Tap | Double Tap | Hold | Drag | Transform |
-|:----------------------------------|:----|:-----------|:-----|:-----|:----------|
-| **BlackBerry**                                                                 |
-| Playbook                          | X   | X          | X    | X    | X         |
-| BlackBerry 10                     | X   | X          | X    | X    | X         |
-|                                                                                |
-| **iOS**                                                                        |
-| iPhone/iPod iOS 6                 | X   | X          | X    | X    | X         |
-| iPad/iPhone iOS 5                 | X   | X          | X    | X    | X         |
-| iPhone iOS 4                      | X   | X          | X    | X    | X         |
-|                                                                                |
-| **Android 4**                                                                  |
-| Default browser                   | X   | X          | X    | X    | X         |
-| Chrome                            | X   | X          | X    | X    | X         |
-| Opera                             | X   | X          | X    | X    | X         |
-| Firefox                           | X   | X          | X    | X    | X         |
-|                                                                                |
-| **Android 3**                                                                  |
-| Default browser                   | X   | X          | X    | X    | X         |
-|                                                                                |
-| **Android 2**                                                                  |
-| Default browser                   | X   | X          | X    | X    |           |
-| Firefox                           | X   | X          | X    | X    |           |
-| Opera Mobile                      | X   | X          | X    | X    |           |
-| Opera Mini                        | X   |            |      |      |           |
-|                                                                                |
-| **Windows 8**                                                                  |
-| Internet Explorer 10              | X   | X          | X    | X    | Unkown    |
-|                                                                                |
-| **Windows Phone 7.5**                                                          |
-| Internet Explorer                 | X   |            |      |      |           |
-|                                                                                |
-| **Others**                                                                     |
-| Kindle Fire                       | X   | X          | X    | X    | X         |
-| Nokia N900 - Firefox 1.1          | X   |            |      |      |           |
-|                                                                                |
-| **Windows Dekstop**                                                            |
-| Internet Explorer 7               | X   | X          | X    | X    | X*        |
-| Internet Explorer 8               | X   | X          | X    | X    | X*        |
-| Internet Explorer 9               | X   | X          | X    | X    | X*        |
-| Internet Explorer 10              | X   | X          | X    | X    | X*        |
-|                                                                                |
-| **OSX**                                                                        |
-| Firefox                           | X   | X          | X    | X    | X*        |
-| Opera                             | X   | X          | X    | X    | X*        |
-| Chrome                            | X   | X          | X    | X    | X*        |
-| Safari                            | X   | X          | X    | X    | X*        |
-|:----------------------------------|:----|:-----------|:-----|:-----|:----------|
-|                                   | Tap | Double Tap | Hold | Drag | Transform |
+|                                   | Tap | Double Tap | Hold | Swipe | Drag | Transform |
+|:----------------------------------|:----|:-----------|:-----|:------|:-----|:----------|
+| **BlackBerry**                                                                         |
+| Playbook                          | X   | X          | X    | X     | X    | X         |
+| BlackBerry 10                     | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
+| **iOS**                                                                                |
+| iPhone/iPod iOS 6                 | X   | X          | X    | X     | X    | X         |
+| iPad/iPhone iOS 5                 | X   | X          | X    | X     | X    | X         |
+| iPhone iOS 4                      | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
+| **Android 4**                                                                          |
+| Default browser                   | X   | X          | X    | X     | X    | X         |
+| Chrome                            | X   | X          | X    | X     | X    | X         |
+| Opera                             | X   | X          | X    | X     | X    | X         |
+| Firefox                           | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
+| **Android 3**                                                                          |
+| Default browser                   | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
+| **Android 2**                                                                          |
+| Default browser                   | X   | X          | X    | X     | X    |           |
+| Firefox                           | X   | X          | X    | X     | X    |           |
+| Opera Mobile                      | X   | X          | X    | X     | X    |           |
+| Opera Mini                        | X   |            |      |       |      |           |
+|                                                                                        |
+| **Windows 8**                                                                          |
+| Internet Explorer 10              | X   | X          | X    | X     | X    | Unkown    |
+|                                                                                        |
+| **Windows Phone 7.5**                                                                  |
+| Internet Explorer                 | X   |            |      |       |      |           |
+|                                                                                        |
+| **Other devices**                                                                      |
+| Kindle Fire                       | X   | X          | X    | X     | X    | X         |
+| Nokia N900 - Firefox 1.1          | X   |            |      |       |      |           |
+|                                                                                        |
+| **Windows Dekstop**                                                                    |
+| Internet Explorer 7               | X   | X          | X    | X     | X    | X*        |
+| Internet Explorer 8               | X   | X          | X    | X     | X    | X*        |
+| Internet Explorer 9               | X   | X          | X    | X     | X    | X*        |
+| Internet Explorer 10              | X   | X          | X    | X     | X    | X*        |
+|                                                                                        |
+| **OSX**                                                                                |
+| Firefox                           | X   | X          | X    | X     | X    | X*        |
+| Opera                             | X   | X          | X    | X     | X    | X*        |
+| Chrome                            | X   | X          | X    | X     | X    | X*        |
+| Safari                            | X   | X          | X    | X     | X    | X*        |
+|                                   | **Tap** | **Double Tap** | **Hold** | **Swipe** | **Drag** | **Transform** |
 
 Android 2 doesn't support multi-touch events, so there's no transform callback on these Android versions.
 Windows Phone 7.5 doesnt support touch and minimal mouse events.
