@@ -46,6 +46,7 @@ Hammer.Instance.prototype = {
         for(var t=0; t<gestures.length; t++) {
             this.element.addEventListener(gestures[t], handler, false);
         }
+        return this;
     },
 
 
@@ -60,6 +61,7 @@ Hammer.Instance.prototype = {
         for(var t=0; t<gestures.length; t++) {
             this.element.removeEventListener(gestures[t], handler, false);
         }
+        return this;
     },
 
     /**

@@ -4,7 +4,11 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
-    stop_browser_behavior: {    // set to false to disable this
+    // add styles and attributes to the element to prevent the browser from doing
+    // its native behavior. this doesnt prevent the scrolling, but cancels
+    // the contextmenu, tap highlighting etc
+    // set to false to disable this
+    stop_browser_behavior: {
         userSelect: 'none', // this also triggers onselectstart=false for IE
         touchCallout: 'none',
         touchAction: 'none',
@@ -13,7 +17,7 @@ Hammer.defaults = {
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
-    // more settings are defined at gestures.js
+    // more settings are defined per gesture at gestures.js
 };
 
 // detect touchevents

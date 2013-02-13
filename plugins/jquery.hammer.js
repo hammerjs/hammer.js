@@ -36,10 +36,10 @@
      * @this Hammer.Instance
      */
     Hammer.Instance.prototype.on = function(types, handler) {
-        $(this.element).on(types, handler);
+        return $(this.element).on(types, handler);
     };
     Hammer.Instance.prototype.off = function(types, handler) {
-        $(this.element).off(types, handler);
+        return $(this.element).off(types, handler);
     };
 
 
@@ -51,7 +51,7 @@
      * @param data
      */
     Hammer.Instance.prototype.trigger = function(gesture, eventData){
-        $(eventData.srcEvent.target).trigger({
+        return $(eventData.srcEvent.target).trigger({
             type: gesture,
             gesture: eventData
         });

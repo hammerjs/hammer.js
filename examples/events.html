@@ -197,7 +197,7 @@
 
 
     $("#prevent-default").click(function() {
-        prevent_scroll_drag = this.checked;
+        hammertime.options.prevent_default = this.checked;
     });
 
 
@@ -238,11 +238,6 @@
             }
             getLogElement('prop', prop).innerText = value;
         }
-
-        // prevent browser behavior, makes the element blocking
-        if(prevent_scroll_drag) {
-            ev.gesture.preventDefault();
-        }
     }
 
 
@@ -257,7 +252,10 @@
 
 
     // start!
-    var hammertime = Hammer(getEl('hitarea')).on(all_events.join(" "), logEvent);
+    var hammertime = Hammer(getEl('hitarea'), {
+            prevent_default: true
+        })
+        .on(all_events.join(" "), logEvent);
 
 
 </script>
