@@ -26,6 +26,7 @@ It always needs some testing with all kind of devices, please contribute!
 - Debug plugins
 - Custom gestures api
 - Better swipe event
+- Chainable instance methods
 - jQuery plugin with events delegation (the on/off methods) available
 - Efficient code, lower memory usage
 - IE8 and older compatibility with jQuery plugin

@@ -201,6 +201,7 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
+
         function triggerHandler(ev) {
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
@@ -222,8 +223,6 @@ Hammer.event = {
         // mouseevents and pointerEvents (win8)
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                var HP = Hammer.HAS_POINTEREVENTS;
-
                 // touch must be down or a touch element
                 if(ev.type.match(/down/i) &&
                     (ev.which === 1 || ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)) {
@@ -232,14 +231,14 @@ Hammer.event = {
 
                 if(touchdown) {
                     // update pointer
-                    if(HP && eventType != Hammer.EVENT_END) {
+                    if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
 
                     triggerHandler.apply(this, arguments);
 
                     // remove pointer after the handler is done
-                    if(HP && eventType == Hammer.EVENT_END) {
+                    if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
                 }
@@ -1047,7 +1046,7 @@ Hammer.gestures.Transform = {
             // trigger pinch event
             if(scale_threshold > inst.options.transform_min_scale) {
                 inst.trigger('pinch', ev);
-                inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);  // direction event, like pinchin
+                inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);
             }
         }
     }
