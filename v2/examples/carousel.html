@@ -88,7 +88,7 @@
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="assets/js/modernizr.js"></script>
 
-    <script src="../dist/hammer-latest.js"></script>
+    <script src="../dist/jquery.hammer-latest.js"></script>
 
     <script>
 
@@ -109,9 +109,6 @@
         var pane_count = panes.length;
 
         var current_pane = 0;
-
-        // our hammer instance
-        this.hammer = Hammer(element[0]);
 
 
         /**
@@ -177,7 +174,7 @@
         this.prev = function() { return this.showPane(current_pane-1, true); };
 
 
-        this.hammer.on("release dragleft dragright swipeleft swiperight", function(ev) {
+        element.hammer().on("release dragleft dragright swipeleft swiperight", function(ev) {
             switch(ev.type) {
                 case 'dragright':
                 case 'dragleft':
