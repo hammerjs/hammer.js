@@ -212,7 +212,9 @@ Hammer.gestures.Drag = {
         // be careful with it, it makes the element a blocking element
         // when you are using the drag gesture, it is a good practice to set this true
         drag_block_horizontal   : false,
-        drag_block_vertical     : false
+        drag_block_vertical     : false,
+        // after drag has started, don't allow changing to directions along other axis
+        drag_lock_to_axis       : false
     },
     handler: function dragGesture(ev, inst) {
         // max touches
@@ -227,6 +229,29 @@ Hammer.gestures.Drag = {
             if(ev.distance < inst.options.drag_min_distance &&
                 Hammer.gesture.current.name != this.name) {
                 return;
+            }
+
+            if(typeof Hammer.gesture.current.initial_direction == 'undefined') {
+                Hammer.gesture.current.initial_direction = ev.direction;
+            } else if(inst.options.drag_lock_to_axis &&
+                Hammer.gesture.current.initial_direction !== ev.direction) {
+                // keep direction on the axis that the drag gesture started on
+                if(Hammer.gesture.current.initial_direction == Hammer.DIRECTION_UP ||
+                    Hammer.gesture.current.initial_direction == Hammer.DIRECTION_DOWN) {
+                    // disregard newly calculated direction and stay on the vertical axis
+                    if (ev.deltaY < 0) {
+                        ev.direction = Hammer.DIRECTION_UP;
+                    } else {
+                        ev.direction = Hammer.DIRECTION_DOWN;
+                    }
+                } else {
+                    // stay on the horizontal axis
+                    if (ev.deltaX < 0) {
+                        ev.direction = Hammer.DIRECTION_LEFT;
+                    } else {
+                        ev.direction = Hammer.DIRECTION_RIGHT;
+                    }
+                }
             }
 
             Hammer.gesture.current.name = this.name;

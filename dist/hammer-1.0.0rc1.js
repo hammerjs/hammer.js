@@ -557,11 +557,11 @@ Hammer.gesture = {
 
     /**
      * start Hammer.gesture detection
-     * @param   HammerInstane   inst
+     * @param   HammerInstance  inst
      * @param   Event           ev
      */
     startDetect: function startDetect(inst, ev) {
-        // already busy with an Hammer.gesture detection on a element
+        // already busy with a Hammer.gesture detection on an element
         if(this.current) {
             return;
         }
@@ -592,14 +592,13 @@ Hammer.gesture = {
         // instance options
         var inst_options = this.current.inst.options;
 
-        // call Hammer.gesture handles
+        // call Hammer.gesture handlers
         for(var g=0,len=this.gestures.length; g<len; g++) {
             var gesture = this.gestures[g];
 
             // only when the instance options have enabled this gesture
             if(inst_options[gesture.name] !== false) {
-                // if a handle returns false
-                // we stop with the detection
+                // if a handler returns false, we stop with the detection
                 if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
                     this.stop();
                     break;
@@ -695,7 +694,7 @@ Hammer.gesture = {
         // extend Hammer default options with the Hammer.gesture options
         Hammer.utils.extend(Hammer.defaults, options);
 
-        // set it's index
+        // set its index
         gesture.index = gesture.index || 1000;
 
         // add Hammer.gesture to the list
@@ -930,7 +929,9 @@ Hammer.gestures.Drag = {
         // be careful with it, it makes the element a blocking element
         // when you are using the drag gesture, it is a good practice to set this true
         drag_block_horizontal   : false,
-        drag_block_vertical     : false
+        drag_block_vertical     : false,
+        // after drag has started, don't allow changing to directions along other axis
+        drag_lock_to_axis       : false
     },
     handler: function dragGesture(ev, inst) {
         // max touches
@@ -945,6 +946,29 @@ Hammer.gestures.Drag = {
             if(ev.distance < inst.options.drag_min_distance &&
                 Hammer.gesture.current.name != this.name) {
                 return;
+            }
+
+            if(typeof Hammer.gesture.current.initial_direction == 'undefined') {
+                Hammer.gesture.current.initial_direction = ev.direction;
+            } else if(inst.options.drag_lock_to_axis &&
+                Hammer.gesture.current.initial_direction !== ev.direction) {
+                // keep direction on the axis that the drag gesture started on
+                if(Hammer.gesture.current.initial_direction == Hammer.DIRECTION_UP ||
+                    Hammer.gesture.current.initial_direction == Hammer.DIRECTION_DOWN) {
+                    // disregard newly calculated direction and stay on the vertical axis
+                    if (ev.deltaY < 0) {
+                        ev.direction = Hammer.DIRECTION_UP;
+                    } else {
+                        ev.direction = Hammer.DIRECTION_DOWN;
+                    }
+                } else {
+                    // stay on the horizontal axis
+                    if (ev.deltaX < 0) {
+                        ev.direction = Hammer.DIRECTION_LEFT;
+                    } else {
+                        ev.direction = Hammer.DIRECTION_RIGHT;
+                    }
+                }
             }
 
             Hammer.gesture.current.name = this.name;

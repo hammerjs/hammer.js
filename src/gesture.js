@@ -12,11 +12,11 @@ Hammer.gesture = {
 
     /**
      * start Hammer.gesture detection
-     * @param   HammerInstane   inst
+     * @param   HammerInstance  inst
      * @param   Event           ev
      */
     startDetect: function startDetect(inst, ev) {
-        // already busy with an Hammer.gesture detection on a element
+        // already busy with a Hammer.gesture detection on an element
         if(this.current) {
             return;
         }
@@ -47,14 +47,13 @@ Hammer.gesture = {
         // instance options
         var inst_options = this.current.inst.options;
 
-        // call Hammer.gesture handles
+        // call Hammer.gesture handlers
         for(var g=0,len=this.gestures.length; g<len; g++) {
             var gesture = this.gestures[g];
 
             // only when the instance options have enabled this gesture
             if(inst_options[gesture.name] !== false) {
-                // if a handle returns false
-                // we stop with the detection
+                // if a handler returns false, we stop with the detection
                 if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
                     this.stop();
                     break;
@@ -150,7 +149,7 @@ Hammer.gesture = {
         // extend Hammer default options with the Hammer.gesture options
         Hammer.utils.extend(Hammer.defaults, options);
 
-        // set it's index
+        // set its index
         gesture.index = gesture.index || 1000;
 
         // add Hammer.gesture to the list
