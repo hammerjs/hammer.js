@@ -4,6 +4,7 @@
     <title>Hammer.js</title>
     <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <style>
 
         body {
@@ -116,6 +117,7 @@
     <h4>EventData</h4>
     <ul class="unstyled properties">
         <li class="property-gesture"><strong>gesture</strong> <span id="log-prop-gesture"></span></li>
+        <li><strong>touches</strong> <span id="log-prop-touches"></span></li>
         <li><strong>center</strong> <span id="log-prop-center"></span></li>
         <li><strong>angle</strong> <span id="log-prop-angle"></span>&deg;</li>
         <li><strong>direction</strong> <span id="log-prop-direction"></span></li>
@@ -207,6 +209,10 @@
         return el;
     }
 
+    // log properties
+    var properties = ['gesture','center','deltaTime','angle','direction',
+        'distance','deltaX','deltaY','velocityX','velocityY',
+        'scale','rotation','touches'];
 
     function logEvent(ev) {
         // add to the large event log at the bottom of the page
@@ -217,9 +223,7 @@
         var event_el = getLogElement('gesture', ev.type);
         event_el.className = "active";
 
-        // log properties
-        var properties = ['gesture','center','deltaTime','angle','direction',
-            'distance','deltaX','deltaY','velocityX','velocityY','scale','rotation'];
+
         for(var i= 0,len=properties.length; i<len; i++) {
             var prop = properties[i];
             var value = ev.gesture[prop];
@@ -228,6 +232,9 @@
             }
             else if(prop == 'gesture') {
                 value = ev.type;
+            }
+            else if(prop == 'touches') {
+                value = ev.gesture.touches.length;
             }
             getLogElement('prop', prop).innerText = value;
         }
