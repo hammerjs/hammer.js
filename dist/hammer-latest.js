@@ -572,6 +572,9 @@ Hammer.gesture = {
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
+		// These variables are used for correcting drag distance, to avoid jumpstarting drags. See drag gesture
+		this.current.startEvent.vertical_dragstart_correction = 0;
+		this.current.startEvent.horizontal_dragstart_correction = 0;
 
         return this.detect(ev);
     },
@@ -653,8 +656,8 @@ Hammer.gesture = {
         }
 
         var delta_time = ev.timestamp - startEv.timestamp,
-            delta_x = ev.center.pageX - startEv.center.pageX,
-            delta_y = ev.center.pageY - startEv.center.pageY,
+            delta_x = ev.center.pageX - startEv.center.pageX + startEv.horizontal_dragstart_correction,
+            delta_y = ev.center.pageY - startEv.center.pageY + startEv.vertical_dragstart_correction,
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
         Hammer.utils.extend(ev, {
@@ -930,7 +933,8 @@ Hammer.gestures.Drag = {
         // when you are using the drag gesture, it is a good practice to set this true
         drag_block_horizontal   : false,
         drag_block_vertical     : false,
-        // after drag has started, don't allow changing to directions along other axis
+        // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+        // It disallows vertical directions if the initial direction was horizontal, and vice versa.
         drag_lock_to_axis       : false
     },
     handler: function dragGesture(ev, inst) {
@@ -948,25 +952,48 @@ Hammer.gestures.Drag = {
                 return;
             }
 
-            if(typeof Hammer.gesture.current.initial_direction == 'undefined') {
-                Hammer.gesture.current.initial_direction = ev.direction;
-            } else if(inst.options.drag_lock_to_axis &&
-                Hammer.gesture.current.initial_direction !== ev.direction) {
-                // keep direction on the axis that the drag gesture started on
-                if(Hammer.gesture.current.initial_direction == Hammer.DIRECTION_UP ||
-                    Hammer.gesture.current.initial_direction == Hammer.DIRECTION_DOWN) {
-                    // disregard newly calculated direction and stay on the vertical axis
+            if(Hammer.gesture.current.name != this.name) {
+                // When starting to drag, set up horizontal_dragstart_correction or vertical_dragstart_correction.
+                // These variables are subtracted from startEv.center.pageX or startEv.center.pageY
+                // to account for inst.options.drag_min_distance and avoid "jumpstarting" drags.
+                if(ev.direction == Hammer.DIRECTION_UP ||
+                    ev.direction == Hammer.DIRECTION_DOWN) {
                     if (ev.deltaY < 0) {
-                        ev.direction = Hammer.DIRECTION_UP;
+                        Hammer.gesture.current.startEvent.vertical_dragstart_correction = inst.options.drag_min_distance;
                     } else {
-                        ev.direction = Hammer.DIRECTION_DOWN;
+                        Hammer.gesture.current.startEvent.vertical_dragstart_correction = - inst.options.drag_min_distance;
                     }
+                    // Adjust deltaY that has already been calculated.
+                    // This is done in extendEventData on later events.
+                    ev.deltaY += Hammer.gesture.current.startEvent.vertical_dragstart_correction;
                 } else {
-                    // stay on the horizontal axis
                     if (ev.deltaX < 0) {
-                        ev.direction = Hammer.DIRECTION_LEFT;
+                        Hammer.gesture.current.startEvent.horizontal_dragstart_correction = inst.options.drag_min_distance;
                     } else {
-                        ev.direction = Hammer.DIRECTION_RIGHT;
+                        Hammer.gesture.current.startEvent.horizontal_dragstart_correction = - inst.options.drag_min_distance;
+                    }
+                    ev.deltaX += Hammer.gesture.current.startEvent.horizontal_dragstart_correction;
+                }
+            } else {
+                // Drag has already started. Lock drag to initial axis?
+                if(inst.options.drag_lock_to_axis &&
+                    Hammer.gesture.current.lastEvent.direction !== ev.direction) {
+                    // keep direction on the axis that the drag gesture started on
+                    if(Hammer.gesture.current.lastEvent.direction == Hammer.DIRECTION_UP ||
+                        Hammer.gesture.current.lastEvent.direction == Hammer.DIRECTION_DOWN) {
+                        // disregard newly calculated direction and stay on the vertical axis
+                        if (ev.deltaY < 0) {
+                            ev.direction = Hammer.DIRECTION_UP;
+                        } else {
+                            ev.direction = Hammer.DIRECTION_DOWN;
+                        }
+                    } else {
+                        // stay on the horizontal axis
+                        if (ev.deltaX < 0) {
+                            ev.direction = Hammer.DIRECTION_LEFT;
+                        } else {
+                            ev.direction = Hammer.DIRECTION_RIGHT;
+                        }
                     }
                 }
             }
@@ -1053,14 +1080,13 @@ Hammer.gestures.Transform = {
             var rotation_threshold = Math.abs(ev.rotation);
 
             // when the distance we moved is too small we skip this gesture
-            // or we can be already in dragging
             if(scale_threshold < inst.options.transform_min_scale &&
                 rotation_threshold < inst.options.transform_min_rotation) {
                 return;
             }
 
             Hammer.gesture.current.name = this.name;
-            inst.trigger(this.name, ev); // basic drag event
+            inst.trigger(this.name, ev); // basic transform event
 
             // trigger rotate event
             if(rotation_threshold > inst.options.transform_min_rotation) {

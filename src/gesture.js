@@ -27,6 +27,9 @@ Hammer.gesture = {
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
+		// These variables are used for correcting drag distance, to avoid jumpstarting drags. See drag gesture
+		this.current.startEvent.vertical_dragstart_correction = 0;
+		this.current.startEvent.horizontal_dragstart_correction = 0;
 
         return this.detect(ev);
     },
@@ -108,8 +111,8 @@ Hammer.gesture = {
         }
 
         var delta_time = ev.timestamp - startEv.timestamp,
-            delta_x = ev.center.pageX - startEv.center.pageX,
-            delta_y = ev.center.pageY - startEv.center.pageY,
+            delta_x = ev.center.pageX - startEv.center.pageX + startEv.horizontal_dragstart_correction,
+            delta_y = ev.center.pageY - startEv.center.pageY + startEv.vertical_dragstart_correction,
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
         Hammer.utils.extend(ev, {
