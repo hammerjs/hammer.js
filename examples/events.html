@@ -141,7 +141,7 @@
     <h3>Hitarea</h3>
     <p><strong>Press shift on your desktop for multitouch.</strong></p>
     <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <a href="#">Praesent at erat felis.</a> Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
     </p>
     <p>
     Donec nisi ante, eleifend vitae luctus vel, auctor et nibh. Donec scelerisque urna id massa ultricies in facilisis purus rutrum.
@@ -215,6 +215,10 @@
         'scale','rotation','touches'];
 
     function logEvent(ev) {
+        if(!ev.gesture) {
+            return;
+        }
+
         // add to the large event log at the bottom of the page
         var log = [this.id, ev.type];
         //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
