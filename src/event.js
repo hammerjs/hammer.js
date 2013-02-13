@@ -6,11 +6,12 @@
  */
 var last_move_event = {};
 
+
 /**
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
-var mousedown = false;
+var touchdown = false;
 
 
 Hammer.event = {
@@ -37,11 +38,6 @@ Hammer.event = {
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
         function triggerHandler(ev) {
-            // PointerEvents update
-            if(Hammer.HAS_POINTEREVENTS) {
-                Hammer.PointerEvent.updatePointer(eventType, ev);
-            }
-
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
             if(eventType === Hammer.EVENT_END) {
@@ -54,21 +50,41 @@ Hammer.event = {
             handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
         }
 
-        // touchdevice
-        if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
+        // ontouchstart
+        if(Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
         }
-        // mouse events
+
+        // mouseevents and pointerEvents (win8)
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                // left mouse button must be pressed
-                if(ev.which === 1) {
-                    mousedown = true;
-                    triggerHandler.apply(this, arguments);
+                var HP = Hammer.HAS_POINTEREVENTS;
+
+                // touch must be down or a touch element
+                if(ev.type.match(/down/i) &&
+                    (ev.which === 1 || ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)) {
+                    touchdown = true;
                 }
 
-                if(ev.type == 'mouseup') {
-                    mousedown = false;
+                if(touchdown) {
+                    // update pointer
+                    if(HP && eventType != Hammer.EVENT_END) {
+                        Hammer.PointerEvent.updatePointer(eventType, ev);
+                    }
+
+                    triggerHandler.apply(this, arguments);
+
+                    // remove pointer after the handler is done
+                    if(HP && eventType == Hammer.EVENT_END) {
+                        Hammer.PointerEvent.updatePointer(eventType, ev);
+                    }
+                }
+                else {
+                    Hammer.PointerEvent.reset();
+                }
+
+                if(ev.type.match(/up|cancel/i)) {
+                    touchdown = false;
                 }
             });
         }

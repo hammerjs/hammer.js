@@ -6,11 +6,12 @@ Hammer.PointerEvent = {
      * @return  {Array}     Pointers
      */
     getPointers: function() {
-        var pointers = [];
-        for(var p in this.pointers) {
-            pointers.push(p);
-        }
-        return pointers;
+        var pointers = this.pointers;
+        var touchlist = [];
+        Object.keys(pointers).sort().forEach(function(id) {
+            touchlist.push(pointers[id]);
+        });
+        return touchlist;
     },
 
     /**
@@ -25,5 +26,12 @@ Hammer.PointerEvent = {
         else {
             this.pointers[ev.pointerId] = ev;
         }
+    },
+
+    /**
+     * reset the list
+     */
+    reset: function() {
+        this.pointers = {};
     }
 };
