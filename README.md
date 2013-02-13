@@ -161,9 +161,7 @@ If you've tested hammer.js on a different device, please let us know.
 
 ## Todo
 - Update website in gh-pages
-- More demo's
-- Measure speed difference of V1 with V2
-- Tests
+- Write tests
 
 
 ## Contributing
