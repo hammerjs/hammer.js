@@ -147,6 +147,8 @@ The following gestures are available, you can find options for it in gestures.js
 | Opera                             | X   | X          | X    | X    | X*        |
 | Chrome                            | X   | X          | X    | X    | X*        |
 | Safari                            | X   | X          | X    | X    | X*        |
+|:----------------------------------|:----|:-----------|:-----|:-----|:----------|
+|                                   | Tap | Double Tap | Hold | Drag | Transform |
 
 Android 2 doesn't support multi-touch events, so there's no transform callback on these Android versions.
 Windows Phone 7.5 doesnt support touch and minimal mouse events.
