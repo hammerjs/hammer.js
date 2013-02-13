@@ -232,13 +232,13 @@ Hammer.gestures.Drag = {
                 return;
             }
 
-            if(typeof Hammer.gesture.current.initial_direction == 'undefined') {
-                Hammer.gesture.current.initial_direction = ev.direction;
+            if(typeof Hammer.gesture.current.lastEvent == 'undefined') {
+
             } else if(inst.options.drag_lock_to_axis &&
-                Hammer.gesture.current.initial_direction !== ev.direction) {
+                Hammer.gesture.current.lastEvent.direction !== ev.direction) {
                 // keep direction on the axis that the drag gesture started on
-                if(Hammer.gesture.current.initial_direction == Hammer.DIRECTION_UP ||
-                    Hammer.gesture.current.initial_direction == Hammer.DIRECTION_DOWN) {
+                if(Hammer.gesture.current.lastEvent.direction == Hammer.DIRECTION_UP ||
+                    Hammer.gesture.current.lastEvent.direction == Hammer.DIRECTION_DOWN) {
                     // disregard newly calculated direction and stay on the vertical axis
                     if (ev.deltaY < 0) {
                         ev.direction = Hammer.DIRECTION_UP;
