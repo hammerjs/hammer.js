@@ -17,24 +17,24 @@
         #carousel {
             background: silver;
             overflow: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         #carousel .animate {
-            -webkit-transition: all .2s ease-out;
-            -moz-transition: all .2s ease-out;
-            -o-transition: all .2s ease-out;
-            transition: all .2s ease-out;
+            -webkit-transition: all .2s;
+            -moz-transition: all .2s;
+            -o-transition: all .2s;
+            transition: all .2s;
         }
 
-        #carousel,
         #carousel ul {
-            -webkit-transition: -webkit-transform 0ms;
+            -webkit-transition: all 0ms;
+            transition: all 0ms;
             transform: translate3d(0,0,0) scale3d(1,1,1);
             -o-transform: translate3d(0,0,0) scale3d(1,1,1);
             -ms-transform: translate3d(0,0,0) scale3d(1,1,1);
             -moz-transform: translate3d(0,0,0) scale3d(1,1,1);
             -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
-            -webkit-backface-visibility: hidden;
             overflow: hidden;
         }
 
@@ -47,6 +47,7 @@
         #carousel li {
             float: left;
             overflow: hidden;
+            -webkit-transform-style: preserve-3d;
         }
 
         #carousel li h2 {
@@ -161,7 +162,7 @@
             }, 200);
 
             if(Modernizr.csstransforms3d) {
-                container.css("transform", "translate3d("+ percent +"%,0,0)");
+                container.css("transform", "translate3d("+ percent +"%,0,0) scale3d(1,1,1)");
             }
             else if(Modernizr.csstransforms) {
                 container.css("transform", "translate("+ percent +"%,0)");
