@@ -213,7 +213,8 @@ Hammer.gestures.Drag = {
         // when you are using the drag gesture, it is a good practice to set this true
         drag_block_horizontal   : false,
         drag_block_vertical     : false,
-        // after drag has started, don't allow changing to directions along other axis
+        // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+        // It disallows vertical directions if the initial direction was horizontal, and vice versa.
         drag_lock_to_axis       : false
     },
     handler: function dragGesture(ev, inst) {
