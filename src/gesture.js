@@ -9,6 +9,9 @@ Hammer.gesture = {
     // is a full clone of the previous gesture.current object
     previous: null,
 
+    // when this becomes true, no gestures are fired
+    stopped: false,
+
 
     /**
      * start Hammer.gesture detection
@@ -20,6 +23,8 @@ Hammer.gesture = {
         if(this.current) {
             return;
         }
+
+        this.stopped = false;
 
         this.current = {
             inst        : inst, // reference to HammerInstance we're working for
@@ -37,7 +42,7 @@ Hammer.gesture = {
      * @param   Event           ev
      */
     detect: function detect(ev) {
-        if(!this.current) {
+        if(!this.current || this.stopped) {
             return;
         }
 
@@ -52,7 +57,7 @@ Hammer.gesture = {
             var gesture = this.gestures[g];
 
             // only when the instance options have enabled this gesture
-            if(inst_options[gesture.name] !== false) {
+            if(!this.stopped && inst_options[gesture.name] !== false) {
                 // if a handle returns false
                 // we stop with the detection
                 if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
@@ -63,7 +68,9 @@ Hammer.gesture = {
         }
 
         // store as previous event event
-        this.current.lastEvent = eventData;
+        if(this.current) {
+            this.current.lastEvent = eventData;
+        }
     },
 
 
@@ -89,6 +96,9 @@ Hammer.gesture = {
 
         // reset the current
         this.current = null;
+
+        // stopped!
+        this.stopped = true;
     },
 
 

@@ -164,6 +164,9 @@ Hammer.event = {
             srcEvent    : ev,
             preventDefault: function() {
                 return this.srcEvent.preventDefault();
+            },
+            stop: function() {
+                return Hammer.gesture.stop();
             }
         };
     }
