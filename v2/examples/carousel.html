@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+
+        html, body, #carousel, #carousel ul, #carousel li {
+            min-height: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+
+        #carousel {
+            background: silver;
+            overflow: hidden;
+        }
+
+        #carousel .animate {
+            -webkit-transition: all .2s ease-out;
+            -moz-transition: all .2s ease-out;
+            -o-transition: all .2s ease-out;
+            transition: all .2s ease-out;
+        }
+
+        #carousel,
+        #carousel ul {
+            -webkit-transition: -webkit-transform 0ms;
+            transform: translate3d(0,0,0) scale3d(1,1,1);
+            -o-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -ms-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -moz-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+        }
+
+        #carousel ul {
+            -webkit-box-shadow: 0 0 20px rgba(0,0,0,.2);
+            box-shadow: 0 0 20px rgba(0,0,0,.2);
+            position: relative;
+        }
+
+        #carousel li {
+            float: left;
+            overflow: hidden;
+        }
+
+        #carousel li h2 {
+            color: #fff;
+            font-size: 30px;
+            text-align: center;
+            position: absolute;
+            top: 40%;
+            left: 0;
+            width: 100%;
+            text-shadow: -1px -1px 0 rgba(0,0,0,.2);
+        }
+
+        #carousel li.pane1 { background: #42d692; }
+        #carousel li.pane2 { background: #4986e7; }
+        #carousel li.pane3 { background: #d06b64; }
+        #carousel li.pane4 { background: #cd74e6; }
+        #carousel li.pane5 { background: #9fe1e7; }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="carousel">
+        <ul>
+            <li class="pane1"><h2>Swipe...</h2></li>
+            <li class="pane2"><h2>...or drag...</h2></li>
+            <li class="pane3"><h2>...or swipe...</h2></li>
+            <li class="pane4"><h2>..or drag...</h2></li>
+            <li class="pane5"><h2>Dit is het einde!</h2></li>
+        </ul>
+    </div>
+
+
+    <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="assets/js/modernizr.js"></script>
+
+    <script src="../dist/hammer-latest.js"></script>
+
+    <script>
+
+
+    /**
+    * super simple carousel
+    * animation between panes happens with css transitions
+    */
+    function Carousel(element)
+    {
+        var self = this;
+        element = $(element);
+
+        var container = $(">ul", element);
+        var panes = $(">ul>li", element);
+
+        var pane_width = 0;
+        var pane_count = panes.length;
+
+        var current_pane = 0;
+
+        // our hammer instance
+        this.hammer = Hammer(element[0]);
+
+
+        /**
+         * initial
+         */
+        this.init = function() {
+            this.setPaneDimensions();
+            $(window).on("load resize orientationchange", function() {
+                self.setPaneDimensions();
+            })
+        };
+
+
+        /**
+         * set the pane dimensions and scale the container
+         */
+        this.setPaneDimensions = function() {
+            pane_width = element.width();
+            panes.each(function() {
+                $(this).width(pane_width);
+            });
+            container.width(pane_width*pane_count);
+        };
+
+
+        /**
+         * show pane by index
+         * @param   {Number}    index
+         */
+        this.showPane = function( index ) {
+            // between the bounds
+            index = Math.max(0, Math.min(index, pane_count-1));
+            current_pane = index;
+
+            var offset = -((100/pane_count)*current_pane);
+            this.setContainerOffset(offset, true);
+        };
+
+
+        var timer = null;
+        this.setContainerOffset = function(percent, animate) {
+            if(animate) {
+                clearTimeout(timer);
+                container.addClass("animate");
+            }
+
+            timer = setTimeout(function() {
+                container.removeClass("animate");
+            }, 200);
+
+            if(Modernizr.csstransforms3d) {
+                container.css("transform", "translate3d("+ percent +"%,0,0)");
+            }
+            else if(Modernizr.csstransforms) {
+                container.css("transform", "translate("+ percent +"%,0)");
+            }
+            else {
+                container.style.left = percent+"%";
+            }
+        };
+
+        this.next = function() { return this.showPane(current_pane+1, true); };
+        this.prev = function() { return this.showPane(current_pane-1, true); };
+
+
+        this.hammer.on("release dragleft dragright swipeleft swiperight", function(ev) {
+            switch(ev.type) {
+                case 'dragright':
+                case 'dragleft':
+                    // stick to the finger
+                    var pane_offset = -((100/pane_count)*current_pane);
+                    var drag_offset = (((100/pane_width)*ev.gesture.deltaX) / pane_count);
+
+                    // slow down at the first and last pane
+                    if(current_pane == 0 || current_pane == pane_count-1) {
+                        drag_offset *= .4;
+                    }
+
+                    self.setContainerOffset(drag_offset + pane_offset);
+
+                    // disable browser scrolling
+                    ev.gesture.preventDefault();
+                    break;
+
+                case 'swipeleft':
+                    self.next();
+                    ev.gesture.stop();
+                    break;
+
+                case 'swiperight':
+                    self.prev();
+                    ev.gesture.stop();
+                    break;
+
+                case 'release':
+                    // more then 50% moved, navigate
+                    if(Math.abs(ev.gesture.deltaX) > pane_width/2) {
+                        if(ev.gesture.direction == 'right') {
+                            self.prev();
+                        } else {
+                            self.next();
+                        }
+                    }
+                    else {
+                        self.showPane(current_pane, true);
+                    }
+                    break;
+            }
+        })
+    }
+
+
+    var carousel = new Carousel("#carousel");
+    carousel.init();
+
+
+    </script>
+</body>
+</html>
