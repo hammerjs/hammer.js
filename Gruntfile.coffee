@@ -57,12 +57,13 @@ module.exports = (grunt) ->
 
     # minify the sourcecode
     uglify:
-      options:
-        banner: '<%= meta.banner %>'
       build:
+        options:
+          banner: '<%= meta.banner %>'
         files:
           'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
           'dist/<%= pkg.name %>-latest.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
+          'plugins/jquery.hammer.min.js': ['plugins/jquery.hammer.js']
 
     # watch for changes
     watch:
