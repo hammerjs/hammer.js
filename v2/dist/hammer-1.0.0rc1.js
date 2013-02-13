@@ -13,7 +13,11 @@ var Hammer = function(element, options) {
 
 // default settings
 Hammer.defaults = {
-    stop_browser_behavior: {    // set to false to disable this
+    // add styles and attributes to the element to prevent the browser from doing
+    // its native behavior. this doesnt prevent the scrolling, but cancels
+    // the contextmenu, tap highlighting etc
+    // set to false to disable this
+    stop_browser_behavior: {
         userSelect: 'none', // this also triggers onselectstart=false for IE
         touchCallout: 'none',
         touchAction: 'none',
@@ -22,7 +26,7 @@ Hammer.defaults = {
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
-    // more settings are defined at gestures.js
+    // more settings are defined per gesture at gestures.js
 };
 
 // detect touchevents
@@ -125,6 +129,7 @@ Hammer.Instance.prototype = {
         for(var t=0; t<gestures.length; t++) {
             this.element.addEventListener(gestures[t], handler, false);
         }
+        return this;
     },
 
 
@@ -139,6 +144,7 @@ Hammer.Instance.prototype = {
         for(var t=0; t<gestures.length; t++) {
             this.element.removeEventListener(gestures[t], handler, false);
         }
+        return this;
     },
 
     /**
@@ -195,6 +201,7 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
+
         function triggerHandler(ev) {
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
@@ -216,8 +223,6 @@ Hammer.event = {
         // mouseevents and pointerEvents (win8)
         else {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                var HP = Hammer.HAS_POINTEREVENTS;
-
                 // touch must be down or a touch element
                 if(ev.type.match(/down/i) &&
                     (ev.which === 1 || ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)) {
@@ -226,14 +231,14 @@ Hammer.event = {
 
                 if(touchdown) {
                     // update pointer
-                    if(HP && eventType != Hammer.EVENT_END) {
+                    if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
 
                     triggerHandler.apply(this, arguments);
 
                     // remove pointer after the handler is done
-                    if(HP && eventType == Hammer.EVENT_END) {
+                    if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
                 }
@@ -1014,7 +1019,7 @@ Hammer.gestures.Transform = {
     },
     handler: function transformGesture(ev, inst) {
         // prevent default when two fingers are on the screen
-        if(inst.options.transform_always_block && ev.touches.length == 2) {
+        if(inst.options.transform_always_block) {
             ev.preventDefault();
         }
 
@@ -1041,7 +1046,7 @@ Hammer.gestures.Transform = {
             // trigger pinch event
             if(scale_threshold > inst.options.transform_min_scale) {
                 inst.trigger('pinch', ev);
-                inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);  // direction event, like pinchin
+                inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);
             }
         }
     }
@@ -1056,7 +1061,19 @@ Hammer.gestures.Transform = {
 Hammer.gestures.Touch = {
     name: 'touch',
     index: -Infinity,
+    defaults: {
+        // call preventDefault at touchstart, and makes the element blocking by
+        // disabling the scrolling of the page, but it improves gestures like
+        // transforming and dragging.
+        // be careful with using this, it can be very annoying for users to be stuck
+        // on the page
+        prevent_default: false
+    },
     handler: function touchGesture(ev, inst) {
+        if(inst.options.prevent_default) {
+            ev.preventDefault();
+        }
+
         if(ev.eventType ==  Hammer.EVENT_START) {
             inst.trigger(this.name, ev);
         }
