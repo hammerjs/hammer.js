@@ -74,7 +74,6 @@ module.exports = (grunt) ->
           banner: '<%= meta.banner %>'
         files:
           'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
-          'dist/<%= pkg.name %>-latest.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
           'dist/jquery.<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js']
 
     # watch for changes
@@ -108,6 +107,6 @@ module.exports = (grunt) ->
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['notify_hooks','concat','test','uglify','copy']
+  grunt.registerTask 'build', ['notify_hooks','concat','uglify','copy','test']
   grunt.registerTask 'default', ['notify_hooks','connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
