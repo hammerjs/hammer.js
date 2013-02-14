@@ -69,7 +69,8 @@ The gesture that was triggered is found in ````event.type````. Following propert
 
     timestamp   {Number}        time the event occurred
     target      {HTMLElement}   target element
-    touches     {Array}         touches (fingers, pointers, mouse) on the screen
+    touches     {Array}         touches (fingers, mouse) on the screen
+    pointerType {String}        kind of pointer that was used. matches Hammer.POINTER_MOUSE|TOUCH
     center      {Object}        center position of the touches. contains pageX and pageY
     deltaTime   {Number}        the total time of the touches in the screen
     deltaX      {Number}        the delta on x axis we haved moved

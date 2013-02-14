@@ -34,6 +34,10 @@ Hammer.DIRECTION_LEFT = 'left';
 Hammer.DIRECTION_UP = 'up';
 Hammer.DIRECTION_RIGHT = 'right';
 
+// pointer type
+Hammer.POINTER_MOUSE = 'mouse';
+Hammer.POINTER_TOUCH = 'touch';
+
 // touch event defines
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';

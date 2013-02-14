@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-13
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-14
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -42,6 +42,10 @@ Hammer.DIRECTION_DOWN = 'down';
 Hammer.DIRECTION_LEFT = 'left';
 Hammer.DIRECTION_UP = 'up';
 Hammer.DIRECTION_RIGHT = 'right';
+
+// pointer type
+Hammer.POINTER_MOUSE = 'mouse';
+Hammer.POINTER_TOUCH = 'touch';
 
 // touch event defines
 Hammer.EVENT_START = 'start';
@@ -212,12 +216,15 @@ Hammer.event = {
             else {
                 last_move_event = ev;
             }
+
             handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
         }
 
         // ontouchstart
         if(Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+                triggerHandler.call(this, ev);
+            });
         }
 
         // mouseevents and pointerEvents (win8)
@@ -235,7 +242,7 @@ Hammer.event = {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
 
-                    triggerHandler.apply(this, arguments);
+                    triggerHandler.call(this, ev);
 
                     // remove pointer after the handler is done
                     if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -325,6 +332,7 @@ Hammer.event = {
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,
+            pointerType : (ev.type.match(/mouse/)) ? Hammer.POINTER_MOUSE : Hammer.POINTER_TOUCH,
             srcEvent    : ev,
 
             /**
@@ -785,6 +793,7 @@ Hammer.gestures = Hammer.gestures || {};
  *          timestamp   {Number}        time the event occurred
  *          target      {HTMLElement}   target element
  *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
+ *          pointerType {String}        kind of pointer that was used. matches Hammer.POINTER_MOUSE|TOUCH
  *          center      {Object}        center position of the touches. contains pageX and pageY
  *          deltaTime   {Number}        the total time of the touches in the screen
  *          deltaX      {Number}        the delta on x axis we haved moved

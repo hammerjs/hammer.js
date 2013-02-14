@@ -48,12 +48,15 @@ Hammer.event = {
             else {
                 last_move_event = ev;
             }
+
             handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
         }
 
         // ontouchstart
         if(Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], triggerHandler);
+            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+                triggerHandler.call(this, ev);
+            });
         }
 
         // mouseevents and pointerEvents (win8)
@@ -71,7 +74,7 @@ Hammer.event = {
                         Hammer.PointerEvent.updatePointer(eventType, ev);
                     }
 
-                    triggerHandler.apply(this, arguments);
+                    triggerHandler.call(this, ev);
 
                     // remove pointer after the handler is done
                     if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -161,6 +164,7 @@ Hammer.event = {
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,
+            pointerType : (ev.type.match(/mouse/)) ? Hammer.POINTER_MOUSE : Hammer.POINTER_TOUCH,
             srcEvent    : ev,
 
             /**
