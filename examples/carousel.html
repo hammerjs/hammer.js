@@ -26,26 +26,29 @@
 
         #carousel {
             background: silver;
-            overflow: hidden;
+            ooverflow: hidden;
+            width:100%;
             -webkit-backface-visibility: hidden;
+            -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-transform-style: preserve-3d;
         }
 
-        #carousel .animate {
-            -webkit-transition: all .2s;
-            -moz-transition: all .2s;
-            -o-transition: all .2s;
-            transition: all .2s;
+        #carousel ul.animate {
+            -webkit-transition: all .3s;
+            -moz-transition: all .3s;
+            -o-transition: all .3s;
+            transition: all .3s;
         }
 
         #carousel ul {
-            -webkit-transition: all 0ms;
-            transition: all 0ms;
-            transform: translate3d(0,0,0) scale3d(1,1,1);
-            -o-transform: translate3d(0,0,0) scale3d(1,1,1);
-            -ms-transform: translate3d(0,0,0) scale3d(1,1,1);
-            -moz-transform: translate3d(0,0,0) scale3d(1,1,1);
-            -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+            transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -o-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -ms-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -moz-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -webkit-transform: translate3d(0%,0,0) scale3d(1,1,1);
             overflow: hidden;
+            -webkit-backface-visibility: hidden;
+            -webkit-transform-style: preserve-3d;
         }
 
         #carousel ul {
@@ -156,9 +159,6 @@
 
         var current_pane = 0;
 
-        var _anim;
-        var _offset;
-
 
         /**
          * initial
@@ -168,7 +168,7 @@
 
             $(window).on("load resize orientationchange", function() {
                 setPaneDimensions();
-                updateOffset();
+                //updateOffset();
             })
         };
 
@@ -190,9 +190,6 @@
          * @param   {Number}    index
          */
         this.showPane = function( index ) {
-            cancelAnimationFrame(_anim);
-            _anim = null;
-
             // between the bounds
             index = Math.max(0, Math.min(index, pane_count-1));
             current_pane = index;
@@ -202,16 +199,12 @@
         };
 
 
-        var timer = null;
         function setContainerOffset(percent, animate) {
+            container.removeClass("animate");
+
             if(animate) {
-                clearTimeout(timer);
                 container.addClass("animate");
             }
-
-            timer = setTimeout(function() {
-                container.removeClass("animate");
-            }, 200);
 
             if(Modernizr.csstransforms3d) {
                 container.css("transform", "translate3d("+ percent +"%,0,0) scale3d(1,1,1)");
@@ -229,40 +222,25 @@
         this.prev = function() { return this.showPane(current_pane-1, true); };
 
 
-        /**
-         * update the height of the slidedown message
-         */
-        function updateOffset() {
-            setContainerOffset(_offset);
-            _anim = requestAnimationFrame(function() {
-                updateOffset();
-            });
-        }
-
-
 
         function handleHammer(ev) {
+            // disable browser scrolling
+            ev.gesture.preventDefault();
+
             switch(ev.type) {
                 case 'dragright':
                 case 'dragleft':
                     // stick to the finger
-                    var pane_offset = -((100/pane_count)*current_pane);
-                    var drag_offset = (((100/pane_width)*ev.gesture.deltaX) / pane_count);
+                    var pane_offset = -(100/pane_count)*current_pane;
+                    var drag_offset = ((100/pane_width)*ev.gesture.deltaX) / pane_count;
 
                     // slow down at the first and last pane
-                    if(current_pane == 0 || current_pane == pane_count-1) {
+                    if((current_pane == 0 && ev.gesture.direction == Hammer.DIRECTION_RIGHT) ||
+                        (current_pane == pane_count-1 && ev.gesture.direction == Hammer.DIRECTION_LEFT)) {
                         drag_offset *= .4;
                     }
 
-                    _offset = drag_offset + pane_offset;
-
-                    // no requestAnimationFrame instance is running, start one
-                    if(!_anim) {
-                        updateOffset();
-                    }
-
-                    // disable browser scrolling
-                    ev.gesture.preventDefault();
+                    setContainerOffset(drag_offset + pane_offset);
                     break;
 
                 case 'swipeleft':
@@ -291,7 +269,8 @@
             }
         }
 
-        element.hammer().on("release dragleft dragright swipeleft swiperight", handleHammer);
+        element.hammer({ drag_lock_to_axis: true })
+            .on("release dragleft dragright swipeleft swiperight", handleHammer);
     }
 
 

@@ -64,6 +64,7 @@ Hammer.Instance.prototype = {
         return this;
     },
 
+
     /**
      * trigger gesture event
      * @param   string      gesture
