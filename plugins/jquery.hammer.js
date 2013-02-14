@@ -22,13 +22,18 @@
             }
 
             // IE button fix
-            if(data.button === 1) {
+            if(data.button) {
                 data.which = data.button;
             }
 
             // IE preventDefault
             if(!data.preventDefault) {
                 data.preventDefault = ev.preventDefault;
+            }
+
+            // IE stopPropagation
+            if(!data.stopPropagation) {
+                data.stopPropagation = ev.stopPropagation;
             }
 
             handler.call(this, data);

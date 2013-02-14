@@ -345,10 +345,16 @@ Hammer.event = {
             /**
              * prevent the browser default actions
              * mostly used to disable scrolling of the browser
-             * @return {*}
              */
             preventDefault: function() {
-                return this.srcEvent.preventDefault();
+                this.srcEvent.preventDefault();
+            },
+
+            /**
+             * stop bubbling the event up to its parents
+             */
+            stopPropagation: function() {
+                this.srcEvent.stopPropagation();
             },
 
             /**
@@ -1263,13 +1269,18 @@ if (typeof window.define === 'function' && window.define.amd) {
             }
 
             // IE button fix
-            if(data.button === 1) {
+            if(data.button) {
                 data.which = data.button;
             }
 
             // IE preventDefault
             if(!data.preventDefault) {
                 data.preventDefault = ev.preventDefault;
+            }
+
+            // IE stopPropagation
+            if(!data.stopPropagation) {
+                data.stopPropagation = ev.stopPropagation;
             }
 
             handler.call(this, data);

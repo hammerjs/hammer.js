@@ -176,10 +176,16 @@ Hammer.event = {
             /**
              * prevent the browser default actions
              * mostly used to disable scrolling of the browser
-             * @return {*}
              */
             preventDefault: function() {
-                return this.srcEvent.preventDefault();
+                this.srcEvent.preventDefault();
+            },
+
+            /**
+             * stop bubbling the event up to its parents
+             */
+            stopPropagation: function() {
+                this.srcEvent.stopPropagation();
             },
 
             /**
