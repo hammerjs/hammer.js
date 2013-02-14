@@ -238,11 +238,10 @@ Hammer.gestures.Drag = {
             var last_direction = Hammer.gesture.current.lastEvent.direction;
             if(inst.options.drag_lock_to_axis && last_direction !== ev.direction) {
                 // keep direction on the axis that the drag gesture started on
-                if(last_direction == Hammer.DIRECTION_UP || last_direction == Hammer.DIRECTION_DOWN) {
-                    // disregard newly calculated direction and stay on the vertical axis
+                if(Hammer.utils.isVertical(last_direction)) {
                     ev.direction = (ev.deltaY < 0) ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
-                } else {
-                    // stay on the horizontal axis
+                }
+                else {
                     ev.direction = (ev.deltaX < 0) ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
                 }
             }
@@ -252,12 +251,8 @@ Hammer.gestures.Drag = {
             inst.trigger(this.name + ev.direction, ev);  // direction event, like dragdown
 
             // block the browser events
-            if( (inst.options.drag_block_vertical && (
-                    ev.direction == Hammer.DIRECTION_UP ||
-                    ev.direction == Hammer.DIRECTION_DOWN)) ||
-                (inst.options.drag_block_horizontal && (
-                    ev.direction == Hammer.DIRECTION_LEFT ||
-                    ev.direction == Hammer.DIRECTION_RIGHT))) {
+            if( (inst.options.drag_block_vertical && Hammer.utils.isVertical(ev.direction)) ||
+                (inst.options.drag_block_horizontal && !Hammer.utils.isVertical(ev.direction))) {
                 ev.preventDefault();
             }
         }

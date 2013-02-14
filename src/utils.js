@@ -135,6 +135,17 @@ Hammer.utils = {
 
 
     /**
+     * boolean if the direction is vertical
+     * @param   Constant    direction
+     * @return  {Boolean}   is_vertical
+     */
+    isVertical: function isVertical(direction) {
+        return (direction == Hammer.DIRECTION_UP ||
+            direction == Hammer.DIRECTION_DOWN);
+    },
+
+
+    /**
      * stop browser default behavior with css props
      * @param   Hammer.Instance inst
      * @return {*}
