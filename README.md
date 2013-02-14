@@ -1,11 +1,6 @@
 #[New Hammer.js is coming soon, check it out!](https://github.com/EightMedia/hammer.js/tree/v2)
 ---
 # Hammer.js
-
-[![logo](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)]
-(https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3E9CEAWH66M6J&lc=GB&item_name=Hammer%2ejs&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
-
-
 ## A javascript library for multi-touch gestures
 
 > I told you, homeboy /
