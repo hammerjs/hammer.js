@@ -14,6 +14,16 @@
             position: relative;
         }
 
+        #debug {
+            position: fixed;
+            background: #fff;
+            padding: 5px;
+            color: #000;
+            top: 0;
+            left: 0;
+            z-index: 1337;
+        }
+
         #carousel {
             background: silver;
             overflow: hidden;
@@ -73,6 +83,8 @@
 
 <body>
 
+    <!--<div id="debug">Log</div>-->
+
     <div id="carousel">
         <ul>
             <li class="pane1"><h2>Swipe...</h2></li>
@@ -91,6 +103,11 @@
     <script src="../dist/jquery.hammer-latest.js"></script>
 
     <script>
+
+    var debug_el = $("#debug");
+    function debug(text) {
+        debug_el.text(text);
+    }
 
 
     /**
@@ -196,7 +213,6 @@
                 container.removeClass("animate");
             }, 200);
 
-
             if(Modernizr.csstransforms3d) {
                 container.css("transform", "translate3d("+ percent +"%,0,0) scale3d(1,1,1)");
             }
@@ -246,7 +262,7 @@
                     }
 
                     // disable browser scrolling
-                    ev.preventDefault();
+                    ev.gesture.preventDefault();
                     break;
 
                 case 'swipeleft':
