@@ -159,7 +159,7 @@ Windows Phone 7.5 doesnt support touch and minimal mouse events.
 Not all gestures are supported on every device. This matrix shows the support we have tested. This is of course far from extensive.
 If you've tested hammer.js on a different device, please let us know.
 
-* Multitouch gestures are available with the hammer.fakemultitouch.js plugin.
+*Multitouch gestures are available with the hammer.fakemultitouch.js plugin.
 
 
 ## Todo
