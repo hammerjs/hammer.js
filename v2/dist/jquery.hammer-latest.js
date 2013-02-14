@@ -151,6 +151,7 @@ Hammer.Instance.prototype = {
         return this;
     },
 
+
     /**
      * trigger gesture event
      * @param   string      gesture
@@ -537,6 +538,17 @@ Hammer.utils = {
 
 
     /**
+     * boolean if the direction is vertical
+     * @param   Constant    direction
+     * @return  {Boolean}   is_vertical
+     */
+    isVertical: function isVertical(direction) {
+        return (direction == Hammer.DIRECTION_UP ||
+            direction == Hammer.DIRECTION_DOWN);
+    },
+
+
+    /**
      * stop browser default behavior with css props
      * @param   Hammer.Instance inst
      * @return {*}
@@ -589,11 +601,11 @@ Hammer.gesture = {
 
     /**
      * start Hammer.gesture detection
-     * @param   HammerInstane   inst
+     * @param   HammerInstance  inst
      * @param   Event           ev
      */
     startDetect: function startDetect(inst, ev) {
-        // already busy with an Hammer.gesture detection on a element
+        // already busy with a Hammer.gesture detection on an element
         if(this.current) {
             return;
         }
@@ -626,14 +638,13 @@ Hammer.gesture = {
         // instance options
         var inst_options = this.current.inst.options;
 
-        // call Hammer.gesture handles
+        // call Hammer.gesture handlers
         for(var g=0,len=this.gestures.length; g<len; g++) {
             var gesture = this.gestures[g];
 
             // only when the instance options have enabled this gesture
             if(!this.stopped && inst_options[gesture.name] !== false) {
-                // if a handle returns false
-                // we stop with the detection
+                // if a handler returns false, we stop with the detection
                 if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
                     this.stop();
                     break;
@@ -734,7 +745,7 @@ Hammer.gesture = {
         // extend Hammer default options with the Hammer.gesture options
         Hammer.utils.extend(Hammer.defaults, options);
 
-        // set it's index
+        // set its index
         gesture.index = gesture.index || 1000;
 
         // add Hammer.gesture to the list
@@ -953,66 +964,13 @@ Hammer.gestures.Tap = {
 
 
 /**
- * Drag
- * Move with x fingers (default 1) around on the page. Blocking the scrolling when
- * moving left and right is a good practice. When all the drag events are blocking
- * you disable scrolling on that area.
- * @events  drag, drapleft, dragright, dragup, dragdown
- */
-Hammer.gestures.Drag = {
-    name: 'drag',
-    index: 50,
-    defaults: {
-        drag_min_distance : 10,
-        // set 0 for unlimited, but this can conflict with transform
-        drag_max_touches  : 1,
-        // prevent default browser behavior when dragging occurs
-        // be careful with it, it makes the element a blocking element
-        // when you are using the drag gesture, it is a good practice to set this true
-        drag_block_horizontal   : false,
-        drag_block_vertical     : false
-    },
-    handler: function dragGesture(ev, inst) {
-        // max touches
-        if(inst.options.drag_max_touches > 0 &&
-            ev.touches.length > inst.options.drag_max_touches) {
-            return;
-        }
-
-        if(ev.eventType == Hammer.EVENT_MOVE){
-            // when the distance we moved is too small we skip this gesture
-            // or we can be already in dragging
-            if(ev.distance < inst.options.drag_min_distance &&
-                Hammer.gesture.current.name != this.name) {
-                return;
-            }
-
-            Hammer.gesture.current.name = this.name;
-            inst.trigger(this.name, ev); // basic drag event
-            inst.trigger(this.name + ev.direction, ev);  // direction event, like dragdown
-
-            // block the browser events
-            if( (inst.options.drag_block_vertical && (
-                    ev.direction == Hammer.DIRECTION_UP ||
-                    ev.direction == Hammer.DIRECTION_DOWN)) ||
-                (inst.options.drag_block_horizontal && (
-                    ev.direction == Hammer.DIRECTION_LEFT ||
-                    ev.direction == Hammer.DIRECTION_RIGHT))) {
-                ev.preventDefault();
-            }
-        }
-    }
-};
-
-
-/**
  * Swipe
  * triggers swipe events when the end velocity is above the threshold
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
 Hammer.gestures.Swipe = {
     name: 'swipe',
-    index: 51,
+    index: 40,
     defaults: {
         // set 0 for unlimited, but this can conflict with transform
         swipe_max_touches  : 1,
@@ -1040,6 +998,105 @@ Hammer.gestures.Swipe = {
 
 
 /**
+ * Drag
+ * Move with x fingers (default 1) around on the page. Blocking the scrolling when
+ * moving left and right is a good practice. When all the drag events are blocking
+ * you disable scrolling on that area.
+ * @events  drag, drapleft, dragright, dragup, dragdown
+ */
+Hammer.gestures.Drag = {
+    name: 'drag',
+    index: 50,
+    defaults: {
+        drag_min_distance : 10,
+        // set 0 for unlimited, but this can conflict with transform
+        drag_max_touches  : 1,
+        // prevent default browser behavior when dragging occurs
+        // be careful with it, it makes the element a blocking element
+        // when you are using the drag gesture, it is a good practice to set this true
+        drag_block_horizontal   : false,
+        drag_block_vertical     : false,
+        // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+        // It disallows vertical directions if the initial direction was horizontal, and vice versa.
+        drag_lock_to_axis       : false
+    },
+    triggered: false,
+    handler: function dragGesture(ev, inst) {
+        // current gesture isnt drag, but dragged is true
+        // this means an other gesture is busy. now call dragend
+        if(Hammer.gesture.current.name != this.name && this.triggered) {
+            inst.trigger(this.name +'end', ev);
+            this.triggered = false;
+            return;
+        }
+
+        // max touches
+        if(inst.options.drag_max_touches > 0 &&
+            ev.touches.length > inst.options.drag_max_touches) {
+            return;
+        }
+
+        switch(ev.eventType) {
+            case Hammer.EVENT_START:
+                this.triggered = false;
+                break;
+
+            case Hammer.EVENT_MOVE:
+                // when the distance we moved is too small we skip this gesture
+                // or we can be already in dragging
+                if(ev.distance < inst.options.drag_min_distance &&
+                    Hammer.gesture.current.name != this.name) {
+                    return;
+                }
+
+                // we are dragging!
+                Hammer.gesture.current.name = this.name;
+
+                // lock drag to axis?
+                var last_direction = Hammer.gesture.current.lastEvent.direction;
+                if(inst.options.drag_lock_to_axis && last_direction !== ev.direction) {
+                    // keep direction on the axis that the drag gesture started on
+                    if(Hammer.utils.isVertical(last_direction)) {
+                        ev.direction = (ev.deltaY < 0) ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
+                    }
+                    else {
+                        ev.direction = (ev.deltaX < 0) ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
+                    }
+                }
+
+                // first time, trigger dragstart event
+                if(!this.triggered) {
+                    inst.trigger(this.name +'start', ev);
+                    this.triggered = true;
+                }
+
+                // trigger normal event
+                inst.trigger(this.name, ev);
+
+                // direction event, like dragdown
+                inst.trigger(this.name + ev.direction, ev);
+
+                // block the browser events
+                if( (inst.options.drag_block_vertical && Hammer.utils.isVertical(ev.direction)) ||
+                    (inst.options.drag_block_horizontal && !Hammer.utils.isVertical(ev.direction))) {
+                    ev.preventDefault();
+                }
+                break;
+
+            case Hammer.EVENT_END:
+                // trigger dragend
+                if(this.triggered) {
+                    inst.trigger(this.name +'end', ev);
+                }
+
+                this.triggered = false;
+                break;
+        }
+    }
+};
+
+
+/**
  * Transform
  * User want to scale or rotate with 2 fingers
  * @events  transform, pinch, pinchin, pinchout, rotate
@@ -1057,37 +1114,73 @@ Hammer.gestures.Transform = {
         // when you are using the transform gesture, it is a good practice to set this true
         transform_always_block  : false
     },
+    triggered: false,
     handler: function transformGesture(ev, inst) {
+        // current gesture isnt drag, but dragged is true
+        // this means an other gesture is busy. now call dragend
+        if(Hammer.gesture.current.name != this.name && this.triggered) {
+            inst.trigger(this.name +'end', ev);
+            this.triggered = false;
+            return;
+        }
+
+        // atleast multitouch
+        if(ev.touches.length < 2) {
+            return;
+        }
+
         // prevent default when two fingers are on the screen
         if(inst.options.transform_always_block) {
             ev.preventDefault();
         }
 
-        // at least multitouch
-        if(ev.eventType == Hammer.EVENT_MOVE && ev.touches.length == 2) {
-            var scale_threshold = Math.abs(1-ev.scale);
-            var rotation_threshold = Math.abs(ev.rotation);
+        switch(ev.eventType) {
+            case Hammer.EVENT_START:
+                this.triggered = false;
+                break;
 
-            // when the distance we moved is too small we skip this gesture
-            // or we can be already in dragging
-            if(scale_threshold < inst.options.transform_min_scale &&
-                rotation_threshold < inst.options.transform_min_rotation) {
-                return;
-            }
+            case Hammer.EVENT_MOVE:
+                var scale_threshold = Math.abs(1-ev.scale);
+                var rotation_threshold = Math.abs(ev.rotation);
 
-            Hammer.gesture.current.name = this.name;
-            inst.trigger(this.name, ev); // basic drag event
+                // when the distance we moved is too small we skip this gesture
+                // or we can be already in dragging
+                if(scale_threshold < inst.options.transform_min_scale &&
+                    rotation_threshold < inst.options.transform_min_rotation) {
+                    return;
+                }
 
-            // trigger rotate event
-            if(rotation_threshold > inst.options.transform_min_rotation) {
-                inst.trigger('rotate', ev);
-            }
+                // we are transforming!
+                Hammer.gesture.current.name = this.name;
 
-            // trigger pinch event
-            if(scale_threshold > inst.options.transform_min_scale) {
-                inst.trigger('pinch', ev);
-                inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);
-            }
+                // first time, trigger dragstart event
+                if(!this.triggered) {
+                    inst.trigger(this.name +'start', ev);
+                    this.triggered = true;
+                }
+
+                inst.trigger(this.name, ev); // basic transform event
+
+                // trigger rotate event
+                if(rotation_threshold > inst.options.transform_min_rotation) {
+                    inst.trigger('rotate', ev);
+                }
+
+                // trigger pinch event
+                if(scale_threshold > inst.options.transform_min_scale) {
+                    inst.trigger('pinch', ev);
+                    inst.trigger('pinch'+ ((ev.scale < 1) ? 'in' : 'out'), ev);
+                }
+                break;
+
+            case Hammer.EVENT_END:
+                // trigger dragend
+                if(this.triggered) {
+                    inst.trigger(this.name +'end', ev);
+                }
+
+                this.triggered = false;
+                break;
         }
     }
 };
@@ -1172,6 +1265,11 @@ if (typeof window.define === 'function' && window.define.amd) {
             // IE button fix
             if(data.button === 1) {
                 data.which = data.button;
+            }
+
+            // IE preventDefault
+            if(!data.preventDefault) {
+                data.preventDefault = ev.preventDefault;
             }
 
             handler.call(this, data);

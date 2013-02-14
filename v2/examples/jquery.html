@@ -103,10 +103,9 @@
     // on dynamic items
     $("#add-list-item").on("tap", function(ev) {
         $("#items").append("<li>Dynamic added listitem");
-        ev.preventDefault();
+        ev.gesture.preventDefault();
         ev.stopPropagation();
     });
-
 
 </script>
 
