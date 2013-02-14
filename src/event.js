@@ -158,13 +158,19 @@ Hammer.event = {
     collectEventData: function collectEventData(element, eventType, ev) {
         var touches = this.getTouchList(ev, eventType);
 
+        var pointerType = Hammer.POINTER_TOUCH;
+        if(ev.type.match(/mouse/) ||
+            (ev.poinerType && ev.pointerType == ev.MSPOINTER_TYPE_MOUSE)) {
+            pointerType = Hammer.POINTER_MOUSE;
+        }
+
         return {
             center      : Hammer.utils.getCenter(touches),
             timestamp   : ev.timestamp || new Date().getTime(), // for IE
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,
-            pointerType : (ev.type.match(/mouse/)) ? Hammer.POINTER_MOUSE : Hammer.POINTER_TOUCH,
+            pointerType : pointerType,
             srcEvent    : ev,
 
             /**
