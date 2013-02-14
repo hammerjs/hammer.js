@@ -28,6 +28,7 @@
     article {
         max-width: 660px;
         margin: 0 auto;
+        position: relative;
     }
     h1, h2 {
         margin: 0;
@@ -156,6 +157,29 @@
             left: 120px;
             background: url('img/balloon.png') no-repeat top left;
         }
+
+
+
+    .v2 {
+        background: #fff;
+        padding: 8px 10px;
+        color: #000;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: 130px;
+        -webkit-transform: rotate(5deg);
+        -moz-transform: rotate(5deg);
+        -o-transform: rotate(5deg);
+        transform: rotate(5deg);
+        text-decoration: none;
+        font-weight: bold;
+        -webkit-box-shadow: 0 0 4px rgba(0,0,0,.6);
+        box-shadow: 0 0 4px rgba(0,0,0,.6);
+        text-align: center;
+    }
+
+
     </style>
 </head>
 <body>
@@ -164,7 +188,9 @@
         <h1>Hammer.js</h1>
         <h2>A javascript library for multi-touch gestures</h2>
     </hgroup>
-    
+
+    <a href="v2/" class="v2">v2 is coming!<br>Check it out</a>
+
     <section>
         <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
         <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb (minified)</a>
