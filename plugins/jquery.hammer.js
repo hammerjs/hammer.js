@@ -26,6 +26,11 @@
                 data.which = data.button;
             }
 
+            // IE preventDefault
+            if(!data.preventDefault) {
+                data.preventDefault = ev.preventDefault;
+            }
+
             handler.call(this, data);
         });
     };
