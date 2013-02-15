@@ -94,9 +94,9 @@ The following gestures are available, you can find options for it in gestures.js
 - hold
 - tap
 - doubletap
-- drag, dragup, dragdown, dragleft, dragright
+- drag, dragstart, dragend, dragup, dragdown, dragleft, dragright
 - swipe, swipeup, swipedown, swipeleft, swiperight
-- transform
+- transform, transformstart, transformend
 - rotate
 - pinch, pinchin, pinchout
 - touch (gesture detection starts)
@@ -131,7 +131,10 @@ The following gestures are available, you can find options for it in gestures.js
 | Opera Mini                        | X   |            |      |       |      |           |
 |                                                                                        |
 | **Windows 8**                                                                          |
-| Internet Explorer 10              | X   | X          | X    | X     | X    | Unkown    |
+| Internet Explorer 10              | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
+| **Windows Phone 8**                                                                    |
+| Internet Explorer 10              | X   | X          | X    | X     | X    | X         |
 |                                                                                        |
 | **Windows Phone 7.5**                                                                  |
 | Internet Explorer                 | X   |            |      |       |      |           |
@@ -168,7 +171,9 @@ If you've tested hammer.js on a different device, please let us know.
 
 
 ## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using grunt.
+In lieu of a formal styleguide, take care to maintain the existing coding style.
+Add unit tests for any new or changed functionality. Lint and test your code using grunt.
+Please don't commit the dist versions with your changes, only the changed source files.
 
 
 ## Further notes
