@@ -6,7 +6,7 @@
      */
     Hammer.plugins.showTouches = function() {
         // the circles under your fingers
-        var template = '<div style="position:absolute;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
+        var template = '<div style="position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
             'background:rgba(255,255,255,.7);border-radius:20px;pointer-events:none;' +
             'margin-top:-9px;margin-left:-9px;"></div>';
 
