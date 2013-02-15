@@ -64,6 +64,53 @@ Event delegation is also possible when you use the jQuery plugin.
     });
 ````
 
+### Gesture events
+The following gestures are available, you can find options for it in gestures.js
+
+- hold
+- tap
+- doubletap
+- drag, dragstart, dragend, dragup, dragdown, dragleft, dragright
+- swipe, swipeup, swipedown, swipeleft, swiperight
+- transform, transformstart, transformend
+- rotate
+- pinch, pinchin, pinchout
+- touch (gesture detection starts)
+- release (gesture detection ends)
+
+
+### Gesture options
+The following gestures are available, you can find options for it in gestures.js
+
+    doubletap_distance: 20
+    doubletap_interval: 300
+    drag: true
+    drag_block_horizontal: false
+    drag_block_vertical: false
+    drag_lock_to_axis: false
+    drag_max_touches: 1
+    drag_min_distance: 10
+    hold: true
+    hold_threshold: 3
+    hold_timeout: 500
+    prevent_default: true
+    release: true
+    show_touches: true
+    stop_browser_behavior: Object
+    swipe: true
+    swipe_max_touches: 1
+    swipe_velocity: 0.7
+    tap: true
+    tap_max_distance: 10
+    tap_max_touchtime: 250
+    touch: true
+    transform: true
+    transform_always_block: false
+    transform_min_rotation: 1
+    transform_min_scale: 0.01
+
+
+### Event data
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some than for others.
 The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
@@ -88,19 +135,9 @@ The gesture that was triggered is found in ````event.type````. Following propert
                                 but from the first touch. this is used to calculate
                                 distances, deltaTime, scaling etc
 
+### Custom gestures
 You can write your own gestures, you can find examples and documentation about this in gestures.js.
-The following gestures are available, you can find options for it in gestures.js
 
-- hold
-- tap
-- doubletap
-- drag, dragstart, dragend, dragup, dragdown, dragleft, dragright
-- swipe, swipeup, swipedown, swipeleft, swiperight
-- transform, transformstart, transformend
-- rotate
-- pinch, pinchin, pinchout
-- touch (gesture detection starts)
-- release (gesture detection ends)
 
 
 ## Compatibility
