@@ -64,7 +64,7 @@ Event delegation is also possible when you use the jQuery plugin.
     });
 ````
 
-### Gesture events
+### Gesture Events
 The following gestures are available, you can find options for it in gestures.js
 
 - hold
@@ -79,7 +79,7 @@ The following gestures are available, you can find options for it in gestures.js
 - release (gesture detection ends)
 
 
-### Gesture options
+### Gesture Options
 The following gestures are available, you can find options for it in gestures.js
 
     doubletap_distance: 20
@@ -110,7 +110,7 @@ The following gestures are available, you can find options for it in gestures.js
     transform_min_scale: 0.01
 
 
-### Event data
+### Event Data
 The ````event```` argument in the callback contains the same properties for each gesture, making more sense for some than for others.
 The gesture that was triggered is found in ````event.type````. Following properties are available in ````event.gesture````
 
@@ -134,10 +134,6 @@ The gesture that was triggered is found in ````event.type````. Following propert
     startEvent  {Object}        contains the same properties as above,
                                 but from the first touch. this is used to calculate
                                 distances, deltaTime, scaling etc
-
-### Custom gestures
-You can write your own gestures, you can find examples and documentation about this in gestures.js.
-
 
 
 ## Compatibility
@@ -200,6 +196,84 @@ Not all gestures are supported on every device. This matrix shows the support we
 If you've tested hammer.js on a different device, please let us know.
 
 *Multitouch gestures are available with the hammer.fakemultitouch.js plugin.
+
+## Custom Gestures##
+####Gesture object####
+The object structure of a gesture:
+
+````js
+{ 
+  name: 'mygesture',
+  index: 1337,
+  defaults: {
+     mygesture_option: true
+  }
+  handler: function(type, ev, inst) {
+     // trigger gesture event
+     inst.trigger(this.name, ev);
+  }
+}
+````
+
+###### `{String} name`
+this should be the name of the gesture, lowercase
+it is also being used to disable/enable the gesture per instance config.
+
+###### `{Number} [index=1000]`
+the index of the gesture, where it is going to be in the stack of gestures detection
+like when you build an gesture that depends on the drag gesture, it is a good
+idea to place it after the index of the drag gesture.
+
+###### `{Object} [defaults={}]`
+the default settings of the gesture. these are added to the instance settings,
+and can be overruled per instance. you can also add the name of the gesture,
+but this is also added by default (and set to true).
+
+###### `{Function} handler`
+this handles the gesture detection of your custom gesture and receives the
+following arguments:
+
+###### `{Object} eventData`
+As described above, its the same data as the gesture events
+
+###### `{Hammer.Instance} inst`
+the instance we are doing the detection for. you can get the options from
+the inst.options object and trigger the gesture event by calling inst.trigger
+
+
+####Handle gestures####
+inside the handler you can get/set Hammer.gesture.current. This is the current
+detection session. It has the following properties
+
+###### `{String} name`
+contains the name of the gesture we have detected. it has not a real function,
+only to check in other gestures if something is detected.
+like in the drag gesture we set it to 'drag' and in the swipe gesture we can
+check if the current gesture is 'drag' by accessing Hammer.gesture.current.name
+
+###### `@readonly {Hammer.Instance} inst`
+the instance we do the detection for
+
+###### `@readonly {Object} startEvent`
+contains the properties of the first gesture detection in this session.
+Used for calculations about timing, distance, etc.
+
+###### `@readonly {Object} lastEvent`
+contains all the properties of the last gesture detect in this session.
+
+after the gesture detection session has been completed (user has released the screen) the 
+Hammer.gesture.current object is copied into Hammer.gesture.previous, this is usefull for gestures 
+like doubletap, where you need to know if the previous gesture was a tap
+
+options that have been set by the instance can be received by calling inst.options
+
+You can trigger a gesture event by calling `inst.trigger("mygesture", event)`. The first param is the name of 
+your gesture, the second the event argument
+
+####Register gestures####
+When an gesture is added to the `Hammer.gestures` object, it is auto registered at the setup of the first 
+Hammer instance. You can also call `Hammer.gesture.register` manually and pass your gesture object as a param
+
 
 
 ## Todo
