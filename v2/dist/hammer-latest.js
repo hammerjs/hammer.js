@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-14
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-15
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -345,10 +345,16 @@ Hammer.event = {
             /**
              * prevent the browser default actions
              * mostly used to disable scrolling of the browser
-             * @return {*}
              */
             preventDefault: function() {
-                return this.srcEvent.preventDefault();
+                this.srcEvent.preventDefault();
+            },
+
+            /**
+             * stop bubbling the event up to its parents
+             */
+            stopPropagation: function() {
+                this.srcEvent.stopPropagation();
             },
 
             /**
@@ -415,12 +421,10 @@ Hammer.utils = {
     extend: function extend(dest, src, depth) {
         depth = depth || 0;
         for (var key in src) {
-            if(src.hasOwnProperty(key)) {
-                if(depth && typeof(src[key]) == 'object') {
-                    dest[key] = this.extend({}, src[key], depth-1);
-                } else {
-                    dest[key] = src[key];
-                }
+            if(depth && typeof(src[key]) == 'object') {
+                dest[key] = this.extend({}, src[key], depth-1);
+            } else {
+                dest[key] = src[key];
             }
         }
 
@@ -700,7 +704,10 @@ Hammer.gesture = {
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
-            startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
+            startEv.touches = [];
+            for(var i=0,len=ev.touches.length; i<len; i++) {
+                startEv.touches.push(Hammer.utils.extend({}, ev.touches[i]));
+            }
         }
 
         var delta_time = ev.timestamp - startEv.timestamp,
