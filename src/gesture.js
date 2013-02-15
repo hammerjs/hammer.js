@@ -114,7 +114,10 @@ Hammer.gesture = {
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
         if(startEv && ev.touches.length != startEv.touches.length) {
             // extend 1 level deep to get the touchlist with the touch objects
-            startEv.touches = Hammer.utils.extend({}, ev.touches, 1);
+            startEv.touches = [];
+            for(var i=0,len=ev.touches.length; i<len; i++) {
+                startEv.touches.push(Hammer.utils.extend({}, ev.touches[i]));
+            }
         }
 
         var delta_time = ev.timestamp - startEv.timestamp,

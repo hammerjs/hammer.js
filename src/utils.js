@@ -12,12 +12,10 @@ Hammer.utils = {
     extend: function extend(dest, src, depth) {
         depth = depth || 0;
         for (var key in src) {
-            if(src.hasOwnProperty(key)) {
-                if(depth && typeof(src[key]) == 'object') {
-                    dest[key] = this.extend({}, src[key], depth-1);
-                } else {
-                    dest[key] = src[key];
-                }
+            if(depth && typeof(src[key]) == 'object') {
+                dest[key] = this.extend({}, src[key], depth-1);
+            } else {
+                dest[key] = src[key];
             }
         }
 
