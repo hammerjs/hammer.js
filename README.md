@@ -7,9 +7,6 @@
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
 
-[![logo](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)]
-(https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3E9CEAWH66M6J&lc=GB&item_name=Hammer%2ejs&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
-
 ## Demo
 [Watch the demo's](http://eightmedia.github.com/hammer.js/v2/). 
 It always needs some testing with all kind of devices, please contribute!
