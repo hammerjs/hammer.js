@@ -4,7 +4,7 @@
  * see the onTouch event for an explanation
  * @type {Object}
  */
-var last_move_event = {};
+var last_move_event = null;
 
 
 /**
@@ -42,7 +42,9 @@ Hammer.event = {
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
             if(eventType === Hammer.EVENT_END) {
-                ev = last_move_event;
+                if (last_move_event !== null) {
+                    ev = last_move_event;
+                }
             }
             // store the last move event
             else {
