@@ -112,7 +112,9 @@ Hammer.gesture = {
         // if the touches change, set the new touches over the startEvent touches
         // this because touchevents don't have all the touches on touchstart, or the
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
-        if(startEv && ev.touches.length != startEv.touches.length) {
+        if(startEv && ev.touches.length != startEv.touches.length ||
+            // on the ipad it can happen that both fingers are touching at the EXACT same time
+            ev.touches === startEv.touches) {) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = [];
             for(var i=0,len=ev.touches.length; i<len; i++) {
