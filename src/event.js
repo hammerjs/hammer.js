@@ -111,9 +111,9 @@ Hammer.event = {
         }
         else if(Hammer.HAS_TOUCHEVENTS) {
             types = [
-                'touchstart',
-                'touchmove',
-                'touchend touchcancel'];
+                'touchstart gesturestart gesturechange',
+                'touchmove gesturechange',
+                'touchend touchcancel gestureend'];
         }
         else {
             types = [
@@ -180,7 +180,13 @@ Hammer.event = {
              * mostly used to disable scrolling of the browser
              */
             preventDefault: function() {
-                this.srcEvent.preventDefault();
+                if(this.srcEvent.preventManipulation) {
+                    this.srcEvent.preventManipulation();
+                }
+
+                if(this.srcEvent.preventDefault) {
+                    this.srcEvent.preventDefault();
+                }
             },
 
             /**

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-15
+/*! Hammer.JS - v1.0.0rc1 - 2013-02-22
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -173,7 +173,7 @@ Hammer.Instance.prototype = {
  * see the onTouch event for an explanation
  * @type {Object}
  */
-var last_move_event = {};
+var last_move_event = null;
 
 
 /**
@@ -211,7 +211,9 @@ Hammer.event = {
             // because touchend has no touches, and we often want to use these in our gestures,
             // we send the last move event as our eventData in touchend
             if(eventType === Hammer.EVENT_END) {
-                ev = last_move_event;
+                if (last_move_event !== null) {
+                    ev = last_move_event;
+                }
             }
             // store the last move event
             else {
@@ -278,9 +280,9 @@ Hammer.event = {
         }
         else if(Hammer.HAS_TOUCHEVENTS) {
             types = [
-                'touchstart',
-                'touchmove',
-                'touchend touchcancel'];
+                'touchstart gesturestart gesturechange',
+                'touchmove gesturechange',
+                'touchend touchcancel gestureend'];
         }
         else {
             types = [
@@ -347,7 +349,13 @@ Hammer.event = {
              * mostly used to disable scrolling of the browser
              */
             preventDefault: function() {
-                this.srcEvent.preventDefault();
+                if(this.srcEvent.preventManipulation) {
+                    this.srcEvent.preventManipulation();
+                }
+
+                if(this.srcEvent.preventDefault) {
+                    this.srcEvent.preventDefault();
+                }
             },
 
             /**
@@ -702,7 +710,9 @@ Hammer.gesture = {
         // if the touches change, set the new touches over the startEvent touches
         // this because touchevents don't have all the touches on touchstart, or the
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
-        if(startEv && ev.touches.length != startEv.touches.length) {
+        if(startEv && (ev.touches.length != startEv.touches.length ||
+            // on the ipad it can happen that both fingers are touching at the EXACT same time
+            ev.touches === startEv.touches)) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = [];
             for(var i=0,len=ev.touches.length; i<len; i++) {
@@ -772,6 +782,7 @@ Hammer.gesture = {
         return this.gestures;
     }
 };
+
 
 Hammer.gestures = Hammer.gestures || {};
 
