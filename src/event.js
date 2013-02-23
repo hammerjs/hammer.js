@@ -111,9 +111,9 @@ Hammer.event = {
         }
         else if(Hammer.HAS_TOUCHEVENTS) {
             types = [
-                'touchstart gesturestart gesturechange',
-                'touchmove gesturechange',
-                'touchend touchcancel gestureend'];
+                'touchstart',
+                'touchmove',
+                'touchend touchcancel'];
         }
         else {
             types = [
