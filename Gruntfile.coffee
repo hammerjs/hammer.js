@@ -57,8 +57,6 @@ module.exports = (grunt) ->
         expand: true
         flatten: true
 
-
-
     # check for optimisations and errors
     jshint:
       options:
@@ -76,7 +74,6 @@ module.exports = (grunt) ->
         browser: true
       build:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
-
 
     # watch for changes
     watch:
