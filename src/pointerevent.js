@@ -3,7 +3,7 @@ Hammer.PointerEvent = {
 
     /**
      * get a list of pointers
-     * @return  {Array}     Pointers
+     * @returns {Array}     Pointers
      */
     getPointers: function() {
         var pointers = this.pointers;
@@ -16,8 +16,8 @@ Hammer.PointerEvent = {
 
     /**
      * update the position of a pointer
-     * @param   EVENTTYPE   type
-     * @param   Object      ev
+     * @param   {String}   type
+     * @param   {Object}   ev
      */
     updatePointer: function(type, ev) {
         if(type == Hammer.EVENT_END) {

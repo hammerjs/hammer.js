@@ -13,20 +13,6 @@ test('utils.extend', function() {
     );
 });
 
-test('utils.extend.deep', function() {
-    expect(1);
-    deepEqual(
-        Hammer.utils.extend(
-            {a:1,b:{b:1},c:3},
-            {b:{a:1,b:2}},
-            1   // depth
-        ),
-        {a:1,b:{a:1,b:2},c:3},
-        'Deep extend'
-    );
-});
-
-
 /**
  * cloning with the extend util
  * test clone references

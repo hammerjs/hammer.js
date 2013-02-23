@@ -1,9 +1,9 @@
 /**
  * create new hammer instance
  * all methods should return the instance itself, so it is chainable.
- * @param   {HTMLElement}   element
- * @param   {Object}        [options={}]
- * @return  {Object}        instance
+ * @param   {HTMLElement}       element
+ * @param   {Object}            [options={}]
+ * @returns {Hammer.Instance}
  */
 Hammer.Instance = function(element, options) {
     var self = this;
@@ -13,6 +13,9 @@ Hammer.Instance = function(element, options) {
     setup();
 
     this.element = element;
+
+    // start/stop detection option
+    this.enabled = true;
 
     // merge options
     this.options = Hammer.utils.extend(
@@ -26,7 +29,9 @@ Hammer.Instance = function(element, options) {
 
     // start detection on touchstart
     Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
-        return Hammer.gesture.startDetect(self, ev);
+        if(self.enabled) {
+            return Hammer.gesture.startDetect(self, ev);
+        }
     });
 
     // return instance
@@ -37,9 +42,9 @@ Hammer.Instance = function(element, options) {
 Hammer.Instance.prototype = {
     /**
      * bind events to the instance
-     * @param   string      gestures
-     * @param   callback    callback
-     * @return  {*}
+     * @param   {String}      gestures
+     * @param   {Function}    handler
+     * @returns {Hammer.Instance}
      */
     on: function onEvent(gestures, handler){
         gestures = gestures.split(' ');
@@ -52,9 +57,9 @@ Hammer.Instance.prototype = {
 
     /**
      * unbind events to the instance
-     * @param   string      gestures
-     * @param   callback    callback
-     * @return  {*}
+     * @param   {String}      gestures
+     * @param   {Function}    handler
+     * @returns {Hammer.Instance}
      */
     off: function offEvent(gestures, handler){
         gestures = gestures.split(' ');
@@ -67,9 +72,9 @@ Hammer.Instance.prototype = {
 
     /**
      * trigger gesture event
-     * @param   string      gesture
-     * @param   object      eventData
-     * @return  {*}
+     * @param   {String}      gesture
+     * @param   {Object}      eventData
+     * @returns {Event}
      */
     trigger: function triggerEvent(gesture, eventData){
         // trigger DOM event
@@ -77,5 +82,16 @@ Hammer.Instance.prototype = {
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
 		return this.element.dispatchEvent(event);
+    },
+
+
+    /**
+     * enable of disable hammer.js detection
+     * @param   {Boolean}   state
+     * @returns {Hammer.Instance}
+     */
+    enable: function enable(state) {
+        this.enabled = state;
+        return this;
     }
 };

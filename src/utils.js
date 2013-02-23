@@ -1,22 +1,14 @@
-var PI = Math.PI;
-
 Hammer.utils = {
     /**
      * extend method,
      * also used for cloning when dest is an empty object
      * @param   {Object}    dest
      * @param   {Object}    src
-     * @param   {Number}    [depth=0]
-     * @return  {Object}    dest
+     * @returns {Object}    dest
      */
-    extend: function extend(dest, src, depth) {
-        depth = depth || 0;
+    extend: function extend(dest, src) {
         for (var key in src) {
-            if(depth && typeof(src[key]) == 'object') {
-                dest[key] = this.extend({}, src[key], depth-1);
-            } else {
-                dest[key] = src[key];
-            }
+            dest[key] = src[key];
         }
 
         return dest;
@@ -25,8 +17,8 @@ Hammer.utils = {
 
     /**
      * get the center of all the touches
-     * @param   {TouchList}   touches
-     * @return  {Object}      center
+     * @param   {Array}     touches
+     * @returns {Object}    center
      */
     getCenter: function getCenter(touches) {
         var valuesX = [], valuesY = [];
@@ -45,34 +37,37 @@ Hammer.utils = {
 
     /**
      * calculate the velocity between two points
-     * @param   Number      pos1
-     * @param   Number      pos2
+     * @param   {Number}    delta_time
+     * @param   {Number}    delta_x
+     * @param   {Number}    delta_y
+     * @returns {Object}    velocity
      */
-    getVelocity: function getSimpleDistance(delta_time, dx, dy) {
+    getVelocity: function getSimpleDistance(delta_time, delta_x, delta_y) {
         return {
-            x: Math.abs(dx / delta_time) || 0,
-            y: Math.abs(dy / delta_time) || 0
+            x: Math.abs(delta_x / delta_time) || 0,
+            y: Math.abs(delta_y / delta_time) || 0
         };
     },
 
 
     /**
      * calculate the angle between two coordinates
-     * @param   Touch      touch1
-     * @param   Touch      touch2
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {Number}    angle
      */
     getAngle: function getAngle(touch1, touch2) {
         var y = touch2.pageY - touch1.pageY,
             x = touch2.pageX - touch1.pageX;
-        return Math.atan2(y, x) * 180 / PI;
+        return Math.atan2(y, x) * 180 / Math.PI;
     },
 
 
     /**
      * angle to direction define
-     * @param   Touch      touch1
-     * @param   Touch      touch2
-     * @return {Constant}  direction constant, like Hammer.DIRECTION_LEFT
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {String}    direction constant, like Hammer.DIRECTION_LEFT
      */
     getDirection: function getDirection(touch1, touch2) {
         var x = Math.abs(touch1.pageX - touch2.pageX),
@@ -89,8 +84,9 @@ Hammer.utils = {
 
     /**
      * calculate the distance between two touches
-     * @param   Touch      touch1
-     * @param   Touch      touch2
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {Number}    distance
      */
     getDistance: function getDistance(touch1, touch2) {
         var x = touch2.pageX - touch1.pageX,
@@ -102,9 +98,9 @@ Hammer.utils = {
     /**
      * calculate the scale factor between two touchLists (fingers)
      * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-     * @param   TouchList   start
-     * @param   TouchList   end
-     * @return  float       scale
+     * @param   {Array}     start
+     * @param   {Array}     end
+     * @returns {Number}    scale
      */
     getScale: function getScale(start, end) {
         // need two fingers...
@@ -118,9 +114,9 @@ Hammer.utils = {
 
     /**
      * calculate the rotation degrees between two touchLists (fingers)
-     * @param   TouchList   start
-     * @param   TouchList   end
-     * @return  float       rotation
+     * @param   {Array}     start
+     * @param   {Array}     end
+     * @returns {Number}    rotation
      */
     getRotation: function getRotation(start, end) {
         // need two fingers
@@ -134,19 +130,17 @@ Hammer.utils = {
 
     /**
      * boolean if the direction is vertical
-     * @param   Constant    direction
-     * @return  {Boolean}   is_vertical
+     * @param    {String}    direction
+     * @returns  {Boolean}   is_vertical
      */
     isVertical: function isVertical(direction) {
-        return (direction == Hammer.DIRECTION_UP ||
-            direction == Hammer.DIRECTION_DOWN);
+        return (direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN);
     },
 
 
     /**
      * stop browser default behavior with css props
-     * @param   Hammer.Instance inst
-     * @return {*}
+     * @param   {Hammer.Instance}   inst
      */
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,

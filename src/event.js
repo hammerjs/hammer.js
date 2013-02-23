@@ -17,9 +17,9 @@ var touchdown = false;
 Hammer.event = {
     /**
      * simple addEventListener
-     * @param element
-     * @param types
-     * @param handler
+     * @param   {HTMLElement}   element
+     * @param   {String}        types
+     * @param   {Function}      handler
      */
     bindDom: function(element, types, handler) {
         types = types.split(' ');
@@ -31,9 +31,9 @@ Hammer.event = {
 
     /**
      * touch events with mouse fallback
-     * @param   {HTMLElement}      element
-     * @param   {Constant}       eventType        like Hammer.EVENT_MOVE
-     * @param   handler
+     * @param   {HTMLElement}   element
+     * @param   {String}        eventType        like Hammer.EVENT_MOVE
+     * @param   {Function}      handler
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
@@ -130,8 +130,8 @@ Hammer.event = {
 
     /**
      * create touchlist depending on the event
-     * @param   Event       ev
-     * @param   String      EVENT_TYPE
+     * @param   {Object}    ev
+     * @param   {String}    EVENT_TYPE
      */
     getTouchList: function getTouchList(ev/*, eventType*/) {
         if(Hammer.HAS_POINTEREVENTS) {
@@ -153,9 +153,9 @@ Hammer.event = {
 
     /**
      * collect event data for Hammer js
-     * @param   domElement      element
-     * @param   TOUCHTYPE       eventType        like Hammer.EVENT_MOVE
-     * @param   Event           ev
+     * @param   {HTMLElement}   element
+     * @param   {String}        eventType        like Hammer.EVENT_MOVE
+     * @param   {Object}        eventData
      */
     collectEventData: function collectEventData(element, eventType, ev) {
         var touches = this.getTouchList(ev, eventType);

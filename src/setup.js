@@ -3,7 +3,6 @@ Hammer.READY = false;
 
 /**
  * setup events to detect gestures on the document
- * @return
  */
 function setup() {
     if(Hammer.READY) {

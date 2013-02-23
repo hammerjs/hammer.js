@@ -15,8 +15,8 @@ Hammer.gesture = {
 
     /**
      * start Hammer.gesture detection
-     * @param   HammerInstance  inst
-     * @param   Event           ev
+     * @param   {Hammer.Instance}   inst
+     * @param   {Object}            eventData
      */
     startDetect: function startDetect(inst, ev) {
         // already busy with a Hammer.gesture detection on an element
@@ -33,21 +33,21 @@ Hammer.gesture = {
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        return this.detect(ev);
+        this.detect(ev);
     },
 
 
     /**
      * Hammer.gesture detection
-     * @param   Event           ev
+     * @param   {Object}    eventData
      */
-    detect: function detect(ev) {
+    detect: function detect(eventData) {
         if(!this.current || this.stopped) {
             return;
         }
 
         // extend event data with calculations about scale, distance etc
-        var eventData = this.extendEventData(ev);
+        eventData = this.extendEventData(eventData);
 
         // instance options
         var inst_options = this.current.inst.options;
@@ -75,10 +75,10 @@ Hammer.gesture = {
 
     /**
      * end Hammer.gesture detection
-     * @param   Event           ev
+     * @param   {Object}    eventData
      */
-    endDetect: function endDetect(ev) {
-        this.detect(ev);
+    endDetect: function endDetect(eventData) {
+        this.detect(eventData);
         this.stop();
     },
 
@@ -103,8 +103,8 @@ Hammer.gesture = {
 
     /**
      * extend eventData for Hammer.gestures
-     * @param   object   eventData
-     * @return  object
+     * @param   {Object}   ev
+     * @returns {Object}   ev
      */
     extendEventData: function extendEventData(ev) {
         var startEv = this.current.startEvent;
@@ -112,9 +112,8 @@ Hammer.gesture = {
         // if the touches change, set the new touches over the startEvent touches
         // this because touchevents don't have all the touches on touchstart, or the
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
-        if(startEv && (ev.touches.length != startEv.touches.length ||
-            // on the ipad it can happen that both fingers are touching at the EXACT same time
-            ev.touches === startEv.touches)) {
+        // but, sometimes it happens that both fingers are touching at the EXACT same time
+        if(startEv && (ev.touches.length != startEv.touches.length || ev.touches === startEv.touches)) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = [];
             for(var i=0,len=ev.touches.length; i<len; i++) {
@@ -152,7 +151,8 @@ Hammer.gesture = {
 
     /**
      * register new gesture
-     * @param   Gesture instance, see gestures.js for documentation
+     * @param   {Object}    gesture object, see gestures.js for documentation
+     * @returns {Array}     gestures
      */
     register: function register(gesture) {
         // add an enable gesture options if there is no given
