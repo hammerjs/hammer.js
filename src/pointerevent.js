@@ -3,9 +3,9 @@ Hammer.PointerEvent = {
 
     /**
      * get a list of pointers
-     * @returns {Array}     Pointers
+     * @returns {Array}     touchlist
      */
-    getPointers: function() {
+    getTouchList: function() {
         var pointers = this.pointers;
         var touchlist = [];
         Object.keys(pointers).sort().forEach(function(id) {

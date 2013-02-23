@@ -135,7 +135,7 @@ Hammer.event = {
      */
     getTouchList: function getTouchList(ev/*, eventType*/) {
         if(Hammer.HAS_POINTEREVENTS) {
-            return Hammer.PointerEvent.getPointers();
+            return Hammer.PointerEvent.getTouchList();
         }
         else if(Hammer.HAS_TOUCHEVENTS) {
             return ev.touches;
