@@ -4,7 +4,7 @@
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
 
-(function( window, undefined ) {
+(function(window) {
     'use strict';
 
 /**
@@ -1278,8 +1278,10 @@ Hammer.gestures.Release = {
 window.Hammer = Hammer;
 
 // requireJS module definition
-if (typeof window.define === 'function' && window.define.amd) {
-	window.define('hammer', [], function() { return Hammer; });
+if(typeof window.define === 'function' && window.define.amd) {
+	window.define('hammer', [], function() {
+        return Hammer;
+    });
 }
 
 })(window);
