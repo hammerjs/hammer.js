@@ -133,9 +133,9 @@ Hammer.event = {
     /**
      * create touchlist depending on the event
      * @param   {Object}    ev
-     * @param   {String}    eventType
+     * @param   {String}    eventType   used by the fakemultitouch plugin
      */
-    getTouchList: function getTouchList(ev, eventType) {
+    getTouchList: function getTouchList(ev/*, eventType*/) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getTouchList();
         }
