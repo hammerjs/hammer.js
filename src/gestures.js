@@ -117,7 +117,7 @@ Hammer.gestures.Hold = {
     index: 10,
     defaults: {
         hold_timeout: 500,
-        hold_threshold: 3
+        hold_threshold: 1
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
@@ -140,7 +140,7 @@ Hammer.gestures.Hold = {
 
             // when you move or end we clear the timer
             case Hammer.EVENT_MOVE:
-                if(ev.distance > inst.options.hold_treshold) {
+                if(ev.distance > inst.options.hold_threshold) {
                     clearTimeout(this.timer);
                 }
                 break;
