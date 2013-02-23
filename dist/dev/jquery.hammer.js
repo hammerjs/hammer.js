@@ -261,7 +261,7 @@ Hammer.event = {
                 // touch must be down or a touch element
                 if(ev.type.match(/down|move/i) &&
                     (ev.which === 1 || (ev.pointerType && ev.MSPOINTER_TYPE_TOUCH &&
-                                        ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)
+                                        ev.pointerType === ev.MSPOINTER_TYPE_TOUCH)
                     )) {
                     touchdown = true;
                 }
@@ -358,7 +358,7 @@ Hammer.event = {
 
         var pointerType = Hammer.POINTER_TOUCH;
         if(ev.type.match(/mouse/) ||
-            (ev.poinerType && ev.pointerType == ev.MSPOINTER_TYPE_MOUSE)) {
+            (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
             pointerType = Hammer.POINTER_MOUSE;
         }
 
