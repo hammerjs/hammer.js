@@ -18,7 +18,7 @@ Hammer.gesture = {
      * @param   {Hammer.Instance}   inst
      * @param   {Object}            eventData
      */
-    startDetect: function startDetect(inst, ev) {
+    startDetect: function startDetect(inst, eventData) {
         // already busy with a Hammer.gesture detection on an element
         if(this.current) {
             return;
@@ -28,12 +28,12 @@ Hammer.gesture = {
 
         this.current = {
             inst        : inst, // reference to HammerInstance we're working for
-            startEvent  : Hammer.utils.extend({}, ev), // start eventData for distances, timing etc
+            startEvent  : Hammer.utils.extend({}, eventData), // start eventData for distances, timing etc
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        this.detect(ev);
+        this.detect(eventData);
     },
 
 

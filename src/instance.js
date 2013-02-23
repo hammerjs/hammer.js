@@ -31,7 +31,7 @@ Hammer.Instance = function(element, options) {
     // start detection on touchstart
     Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
         if(self.enabled) {
-            return Hammer.gesture.startDetect(self, ev);
+            Hammer.gesture.startDetect(self, ev);
         }
     });
 
@@ -43,12 +43,12 @@ Hammer.Instance = function(element, options) {
 Hammer.Instance.prototype = {
     /**
      * bind events to the instance
-     * @param   {String}      gestures
+     * @param   {String}      gesture
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    on: function onEvent(gestures, handler){
-        gestures = gestures.split(' ');
+    on: function onEvent(gesture, handler){
+        var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.addEventListener(gestures[t], handler, false);
         }
@@ -58,12 +58,12 @@ Hammer.Instance.prototype = {
 
     /**
      * unbind events to the instance
-     * @param   {String}      gestures
+     * @param   {String}      gesture
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    off: function offEvent(gestures, handler){
-        gestures = gestures.split(' ');
+    off: function offEvent(gesture, handler){
+        var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.removeEventListener(gestures[t], handler, false);
         }
@@ -75,14 +75,15 @@ Hammer.Instance.prototype = {
      * trigger gesture event
      * @param   {String}      gesture
      * @param   {Object}      eventData
-     * @returns {Event}
+     * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
         // trigger DOM event
         var event = document.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		return this.element.dispatchEvent(event);
+		this.element.dispatchEvent(event);
+        return this;
     },
 
 

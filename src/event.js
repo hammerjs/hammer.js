@@ -18,11 +18,11 @@ Hammer.event = {
     /**
      * simple addEventListener
      * @param   {HTMLElement}   element
-     * @param   {String}        types
+     * @param   {String}        type
      * @param   {Function}      handler
      */
-    bindDom: function(element, types, handler) {
-        types = types.split(' ');
+    bindDom: function(element, type, handler) {
+        var types = type.split(' ');
         for(var t=0; t<types.length; t++) {
             element.addEventListener(types[t], handler, false);
         }
@@ -66,7 +66,9 @@ Hammer.event = {
             this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
                 // touch must be down or a touch element
                 if(ev.type.match(/down|move/i) &&
-                    (ev.which === 1 || (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH))) {
+                    (ev.which === 1 || (ev.pointerType && ev.MSPOINTER_TYPE_TOUCH &&
+                                        ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)
+                    )) {
                     touchdown = true;
                 }
 
@@ -131,9 +133,9 @@ Hammer.event = {
     /**
      * create touchlist depending on the event
      * @param   {Object}    ev
-     * @param   {String}    EVENT_TYPE
+     * @param   {String}    eventType
      */
-    getTouchList: function getTouchList(ev/*, eventType*/) {
+    getTouchList: function getTouchList(ev, eventType) {
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getTouchList();
         }

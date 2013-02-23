@@ -1,4 +1,8 @@
 Hammer.PointerEvent = {
+    /**
+     * holds all pointers
+     * @type {Object}
+     */
     pointers: {},
 
     /**
@@ -8,6 +12,8 @@ Hammer.PointerEvent = {
     getTouchList: function() {
         var pointers = this.pointers;
         var touchlist = [];
+
+        // we can use forEach since pointerEvents only is in IE10
         Object.keys(pointers).sort().forEach(function(id) {
             touchlist.push(pointers[id]);
         });
@@ -17,14 +23,14 @@ Hammer.PointerEvent = {
     /**
      * update the position of a pointer
      * @param   {String}   type
-     * @param   {Object}   ev
+     * @param   {Object}   pointerEvent
      */
-    updatePointer: function(type, ev) {
+    updatePointer: function(type, pointerEvent) {
         if(type == Hammer.EVENT_END) {
-            delete this.pointers[ev.pointerId];
+            delete this.pointers[pointerEvent.pointerId];
         }
         else {
-            this.pointers[ev.pointerId] = ev;
+            this.pointers[pointerEvent.pointerId] = ev;
         }
     },
 
