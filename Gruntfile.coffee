@@ -13,7 +13,7 @@ module.exports = (grunt) ->
     concat:
       options:
         separator: '\n\n'
-      dist:
+      dev:
         options:
           banner: '<%= meta.banner %>'
         src: [
@@ -27,27 +27,37 @@ module.exports = (grunt) ->
           'src/gesture.js'
           'src/gestures.js'
           'src/outro.js']
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
-      jquery:
+        dest: 'dist/dev/hammer.js'
+      devjquery:
         src: [
-          'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+          'dist/dev/hammer.js'
           'plugins/jquery.hammer.js']
-        dest: 'dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js'
+        dest: 'dist/dev/jquery.hammer.js'
+
+    # minify the sourcecode
+    uglify:
+      release:
+        options:
+          banner: '<%= meta.banner %>'
+        files:
+          'dist/stable/<%= pkg.version %>/hammer.min.js': ['dist/dev/hammer.js']
+          'dist/stable/<%= pkg.version %>/jquery.hammer.min.js': ['dist/dev/jquery.hammer.js']
 
     # copy src to latest version
     copy:
-      latest:
-        src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
-        dest: 'dist/<%= pkg.name %>-latest.js'
-      latestmin:
-        src: ['dist/<%= pkg.name %>-<%= pkg.version %>.min.js']
-        dest: 'dist/<%= pkg.name %>-latest.min.js'
+      hammer:
+        src: ['dist/dev/hammer.js']
+        dest: 'dist/stable/<%= pkg.version %>/hammer.js'
       jquery:
-        src: ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js']
-        dest: 'dist/jquery.<%= pkg.name %>-latest.js'
-      jquerymin:
-        src: ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.min.js']
-        dest: 'dist/jquery.<%= pkg.name %>-latest.min.js'
+        src: ['dist/dev/jquery.hammer.js']
+        dest: 'dist/stable/<%= pkg.version %>/jquery.hammer.js'
+      latest:
+        src: ['dist/stable/<%= pkg.version %>/*.js'],
+        dest: 'dist/stable/latest/'
+        expand: true
+        flatten: true
+
+
 
     # check for optimisations and errors
     jshint:
@@ -67,20 +77,12 @@ module.exports = (grunt) ->
       build:
         src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
 
-    # minify the sourcecode
-    uglify:
-      build:
-        options:
-          banner: '<%= meta.banner %>'
-        files:
-          'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
-          'dist/jquery.<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/jquery.<%= pkg.name %>-<%= pkg.version %>.js']
 
     # watch for changes
     watch:
       scripts:
         files: 'src/*.js'
-        tasks: ['concat:dist','copy:latest']
+        tasks: ['concat']
         options:
           interrupt: true
 
@@ -103,10 +105,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
-  grunt.loadNpmTasks 'grunt-notify'
 
 
   # Default task(s).
-  grunt.registerTask 'build', ['notify_hooks','concat','uglify','copy','test']
-  grunt.registerTask 'default', ['notify_hooks','connect','watch']
+  grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
+  grunt.registerTask 'build', ['concat','test']
+  grunt.registerTask 'release', ['concat','uglify','copy','test']

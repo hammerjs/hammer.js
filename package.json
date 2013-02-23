@@ -2,7 +2,7 @@
     "name":"hammer",
     "title":"Hammer.JS",
     "description":"A javascript library for multi-touch gestures",
-    "version":"1.0.0rc1",
+    "version":"1.0.0",
     "homepage": "http://eightmedia.github.com/hammer.js",
     "licenses": [{
         "type": "MIT",
@@ -24,7 +24,6 @@
     },
     "devDependencies":{
         "grunt":"~0.4",
-        "grunt-notify":"~0.1",
         "grunt-contrib-copy":"~0.4",
         "grunt-contrib-connect":"~0.1",
         "grunt-contrib-concat":"~0.1",
