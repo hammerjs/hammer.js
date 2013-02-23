@@ -232,62 +232,52 @@ Hammer.event = {
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
 
-        function triggerHandler(ev) {
-            // because touchend has no touches, and we often want to use these in our gestures,
-            // we send the last move event as our eventData in touchend
-            if(eventType === Hammer.EVENT_END) {
-                if (last_move_event !== null) {
-                    ev = last_move_event;
-                }
-            }
-            // store the last move event
-            else {
-                last_move_event = ev;
+        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+            // touch must be down or a touch element
+            if(ev.type.match(/start|down|move/i) &&
+                (   ev.which === 1 ||
+                    (ev.pointerType && ev.pointerType === ev.MSPOINTER_TYPE_TOUCH) ||
+                    ev.type.match(/touch/)
+                )) {
+                touchdown = true;
             }
 
-            handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
-        }
-
-        // ontouchstart
-        if(Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                triggerHandler.call(this, ev);
-            });
-        }
-
-        // mouseevents and pointerEvents (win8)
-        else {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                // touch must be down or a touch element
-                if(ev.type.match(/down|move/i) &&
-                    (ev.which === 1 || (ev.pointerType && ev.MSPOINTER_TYPE_TOUCH &&
-                                        ev.pointerType === ev.MSPOINTER_TYPE_TOUCH)
-                    )) {
-                    touchdown = true;
+            // pointer is down on the screen
+            if(touchdown) {
+                // update pointer
+                if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
+                    Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
 
-                if(touchdown) {
-                    // update pointer
-                    if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
-                        Hammer.PointerEvent.updatePointer(eventType, ev);
-                    }
-
-                    triggerHandler.call(this, ev);
-
-                    // remove pointer after the handler is done
-                    if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
-                        Hammer.PointerEvent.updatePointer(eventType, ev);
+                // because touchend has no touches, and we often want to use these in our gestures,
+                // we send the last move event as our eventData in touchend
+                if(eventType === Hammer.EVENT_END) {
+                    if (last_move_event !== null) {
+                        ev = last_move_event;
                     }
                 }
+                // store the last move event
                 else {
-                    Hammer.PointerEvent.reset();
+                    last_move_event = ev;
                 }
 
-                if(ev.type.match(/up|cancel/i)) {
-                    touchdown = false;
+                // trigger the handler
+                handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
+
+                // remove pointer after the handler is done
+                if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
+                    Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
-            });
-        }
+            }
+            // mouse is up
+            else {
+                Hammer.PointerEvent.reset();
+            }
+
+            if(ev.type.match(/up|cancel/i)) {
+                touchdown = false;
+            }
+        });
     },
 
 
@@ -305,17 +295,11 @@ Hammer.event = {
                 'MSPointerUp MSPointerCancel'
             ];
         }
-        else if(Hammer.HAS_TOUCHEVENTS) {
-            types = [
-                'touchstart',
-                'touchmove',
-                'touchend touchcancel'];
-        }
         else {
             types = [
-                'mousedown',
-                'mousemove',
-                'mouseup'];
+                'touchstart mousedown',
+                'touchmove mousemove',
+                'touchend touchcancel mouseup'];
         }
 
         Hammer.EVENT_TYPES[Hammer.EVENT_START]  = types[0];
@@ -330,12 +314,15 @@ Hammer.event = {
      * @param   {String}    eventType   used by the fakemultitouch plugin
      */
     getTouchList: function getTouchList(ev/*, eventType*/) {
+        // get the fake pointerEvent touchlist
         if(Hammer.HAS_POINTEREVENTS) {
             return Hammer.PointerEvent.getTouchList();
         }
-        else if(Hammer.HAS_TOUCHEVENTS) {
+        // get the touchlist
+        else if(ev.touches) {
             return ev.touches;
         }
+        // make fake touchlist from mouse position
         else {
             return [{
                 identifier: 1,
@@ -356,6 +343,7 @@ Hammer.event = {
     collectEventData: function collectEventData(element, eventType, ev) {
         var touches = this.getTouchList(ev, eventType);
 
+        // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
         if(ev.type.match(/mouse/) ||
             (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
