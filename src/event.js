@@ -48,6 +48,10 @@ Hammer.event = {
                 touchdown = true;
             }
 
+            if(ev.type.match(/touch/)) {
+                touch_triggered = true;
+            }
+
             // pointer is down on the screen
             if(touchdown) {
                 // update pointer
@@ -75,13 +79,10 @@ Hammer.event = {
                     Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
             }
-            // mouse is up
-            else {
-                Hammer.PointerEvent.reset();
-            }
 
             if(ev.type.match(/up|cancel/i)) {
                 touchdown = false;
+                Hammer.PointerEvent.reset();
             }
         });
     },

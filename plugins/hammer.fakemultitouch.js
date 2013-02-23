@@ -19,7 +19,9 @@
             if(Hammer.HAS_POINTEREVENTS) {
                 return Hammer.PointerEvent.getPointers();
             }
-            else if(Hammer.HAS_TOUCHEVENTS) {
+
+            // get the touchlist
+            else if(ev.touches) {
                 return ev.touches;
             }
 
