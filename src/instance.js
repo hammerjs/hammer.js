@@ -4,6 +4,7 @@
  * @param   {HTMLElement}       element
  * @param   {Object}            [options={}]
  * @returns {Hammer.Instance}
+ * @constructor
  */
 Hammer.Instance = function(element, options) {
     var self = this;

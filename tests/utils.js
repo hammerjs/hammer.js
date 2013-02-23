@@ -27,16 +27,6 @@ test('utils.extend.clone', function() {
     deepEqual(dest, {foo:true}, 'Clone reference');
 });
 
-test('utils.extend.clone.deep', function() {
-    expect(1);
-
-    var src = {foo:{bar:true}};
-    var dest = Hammer.utils.extend({}, src, 1);
-    src.foo.bar = false;
-
-    deepEqual(dest, {foo:{bar:true}}, 'Deep clone reference');
-});
-
 
 /**
  * math functions

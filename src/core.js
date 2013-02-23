@@ -1,3 +1,11 @@
+/**
+ * Hammer
+ * use this to create instances
+ * @param   {HTMLElement}   element
+ * @param   {Object}        options
+ * @returns {Hammer.Instance}
+ * @constructor
+ */
 var Hammer = function(element, options) {
     return new Hammer.Instance(element, options || {});
 };
