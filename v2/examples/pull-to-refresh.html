@@ -4,7 +4,7 @@
     <title>Hammer.js</title>
     <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
-
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <style>
         body { padding: 0; }
 
@@ -157,7 +157,7 @@
 </div>
 
 
-<script src="../dist/hammer-latest.js"></script>
+<script src="../dist/dev/hammer.js"></script>
 <script src="assets/js/modernizr.js"></script>
 
 <script>
@@ -210,9 +210,10 @@
             this._anim = null;
             this._dragged_down = false;
 
-            Hammer(this.container).on("touch dragdown release", function(ev) {
-                self.handleHammer(ev);
-            });
+            this.hammertime = Hammer(this.container)
+                .on("touch dragdown release", function(ev) {
+                    self.handleHammer(ev);
+                });
         };
 
 
@@ -390,22 +391,6 @@
             preload.src = 'http://lorempixel.com/800/600/?'+ (new Date().getTime());
         }, 1000);
     };
-
-</script>
-
-
-
-<script type="text/javascript">
-
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-30289566-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
 
 </script>
 

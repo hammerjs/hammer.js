@@ -15,11 +15,12 @@
          * @return  {Array}     Touches
          */
         Hammer.event.getTouchList = function(ev, eventType) {
-            // Android, iOS etc
+            // get the fake pointerEvent touchlist
             if(Hammer.HAS_POINTEREVENTS) {
-                return Hammer.PointerEvent.getPointers();
+                return Hammer.PointerEvent.getTouchList();
             }
-            else if(Hammer.HAS_TOUCHEVENTS) {
+            // get the touchlist
+            else if(ev.touches) {
                 return ev.touches;
             }
 
@@ -39,7 +40,6 @@
                     };
                 }
 
-                // small misplacement to fix NaN/Infinity issues
                 var distance_x = start_pos.pageX - ev.pageX;
                 var distance_y = start_pos.pageY - ev.pageY;
 
@@ -55,9 +55,9 @@
                     pageY: start_pos.pageY + distance_y - 50,
                     target: ev.target
                 }];
-
-                // normal single touch
-            } else {
+            } 
+            // normal single touch
+            else {
                 start_pos = false;
                 return [{
                     identifier: 1,

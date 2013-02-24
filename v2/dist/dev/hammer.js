@@ -1,12 +1,14 @@
-/*! Hammer.JS - v1.0.0rc1 - 2013-02-15
- * http://eightmedia.github.com/hammer.js
- *
- * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
- * Licensed under the MIT license */
-
-(function( window, undefined ) {
+(function(window) {
     'use strict';
 
+/**
+ * Hammer
+ * use this to create instances
+ * @param   {HTMLElement}   element
+ * @param   {Object}        options
+ * @returns {Hammer.Instance}
+ * @constructor
+ */
 var Hammer = function(element, options) {
     return new Hammer.Instance(element, options || {});
 };
@@ -60,7 +62,6 @@ Hammer.READY = false;
 
 /**
  * setup events to detect gestures on the document
- * @return
  */
 function setup() {
     if(Hammer.READY) {
@@ -88,9 +89,10 @@ function setup() {
 /**
  * create new hammer instance
  * all methods should return the instance itself, so it is chainable.
- * @param   {HTMLElement}   element
- * @param   {Object}        [options={}]
- * @return  {Object}        instance
+ * @param   {HTMLElement}       element
+ * @param   {Object}            [options={}]
+ * @returns {Hammer.Instance}
+ * @constructor
  */
 Hammer.Instance = function(element, options) {
     var self = this;
@@ -100,6 +102,9 @@ Hammer.Instance = function(element, options) {
     setup();
 
     this.element = element;
+
+    // start/stop detection option
+    this.enabled = true;
 
     // merge options
     this.options = Hammer.utils.extend(
@@ -113,7 +118,9 @@ Hammer.Instance = function(element, options) {
 
     // start detection on touchstart
     Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
-        return Hammer.gesture.startDetect(self, ev);
+        if(self.enabled) {
+            Hammer.gesture.startDetect(self, ev);
+        }
     });
 
     // return instance
@@ -124,12 +131,12 @@ Hammer.Instance = function(element, options) {
 Hammer.Instance.prototype = {
     /**
      * bind events to the instance
-     * @param   string      gestures
-     * @param   callback    callback
-     * @return  {*}
+     * @param   {String}      gesture
+     * @param   {Function}    handler
+     * @returns {Hammer.Instance}
      */
-    on: function onEvent(gestures, handler){
-        gestures = gestures.split(' ');
+    on: function onEvent(gesture, handler){
+        var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.addEventListener(gestures[t], handler, false);
         }
@@ -139,12 +146,12 @@ Hammer.Instance.prototype = {
 
     /**
      * unbind events to the instance
-     * @param   string      gestures
-     * @param   callback    callback
-     * @return  {*}
+     * @param   {String}      gesture
+     * @param   {Function}    handler
+     * @returns {Hammer.Instance}
      */
-    off: function offEvent(gestures, handler){
-        gestures = gestures.split(' ');
+    off: function offEvent(gesture, handler){
+        var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
             this.element.removeEventListener(gestures[t], handler, false);
         }
@@ -154,16 +161,28 @@ Hammer.Instance.prototype = {
 
     /**
      * trigger gesture event
-     * @param   string      gesture
-     * @param   object      eventData
-     * @return  {*}
+     * @param   {String}      gesture
+     * @param   {Object}      eventData
+     * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
         // trigger DOM event
         var event = document.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		return this.element.dispatchEvent(event);
+		this.element.dispatchEvent(event);
+        return this;
+    },
+
+
+    /**
+     * enable of disable hammer.js detection
+     * @param   {Boolean}   state
+     * @returns {Hammer.Instance}
+     */
+    enable: function enable(state) {
+        this.enabled = state;
+        return this;
     }
 };
 
@@ -173,25 +192,32 @@ Hammer.Instance.prototype = {
  * see the onTouch event for an explanation
  * @type {Object}
  */
-var last_move_event = {};
+var last_move_event = null;
 
 
 /**
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
-var touchdown = false;
+var enable_detect = false;
+
+
+/**
+ * when touch events have been fired, this is true
+ * @type {Boolean}
+ */
+var touch_triggered = false;
 
 
 Hammer.event = {
     /**
      * simple addEventListener
-     * @param element
-     * @param types
-     * @param handler
+     * @param   {HTMLElement}   element
+     * @param   {String}        type
+     * @param   {Function}      handler
      */
-    bindDom: function(element, types, handler) {
-        types = types.split(' ');
+    bindDom: function(element, type, handler) {
+        var types = type.split(' ');
         for(var t=0; t<types.length; t++) {
             element.addEventListener(types[t], handler, false);
         }
@@ -200,65 +226,67 @@ Hammer.event = {
 
     /**
      * touch events with mouse fallback
-     * @param   {HTMLElement}      element
-     * @param   {Constant}       eventType        like Hammer.EVENT_MOVE
-     * @param   handler
+     * @param   {HTMLElement}   element
+     * @param   {String}        eventType        like Hammer.EVENT_MOVE
+     * @param   {Function}      handler
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
 
-        function triggerHandler(ev) {
-            // because touchend has no touches, and we often want to use these in our gestures,
-            // we send the last move event as our eventData in touchend
-            if(eventType === Hammer.EVENT_END) {
-                ev = last_move_event;
+        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+            var sourceEventType = ev.type.toLowerCase();
+
+            // mousebutton must be down or a touch event
+            if(sourceEventType.match(/start|down|move/) &&
+                (   ev.which === 1 ||   // mousedown
+                    sourceEventType.match(/touch/) ||   // touch events are always on screen
+                    (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)  // pointerevents touch
+                )) {
+                enable_detect = true;
             }
-            // store the last move event
-            else {
-                last_move_event = ev;
+
+            // we are in a touch event, set the touch triggered bool to true,
+            // this for the conflicts that may occur on ios and android
+            if(sourceEventType.match(/touch|pointer/)) {
+                touch_triggered = true;
             }
 
-            handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
-        }
-
-        // ontouchstart
-        if(Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                triggerHandler.call(this, ev);
-            });
-        }
-
-        // mouseevents and pointerEvents (win8)
-        else {
-            this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-                // touch must be down or a touch element
-                if(ev.type.match(/down|move/i) &&
-                    (ev.which === 1 || (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH))) {
-                    touchdown = true;
+            // when touch has been triggered in this detection session
+            // and we are now handling a mouse event, we stop that to prevent conflicts
+            if(enable_detect && !(touch_triggered && sourceEventType.match(/mouse/))) {
+                // update pointer
+                if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
+                    Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
 
-                if(touchdown) {
-                    // update pointer
-                    if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
-                        Hammer.PointerEvent.updatePointer(eventType, ev);
-                    }
-
-                    triggerHandler.call(this, ev);
-
-                    // remove pointer after the handler is done
-                    if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
-                        Hammer.PointerEvent.updatePointer(eventType, ev);
+                // because touchend has no touches, and we often want to use these in our gestures,
+                // we send the last move event as our eventData in touchend
+                if(eventType === Hammer.EVENT_END) {
+                    if (last_move_event !== null) {
+                        ev = last_move_event;
                     }
                 }
+                // store the last move event
                 else {
-                    Hammer.PointerEvent.reset();
+                    last_move_event = ev;
                 }
 
-                if(ev.type.match(/up|cancel/i)) {
-                    touchdown = false;
+                // trigger the handler
+                handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
+
+                // remove pointer after the handler is done
+                if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
+                    Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
-            });
-        }
+            }
+
+            // on the end we reset everything
+            if(sourceEventType.match(/up|cancel|end/)) {
+                enable_detect = false;
+                touch_triggered = false;
+                Hammer.PointerEvent.reset();
+            }
+        });
     },
 
 
@@ -276,17 +304,12 @@ Hammer.event = {
                 'MSPointerUp MSPointerCancel'
             ];
         }
-        else if(Hammer.HAS_TOUCHEVENTS) {
-            types = [
-                'touchstart',
-                'touchmove',
-                'touchend touchcancel'];
-        }
+        // for non pointer events browsers
         else {
             types = [
-                'mousedown',
-                'mousemove',
-                'mouseup'];
+                'touchstart mousedown',
+                'touchmove mousemove',
+                'touchend touchcancel mouseup'];
         }
 
         Hammer.EVENT_TYPES[Hammer.EVENT_START]  = types[0];
@@ -297,16 +320,19 @@ Hammer.event = {
 
     /**
      * create touchlist depending on the event
-     * @param   Event       ev
-     * @param   String      EVENT_TYPE
+     * @param   {Object}    ev
+     * @param   {String}    eventType   used by the fakemultitouch plugin
      */
     getTouchList: function getTouchList(ev/*, eventType*/) {
+        // get the fake pointerEvent touchlist
         if(Hammer.HAS_POINTEREVENTS) {
-            return Hammer.PointerEvent.getPointers();
+            return Hammer.PointerEvent.getTouchList();
         }
-        else if(Hammer.HAS_TOUCHEVENTS) {
+        // get the touchlist
+        else if(ev.touches) {
             return ev.touches;
         }
+        // make fake touchlist from mouse position
         else {
             return [{
                 identifier: 1,
@@ -320,16 +346,16 @@ Hammer.event = {
 
     /**
      * collect event data for Hammer js
-     * @param   domElement      element
-     * @param   TOUCHTYPE       eventType        like Hammer.EVENT_MOVE
-     * @param   Event           ev
+     * @param   {HTMLElement}   element
+     * @param   {String}        eventType        like Hammer.EVENT_MOVE
+     * @param   {Object}        eventData
      */
     collectEventData: function collectEventData(element, eventType, ev) {
         var touches = this.getTouchList(ev, eventType);
 
+        // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
-        if(ev.type.match(/mouse/) ||
-            (ev.poinerType && ev.pointerType == ev.MSPOINTER_TYPE_MOUSE)) {
+        if(ev.type.match(/mouse/) || (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
             pointerType = Hammer.POINTER_MOUSE;
         }
 
@@ -347,7 +373,13 @@ Hammer.event = {
              * mostly used to disable scrolling of the browser
              */
             preventDefault: function() {
-                this.srcEvent.preventDefault();
+                if(this.srcEvent.preventManipulation) {
+                    this.srcEvent.preventManipulation();
+                }
+
+                if(this.srcEvent.preventDefault) {
+                    this.srcEvent.preventDefault();
+                }
             },
 
             /**
@@ -370,15 +402,21 @@ Hammer.event = {
 };
 
 Hammer.PointerEvent = {
+    /**
+     * holds all pointers
+     * @type {Object}
+     */
     pointers: {},
 
     /**
      * get a list of pointers
-     * @return  {Array}     Pointers
+     * @returns {Array}     touchlist
      */
-    getPointers: function() {
+    getTouchList: function() {
         var pointers = this.pointers;
         var touchlist = [];
+
+        // we can use forEach since pointerEvents only is in IE10
         Object.keys(pointers).sort().forEach(function(id) {
             touchlist.push(pointers[id]);
         });
@@ -387,15 +425,15 @@ Hammer.PointerEvent = {
 
     /**
      * update the position of a pointer
-     * @param   EVENTTYPE   type
-     * @param   Object      ev
+     * @param   {String}   type
+     * @param   {Object}   pointerEvent
      */
-    updatePointer: function(type, ev) {
+    updatePointer: function(type, pointerEvent) {
         if(type == Hammer.EVENT_END) {
-            delete this.pointers[ev.pointerId];
+            delete this.pointers[pointerEvent.pointerId];
         }
         else {
-            this.pointers[ev.pointerId] = ev;
+            this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
     },
 
@@ -407,25 +445,17 @@ Hammer.PointerEvent = {
     }
 };
 
-var PI = Math.PI;
-
 Hammer.utils = {
     /**
      * extend method,
      * also used for cloning when dest is an empty object
      * @param   {Object}    dest
      * @param   {Object}    src
-     * @param   {Number}    [depth=0]
-     * @return  {Object}    dest
+     * @returns {Object}    dest
      */
-    extend: function extend(dest, src, depth) {
-        depth = depth || 0;
+    extend: function extend(dest, src) {
         for (var key in src) {
-            if(depth && typeof(src[key]) == 'object') {
-                dest[key] = this.extend({}, src[key], depth-1);
-            } else {
-                dest[key] = src[key];
-            }
+            dest[key] = src[key];
         }
 
         return dest;
@@ -434,8 +464,8 @@ Hammer.utils = {
 
     /**
      * get the center of all the touches
-     * @param   {TouchList}   touches
-     * @return  {Object}      center
+     * @param   {Array}     touches
+     * @returns {Object}    center
      */
     getCenter: function getCenter(touches) {
         var valuesX = [], valuesY = [];
@@ -454,34 +484,37 @@ Hammer.utils = {
 
     /**
      * calculate the velocity between two points
-     * @param   Number      pos1
-     * @param   Number      pos2
+     * @param   {Number}    delta_time
+     * @param   {Number}    delta_x
+     * @param   {Number}    delta_y
+     * @returns {Object}    velocity
      */
-    getVelocity: function getSimpleDistance(delta_time, dx, dy) {
+    getVelocity: function getSimpleDistance(delta_time, delta_x, delta_y) {
         return {
-            x: Math.abs(dx / delta_time) || 0,
-            y: Math.abs(dy / delta_time) || 0
+            x: Math.abs(delta_x / delta_time) || 0,
+            y: Math.abs(delta_y / delta_time) || 0
         };
     },
 
 
     /**
      * calculate the angle between two coordinates
-     * @param   Touch      touch1
-     * @param   Touch      touch2
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {Number}    angle
      */
     getAngle: function getAngle(touch1, touch2) {
         var y = touch2.pageY - touch1.pageY,
             x = touch2.pageX - touch1.pageX;
-        return Math.atan2(y, x) * 180 / PI;
+        return Math.atan2(y, x) * 180 / Math.PI;
     },
 
 
     /**
      * angle to direction define
-     * @param   Touch      touch1
-     * @param   Touch      touch2
-     * @return {Constant}  direction constant, like Hammer.DIRECTION_LEFT
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {String}    direction constant, like Hammer.DIRECTION_LEFT
      */
     getDirection: function getDirection(touch1, touch2) {
         var x = Math.abs(touch1.pageX - touch2.pageX),
@@ -498,8 +531,9 @@ Hammer.utils = {
 
     /**
      * calculate the distance between two touches
-     * @param   Touch      touch1
-     * @param   Touch      touch2
+     * @param   {Touch}     touch1
+     * @param   {Touch}     touch2
+     * @returns {Number}    distance
      */
     getDistance: function getDistance(touch1, touch2) {
         var x = touch2.pageX - touch1.pageX,
@@ -511,9 +545,9 @@ Hammer.utils = {
     /**
      * calculate the scale factor between two touchLists (fingers)
      * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-     * @param   TouchList   start
-     * @param   TouchList   end
-     * @return  float       scale
+     * @param   {Array}     start
+     * @param   {Array}     end
+     * @returns {Number}    scale
      */
     getScale: function getScale(start, end) {
         // need two fingers...
@@ -527,9 +561,9 @@ Hammer.utils = {
 
     /**
      * calculate the rotation degrees between two touchLists (fingers)
-     * @param   TouchList   start
-     * @param   TouchList   end
-     * @return  float       rotation
+     * @param   {Array}     start
+     * @param   {Array}     end
+     * @returns {Number}    rotation
      */
     getRotation: function getRotation(start, end) {
         // need two fingers
@@ -543,19 +577,17 @@ Hammer.utils = {
 
     /**
      * boolean if the direction is vertical
-     * @param   Constant    direction
-     * @return  {Boolean}   is_vertical
+     * @param    {String}    direction
+     * @returns  {Boolean}   is_vertical
      */
     isVertical: function isVertical(direction) {
-        return (direction == Hammer.DIRECTION_UP ||
-            direction == Hammer.DIRECTION_DOWN);
+        return (direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN);
     },
 
 
     /**
      * stop browser default behavior with css props
-     * @param   Hammer.Instance inst
-     * @return {*}
+     * @param   {Hammer.Instance}   inst
      */
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,
@@ -605,10 +637,10 @@ Hammer.gesture = {
 
     /**
      * start Hammer.gesture detection
-     * @param   HammerInstance  inst
-     * @param   Event           ev
+     * @param   {Hammer.Instance}   inst
+     * @param   {Object}            eventData
      */
-    startDetect: function startDetect(inst, ev) {
+    startDetect: function startDetect(inst, eventData) {
         // already busy with a Hammer.gesture detection on an element
         if(this.current) {
             return;
@@ -618,26 +650,26 @@ Hammer.gesture = {
 
         this.current = {
             inst        : inst, // reference to HammerInstance we're working for
-            startEvent  : Hammer.utils.extend({}, ev), // start eventData for distances, timing etc
+            startEvent  : Hammer.utils.extend({}, eventData), // start eventData for distances, timing etc
             lastEvent   : false, // last eventData
             name        : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
         };
 
-        return this.detect(ev);
+        this.detect(eventData);
     },
 
 
     /**
      * Hammer.gesture detection
-     * @param   Event           ev
+     * @param   {Object}    eventData
      */
-    detect: function detect(ev) {
+    detect: function detect(eventData) {
         if(!this.current || this.stopped) {
             return;
         }
 
         // extend event data with calculations about scale, distance etc
-        var eventData = this.extendEventData(ev);
+        eventData = this.extendEventData(eventData);
 
         // instance options
         var inst_options = this.current.inst.options;
@@ -665,10 +697,10 @@ Hammer.gesture = {
 
     /**
      * end Hammer.gesture detection
-     * @param   Event           ev
+     * @param   {Object}    eventData
      */
-    endDetect: function endDetect(ev) {
-        this.detect(ev);
+    endDetect: function endDetect(eventData) {
+        this.detect(eventData);
         this.stop();
     },
 
@@ -693,8 +725,8 @@ Hammer.gesture = {
 
     /**
      * extend eventData for Hammer.gestures
-     * @param   object   eventData
-     * @return  object
+     * @param   {Object}   ev
+     * @returns {Object}   ev
      */
     extendEventData: function extendEventData(ev) {
         var startEv = this.current.startEvent;
@@ -702,7 +734,8 @@ Hammer.gesture = {
         // if the touches change, set the new touches over the startEvent touches
         // this because touchevents don't have all the touches on touchstart, or the
         // user must place his fingers at the EXACT same time on the screen, which is not realistic
-        if(startEv && ev.touches.length != startEv.touches.length) {
+        // but, sometimes it happens that both fingers are touching at the EXACT same time
+        if(startEv && (ev.touches.length != startEv.touches.length || ev.touches === startEv.touches)) {
             // extend 1 level deep to get the touchlist with the touch objects
             startEv.touches = [];
             for(var i=0,len=ev.touches.length; i<len; i++) {
@@ -740,7 +773,8 @@ Hammer.gesture = {
 
     /**
      * register new gesture
-     * @param   Gesture instance, see gestures.js for documentation
+     * @param   {Object}    gesture object, see gestures.js for documentation
+     * @returns {Array}     gestures
      */
     register: function register(gesture) {
         // add an enable gesture options if there is no given
@@ -772,6 +806,7 @@ Hammer.gesture = {
         return this.gestures;
     }
 };
+
 
 Hammer.gestures = Hammer.gestures || {};
 
@@ -892,7 +927,7 @@ Hammer.gestures.Hold = {
     index: 10,
     defaults: {
         hold_timeout: 500,
-        hold_threshold: 3
+        hold_threshold: 1
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
@@ -915,7 +950,7 @@ Hammer.gestures.Hold = {
 
             // when you move or end we clear the timer
             case Hammer.EVENT_MOVE:
-                if(ev.distance > inst.options.hold_treshold) {
+                if(ev.distance > inst.options.hold_threshold) {
                     clearTimeout(this.timer);
                 }
                 break;
@@ -1240,8 +1275,10 @@ Hammer.gestures.Release = {
 window.Hammer = Hammer;
 
 // requireJS module definition
-if (typeof window.define === 'function' && window.define.amd) {
-	window.define('hammer', [], function() { return Hammer; });
+if(typeof window.define === 'function' && window.define.amd) {
+	window.define('hammer', [], function() {
+        return Hammer;
+    });
 }
 
 })(window);
