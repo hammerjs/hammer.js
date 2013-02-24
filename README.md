@@ -16,7 +16,7 @@ It always needs some testing with all kind of devices, please contribute!
 - The previous Hammer.js became old, and too much of a hobby project: Inefficient code, bad documentation.
 - It wasn't possible to add custom gestures, or change anything about the (inner) working of the gestures.
 - It needed DOM events, to use with event delegation.
-- Windows8 has touch AND mouse, so the Pointer Events API needs to be implemented.
+- Windows8 has touch AND mouse, so the Pointer Events API needs to be implemented, also other browsers on windows8 didnt respond to touches.
 - Did I mention the code was inefficient? Now a Hammer instance is light, and only contains the methods it should.
 
 
