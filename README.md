@@ -22,14 +22,15 @@ It always needs some testing with all kind of devices, please contribute!
 ## Features in v2
 - DOM Events
 - Debug plugins
-- Custom gestures api
+- Custom gestures
 - Better swipe event
 - Chainable instance methods
 - jQuery plugin with events delegation (the on/off methods) available
 - Efficient code, lower memory usage
 - IE8 and older compatibility with jQuery plugin
-- More events for faster implementation
+- More events for faster implementation (swipeleft, dragright)
 - AMD support (RequireJS)
+- Unit tests
 
 
 ## Getting Started
