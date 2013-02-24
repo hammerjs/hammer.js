@@ -76,14 +76,16 @@ for(var gesture in gesture_tests) {
 
 
 /**
- * test eventData
+ * test eventData properies
  */
 asyncTest('eventData', function() {
+    triggered_events = {};
+
     faker.triggerGesture('DragRight', function() {
         var ev = triggered_events['dragright'];
-
         var checks = [];
 
+        // test all properties
         checks.push(ev.type == 'dragright');
         checks.push(_.isObject(ev.gesture));
         checks.push(_.isNumber(ev.gesture.angle));

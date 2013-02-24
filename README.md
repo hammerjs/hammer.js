@@ -278,7 +278,6 @@ Hammer instance. You can also call `Hammer.gesture.register` manually and pass y
 
 ## Todo
 - Update website in gh-pages
-- Write tests
 
 
 ## Contributing
