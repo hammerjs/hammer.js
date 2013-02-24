@@ -86,41 +86,30 @@ asyncTest('eventData', function() {
         var checks = [];
 
         // test all properties
-        checks.push(ev.type == 'dragright');
-        checks.push(_.isObject(ev.gesture));
-        checks.push(_.isNumber(ev.gesture.angle));
-        checks.push(_.isObject(ev.gesture.center));
-        checks.push(_.isNumber(ev.gesture.deltaTime));
-        checks.push(_.isNumber(ev.gesture.deltaX));
-        checks.push(_.isNumber(ev.gesture.deltaY));
-        checks.push(ev.gesture.direction === Hammer.DIRECTION_RIGHT);
-        checks.push(_.isNumber(ev.gesture.distance));
-        checks.push(ev.gesture.eventType === Hammer.EVENT_MOVE);
-        checks.push(ev.gesture.pointerType === Hammer.POINTER_TOUCH);
-        checks.push(_.isFunction(ev.gesture.preventDefault));
-        checks.push(_.isNumber(ev.gesture.rotation));
-        checks.push(_.isNumber(ev.gesture.scale));
-        checks.push(_.isObject(ev.gesture.srcEvent));
-        checks.push(_.isObject(ev.gesture.startEvent));
-        checks.push(_.isFunction(ev.gesture.stop));
-        checks.push(_.isFunction(ev.gesture.stopPropagation));
-        checks.push(_.isElement(ev.gesture.target));
-        checks.push(_.isNumber(ev.gesture.timestamp));
-        checks.push(_.isArray(ev.gesture.touches));
-        checks.push(_.isNumber(ev.gesture.velocityX));
-        checks.push(_.isNumber(ev.gesture.velocityY));
+        ok(ev.type == 'dragright', 'ev.type');
+        ok(_.isObject(ev.gesture), 'ev.gesture');
+        ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
+        ok(_.isObject(ev.gesture.center), 'ev.gesture.center');
+        ok(_.isNumber(ev.gesture.deltaTime), 'ev.gesture.deltatime');
+        ok(_.isNumber(ev.gesture.deltaX), 'ev.gesture.deltaX');
+        ok(_.isNumber(ev.gesture.deltaY), 'ev.gesture.deltaY');
+        ok(ev.gesture.direction === Hammer.DIRECTION_RIGHT, 'ev.gesture.direction');
+        ok(_.isNumber(ev.gesture.distance), 'ev.gesture.distance');
+        ok(ev.gesture.eventType === Hammer.EVENT_MOVE, 'ev.gesture.eventType');
+        ok(ev.gesture.pointerType === Hammer.POINTER_TOUCH, 'ev.gesture.pointerType');
+        ok(_.isFunction(ev.gesture.preventDefault), 'ev.gesture.preventDefault');
+        ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');
+        ok(_.isNumber(ev.gesture.scale), 'ev.gesture.scale');
+        ok(_.isObject(ev.gesture.srcEvent), 'ev.gesture.srcEvent');
+        ok(_.isObject(ev.gesture.startEvent), 'ev.gesture.startEvent');
+        ok(_.isFunction(ev.gesture.stop), 'ev.gesture.stop');
+        ok(_.isFunction(ev.gesture.stopPropagation), 'ev.gesture.stopPropagation');
+        ok(_.isElement(ev.gesture.target), 'ev.gesture.target');
+        ok(_.isNumber(ev.gesture.timestamp), 'ev.gesture.timestamp');
+        ok(_.isArray(ev.gesture.touches), 'ev.gesture.touches');
+        ok(_.isNumber(ev.gesture.velocityX), 'ev.gesture.velocityX');
+        ok(_.isNumber(ev.gesture.velocityY), 'ev.gesture.velocityY');
 
-        var msg = 'EventData tested';
-        var success = true;
-        for(var c=0; c<checks.length; c++) {
-            if(!checks[c]) {
-                success = false;
-                msg = 'EventData Test #'+ c +" failed";
-                break;
-            }
-        }
-
-        ok(success, msg);
         start();
     });
 });
