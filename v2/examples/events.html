@@ -84,6 +84,11 @@
     </style>
 </head>
 <body>
+
+
+<p class="alert"><strong>Press shift on your desktop for multitouch.</strong></p>
+
+
 <div class="sidebar well well-small">
     <h4>Events</h4>
     <label class="checkbox">
@@ -140,11 +145,8 @@
     </ul>
 </div>
 
-<pre id="debug">-</pre>
-
 <div id="hitarea" class="hitarea">
     <h3>Hitarea</h3>
-    <p><strong>Press shift on your desktop for multitouch.</strong></p>
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. <a href="#">Praesent at erat felis.</a> Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
     </p>
@@ -183,7 +185,6 @@
 
 <script>
 
-
     Hammer.plugins.fakeMultitouch();
 
     function getEl(id) {
@@ -191,7 +192,6 @@
     }
 
 
-    var event_log = getEl('event-log');
     var log_elements = {};
     var prevent_scroll_drag = true;
 
