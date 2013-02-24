@@ -3,8 +3,9 @@
      * ShowTouches gesture
      * requires jQuery
      * show all touch on the screen by placing elements at there pageX and pageY
+     * @param   {Boolean}   [force]
      */
-    Hammer.plugins.showTouches = function() {
+    Hammer.plugins.showTouches = function(force) {
         // the circles under your fingers
         var template = '<div style="position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
             'background:rgba(255,255,255,.7);border-radius:20px;pointer-events:none;' +
@@ -34,7 +35,7 @@
                 touches_index = {};
 
                 // clear old elements when not using a mouse
-                if(ev.pointerType != Hammer.POINTER_MOUSE) {
+                if(ev.pointerType != Hammer.POINTER_MOUSE && !force) {
                     removeUnusedElements();
                     return;
                 }
