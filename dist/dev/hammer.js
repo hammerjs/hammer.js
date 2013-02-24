@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0 - 2013-02-23
+/*! Hammer.JS - v1.0.0 - 2013-02-24
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -205,7 +205,14 @@ var last_move_event = null;
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
-var touchdown = false;
+var enable_detect = false;
+
+
+/**
+ * when touch events have been fired, this is true
+ * @type {Boolean}
+ */
+var touch_triggered = false;
 
 
 Hammer.event = {
@@ -233,21 +240,26 @@ Hammer.event = {
 		var self = this;
 
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
-            // touch must be down or a touch element
-            if(ev.type.match(/start|down|move/i) &&
-                (   ev.which === 1 ||
-                    (ev.pointerType && ev.pointerType === ev.MSPOINTER_TYPE_TOUCH) ||
-                    ev.type.match(/touch/)
+            var sourceEventType = ev.type.toLowerCase();
+
+            // mousebutton must be down or a touch event
+            if(sourceEventType.match(/start|down|move/) &&
+                (   ev.which === 1 ||   // mousedown
+                    sourceEventType.match(/touch/) ||   // touch events are always on screen
+                    (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)  // pointerevents touch
                 )) {
-                touchdown = true;
+                enable_detect = true;
             }
 
-            if(ev.type.match(/touch/)) {
+            // we are in a touch event, set the touch triggered bool to true,
+            // this for the conflicts that may occur on ios and android
+            if(sourceEventType.match(/touch|pointer/)) {
                 touch_triggered = true;
             }
 
-            // pointer is down on the screen
-            if(touchdown) {
+            // when touch has been triggered in this detection session
+            // and we are now handling a mouse event, we stop that to prevent conflicts
+            if(enable_detect && !(touch_triggered && sourceEventType.match(/mouse/))) {
                 // update pointer
                 if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
                     Hammer.PointerEvent.updatePointer(eventType, ev);
@@ -274,8 +286,10 @@ Hammer.event = {
                 }
             }
 
-            if(ev.type.match(/up|cancel/i)) {
-                touchdown = false;
+            // on the end we reset everything
+            if(sourceEventType.match(/up|cancel|end/)) {
+                enable_detect = false;
+                touch_triggered = false;
                 Hammer.PointerEvent.reset();
             }
         });
@@ -296,6 +310,7 @@ Hammer.event = {
                 'MSPointerUp MSPointerCancel'
             ];
         }
+        // for non pointer events browsers
         else {
             types = [
                 'touchstart mousedown',
@@ -346,8 +361,7 @@ Hammer.event = {
 
         // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
-        if(ev.type.match(/mouse/) ||
-            (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
+        if(ev.type.match(/mouse/) || (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
             pointerType = Hammer.POINTER_MOUSE;
         }
 
