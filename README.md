@@ -160,8 +160,10 @@ The gesture that was triggered is found in ````event.type````. Following propert
 | Opera Mobile                      | X   | X          | X    | X     | X    |           |
 | Opera Mini                        | X   |            |      |       |      |           |
 |                                                                                        |
-| **Windows 8**                                                                          |
+| **Windows 8 touch**                                                                    |
 | Internet Explorer 10              | X   | X          | X    | X     | X    | X         |
+| Chrome                            | X   | X          | X    | X     | X    | X         |
+| Firefox                           | X   | X          | X    | X     | X    | X         |
 |                                                                                        |
 | **Windows Phone 8**                                                                    |
 | Internet Explorer 10              | X   | X          | X    | X     | X    | X         |
@@ -174,8 +176,8 @@ The gesture that was triggered is found in ````event.type````. Following propert
 | Nokia N900 - Firefox 1.1          | X   |            |      |       |      |           |
 |                                                                                        |
 | **Windows Dekstop**                                                                    |
-| Internet Explorer 7               | X   | X          | X    | X     | X    | X*        |
-| Internet Explorer 8               | X   | X          | X    | X     | X    | X*        |
+| Internet Explorer 7**             | X   | X          | X    | X     | X    | X*        |
+| Internet Explorer 8**             | X   | X          | X    | X     | X    | X*        |
 | Internet Explorer 9               | X   | X          | X    | X     | X    | X*        |
 | Internet Explorer 10              | X   | X          | X    | X     | X    | X*        |
 |                                                                                        |
@@ -193,6 +195,8 @@ Not all gestures are supported on every device. This matrix shows the support we
 If you've tested hammer.js on a different device, please let us know.
 
 *Multitouch gestures are available with the hammer.fakemultitouch.js plugin.
+
+**Only when using the jQuery plugin.
 
 ## Custom Gestures##
 ####Gesture object####
