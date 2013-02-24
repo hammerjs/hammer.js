@@ -176,11 +176,7 @@
 
 <!--[if !IE]> -->
 <script>
-    // show touches doesnt work well in older IE versions due lack of support of
-    // the pointer-event css property
-    if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-        Hammer.plugins.showTouches();
-    }
+    Hammer.plugins.showTouches();
 </script>
 <!-- <![endif]-->
 
@@ -188,9 +184,7 @@
 <script>
 
 
-    if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
-        //Hammer.plugins.fakeMultitouch();
-    }
+    Hammer.plugins.fakeMultitouch();
 
     function getEl(id) {
         return document.getElementById(id);

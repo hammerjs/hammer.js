@@ -15,11 +15,10 @@
          * @return  {Array}     Touches
          */
         Hammer.event.getTouchList = function(ev, eventType) {
-            // Android, iOS etc
+            // get the fake pointerEvent touchlist
             if(Hammer.HAS_POINTEREVENTS) {
-                return Hammer.PointerEvent.getPointers();
+                return Hammer.PointerEvent.getTouchList();
             }
-
             // get the touchlist
             else if(ev.touches) {
                 return ev.touches;
