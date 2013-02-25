@@ -1,8 +1,17 @@
 var el = document.getElementById('toucharea');
 
-// hammer and faker instance
-var hammertime = new Hammer(el);
+// force showing touches
+Hammer.plugins.showTouches(true);
+
+// faker
 var faker = new FakeTouches(el);
+if(set_faketouches_type) {
+    faker.setTouchType(set_faketouches_type);
+}
+
+// hammer
+var hammertime = new Hammer(el);
+
 
 // all events
 var all_events = ["touch", "release", "hold", "tap", "doubletap",
@@ -64,6 +73,10 @@ var gesture_tests = {
 for(var gesture in gesture_tests) {
     if(gesture_tests.hasOwnProperty(gesture)) {
         (function(gesture) {
+            if(gesture_tests[gesture].match(/transform/) && !faker.has_multitouch) {
+                return;
+            }
+
             asyncTest(gesture, function() {
                 testGesture(gesture, gesture_tests[gesture], function(success, msg) {
                     ok(success, msg);
@@ -96,7 +109,7 @@ asyncTest('eventData', function() {
         ok(ev.gesture.direction === Hammer.DIRECTION_RIGHT, 'ev.gesture.direction');
         ok(_.isNumber(ev.gesture.distance), 'ev.gesture.distance');
         ok(ev.gesture.eventType === Hammer.EVENT_MOVE, 'ev.gesture.eventType');
-        ok(ev.gesture.pointerType === Hammer.POINTER_TOUCH, 'ev.gesture.pointerType');
+        ok(ev.gesture.pointerType, 'ev.gesture.pointerType');
         ok(_.isFunction(ev.gesture.preventDefault), 'ev.gesture.preventDefault');
         ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');
         ok(_.isNumber(ev.gesture.scale), 'ev.gesture.scale');

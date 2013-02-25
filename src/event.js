@@ -44,7 +44,6 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
-
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
@@ -73,10 +72,8 @@ Hammer.event = {
 
                 // because touchend has no touches, and we often want to use these in our gestures,
                 // we send the last move event as our eventData in touchend
-                if(eventType === Hammer.EVENT_END) {
-                    if (last_move_event !== null) {
-                        ev = last_move_event;
-                    }
+                if(eventType === Hammer.EVENT_END && last_move_event !== null) {
+                    ev = last_move_event;
                 }
                 // store the last move event
                 else {

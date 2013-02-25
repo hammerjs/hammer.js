@@ -5,6 +5,7 @@
   <title>Basic Test Suite</title>
   <!-- Load local QUnit. -->
   <link rel="stylesheet" href="libs/qunit.css" media="screen">
+    <script src="libs/jquery.js"></script>
   <script src="libs/qunit.js"></script>
   <script src="libs/underscore.js"></script>
   <script src="libs/faketouches.js"></script>
@@ -12,6 +13,13 @@
   <script src="../plugins/hammer.showtouches.js"></script>
 </head>
 <body>
+
+    <script>
+        Hammer.HAS_POINTEREVENTS = true;
+        Hammer.HAS_TOUCHEVENTS = false;
+
+        var set_faketouches_type = FakeTouches.POINTER_TOUCH_EVENTS;
+    </script>
 
     <div id="toucharea" style="width:500px;height:500px;"></div>
 

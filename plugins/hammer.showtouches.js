@@ -43,6 +43,7 @@
                 // place touches by index
                 for(var t= 0,total_touches=ev.touches.length; t<total_touches;t++) {
                     var touch = ev.touches[t];
+
                     var id = touch.identifier;
                     touches_index[id] = touch;
 

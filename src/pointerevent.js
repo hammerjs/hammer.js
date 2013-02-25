@@ -30,6 +30,7 @@ Hammer.PointerEvent = {
             delete this.pointers[pointerEvent.pointerId];
         }
         else {
+            pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
     },
