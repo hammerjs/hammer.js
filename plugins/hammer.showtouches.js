@@ -28,7 +28,7 @@
             }
         }
 
-        Hammer.gesture.register({
+        Hammer.detection.register({
             name: 'show_touches',
             priority: 0,
             handler: function(ev, inst) {

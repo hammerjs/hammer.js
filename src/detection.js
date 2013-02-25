@@ -1,4 +1,4 @@
-Hammer.gesture = {
+Hammer.detection = {
     // contains all registred Hammer.gestures in the correct order
     gestures: [],
 

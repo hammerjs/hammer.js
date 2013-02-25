@@ -24,7 +24,7 @@ module.exports = (grunt) ->
           'src/event.js'
           'src/pointerevent.js'
           'src/utils.js'
-          'src/gesture.js'
+          'src/detection.js'
           'src/gestures.js'
           'src/outro.js']
         dest: 'dist/dev/hammer.js'

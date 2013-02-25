@@ -243,14 +243,14 @@ the inst.options object and trigger the gesture event by calling inst.trigger
 
 
 ####Handle gestures####
-inside the handler you can get/set Hammer.gesture.current. This is the current
+inside the handler you can get/set Hammer.detection.current. This is the current
 detection session. It has the following properties
 
 ###### `{String} name`
 contains the name of the gesture we have detected. it has not a real function,
 only to check in other gestures if something is detected.
 like in the drag gesture we set it to 'drag' and in the swipe gesture we can
-check if the current gesture is 'drag' by accessing Hammer.gesture.current.name
+check if the current gesture is 'drag' by accessing Hammer.detection.current.name
 
 ###### `@readonly {Hammer.Instance} inst`
 the instance we do the detection for
@@ -263,7 +263,7 @@ Used for calculations about timing, distance, etc.
 contains all the properties of the last gesture detect in this session.
 
 after the gesture detection session has been completed (user has released the screen) the 
-Hammer.gesture.current object is copied into Hammer.gesture.previous, this is usefull for gestures 
+Hammer.detection.current object is copied into Hammer.detection.previous, this is usefull for gestures 
 like doubletap, where you need to know if the previous gesture was a tap
 
 options that have been set by the instance can be received by calling inst.options
@@ -273,7 +273,7 @@ your gesture, the second the event argument
 
 ####Register gestures####
 When an gesture is added to the `Hammer.gestures` object, it is auto registered at the setup of the first 
-Hammer instance. You can also call `Hammer.gesture.register` manually and pass your gesture object as a param
+Hammer instance. You can also call `Hammer.detection.register` manually and pass your gesture object as a param
 
 
 

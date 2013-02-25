@@ -67,13 +67,13 @@ Hammer.gestures = Hammer.gestures || {};
  *
  * Handle gestures
  * --------------------
- * inside the handler you can get/set Hammer.gesture.current. This is the current
+ * inside the handler you can get/set Hammer.detection.current. This is the current
  * detection session. It has the following properties
  *      @param  {String}    name
  *      contains the name of the gesture we have detected. it has not a real function,
  *      only to check in other gestures if something is detected.
  *      like in the drag gesture we set it to 'drag' and in the swipe gesture we can
- *      check if the current gesture is 'drag' by accessing Hammer.gesture.current.name
+ *      check if the current gesture is 'drag' by accessing Hammer.detection.current.name
  *
  *      @readonly
  *      @param  {Hammer.Instance}    inst
@@ -89,7 +89,7 @@ Hammer.gestures = Hammer.gestures || {};
  *      contains all the properties of the last gesture detect in this session.
  *
  * after the gesture detection session has been completed (user has released the screen)
- * the Hammer.gesture.current object is copied into Hammer.gesture.previous,
+ * the Hammer.detection.current object is copied into Hammer.detection.previous,
  * this is usefull for gestures like doubletap, where you need to know if the
  * previous gesture was a tap
  *
@@ -102,7 +102,7 @@ Hammer.gestures = Hammer.gestures || {};
  * Register gestures
  * --------------------
  * When an gesture is added to the Hammer.gestures object, it is auto registered
- * at the setup of the first Hammer instance. You can also call Hammer.gesture.register
+ * at the setup of the first Hammer instance. You can also call Hammer.detection.register
  * manually and pass your gesture object as a param
  *
  */
@@ -127,12 +127,12 @@ Hammer.gestures.Hold = {
                 clearTimeout(this.timer);
 
                 // set the gesture so we can check in the timeout if it still is
-                Hammer.gesture.current.name = this.name;
+                Hammer.detection.current.name = this.name;
 
                 // set timer and if after the timeout it still is hold,
                 // we trigger the hold event
                 this.timer = setTimeout(function() {
-                    if(Hammer.gesture.current.name == 'hold') {
+                    if(Hammer.detection.current.name == 'hold') {
                         inst.trigger('hold', ev);
                     }
                 }, inst.options.hold_timeout);
@@ -170,7 +170,7 @@ Hammer.gestures.Tap = {
     handler: function tapGesture(ev, inst) {
         if(ev.eventType == Hammer.EVENT_END) {
             // previous gesture, for the double tap since these are two different gesture detections
-            var prev = Hammer.gesture.previous;
+            var prev = Hammer.detection.previous;
 
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
@@ -183,13 +183,13 @@ Hammer.gestures.Tap = {
             if(prev && prev.name == 'tap' &&
                 (ev.timestamp - prev.lastEvent.timestamp) < inst.options.doubletap_interval &&
                 ev.distance < inst.options.doubletap_distance) {
-                Hammer.gesture.current.name = 'doubletap';
+                Hammer.detection.current.name = 'doubletap';
             }
             else {
-                Hammer.gesture.current.name = 'tap';
+                Hammer.detection.current.name = 'tap';
             }
 
-            inst.trigger(Hammer.gesture.current.name, ev);
+            inst.trigger(Hammer.detection.current.name, ev);
         }
     }
 };
@@ -256,7 +256,7 @@ Hammer.gestures.Drag = {
     handler: function dragGesture(ev, inst) {
         // current gesture isnt drag, but dragged is true
         // this means an other gesture is busy. now call dragend
-        if(Hammer.gesture.current.name != this.name && this.triggered) {
+        if(Hammer.detection.current.name != this.name && this.triggered) {
             inst.trigger(this.name +'end', ev);
             this.triggered = false;
             return;
@@ -277,15 +277,15 @@ Hammer.gestures.Drag = {
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
                 if(ev.distance < inst.options.drag_min_distance &&
-                    Hammer.gesture.current.name != this.name) {
+                    Hammer.detection.current.name != this.name) {
                     return;
                 }
 
                 // we are dragging!
-                Hammer.gesture.current.name = this.name;
+                Hammer.detection.current.name = this.name;
 
                 // lock drag to axis?
-                var last_direction = Hammer.gesture.current.lastEvent.direction;
+                var last_direction = Hammer.detection.current.lastEvent.direction;
                 if(inst.options.drag_lock_to_axis && last_direction !== ev.direction) {
                     // keep direction on the axis that the drag gesture started on
                     if(Hammer.utils.isVertical(last_direction)) {
@@ -350,7 +350,7 @@ Hammer.gestures.Transform = {
     handler: function transformGesture(ev, inst) {
         // current gesture isnt drag, but dragged is true
         // this means an other gesture is busy. now call dragend
-        if(Hammer.gesture.current.name != this.name && this.triggered) {
+        if(Hammer.detection.current.name != this.name && this.triggered) {
             inst.trigger(this.name +'end', ev);
             this.triggered = false;
             return;
@@ -383,7 +383,7 @@ Hammer.gestures.Transform = {
                 }
 
                 // we are transforming!
-                Hammer.gesture.current.name = this.name;
+                Hammer.detection.current.name = this.name;
 
                 // first time, trigger dragstart event
                 if(!this.triggered) {

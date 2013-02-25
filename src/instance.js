@@ -31,7 +31,7 @@ Hammer.Instance = function(element, options) {
     // start detection on touchstart
     Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
         if(self.enabled) {
-            Hammer.gesture.startDetect(self, ev);
+            Hammer.detection.startDetect(self, ev);
         }
     });
 

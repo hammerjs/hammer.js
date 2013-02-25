@@ -81,7 +81,7 @@ Hammer.event = {
                 }
 
                 // trigger the handler
-                handler.call(Hammer.gesture, self.collectEventData(element, eventType, ev));
+                handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
                 // remove pointer after the handler is done
                 if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -204,7 +204,7 @@ Hammer.event = {
              * @return {*}
              */
             stopDetect: function() {
-                return Hammer.gesture.stop();
+                return Hammer.detection.stop();
             }
         };
     }
