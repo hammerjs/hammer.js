@@ -60,7 +60,7 @@ Hammer.detection = {
             if(!this.stopped && inst_options[gesture.name] !== false) {
                 // if a handler returns false, we stop with the detection
                 if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
-                    this.stop();
+                    this.stopDetect();
                     break;
                 }
             }
@@ -79,7 +79,7 @@ Hammer.detection = {
      */
     endDetect: function endDetect(eventData) {
         this.detect(eventData);
-        this.stop();
+        this.stopDetect();
     },
 
 
@@ -88,7 +88,7 @@ Hammer.detection = {
      * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
      * to stop other Hammer.gestures from being fired
      */
-    stop: function stop() {
+    stopDetect: function stopDetect() {
         // clone current data to the store as the previous gesture
         // used for the double tap gesture, since this is an other gesture detect session
         this.previous = Hammer.utils.extend({}, this.current);

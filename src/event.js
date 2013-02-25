@@ -204,7 +204,7 @@ Hammer.event = {
              * @return {*}
              */
             stopDetect: function() {
-                return Hammer.detection.stop();
+                return Hammer.detection.stopDetect();
             }
         };
     }
