@@ -245,12 +245,12 @@
 
                 case 'swipeleft':
                     self.next();
-                    ev.gesture.stop();
+                    ev.gesture.stopDetect();
                     break;
 
                 case 'swiperight':
                     self.prev();
-                    ev.gesture.stop();
+                    ev.gesture.stopDetect();
                     break;
 
                 case 'release':

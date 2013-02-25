@@ -1,3 +1,9 @@
+/*! Hammer.JS - v1.0.0 - 2013-02-25
+ * http://eightmedia.github.com/hammer.js
+ *
+ * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
+ * Licensed under the MIT license */
+
 (function(window) {
     'use strict';
 
@@ -232,7 +238,6 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
-
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
@@ -261,10 +266,8 @@ Hammer.event = {
 
                 // because touchend has no touches, and we often want to use these in our gestures,
                 // we send the last move event as our eventData in touchend
-                if(eventType === Hammer.EVENT_END) {
-                    if (last_move_event !== null) {
-                        ev = last_move_event;
-                    }
+                if(eventType === Hammer.EVENT_END && last_move_event !== null) {
+                    ev = last_move_event;
                 }
                 // store the last move event
                 else {
@@ -394,7 +397,7 @@ Hammer.event = {
              * might be useful after a swipe was detected
              * @return {*}
              */
-            stop: function() {
+            stopDetect: function() {
                 return Hammer.gesture.stop();
             }
         };
@@ -433,6 +436,7 @@ Hammer.PointerEvent = {
             delete this.pointers[pointerEvent.pointerId];
         }
         else {
+            pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
     },
