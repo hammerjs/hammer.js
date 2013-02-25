@@ -397,7 +397,7 @@ Hammer.event = {
              * might be useful after a swipe was detected
              * @return {*}
              */
-            stop: function() {
+            stopDetect: function() {
                 return Hammer.gesture.stop();
             }
         };

@@ -42,6 +42,10 @@ function testGesture(gesture, expect_events, callback) {
         var expect = expect_events.split(" ");
         var events = Object.keys(triggered_events);
 
+        _.each(triggered_events, function(ev, name) {
+            testEventData(name, ev);
+        });
+
         // trigger callback with true/false is all the events are triggered
         // if also any other events are triggered it is false
         var success = (events.length === expect.length);
@@ -89,40 +93,54 @@ for(var gesture in gesture_tests) {
 
 
 /**
- * test eventData properies
+ * test if event data contains wright values
+ * @param   {String}    name
+ * @param   {Object}    ev
  */
-asyncTest('eventData', function() {
-    triggered_events = {};
+function testEventData(name, ev) {
+    // types match
+    ok(ev.type == name, 'ev.type');
 
-    faker.triggerGesture('DragRight', function() {
-        var ev = triggered_events['dragright'];
-        var checks = [];
+    // has gesture object
+    ok(_.isObject(ev.gesture), 'ev.gesture');
 
-        // test all properties
-        ok(ev.type == 'dragright', 'ev.type');
-        ok(_.isObject(ev.gesture), 'ev.gesture');
-        ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
-        ok(_.isObject(ev.gesture.center), 'ev.gesture.center');
-        ok(_.isNumber(ev.gesture.deltaTime), 'ev.gesture.deltatime');
-        ok(_.isNumber(ev.gesture.deltaX), 'ev.gesture.deltaX');
-        ok(_.isNumber(ev.gesture.deltaY), 'ev.gesture.deltaY');
-        ok(ev.gesture.direction === Hammer.DIRECTION_RIGHT, 'ev.gesture.direction');
-        ok(_.isNumber(ev.gesture.distance), 'ev.gesture.distance');
-        ok(ev.gesture.eventType === Hammer.EVENT_MOVE, 'ev.gesture.eventType');
-        ok(ev.gesture.pointerType, 'ev.gesture.pointerType');
-        ok(_.isFunction(ev.gesture.preventDefault), 'ev.gesture.preventDefault');
-        ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');
-        ok(_.isNumber(ev.gesture.scale), 'ev.gesture.scale');
-        ok(_.isObject(ev.gesture.srcEvent), 'ev.gesture.srcEvent');
-        ok(_.isObject(ev.gesture.startEvent), 'ev.gesture.startEvent');
-        ok(_.isFunction(ev.gesture.stop), 'ev.gesture.stop');
-        ok(_.isFunction(ev.gesture.stopPropagation), 'ev.gesture.stopPropagation');
-        ok(_.isElement(ev.gesture.target), 'ev.gesture.target');
-        ok(_.isNumber(ev.gesture.timestamp), 'ev.gesture.timestamp');
-        ok(_.isArray(ev.gesture.touches), 'ev.gesture.touches');
-        ok(_.isNumber(ev.gesture.velocityX), 'ev.gesture.velocityX');
-        ok(_.isNumber(ev.gesture.velocityY), 'ev.gesture.velocityY');
+    // EVENT_START|MOVE|END
+    ok(ev.gesture.eventType, 'ev.gesture.eventType');
 
-        start();
-    });
-});
+    ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
+    ok(_.isObject(ev.gesture.center), 'ev.gesture.center');
+    ok(_.isNumber(ev.gesture.deltaTime), 'ev.gesture.deltatime');
+    ok(_.isNumber(ev.gesture.deltaX), 'ev.gesture.deltaX');
+    ok(_.isNumber(ev.gesture.deltaY), 'ev.gesture.deltaY');
+    ok(_.isNumber(ev.gesture.distance), 'ev.gesture.distance');
+
+    // direction
+    ok(ev.gesture.direction, 'ev.gesture.direction');
+    var dir;
+    if(dir = ev.type.match(/up|down|left|right/)) {
+        ok(ev.gesture.direction === Hammer['DIRECTION_'+ dir[0].toUpperCase()]);
+    }
+
+    // pointerType
+    ok(ev.gesture.pointerType, 'ev.gesture.pointerType');
+    var pointer_type = Hammer.POINTER_TOUCH;
+    if( faker.touch_type == FakeTouches.POINTER_TYPE_MOUSE ||
+        faker.touch_type == FakeTouches.MOUSE_EVENTS) {
+        pointer_type = Hammer.POINTER_MOUSE;
+    }
+    ok(ev.gesture.pointerType == pointer_type, 'not matching pointertype: '+ ev.gesture.pointerType +':'+ pointer_type);
+
+    ok(_.isFunction(ev.gesture.preventDefault), 'ev.gesture.preventDefault');
+    ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');
+    ok(_.isNumber(ev.gesture.scale), 'ev.gesture.scale');
+    ok(_.isObject(ev.gesture.srcEvent), 'ev.gesture.srcEvent');
+    ok(_.isObject(ev.gesture.startEvent), 'ev.gesture.startEvent');
+    ok(_.isFunction(ev.gesture.stopDetect), 'ev.gesture.stopDetect');
+    ok(_.isFunction(ev.gesture.stopPropagation), 'ev.gesture.stopPropagation');
+    ok(_.isElement(ev.gesture.target), 'ev.gesture.target');
+    ok(_.isNumber(ev.gesture.timestamp), 'ev.gesture.timestamp');
+    ok(_.isArray(ev.gesture.touches), 'ev.gesture.touches');
+    ok(ev.gesture.touches.length >= 1, 'ev.gesture.touches');
+    ok(_.isNumber(ev.gesture.velocityX), 'ev.gesture.velocityX');
+    ok(_.isNumber(ev.gesture.velocityY), 'ev.gesture.velocityY');
+}
