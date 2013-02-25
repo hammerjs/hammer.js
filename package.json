@@ -32,7 +32,7 @@
         "grunt-contrib-watch":"~0.2",
         "grunt-contrib-qunit": "0.1"
     },
-    "main": "Gruntfile.coffee",
+    "main": "dist/stable/latest/hammer.js",
     "engines": {
         "node": ">=0.8.0"
     },
