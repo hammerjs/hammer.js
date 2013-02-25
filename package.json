@@ -33,6 +33,7 @@
         "grunt-contrib-qunit": "0.1"
     },
     "main": "Gruntfile.coffee",
+    "ender": "plugins/ender.js",
     "engines": {
         "node": ">=0.8.0"
     },
