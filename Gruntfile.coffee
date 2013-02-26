@@ -80,7 +80,6 @@ module.exports = (grunt) ->
       all: ['tests/**/*.html']
 
     # release
-    bumpup: 'package.json'
     tagrelease:
       file: 'package.json'
       commit: false
@@ -97,7 +96,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
-  grunt.loadNpmTasks 'grunt-bumpup'
   grunt.loadNpmTasks 'grunt-tagrelease'
 
 
@@ -105,13 +103,3 @@ module.exports = (grunt) ->
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
   grunt.registerTask 'build', ['concat','uglify','test']
-
-  grunt.registerTask 'release', (type)->
-    type = (if type then type else "patch")
-    grunt.task.run 'concat'
-    grunt.task.run 'uglify'
-    grunt.task.run 'test'
-    grunt.task.run 'bumpup:'+type
-    grunt.task.run 'concat'
-    grunt.task.run 'uglify'
-    grunt.task.run 'tagrelease'

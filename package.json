@@ -2,7 +2,7 @@
     "name": "hammerjs",
     "title": "Hammer.JS",
     "description": "A javascript library for multi-touch gestures",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "homepage": "http://eightmedia.github.com/hammer.js",
     "licenses": [
         {
@@ -34,7 +34,6 @@
         "grunt-contrib-jshint": "0.1.x",
         "grunt-contrib-watch": "0.2.x",
         "grunt-contrib-qunit": "0.1.x",
-        "grunt-bumpup": "0.1.x",
         "grunt-tagrelease": "0.1.x"
     },
     "main": "dist/hammer.js",
