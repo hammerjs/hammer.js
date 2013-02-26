@@ -27,12 +27,12 @@ module.exports = (grunt) ->
           'src/detection.js'
           'src/gestures.js'
           'src/outro.js']
-        dest: 'dist/dev/hammer.js'
+        dest: 'dist/hammer.js'
       devjquery:
         src: [
-          'dist/dev/hammer.js'
+          'dist/hammer.js'
           'plugins/jquery.hammer.js']
-        dest: 'dist/dev/jquery.hammer.js'
+        dest: 'dist/jquery.hammer.js'
 
     # minify the sourcecode
     uglify:
@@ -40,22 +40,8 @@ module.exports = (grunt) ->
         options:
           banner: '<%= meta.banner %>'
         files:
-          'dist/stable/<%= pkg.version %>/hammer.min.js': ['dist/dev/hammer.js']
-          'dist/stable/<%= pkg.version %>/jquery.hammer.min.js': ['dist/dev/jquery.hammer.js']
-
-    # copy src to latest version
-    copy:
-      hammer:
-        src: ['dist/dev/hammer.js']
-        dest: 'dist/stable/<%= pkg.version %>/hammer.js'
-      jquery:
-        src: ['dist/dev/jquery.hammer.js']
-        dest: 'dist/stable/<%= pkg.version %>/jquery.hammer.js'
-      latest:
-        src: ['dist/stable/<%= pkg.version %>/*.js'],
-        dest: 'dist/stable/latest/'
-        expand: true
-        flatten: true
+          'dist/hammer.min.js': ['dist/hammer.js']
+          'dist/jquery.hammer.min.js': ['dist/jquery.hammer.js']
 
     # check for optimisations and errors
     jshint:
@@ -95,7 +81,6 @@ module.exports = (grunt) ->
 
 
   # Load tasks
-  grunt.loadNpmTasks 'grunt-contrib-copy'
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
@@ -108,4 +93,4 @@ module.exports = (grunt) ->
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
   grunt.registerTask 'build', ['concat','test']
-  grunt.registerTask 'release', ['concat','uglify','copy','test']
+  grunt.registerTask 'release', ['concat','uglify','test']
