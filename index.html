@@ -1,299 +1,161 @@
-<!doctype html>
-<html>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Hammer.js &mdash; A javascript library for multi touch gestures</title>
-    <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        font: 16px/1.25 "Helvetica Neue", Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        font-smoothing: antialiased;
-    }
-    html {
-        background: #202020 url(img/bg.png);
-    }
-    body {        
-        background: url(img/mchammer.png) no-repeat 95% 100%;
-        color: #fff;
-    }
-    img { 
-        border: none; 
-    }    
-    article {
-        max-width: 660px;
-        margin: 0 auto;
-        position: relative;
-    }
-    h1, h2 {
-        margin: 0;
-        font: 300 36px 'Oswald', sans-serif;
-    }
-    h2 {
-        margin: 0 0 15px 20px;
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
-    }
-    hgroup h2 {
-        text-align: center;
-        margin: 0;
-    }
-    h1 {
-        text-indent: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        background: url(img/logo.png) no-repeat 50% 0;
-        height: 75px;
-        margin-top: 48px;
-    }
-    div {
-        background: #000;
-        background: rgba(0, 0, 0, .6);
-        padding: 10px;
-        margin-bottom: 50px;
-    }
-    ul {
-        margin: 0;
-        padding: 0 15px;
-        list-style-type: square;
-        list-style-position: inside;
-    }
-    .icons {
-        background: none;
-        padding: 0;
-    }
-   .icons ul {
-        list-style: none;
-        font: 300 18px 'Oswald', sans-serif;
-        overflow: hidden;
-        text-align: center;
-       padding: 0;
-    }
-    .icons img {
-        display: block;
-    }
-    .icons li {
-        float: left;
-        margin-right: 17px;
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, .6);
-    }
-    li {
-        color: #fc0;
-        padding: 5px 0;
-    }
-    li span {
-        color: #fff;
-    }
-    section {
-        text-align: center;
-        overflow: hidden;
-        margin: 50px 0;
-    }
-    section a {
-        font-weight: 14px;
-        display: inline-block;
-        width: 222px;
-        margin: 0 15px;
-        text-align: center;
-        text-decoration: none;
-        background: #000;
-        color: #fff;
-        padding: 12px 0;
-    }
-    section a:first-child {
-        background: #fc0;
-        color: #000;
-    }
-    section.eightmedia a { 
-        color: #fff; 
-        font-size: 13px;
-        line-height: 16px;
-        background: none; 
-        padding: 0; 
-    }
-    section.eightmedia a img {
-        margin-top: 5px;
-    }
-    section span {
-        display: block;
-        text-transform: uppercase;
-        font: 400 20px 'Oswald', sans-serif;
-    }
-    
-    #touchme{
-        width: 100%;
-        height: 300px;
-        position: relative;
-        background-color: black;
-        margin-bottom: 100px;
-    }
-        #touchme p{
+    <meta charset="utf-8">
+    <title>Hammer.js - A javascript library for multi-touch gestures</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 20px;
+            padding-bottom: 40px;
+            background: #fff url(img/hammer-figure.png) no-repeat right 30px;
+        }
+
+            /* Custom container */
+        .container-narrow {
+            margin: 0 auto;
+            max-width: 700px;
+            padding: 20px 30px;
+            background: rgba(255,255,255,.9);
+        }
+        .container-narrow > hr {
+            margin: 30px 0;
+        }
+
+        .btn small {
+            font-size: 60%;
+            font-weight: normal;
+        }
+
+            /* Main marketing message and sign up button */
+        .jumbotron {
+            margin: 60px 0;
             text-align: center;
-            font: 400 36px/36px 'Oswald', sans-serif;
-            color: #ffce00;
-            margin-top: 130px;
         }
-        #callout{
-            position: absolute;
-            background-color: #ffce00;
-            color: black;
-            font: 400 24px/36px 'Oswald', sans-serif;
-            position: absolute;
-            bottom: -50px;
-            left: 0;
-            padding: 4px 10px;
+        .jumbotron h1 {
+            font-size: 72px;
+            line-height: 1;
         }
-        #callout:after{
-            content: '';
-            display: block;
-            width: 39px;
-            height: 20px;
-            position: absolute;
-            top: -20px;
-            left: 120px;
-            background: url('img/balloon.png') no-repeat top left;
+        .jumbotron .btn {
+            font-size: 21px;
+            padding: 14px 24px;
         }
 
-
-
-    .v2 {
-        background: #fff;
-        padding: 8px 10px;
-        color: #000;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        margin-left: 130px;
-        -webkit-transform: rotate(5deg);
-        -moz-transform: rotate(5deg);
-        -o-transform: rotate(5deg);
-        transform: rotate(5deg);
-        text-decoration: none;
-        font-weight: bold;
-        -webkit-box-shadow: 0 0 4px rgba(0,0,0,.6);
-        box-shadow: 0 0 4px rgba(0,0,0,.6);
-        text-align: center;
-    }
-
-
+            /* Supporting marketing content */
+        .marketing {
+            margin: 60px 0;
+        }
+        .marketing p + h4 {
+            margin-top: 28px;
+        }
     </style>
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
 </head>
+
 <body>
-<article>
-    <hgroup>
-        <h1>Hammer.js</h1>
-        <h2>A javascript library for multi-touch gestures</h2>
-    </hgroup>
+<div class="container-narrow">
 
-    <a href="v2/" class="v2">v2 is coming!<br>Check it out</a>
-
-    <section>
-        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
-        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb (minified)</a>
-    </section>
-    
-    <div id="touchme">
-        <p>You can touch me...</p>
-        <span id="callout">Bust a few moves...</span>
-    </div>
-    
-    <h2>Why use Hammer.js?</h2>
-    <div>
-        <ul>
-            <li><span>easy implementation of touch events in your website</span>
-            <li><span>lightweight with only 2kb (minified and gzip), easy to dig into</span>
-            <li><span>focused javascript library, only for multi-touch gestures</span>
-            <li><span>completely standalone, and a jQuery plugin is available</span>
+    <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a class="relace-version" href="https://github.com/EightMedia/hammer.js/blob/v1.0.0/README.md">Docs</a></li>
+            <li><a href="https://github.com/EightMedia/hammer.js/issues">Issues</a></li>
+            <li><a href="https://github.com/EightMedia/hammer.js/">Source on GitHub</a></li>
         </ul>
+        <h3 class="muted">Hammer.js</h3>
     </div>
-    
-    <h2>Gesture supported by Hammer.js</h2>
-    <div class="icons">
-        <ul>
-            <li><img src="img/tap.png" width="90" height="90" alt="">Tap
-            <li><img src="img/doubletap.png" width="90" height="90" alt="">Double Tap
-            <li><img src="img/drag.png" width="90" height="90" alt="">Swipe
-            <li><img src="img/hold.png" width="90" height="90" alt="">Hold
-            <li><img src="img/transform.png" width="90" height="90" alt="">Transform
-            <li><img src="img/drag.png" width="90" height="90" alt="">Drag
-        </ul>
+
+    <hr>
+
+    <div class="jumbotron">
+        <h1>You can touch this</h1>
+        <p class="lead">A javascript library for multi-touch gestures.</p>
+        <p><a class="btn btn-large btn-success relace-version" href="https://github.com/EightMedia/hammer.js/tree/v1.0.0/dist">
+                Download Hammer.min.js <small class="relace-version">v1.0.0</small></a>
+        </p>
+        <p>
+            <a href="https://github.com/EightMedia/hammer.js">View Source on GitHub &rsaquo;</a><br>
+            <a class="relace-version" href="https://github.com/EightMedia/hammer.js/blob/v1.0.0/README.md">Read documentation &rsaquo;</a>
+        </p>
     </div>
-    
-    <section>
-        <a href="https://github.com/eightmedia/hammer.js">View Hammer.js <span>on GitHub</span></a>
-        <a href="https://github.com/EightMedia/hammer.js/zipball/master"><span>Download source</span> It's just 2kb (minified)</a>
-    </section>
-    
-    <section class="eightmedia">    
-        <a href="http://www.eight.nl">
-            <img src="http://test.eightmedia.com/eightlabs/eight.png" width="100" height="33" alt="Internetbureau Eight Media in Arnhem">
-        </a>
-    </section>
-    
-    <script src="hammer.js"></script>
-    <script>
-    
-        var container = document.getElementById('touchme'),
-        callout = document.getElementById('callout'),
-        shouts = {}
-        shouts['hold'] = 'You are holding me.';
-        shouts['tap'] = 'You just tapped me.';
-        shouts['doubletap'] = 'You just tapped me. Twice.';
-        shouts['transformstart'] = 'You started transforming me.';
-        shouts['transform'] = 'You are transforming me.';
-        shouts['transformend'] = 'You just transformed me.';
-        shouts['dragstart'] = 'You started dragging me.';
-        shouts['drag'] = 'You are dragging me.';
-        shouts['dragend'] = 'You just dragged me.';
-        shouts['swipe'] = 'You just swiped me.';
 
-        container.onselectstart = function() { return false; }; // IE fix for doubletap
-        
-        var hammer = new Hammer(container, {
-            tap_max_interval: 700 // seems to bee needed for IE8
-        });
+    <hr>
 
-        function shout(e){
-            callout.innerHTML = 'Ooh! '+ shouts[e.type];
+    <div class="row-fluid marketing">
+        <div class="span6">
+            <h4>It's small and standalone</h4>
+            <p>At only 3kb when gzipped, it is a lightweight and efficient library. No extras you don't need.</p>
+            <p>Hammer doesn't require jQuery or anyother libraries to work. A jQuery plugin is available though.</p>
+
+            <h4>Supported gestures</h4>
+            <p>Hammer supports Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate. Each gesture triggers useful events and eventData.</p>
+
+            <h4>Examples</h4>
+            <ul class="inline">
+                <li><a href="examples/events.html">Event logger</a></li>
+                <li><a href="examples/jquery.html">jQuery plugin</a></li>
+                <li><a href="examples/pull-to-refresh.html">Pull-to-refresh</a></li>
+                <li><a href="examples/carousel.html">Carousel</a></li>
+            </ul>
+        </div>
+
+        <div class="span6">
+            <h4>Device support</h4>
+            <p>Android, BlackBerry, iOS and Windows touch devices. It also works on desktop browsers.
+                Support for older IE versions with the jQuery plugin.</p>
+
+            <h4>Easy-implementation</h4>
+<p><pre>Hammer(el).on("swipeleft", function() {
+    alert('you swiped left!');
+});</pre></p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="footer">
+        <p>
+            Created by <a href="http://twitter.com/jorikdelaporik">Jorik Tangelder</a>
+            and developed at <a href="http://www.eight.nl/" title="Internetbureau Eight Media in Arnhem">Eight Media</a> in Arnhem, the Netherlands.
+        </p>
+    </div>
+
+</div>
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script>
+    // replace version number with the latest version
+    var latest_version = 'v1.0.0';
+
+    $(".relace-version").each(function() {
+        var el = $(this);
+        if(this.tagName == 'A') {
+            el.attr("href", el.attr("href").replace('v1.0.0', latest_version));
+        } else {
+            el.text(el.text().replace('v1.0.0', latest_version));
         }
+    });
 
-        var type;
-        for(type in shouts) {
-            hammer['on'+ type] = shout;
-        }
 
-    </script>
-    
-    <script type="text/javascript">
+    // google analytics
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-30289566-1']);
+    _gaq.push(['_trackPageview']);
 
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-30289566-1']);
-        _gaq.push(['_trackPageview']);
+    (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
 
-        (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-    
-    </script>
-    <script type="text/javascript">
-      var _gauges = _gauges || [];
-      (function() {
-        var t   = document.createElement('script');
-        t.type  = 'text/javascript';
-        t.async = true;
-        t.id    = 'gauges-tracker';
-        t.setAttribute('data-site-id', '4ffc10c9613f5d4b2c000036');
-        t.src = '//secure.gaug.es/track.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(t, s);
-      })();
-    </script>
-</article>
+</script>
+
+
 </body>
 </html>
