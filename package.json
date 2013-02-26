@@ -4,17 +4,21 @@
     "description": "A javascript library for multi-touch gestures",
     "version": "1.0.0",
     "homepage": "http://eightmedia.github.com/hammer.js",
-    "licenses": [{
+    "licenses": [
+        {
             "type": "MIT",
             "url": "https://github.com/eightmedia/hammer.js/blob/master/LICENSE"
-    }],
-
-    "keywords": ["touch", "gestures", "ender"],
+        }
+    ],
+    "keywords": [
+        "touch",
+        "gestures",
+        "ender"
+    ],
     "author": {
         "name": "Jorik Tangelder",
         "email": "j.tangelder@gmail.com"
     },
-
     "repository": {
         "type": "git",
         "url": "git://github.com/eightmedia/hammer.js.git"
@@ -24,13 +28,14 @@
     },
     "devDependencies": {
         "grunt": "0.4.x",
-        "grunt-contrib-copy": "0.4.x",
         "grunt-contrib-connect": "0.1.x",
         "grunt-contrib-concat": "0.1.x",
         "grunt-contrib-uglify": "0.1.x",
         "grunt-contrib-jshint": "0.1.x",
         "grunt-contrib-watch": "0.2.x",
-        "grunt-contrib-qunit": "0.1.x"
+        "grunt-contrib-qunit": "0.1.x",
+        "grunt-bumpup": "0.1.x",
+        "grunt-tagrelease": "0.1.x"
     },
     "main": "dist/stable/latest/hammer.js",
     "engines": {

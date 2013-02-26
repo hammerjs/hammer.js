@@ -1,4 +1,4 @@
-# Hammer.js v2 (release candidate)  [![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
+# Hammer.js [![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
 
 ### A javascript library for multi-touch gestures
 
@@ -6,10 +6,6 @@
 > You *CAN* touch this /
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
-
-## Demo
-[Watch the demo's](http://eightmedia.github.com/hammer.js/v2/). 
-It always needs some testing with all kind of devices, please contribute!
 
 
 ## Why the rewrite
@@ -19,7 +15,7 @@ It always needs some testing with all kind of devices, please contribute!
 - Windows8 has touch AND mouse, so the Pointer Events API needs to be implemented, also other browsers on windows8 didn't respond to touches.
 
 
-## Features in v2
+## Features
 - DOM Events
 - Debug plugins
 - Custom gestures
@@ -274,11 +270,6 @@ your gesture, the second the event argument
 ####Register gestures####
 When an gesture is added to the `Hammer.gestures` object, it is auto registered at the setup of the first 
 Hammer instance. You can also call `Hammer.detection.register` manually and pass your gesture object as a param
-
-
-
-## Todo
-- Update website in gh-pages
 
 
 ## Contributing
