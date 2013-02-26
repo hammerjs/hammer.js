@@ -59,7 +59,7 @@ module.exports = (grunt) ->
         sub: false
         browser: true
       build:
-        src: ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
+        src: ['dist/hammer.js']
 
     # watch for changes
     watch:
@@ -112,4 +112,6 @@ module.exports = (grunt) ->
     grunt.task.run 'uglify'
     grunt.task.run 'test'
     grunt.task.run 'bumpup:'+type
+    grunt.task.run 'concat'
+    grunt.task.run 'uglify'
     grunt.task.run 'tagrelease'
