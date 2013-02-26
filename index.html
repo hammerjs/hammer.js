@@ -118,18 +118,34 @@
         </div>
     </div>
 
+    <script>
+        // replace version number with the latest version
+        var latest_version = 'v1.0.0';
+
+        $(".relace-version").each(function() {
+            var el = $(this);
+            if(this.tagName == 'A') {
+                el.attr("href", el.attr("href").replace('v1.0.0', latest_version));
+            } else {
+                el.text(el.text().replace('v1.0.0', latest_version));
+            }
+        });
+    </script>
+
     <hr>
 
     <div class="footer clearfix">
         <div class="pull-left">
-            <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+            <a href="https://twitter.com/share"
+               class="twitter-share-button"
+               data-text="You can touch this! Brand new Hammer.js #touch #javascript">Tweet</a>
             <script>
                 !function(d,s,id){
                     var js,fjs=d.getElementsByTagName(s)[0];
                     if(!d.getElementById(id)){
                         js=d.createElement(s);
                         js.id=id;
-                        js.src="//platform.twitter.com/widgets.js";
+                        js.src="http://platform.twitter.com/widgets.js";
                         fjs.parentNode.insertBefore(js,fjs);
                     }
                 }(document,"script","twitter-wjs");
@@ -140,22 +156,10 @@
             and developed at <a href="http://www.eight.nl/" title="Internetbureau Eight Media in Arnhem">Eight Media</a> in Arnhem, the Netherlands.
         </p>
     </div>
-
 </div>
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script>
-    // replace version number with the latest version
-    var latest_version = 'v1.0.0';
-
-    $(".relace-version").each(function() {
-        var el = $(this);
-        if(this.tagName == 'A') {
-            el.attr("href", el.attr("href").replace('v1.0.0', latest_version));
-        } else {
-            el.text(el.text().replace('v1.0.0', latest_version));
-        }
-    });
 
 
     // google analytics
