@@ -8,6 +8,10 @@
         // keeps the start position to keep it centered
         var start_pos = false;
 
+        // test for msMaxTouchPoints to enable this for IE10 with only one pointer (a mouse in all/most cases)
+        Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled &&
+            navigator.msMaxTouchPoints && navigator.msMaxTouchPoints >= 1;
+
         /**
          * overwrites Hammer.event.getTouchList.
          * @param   {Event}     ev
