@@ -82,7 +82,7 @@ module.exports = (grunt) ->
     # release
     tagrelease:
       file: 'package.json'
-      commit: false
+      commit: true
       message: 'Release %version%'
       prefix: 'v'
       annotate: false
