@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.0 - 2013-02-26
+/*! Hammer.JS - v1.0.1 - 2013-02-26
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1291,9 +1291,9 @@ if(typeof window.define === 'function' && window.define.amd) {
     /**
      * bind dom events
      * this overwrites addEventListener
-     * @param elements
-     * @param types
-     * @param handler
+     * @param   {HTMLElement}   element
+     * @param   {String}        eventTypes
+     * @param   {Function}      handler
      */
     Hammer.event.bindDom = function(element, eventTypes, handler) {
         $(element).on(eventTypes, function(ev) {
@@ -1332,7 +1332,8 @@ if(typeof window.define === 'function' && window.define.amd) {
     /**
      * the methods are called by the instance, but with the jquery plugin
      * we use the jquery event methods instead.
-     * @this Hammer.Instance
+     * @this    {Hammer.Instance}
+     * @return  {jQuery}
      */
     Hammer.Instance.prototype.on = function(types, handler) {
         return $(this.element).on(types, handler);
@@ -1345,9 +1346,10 @@ if(typeof window.define === 'function' && window.define.amd) {
     /**
      * trigger events
      * this is called by the gestures to trigger an event like 'tap'
-     * @this Hammer.Instance
-     * @param gesture
-     * @param data
+     * @this    {Hammer.Instance}
+     * @param   {String}    gesture
+     * @param   {Object}    eventData
+     * @return  {jQuery}
      */
     Hammer.Instance.prototype.trigger = function(gesture, eventData){
         return $(eventData.srcEvent.target).trigger({
@@ -1361,16 +1363,16 @@ if(typeof window.define === 'function' && window.define.amd) {
      * jQuery plugin
      * create instance of Hammer and watch for gestures,
      * and when called again you can change the options
-     * @param   object      [options={}]
-     * @return  jQuery
+     * @param   {Object}    [options={}]
+     * @return  {jQuery}
      */
     $.fn.hammer = function(options) {
         return this.each(function() {
             var el = $(this);
-            var inst = el.data("hammer");
+            var inst = el.data('hammer');
             // start new hammer instance
             if(!inst) {
-                el.data("hammer", Hammer(this, options || {}));
+                el.data('hammer', Hammer(this, options || {}));
             }
             // change the options
             else if(inst && options) {
@@ -1378,5 +1380,4 @@ if(typeof window.define === 'function' && window.define.amd) {
             }
         });
     };
-
 })(jQuery);
