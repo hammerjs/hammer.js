@@ -167,6 +167,9 @@ The gesture that was triggered is found in ````event.type````. Following propert
 | **Windows Phone 7.5**                                                                  |
 | Internet Explorer                 | X   |            |      |       |      |           |
 |                                                                                        |
+| **Chrome OS**                                                                          |
+| Chrome                            | X   | X          | X    | X     | X    | X         |
+|                                                                                        |
 | **Other devices**                                                                      |
 | Kindle Fire                       | X   | X          | X    | X     | X    | X         |
 | Nokia N900 - Firefox 1.1          | X   |            |      |       |      |           |
