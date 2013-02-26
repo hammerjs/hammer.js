@@ -104,13 +104,12 @@ module.exports = (grunt) ->
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'test', ['jshint','qunit']
-  grunt.registerTask 'build', ['concat','test']
-  grunt.registerTask 'release', ['concat','uglify','test','git']
+  grunt.registerTask 'build', ['concat','uglify','test']
 
   grunt.registerTask 'release', (type)->
     type = (if type then type else "patch")
     grunt.task.run 'concat'
     grunt.task.run 'uglify'
     grunt.task.run 'test'
-    #grunt.task.run 'bumpup:'+type
+    grunt.task.run 'bumpup:'+type
     grunt.task.run 'tagrelease'
