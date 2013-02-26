@@ -37,7 +37,7 @@
         "grunt-bumpup": "0.1.x",
         "grunt-tagrelease": "0.1.x"
     },
-    "main": "dist/stable/latest/hammer.js",
+    "main": "dist/hammer.js",
     "engines": {
         "node": ">=0.8.0"
     },

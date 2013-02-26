@@ -83,7 +83,7 @@ module.exports = (grunt) ->
     bumpup: 'package.json'
     tagrelease:
       file: 'package.json'
-      commit: true
+      commit: false
       message: 'Release %version%'
       prefix: 'v'
       annotate: false
