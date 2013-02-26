@@ -84,9 +84,9 @@ function setup() {
         }
     }
 
-    // Add touch events on the window
-    Hammer.event.onTouch(document.body, Hammer.EVENT_MOVE, Hammer.detection.detect);
-    Hammer.event.onTouch(document.body, Hammer.EVENT_END, Hammer.detection.endDetect);
+    // Add touch events on the document
+    Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.detection.detect);
+    Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.detection.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;
@@ -596,9 +596,10 @@ Hammer.utils = {
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,
             vendors = ['webkit','khtml','moz','ms','o',''],
-            css_props = inst.options.stop_browser_behavior;
+            css_props = inst.options.stop_browser_behavior,
+            el = inst.element;
 
-        if(!css_props) {
+        if(!css_props || !el.style) {
             return;
         }
 
@@ -610,14 +611,14 @@ Hammer.utils = {
                     if(vendors[i]) {
                         prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
                     }
-                    inst.element.style[prop] = css_props[p];
+                    el.style[prop] = css_props[p];
                 }
             }
         }
 
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
-            inst.element.onselectstart = function() {
+            el.onselectstart = function() {
                 return false;
             };
         }

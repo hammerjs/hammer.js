@@ -145,9 +145,10 @@ Hammer.utils = {
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,
             vendors = ['webkit','khtml','moz','ms','o',''],
-            css_props = inst.options.stop_browser_behavior;
+            css_props = inst.options.stop_browser_behavior,
+            el = inst.element;
 
-        if(!css_props) {
+        if(!css_props || !el.style) {
             return;
         }
 
@@ -159,14 +160,14 @@ Hammer.utils = {
                     if(vendors[i]) {
                         prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
                     }
-                    inst.element.style[prop] = css_props[p];
+                    el.style[prop] = css_props[p];
                 }
             }
         }
 
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
-            inst.element.onselectstart = function() {
+            el.onselectstart = function() {
                 return false;
             };
         }
