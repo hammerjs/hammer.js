@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.1 - 2013-02-26
+/*! Hammer.JS - v1.0.2dev - 2013-02-26
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -85,8 +85,8 @@ function setup() {
     }
 
     // Add touch events on the window
-    Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.detection.detect);
-    Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.detection.endDetect);
+    Hammer.event.onTouch(document.body, Hammer.EVENT_MOVE, Hammer.detection.detect);
+    Hammer.event.onTouch(document.body, Hammer.EVENT_END, Hammer.detection.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;
