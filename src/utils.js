@@ -140,15 +140,14 @@ Hammer.utils = {
 
     /**
      * stop browser default behavior with css props
-     * @param   {Hammer.Instance}   inst
+     * @param   {HtmlElement}   element
+     * @param   {Object}        css_props
      */
-    stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
+    stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
         var prop,
-            vendors = ['webkit','khtml','moz','ms','o',''],
-            css_props = inst.options.stop_browser_behavior,
-            el = inst.element;
+            vendors = ['webkit','khtml','moz','ms','o',''];
 
-        if(!css_props || !el.style) {
+        if(!css_props || !element.style) {
             return;
         }
 
@@ -157,17 +156,21 @@ Hammer.utils = {
             for(var p in css_props) {
                 if(css_props.hasOwnProperty(p)) {
                     prop = p;
+
+                    // vender prefix at the property
                     if(vendors[i]) {
                         prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
                     }
-                    el.style[prop] = css_props[p];
+
+                    // set the style
+                    element.style[prop] = css_props[p];
                 }
             }
         }
 
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
-            el.onselectstart = function() {
+            element.onselectstart = function() {
                 return false;
             };
         }

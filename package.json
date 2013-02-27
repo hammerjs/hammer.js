@@ -2,7 +2,7 @@
     "name": "hammerjs",
     "title": "Hammer.JS",
     "description": "A javascript library for multi-touch gestures",
-    "version": "1.0.2",
+    "version": "1.0.3dev",
     "homepage": "http://eightmedia.github.com/hammer.js",
     "licenses": [
         {
