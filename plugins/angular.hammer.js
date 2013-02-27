@@ -17,9 +17,29 @@
  *
  */
 
-var hmTouchevents = angular.module('hmTouchevents', []);
+var hmTouchevents = angular.module('hmTouchevents', []),
+    hmGestures = ['hmHold:hold',
+                  'hmTap:tap',
+                  'hmDoubletap:doubletap',
+                  'hmDrag:drag',
+                  'hmDragup:dragup',
+                  'hmDragdown:dragedown',
+                  'hmDragleft:dragleft',
+                  'hmDragright:dragright',
+                  'hmSwipe:swipe',
+                  'hmSwipeup:swipeup',
+                  'hmSwipedown:swipedown',
+                  'hmSwipeleft:swipeleft',
+                  'hmSwiperight:swiperight',
+                  'hmTransform:transform',
+                  'hmRotate:rotate',
+                  'hmPinch:pinch',
+                  'hmPinchin:pinchin',
+                  'hmPinchout:pinchout',
+                  'hmTouch:touch',
+                  'hmRelease:release'];
 
-angular.forEach('hmHold:hold hmTap:tap hmDoubletap:doubletap hmDrag:drag hmDragup:dragup hmDragdown:dragedown hmDragleft:dragleft hmDragright:dragright hmSwipe:swipe hmSwipeup:swipeup hmSwipedown:swipedown hmSwipeleft:swipeleft hmSwiperight:swiperight hmTransform:transform hmRotate:rotate hmPinch:pinch hmPinchin:pinchin hmPinchout:pinchout hmTouch:touch hmRelease:release'.split(' '), function(name){
+angular.forEach(hmGestures, function(name){
   var directive = name.split(':'),
       directiveName = directive[0],
       eventName = directive[1];
