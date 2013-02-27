@@ -9,9 +9,9 @@
  *
  *    hm-tap="{expression}"
  *
- * You can change the default settings by adding a second attribute with options:
+ * You can change the default settings for the instance by adding a second attribute with options:
  *
- *    hm-tap-opts="{drag: false, transform: false}"
+ *    hm-options="{drag: false, transform: false}"
  *
  * Include this file, and add `hmTouchevents` to your app's dependencies.
  *
@@ -46,12 +46,13 @@ angular.forEach(hmGestures, function(name){
   hmTouchevents.directive(directiveName, ['$parse', function($parse){
     return function(scope, element, attr) {
       var fn = $parse(attr[directiveName]),
-          opts = $parse(attr[directiveName + 'Opts'])(scope, {}),
-          hammertime = Hammer(element[0], opts).on(eventName, function(event){
-            scope.$apply(function() {
-              fn(scope, {$event: event});
-            });
-          });
+          opts = $parse(attr['hmOptions'])(scope, {});
+      scope.hammer = scope.hammer || Hammer(element[0], opts);
+      scope.hammer.on(eventName, function(event){
+        scope.$apply(function() {
+          fn(scope, {$event: event});
+        });
+      });
     };
   }]);
 });
