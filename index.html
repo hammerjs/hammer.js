@@ -108,7 +108,7 @@
             transform_min_scale     : 0.1,
             transform_min_rotation  : 2
         }
-        var hammertime = Hammer(touch_area, options).on("tap doubletap drag swipe pinch rotate", function(ev) {
+        var hammertime = Hammer(touch_area, options).on("tap doubletap hold drag swipe pinch rotate", function(ev) {
             gesture_log.innerHTML = ev.type;
         });
     </script>
