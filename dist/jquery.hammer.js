@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.2dev - 2013-02-26
+/*! Hammer.JS - v1.0.2dev - 2013-02-27
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -59,6 +59,10 @@ Hammer.POINTER_TOUCH = 'touch';
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
+
+// stop mouse events on ios and android
+var ua = navigator.userAgent;
+Hammer.STOP_MOUSEEVENTS = ua.match(/(like mac os x.*mobile.*safari)|(android|blackberry)/i);
 
 // plugins namespace
 Hammer.plugins = {};
@@ -241,6 +245,11 @@ Hammer.event = {
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
+            // stop mouseevents on ios and android
+            if(sourceEventType.match(/mouse/) && Hammer.STOP_MOUSEEVENTS) {
+                return;
+            }
+
             // mousebutton must be down or a touch event
             if(sourceEventType.match(/start|down|move/) &&
                 (   ev.which === 1 ||   // mousedown
@@ -287,6 +296,7 @@ Hammer.event = {
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
                 touch_triggered = false;
+                last_move_event = null;
                 Hammer.PointerEvent.reset();
             }
         });
