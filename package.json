@@ -28,7 +28,8 @@
         "grunt-contrib-jshint": "0.1.x",
         "grunt-contrib-watch": "0.2.x",
         "grunt-contrib-qunit": "0.1.x",
-        "grunt-tagrelease": "0.1.x"
+        "grunt-tagrelease": "0.1.x",
+        "faketouches": "0.0.x"
     },
     "main": "dist/hammer.js",
     "engines": {
