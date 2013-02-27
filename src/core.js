@@ -53,7 +53,8 @@ Hammer.EVENT_END = 'end';
 
 // stop mouse events on ios and android
 var ua = navigator.userAgent;
-Hammer.STOP_MOUSEEVENTS = ua.match(/(like mac os x.*mobile.*safari)|(android|blackberry)/i);
+Hammer.STOP_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
+    ua.match(/(like mac os x.*mobile.*safari)|android|blackberry/i);
 
 // plugins namespace
 Hammer.plugins = {};
