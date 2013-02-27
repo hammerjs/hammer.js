@@ -1,0 +1,1 @@
+The demo's are for demoing only, and not production ready. Hammer.js is not a component library.

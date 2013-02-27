@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.1 - 2013-02-26
+/*! Hammer.JS - v1.0.2 - 2013-02-27
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -60,6 +60,11 @@ Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
 
+// stop mouse events on ios and android
+var ua = navigator.userAgent;
+Hammer.STOP_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
+    ua.match(/(like mac os x.*mobile.*safari)|android|blackberry/i);
+
 // plugins namespace
 Hammer.plugins = {};
 
@@ -84,7 +89,7 @@ function setup() {
         }
     }
 
-    // Add touch events on the window
+    // Add touch events on the document
     Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.detection.detect);
     Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.detection.endDetect);
 
@@ -241,6 +246,11 @@ Hammer.event = {
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
+            // stop mouseevents on ios and android
+            if(sourceEventType.match(/mouse/) && Hammer.STOP_MOUSEEVENTS) {
+                return;
+            }
+
             // mousebutton must be down or a touch event
             if(sourceEventType.match(/start|down|move/) &&
                 (   ev.which === 1 ||   // mousedown
@@ -287,6 +297,7 @@ Hammer.event = {
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
                 touch_triggered = false;
+                last_move_event = null;
                 Hammer.PointerEvent.reset();
             }
         });
@@ -596,9 +607,10 @@ Hammer.utils = {
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
         var prop,
             vendors = ['webkit','khtml','moz','ms','o',''],
-            css_props = inst.options.stop_browser_behavior;
+            css_props = inst.options.stop_browser_behavior,
+            el = inst.element;
 
-        if(!css_props) {
+        if(!css_props || !el.style) {
             return;
         }
 
@@ -610,14 +622,14 @@ Hammer.utils = {
                     if(vendors[i]) {
                         prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
                     }
-                    inst.element.style[prop] = css_props[p];
+                    el.style[prop] = css_props[p];
                 }
             }
         }
 
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
-            inst.element.onselectstart = function() {
+            el.onselectstart = function() {
                 return false;
             };
         }
