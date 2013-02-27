@@ -1,0 +1,7 @@
+{
+    "name": "hammerjs",
+    "version": "1.0.3dev",
+    "description": "A javascript library for multi-touch gestures",
+    "keywords": ["touch","gestures"],
+    "scripts": ["dist/hammer.js"]
+}
