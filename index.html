@@ -25,7 +25,8 @@
             background: rgba(255,255,255,.9);
         }
         .container-narrow > hr {
-            margin: 30px 0;
+            margin: 0;
+            clear: both;
         }
 
         .btn small {
@@ -35,11 +36,12 @@
 
             /* Main marketing message and sign up button */
         .jumbotron {
-            margin: 60px 0;
+            margin: 0;
+            padding: 60px 0;
             text-align: center;
         }
         .jumbotron h1 {
-            font-size: 72px;
+            font-size: 60px;
             line-height: 1;
         }
         .jumbotron .btn {
@@ -64,8 +66,8 @@
     <div class="masthead">
         <ul class="nav nav-pills pull-right">
             <li class="active"><a href="#">About</a></li>
-            <li><a class="relace-version" href="https://github.com/EightMedia/hammer.js/blob/v1.0.0/README.md">Docs</a></li>
-            <li><a href="https://github.com/EightMedia/hammer.js/issues?milestone=1">Issues</a></li>
+            <li><a href="https://github.com/EightMedia/hammer.js/wiki">Docs</a></li>
+            <li><a href="https://github.com/EightMedia/hammer.js/issues">Issues</a></li>
             <li><a href="https://github.com/EightMedia/hammer.js/">Source on GitHub</a></li>
         </ul>
         <h3>Hammer.js</h3>
@@ -73,18 +75,26 @@
 
     <hr>
 
-    <div class="jumbotron">
-        <h1>You can touch this</h1>
+    <div class="jumbotron" id="touch-area">
+        <h1>You can <span class="gesture" id="gesture-log">touch</span> this</h1>
         <p class="lead">A javascript library for multi-touch gestures.</p>
         <p><a class="btn btn-large btn-success relace-version" href="https://github.com/EightMedia/hammer.js/tree/v1.0.0/dist">
-                Download Hammer.js <small class="relace-version">v1.0.1</small></a>
+                Download Hammer.js <small class="relace-version">v1.0.0</small></a>
         </p>
         <p>
             <a href="https://github.com/EightMedia/hammer.js">View Source on GitHub &rsaquo;</a><br>
-            <a class="relace-version" href="https://github.com/EightMedia/hammer.js/blob/v1.0.0/README.md">Read documentation &rsaquo;</a>
+            <a class="relace-version" href="https://github.com/EightMedia/hammer.js/wiki">Read documentation &rsaquo;</a>
         </p>
     </div>
 
+    <script src="dist/hammer.js"></script>
+    <script>
+        var touch_area = document.getElementById('touch-area');
+        var gesture_log = document.getElementById('gesture-log');
+        var hammertime = Hammer(touch_area).on("tap doubletap drag swipe pinch rotate", function(ev) {
+            gesture_log.innerHTML = ev.type;
+        });
+    </script>
     <hr>
 
     <div class="row-fluid marketing">
@@ -97,6 +107,7 @@
             <p>Hammer supports Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures. Each gesture triggers useful events and eventData.</p>
 
             <h4>Examples</h4>
+            <p>These examples are only for showing what you could do with Hammer. It's not an component library.</p>
             <ul class="inline">
                 <li><a href="examples/events.html">Event logger</a></li>
                 <li><a href="examples/jquery.html">jQuery plugin</a></li>
@@ -108,20 +119,20 @@
         <div class="span6">
             <h4>Device support</h4>
             <p>Android, BlackBerry, iOS and Windows touch devices. It also works on desktop browsers.
-                Older IE versions with the jQuery plugin. <a href="https://github.com/EightMedia/hammer.js#compatibility">Compatibility Table</a>.</p>
+                Older IE versions with the jQuery plugin. <a href="https://github.com/EightMedia/hammer.js/wiki/Compatibility">Compatibility Table</a>.</p>
 
             <h4>Easy-implementation</h4>
 <p><pre>Hammer(el).on("swipeleft", function() {
     alert('you swiped left!');
 });</pre></p>
-            <p><a href="https://github.com/EightMedia/hammer.js/blob/master/README.md#getting-started">Getting Started</a>.</p>
+            <h5><a href="https://github.com/EightMedia/hammer.js/wiki/Getting-Started">Get Started  &raquo;</a></h5>
         </div>
     </div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script>
         // replace version number with the latest version
-        var latest_version = 'v1.0.1';
+        var latest_version = 'v1.0.2';
 
         $(".relace-version").each(function() {
             var el = $(this);
