@@ -88,7 +88,19 @@
     </div>
 
     <script src="dist/hammer.js"></script>
+    <script src="plugins/hammer.fakemultitouch.js"></script>
+    <script src="plugins/hammer.showtouches.js"></script>
+
+
+    <!--[if !IE]> -->
     <script>
+        Hammer.plugins.showTouches();
+    </script>
+    <!-- <![endif]-->
+    <script>
+
+        Hammer.plugins.fakeMultitouch();
+
         var touch_area = document.getElementById('touch-area');
         var gesture_log = document.getElementById('gesture-log');
         var options = {
