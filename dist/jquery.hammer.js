@@ -1308,6 +1308,13 @@ else {
 })(this);
 
 (function($) {
+    'use strict';
+
+    // no jQuery!
+    if(!$) {
+        return;
+    }
+
     /**
      * bind dom events
      * this overwrites addEventListener
@@ -1400,4 +1407,5 @@ else {
             }
         });
     };
-})(jQuery);
+
+})(window.jQuery || false);

@@ -1,4 +1,11 @@
 (function($) {
+    'use strict';
+
+    // no jQuery!
+    if(!$) {
+        return;
+    }
+
     /**
      * bind dom events
      * this overwrites addEventListener
@@ -91,4 +98,5 @@
             }
         });
     };
-})(jQuery);
+
+})(window.jQuery || false);

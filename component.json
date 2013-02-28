@@ -1,5 +1,5 @@
 {
     "name": "hammerjs",
     "version": "1.0.3dev",
-    "main": ["dist/hammer.js","dist/jquery.hammer.js"]
+    "main": ["dist/jquery.hammer.js"]
 }
