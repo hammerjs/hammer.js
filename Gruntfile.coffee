@@ -58,6 +58,7 @@ module.exports = (grunt) ->
         eqnull: true
         sub: false
         browser: true
+        node: true
       build:
         src: ['dist/hammer.js']
 

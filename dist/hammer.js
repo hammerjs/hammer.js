@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.3dev - 2013-02-27
+/*! Hammer.JS - v1.0.3dev - 2013-02-28
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1290,14 +1290,19 @@ Hammer.gestures.Release = {
     }
 };
 
-// Expose Hammer to the global object
-window.Hammer = Hammer;
-
-// requireJS module definition
-if(typeof window.define === 'function' && window.define.amd) {
-	window.define('hammer', [], function() {
-        return Hammer;
-    });
+// node export
+if(typeof module === 'object' && typeof module.exports === 'object'){
+    module.exports = Hammer;
 }
+// just window export
+else {
+    window.Hammer = Hammer;
 
-})(window);
+    // requireJS module definition
+    if(typeof window.define === 'function' && window.define.amd) {
+        window.define('hammer', [], function() {
+            return Hammer;
+        });
+    }
+}
+})(this);
