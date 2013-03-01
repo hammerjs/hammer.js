@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.3dev - 2013-02-28
+/*! Hammer.JS - v1.0.3dev - 2013-03-01
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -38,7 +38,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // eventtypes per touchevent (start, move, end)
@@ -54,16 +54,12 @@ Hammer.DIRECTION_RIGHT = 'right';
 // pointer type
 Hammer.POINTER_MOUSE = 'mouse';
 Hammer.POINTER_TOUCH = 'touch';
+Hammer.POINTER_PEN = 'pen';
 
 // touch event defines
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
-
-// stop mouse events on ios and android
-var ua = navigator.userAgent;
-Hammer.STOP_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
-    ua.match(/(like mac os x.*mobile.*safari)|android|blackberry/i);
 
 // plugins namespace
 Hammer.plugins = {};
@@ -246,16 +242,18 @@ Hammer.event = {
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
-            // stop mouseevents on ios and android
-            if(sourceEventType.match(/mouse/) && Hammer.STOP_MOUSEEVENTS) {
+            // onmouseup, but when touchend has been fired we do nothing.
+            // this is for touchdevices which also fire a mouseup on touchend
+            if(sourceEventType.match(/mouseup/) && touch_triggered) {
+                touch_triggered = false;
                 return;
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/start|down|move/) &&
-                (   ev.which === 1 ||   // mousedown
+            if(sourceEventType.match(/start|down|move/) && (
+                    ev.which === 1 ||   // mousedown
                     sourceEventType.match(/touch/) ||   // touch events are always on screen
-                    (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)  // pointerevents touch
+                    !Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)  // pointerevents touch
                 )) {
                 enable_detect = true;
             }
@@ -296,9 +294,9 @@ Hammer.event = {
             // on the end we reset everything
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
-                touch_triggered = false;
                 last_move_event = null;
                 Hammer.PointerEvent.reset();
+                alert('reset');
             }
         });
     },
@@ -312,11 +310,7 @@ Hammer.event = {
         // determine the eventtype we want to set
         var types;
         if(Hammer.HAS_POINTEREVENTS) {
-            types = [
-                'MSPointerDown',
-                'MSPointerMove',
-                'MSPointerUp MSPointerCancel'
-            ];
+            types = Hammer.PointerEvent.getEvents();
         }
         // for non pointer events browsers
         else {
@@ -369,7 +363,7 @@ Hammer.event = {
 
         // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
-        if(ev.type.match(/mouse/) || (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
+        if(ev.type.match(/mouse/) || Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)) {
             pointerType = Hammer.POINTER_MOUSE;
         }
 
@@ -439,7 +433,7 @@ Hammer.PointerEvent = {
 
     /**
      * update the position of a pointer
-     * @param   {String}   type
+     * @param   {String}   type             Hammer.EVENT_END
      * @param   {Object}   pointerEvent
      */
     updatePointer: function(type, pointerEvent) {
@@ -450,6 +444,27 @@ Hammer.PointerEvent = {
             pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
+    },
+
+    /**
+     * check if ev matches pointertype
+     * @param   {String}        pointerType     Hammer.POINTER_MOUSE
+     * @param   {PointerEvent}  ev
+     */
+    matchType: function(pointerType, ev) {
+        return (ev.pointerType && ev.pointerType == pointerType);
+    },
+
+
+    /**
+     * get events
+     */
+    getEvents: function() {
+        return [
+            'pointerdown MSPointerDown',
+            'pointermove MSPointerMove',
+            'pointerup pointercancel MSPointerUp MSPointerCancel'
+        ];
     },
 
     /**

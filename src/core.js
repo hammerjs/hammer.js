@@ -29,7 +29,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // eventtypes per touchevent (start, move, end)
@@ -45,16 +45,12 @@ Hammer.DIRECTION_RIGHT = 'right';
 // pointer type
 Hammer.POINTER_MOUSE = 'mouse';
 Hammer.POINTER_TOUCH = 'touch';
+Hammer.POINTER_PEN = 'pen';
 
 // touch event defines
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
-
-// stop mouse events on ios and android
-var ua = navigator.userAgent;
-Hammer.STOP_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
-    ua.match(/(like mac os x.*mobile.*safari)|android|blackberry/i);
 
 // plugins namespace
 Hammer.plugins = {};

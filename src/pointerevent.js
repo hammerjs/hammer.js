@@ -22,7 +22,7 @@ Hammer.PointerEvent = {
 
     /**
      * update the position of a pointer
-     * @param   {String}   type
+     * @param   {String}   type             Hammer.EVENT_END
      * @param   {Object}   pointerEvent
      */
     updatePointer: function(type, pointerEvent) {
@@ -33,6 +33,27 @@ Hammer.PointerEvent = {
             pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
+    },
+
+    /**
+     * check if ev matches pointertype
+     * @param   {String}        pointerType     Hammer.POINTER_MOUSE
+     * @param   {PointerEvent}  ev
+     */
+    matchType: function(pointerType, ev) {
+        return (ev.pointerType && ev.pointerType == pointerType);
+    },
+
+
+    /**
+     * get events
+     */
+    getEvents: function() {
+        return [
+            'pointerdown MSPointerDown',
+            'pointermove MSPointerMove',
+            'pointerup pointercancel MSPointerUp MSPointerCancel'
+        ];
     },
 
     /**

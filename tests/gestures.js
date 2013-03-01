@@ -124,7 +124,7 @@ function testEventData(name, ev) {
     // pointerType
     ok(ev.gesture.pointerType, 'ev.gesture.pointerType');
     var pointer_type = Hammer.POINTER_TOUCH;
-    if( faker.touch_type == FakeTouches.POINTER_TYPE_MOUSE ||
+    if( faker.touch_type == FakeTouches.POINTER_MOUSE_EVENTS ||
         faker.touch_type == FakeTouches.MOUSE_EVENTS) {
         pointer_type = Hammer.POINTER_MOUSE;
     }
