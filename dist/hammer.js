@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.3dev - 2013-03-01
+/*! Hammer.JS - v1.0.3dev - 2013-03-02
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -250,11 +250,10 @@ Hammer.event = {
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/start|down|move/) && (
-                    ev.which === 1 ||   // mousedown
-                    sourceEventType.match(/touch/) ||   // touch events are always on screen
-                    !Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)  // pointerevents touch
-                )) {
+            if(sourceEventType.match(/touch/) ||   // touch events are always on screen
+                (sourceEventType.match(/mouse/) && ev.which === 1) ||   // mousedown
+                (Hammer.HAS_POINTEREVENTS && sourceEventType.match(/down/))  // pointerevents touch
+            ){
                 enable_detect = true;
             }
 
@@ -263,6 +262,7 @@ Hammer.event = {
             if(sourceEventType.match(/touch|pointer/)) {
                 touch_triggered = true;
             }
+
 
             // when touch has been triggered in this detection session
             // and we are now handling a mouse event, we stop that to prevent conflicts
@@ -281,7 +281,6 @@ Hammer.event = {
                 else {
                     last_move_event = ev;
                 }
-
                 // trigger the handler
                 handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
@@ -291,12 +290,12 @@ Hammer.event = {
                 }
             }
 
+
             // on the end we reset everything
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
                 last_move_event = null;
                 Hammer.PointerEvent.reset();
-                alert('reset');
             }
         });
     },
@@ -452,7 +451,15 @@ Hammer.PointerEvent = {
      * @param   {PointerEvent}  ev
      */
     matchType: function(pointerType, ev) {
-        return (ev.pointerType && ev.pointerType == pointerType);
+        if(!ev.pointerType) {
+            return false;
+        }
+
+        var types = {};
+        types[Hammer.POINTER_MOUSE] = (ev.pointerType == ev.MSPOINTER_TYPE_MOUSE || ev.pointerType == Hammer.POINTER_MOUSE);
+        types[Hammer.POINTER_TOUCH] = (ev.pointerType == ev.MSPOINTER_TYPE_TOUCH || ev.pointerType == Hammer.POINTER_TOUCH);
+        types[Hammer.POINTER_PEN] = (ev.pointerType == ev.MSPOINTER_TYPE_PEN || ev.pointerType == Hammer.POINTER_PEN);
+        return types[pointerType];
     },
 
 

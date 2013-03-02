@@ -55,11 +55,10 @@ Hammer.event = {
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/start|down|move/) && (
-                    ev.which === 1 ||   // mousedown
-                    sourceEventType.match(/touch/) ||   // touch events are always on screen
-                    !Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)  // pointerevents touch
-                )) {
+            if(sourceEventType.match(/touch/) ||   // touch events are always on screen
+                (sourceEventType.match(/mouse/) && ev.which === 1) ||   // mousedown
+                (Hammer.HAS_POINTEREVENTS && sourceEventType.match(/down/))  // pointerevents touch
+            ){
                 enable_detect = true;
             }
 
@@ -68,6 +67,7 @@ Hammer.event = {
             if(sourceEventType.match(/touch|pointer/)) {
                 touch_triggered = true;
             }
+
 
             // when touch has been triggered in this detection session
             // and we are now handling a mouse event, we stop that to prevent conflicts
@@ -86,7 +86,6 @@ Hammer.event = {
                 else {
                     last_move_event = ev;
                 }
-
                 // trigger the handler
                 handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
@@ -96,12 +95,12 @@ Hammer.event = {
                 }
             }
 
+
             // on the end we reset everything
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
                 last_move_event = null;
                 Hammer.PointerEvent.reset();
-                alert('reset');
             }
         });
     },

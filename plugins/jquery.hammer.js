@@ -28,11 +28,6 @@
                 data.target = ev.target;
             }
 
-            // IE button fix
-            if(data.button) {
-                data.which = data.button;
-            }
-
             // IE preventDefault
             if(!data.preventDefault) {
                 data.preventDefault = ev.preventDefault;
