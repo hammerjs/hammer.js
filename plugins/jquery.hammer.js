@@ -1,4 +1,11 @@
 (function($) {
+    'use strict';
+
+    // no jQuery!
+    if(!$) {
+        return;
+    }
+
     /**
      * bind dom events
      * this overwrites addEventListener
@@ -22,7 +29,7 @@
             }
 
             // IE button fix
-            if(data.button) {
+            if(!data.which) {
                 data.which = data.button;
             }
 
@@ -91,4 +98,5 @@
             }
         });
     };
-})(jQuery);
+
+})(window.jQuery || false);

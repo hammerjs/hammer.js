@@ -84,15 +84,16 @@
     }
 
     var hammertime = $(".toucharea").hammer();
+    console.log(hammertime);
 
     // the whole area
-    hammertime.on("tap", function(ev) {
+    hammertime.on("tap swipeleft drag", function(ev) {
         if(window.console) { console.log(ev); }
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
-    hammertime.on("tap", "li", function(ev) {
+    hammertime.on("tap swipe", "li", function(ev) {
         if(window.console) { console.log('nested', ev); }
         highlight(this);
         ev.stopPropagation();

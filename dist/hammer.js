@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.2 - 2013-02-27
+/*! Hammer.JS - v1.0.3 - 2013-03-02
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -38,7 +38,7 @@ Hammer.defaults = {
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // eventtypes per touchevent (start, move, end)
@@ -54,16 +54,12 @@ Hammer.DIRECTION_RIGHT = 'right';
 // pointer type
 Hammer.POINTER_MOUSE = 'mouse';
 Hammer.POINTER_TOUCH = 'touch';
+Hammer.POINTER_PEN = 'pen';
 
 // touch event defines
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
-
-// stop mouse events on ios and android
-var ua = navigator.userAgent;
-Hammer.STOP_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
-    ua.match(/(like mac os x.*mobile.*safari)|android|blackberry/i);
 
 // plugins namespace
 Hammer.plugins = {};
@@ -124,7 +120,7 @@ Hammer.Instance = function(element, options) {
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.stop_browser_behavior) {
-        Hammer.utils.stopDefaultBrowserBehavior(this);
+        Hammer.utils.stopDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
     }
 
     // start detection on touchstart
@@ -246,17 +242,18 @@ Hammer.event = {
         this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
-            // stop mouseevents on ios and android
-            if(sourceEventType.match(/mouse/) && Hammer.STOP_MOUSEEVENTS) {
+            // onmouseup, but when touchend has been fired we do nothing.
+            // this is for touchdevices which also fire a mouseup on touchend
+            if(sourceEventType.match(/mouseup/) && touch_triggered) {
+                touch_triggered = false;
                 return;
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/start|down|move/) &&
-                (   ev.which === 1 ||   // mousedown
-                    sourceEventType.match(/touch/) ||   // touch events are always on screen
-                    (ev.pointerType && ev.pointerType == ev.MSPOINTER_TYPE_TOUCH)  // pointerevents touch
-                )) {
+            if(sourceEventType.match(/touch/) ||   // touch events are always on screen
+                (sourceEventType.match(/mouse/) && ev.which === 1) ||   // mousedown
+                (Hammer.HAS_POINTEREVENTS && sourceEventType.match(/down/))  // pointerevents touch
+            ){
                 enable_detect = true;
             }
 
@@ -265,6 +262,7 @@ Hammer.event = {
             if(sourceEventType.match(/touch|pointer/)) {
                 touch_triggered = true;
             }
+
 
             // when touch has been triggered in this detection session
             // and we are now handling a mouse event, we stop that to prevent conflicts
@@ -283,7 +281,6 @@ Hammer.event = {
                 else {
                     last_move_event = ev;
                 }
-
                 // trigger the handler
                 handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
@@ -293,10 +290,10 @@ Hammer.event = {
                 }
             }
 
+
             // on the end we reset everything
             if(sourceEventType.match(/up|cancel|end/)) {
                 enable_detect = false;
-                touch_triggered = false;
                 last_move_event = null;
                 Hammer.PointerEvent.reset();
             }
@@ -312,11 +309,7 @@ Hammer.event = {
         // determine the eventtype we want to set
         var types;
         if(Hammer.HAS_POINTEREVENTS) {
-            types = [
-                'MSPointerDown',
-                'MSPointerMove',
-                'MSPointerUp MSPointerCancel'
-            ];
+            types = Hammer.PointerEvent.getEvents();
         }
         // for non pointer events browsers
         else {
@@ -369,7 +362,7 @@ Hammer.event = {
 
         // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
-        if(ev.type.match(/mouse/) || (ev.poinerType && ev.pointerType === ev.MSPOINTER_TYPE_MOUSE)) {
+        if(ev.type.match(/mouse/) || Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)) {
             pointerType = Hammer.POINTER_MOUSE;
         }
 
@@ -439,7 +432,7 @@ Hammer.PointerEvent = {
 
     /**
      * update the position of a pointer
-     * @param   {String}   type
+     * @param   {String}   type             Hammer.EVENT_END
      * @param   {Object}   pointerEvent
      */
     updatePointer: function(type, pointerEvent) {
@@ -450,6 +443,35 @@ Hammer.PointerEvent = {
             pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
+    },
+
+    /**
+     * check if ev matches pointertype
+     * @param   {String}        pointerType     Hammer.POINTER_MOUSE
+     * @param   {PointerEvent}  ev
+     */
+    matchType: function(pointerType, ev) {
+        if(!ev.pointerType) {
+            return false;
+        }
+
+        var types = {};
+        types[Hammer.POINTER_MOUSE] = (ev.pointerType == ev.MSPOINTER_TYPE_MOUSE || ev.pointerType == Hammer.POINTER_MOUSE);
+        types[Hammer.POINTER_TOUCH] = (ev.pointerType == ev.MSPOINTER_TYPE_TOUCH || ev.pointerType == Hammer.POINTER_TOUCH);
+        types[Hammer.POINTER_PEN] = (ev.pointerType == ev.MSPOINTER_TYPE_PEN || ev.pointerType == Hammer.POINTER_PEN);
+        return types[pointerType];
+    },
+
+
+    /**
+     * get events
+     */
+    getEvents: function() {
+        return [
+            'pointerdown MSPointerDown',
+            'pointermove MSPointerMove',
+            'pointerup pointercancel MSPointerUp MSPointerCancel'
+        ];
     },
 
     /**
@@ -602,15 +624,14 @@ Hammer.utils = {
 
     /**
      * stop browser default behavior with css props
-     * @param   {Hammer.Instance}   inst
+     * @param   {HtmlElement}   element
+     * @param   {Object}        css_props
      */
-    stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(inst) {
+    stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
         var prop,
-            vendors = ['webkit','khtml','moz','ms','o',''],
-            css_props = inst.options.stop_browser_behavior,
-            el = inst.element;
+            vendors = ['webkit','khtml','moz','ms','o',''];
 
-        if(!css_props || !el.style) {
+        if(!css_props || !element.style) {
             return;
         }
 
@@ -619,17 +640,21 @@ Hammer.utils = {
             for(var p in css_props) {
                 if(css_props.hasOwnProperty(p)) {
                     prop = p;
+
+                    // vender prefix at the property
                     if(vendors[i]) {
                         prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
                     }
-                    el.style[prop] = css_props[p];
+
+                    // set the style
+                    element.style[prop] = css_props[p];
                 }
             }
         }
 
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
-            el.onselectstart = function() {
+            element.onselectstart = function() {
                 return false;
             };
         }
@@ -1287,14 +1312,19 @@ Hammer.gestures.Release = {
     }
 };
 
-// Expose Hammer to the global object
-window.Hammer = Hammer;
-
-// requireJS module definition
-if(typeof window.define === 'function' && window.define.amd) {
-	window.define('hammer', [], function() {
-        return Hammer;
-    });
+// node export
+if(typeof module === 'object' && typeof module.exports === 'object'){
+    module.exports = Hammer;
 }
+// just window export
+else {
+    window.Hammer = Hammer;
 
-})(window);
+    // requireJS module definition
+    if(typeof window.define === 'function' && window.define.amd) {
+        window.define('hammer', [], function() {
+            return Hammer;
+        });
+    }
+}
+})(this);
