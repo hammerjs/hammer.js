@@ -106,8 +106,9 @@
         var options = {
             // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
             transform_min_scale     : 0.1,
-            transform_min_rotation  : 2
-        }
+            transform_min_rotation  : 2,
+            drag_block_horizontal   : true
+        };
         var hammertime = Hammer(touch_area, options).on("tap doubletap hold drag swipe pinch rotate", function(ev) {
             gesture_log.innerHTML = ev.type;
         });
