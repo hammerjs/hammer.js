@@ -1359,6 +1359,11 @@ else {
                 data.target = ev.target;
             }
 
+            // IE button fix
+            if(!data.which) {
+                data.which = data.button;
+            }
+
             // IE preventDefault
             if(!data.preventDefault) {
                 data.preventDefault = ev.preventDefault;
