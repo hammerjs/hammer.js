@@ -1361,7 +1361,9 @@ else {
 
             // IE button fix
             if(!data.which) {
-                data.which = data.button;
+				try {
+					data.which = data.button;
+				} catch(e) { }
             }
 
             // IE preventDefault
