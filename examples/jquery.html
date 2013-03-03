@@ -87,7 +87,7 @@
     console.log(hammertime);
 
     // the whole area
-    hammertime.on("tap swipeleft drag", function(ev) {
+    hammertime.on("tap swipeleft drag dragend", function(ev) {
         if(window.console) { console.log(ev); }
         highlight(this);
     });

@@ -65,7 +65,7 @@ module.exports = (grunt) ->
     # watch for changes
     watch:
       scripts:
-        files: 'src/*.js'
+        files: ['src/*.js','plugins/*.js']
         tasks: ['concat']
         options:
           interrupt: true

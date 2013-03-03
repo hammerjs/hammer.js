@@ -70,7 +70,12 @@
      * @return  {jQuery}
      */
     Hammer.Instance.prototype.trigger = function(gesture, eventData){
-        return $(eventData.srcEvent.target).trigger({
+        var el = $(this.element);
+        if(el.has(eventData.target).length) {
+            el = $(eventData.target);
+        }
+
+        return el.trigger({
             type: gesture,
             gesture: eventData
         });
