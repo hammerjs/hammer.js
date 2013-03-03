@@ -82,7 +82,7 @@ Hammer.Instance.prototype = {
         var event = document.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		this.element.dispatchEvent(event);
+        eventData.target.dispatchEvent(event);
         return this;
     },
 

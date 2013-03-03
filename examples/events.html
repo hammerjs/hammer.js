@@ -142,6 +142,8 @@
 
         <li><strong>scale</strong>  <span id="log-prop-scale"></span></li>
         <li><strong>rotation</strong> <span id="log-prop-rotation"></span>&deg;</li>
+
+        <li><strong>target</strong> <span id="log-prop-target"></span></li>
     </ul>
 </div>
 
@@ -211,7 +213,7 @@
     // log properties
     var properties = ['gesture','center','deltaTime','angle','direction',
         'distance','deltaX','deltaY','velocityX','velocityY', 'pointerType',
-        'scale','rotation','touches'];
+        'scale','rotation','touches','target'];
 
     function logEvent(ev) {
         if(!ev.gesture) {
@@ -230,14 +232,19 @@
         for(var i= 0,len=properties.length; i<len; i++) {
             var prop = properties[i];
             var value = ev.gesture[prop];
-            if(prop == 'center') {
-                value = value.pageX +"x"+ value.pageY;
-            }
-            else if(prop == 'gesture') {
-                value = ev.type;
-            }
-            else if(prop == 'touches') {
-                value = ev.gesture.touches.length;
+            switch(prop) {
+                case 'center':
+                    value = value.pageX +"x"+ value.pageY;
+                    break;
+                case 'gesture':
+                    value = ev.type;
+                    break;
+                case 'target':
+                    value = ev.target.tagName;
+                    break;
+                case 'touches':
+                    value = ev.gesture.touches.length;
+                    break;
             }
             getLogElement('prop', prop).innerHTML = value;
         }

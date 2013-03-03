@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.3 - 2013-03-02
+/*! Hammer.JS - v1.0.4dev - 2013-03-03
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -177,7 +177,7 @@ Hammer.Instance.prototype = {
         var event = document.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-		this.element.dispatchEvent(event);
+        eventData.target.dispatchEvent(event);
         return this;
     },
 
