@@ -1344,7 +1344,7 @@ else {
     'use strict';
 
     // no jQuery!
-    if(!$) {
+    if($ == undefined) {
         return;
     }
 
@@ -1446,4 +1446,4 @@ else {
         });
     };
 
-})(window.jQuery || false);
+})(window.jQuery);

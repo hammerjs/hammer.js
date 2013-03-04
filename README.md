@@ -18,6 +18,7 @@
 - IE8 and older compatibility with jQuery plugin
 - AMD support (RequireJS)
 - Unit tests
+- Option to disable mouse support, so only for touch and pen input.
 
 
 ## Getting Started

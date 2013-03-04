@@ -2,7 +2,7 @@
     'use strict';
 
     // no jQuery!
-    if(!$) {
+    if($ == undefined) {
         return;
     }
 
@@ -104,4 +104,4 @@
         });
     };
 
-})(window.jQuery || false);
+})(window.jQuery);
