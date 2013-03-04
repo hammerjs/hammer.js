@@ -52,5 +52,8 @@ Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
 
+// hammer document where the base events are added at
+Hammer.DOCUMENT = document;
+
 // plugins namespace
 Hammer.plugins = {};

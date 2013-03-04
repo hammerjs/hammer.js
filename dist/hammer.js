@@ -61,6 +61,9 @@ Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
 
+// hammer document where the base events are added at
+Hammer.DOCUMENT = document;
+
 // plugins namespace
 Hammer.plugins = {};
 
@@ -86,8 +89,8 @@ function setup() {
     }
 
     // Add touch events on the document
-    Hammer.event.onTouch(document, Hammer.EVENT_MOVE, Hammer.detection.detect);
-    Hammer.event.onTouch(document, Hammer.EVENT_END, Hammer.detection.endDetect);
+    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
+    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.endDetect);
 
     // Hammer is ready...!
     Hammer.READY = true;
@@ -174,7 +177,7 @@ Hammer.Instance.prototype = {
      */
     trigger: function triggerEvent(gesture, eventData){
         // trigger DOM event
-        var event = document.createEvent('Event');
+        var event = Hammer.DOCUMENT.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
         this.element.dispatchEvent(event);
