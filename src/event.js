@@ -173,7 +173,7 @@ Hammer.event = {
 
         return {
             center      : Hammer.utils.getCenter(touches),
-            timestamp   : ev.timestamp || new Date().getTime(), // for IE
+            timeStamp   : new Date().getTime(),
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,

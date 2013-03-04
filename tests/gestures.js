@@ -138,7 +138,7 @@ function testEventData(name, ev) {
     ok(_.isFunction(ev.gesture.stopDetect), 'ev.gesture.stopDetect');
     ok(_.isFunction(ev.gesture.stopPropagation), 'ev.gesture.stopPropagation');
     ok(_.isElement(ev.gesture.target), 'ev.gesture.target');
-    ok(_.isNumber(ev.gesture.timestamp), 'ev.gesture.timestamp');
+    ok(_.isNumber(ev.gesture.timeStamp), 'ev.gesture.timeStamp');
     ok(_.isArray(ev.gesture.touches), 'ev.gesture.touches');
     ok(ev.gesture.touches.length >= 1, 'ev.gesture.touches');
     ok(_.isNumber(ev.gesture.velocityX), 'ev.gesture.velocityX');

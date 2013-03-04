@@ -368,7 +368,7 @@ Hammer.event = {
 
         return {
             center      : Hammer.utils.getCenter(touches),
-            timestamp   : ev.timestamp || new Date().getTime(), // for IE
+            timeStamp   : new Date().getTime(),
             target      : ev.target,
             touches     : touches,
             eventType   : eventType,
@@ -784,7 +784,7 @@ Hammer.detection = {
             }
         }
 
-        var delta_time = ev.timestamp - startEv.timestamp,
+        var delta_time = ev.timeStamp - startEv.timeStamp,
             delta_x = ev.center.pageX - startEv.center.pageX,
             delta_y = ev.center.pageY - startEv.center.pageY,
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
@@ -890,7 +890,7 @@ Hammer.gestures = Hammer.gestures || {};
  *
  *      @param  {Object}    eventData
  *      event data containing the following properties:
- *          timestamp   {Number}        time the event occurred
+ *          timeStamp   {Number}        time the event occurred
  *          target      {HTMLElement}   target element
  *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
  *          pointerType {String}        kind of pointer that was used. matches Hammer.POINTER_MOUSE|TOUCH
@@ -1022,7 +1022,7 @@ Hammer.gestures.Tap = {
         if(ev.eventType == Hammer.EVENT_END) {
             // previous gesture, for the double tap since these are two different gesture detections
             var prev = Hammer.detection.previous;
-
+            
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
             if(ev.deltaTime > inst.options.tap_max_touchtime ||
@@ -1032,7 +1032,7 @@ Hammer.gestures.Tap = {
 
             // check if double tap
             if(prev && prev.name == 'tap' &&
-                (ev.timestamp - prev.lastEvent.timestamp) < inst.options.doubletap_interval &&
+                (ev.timeStamp - prev.lastEvent.timeStamp) < inst.options.doubletap_interval &&
                 ev.distance < inst.options.doubletap_distance) {
                 Hammer.detection.current.name = 'doubletap';
             }

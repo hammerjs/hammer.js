@@ -121,7 +121,7 @@ Hammer.detection = {
             }
         }
 
-        var delta_time = ev.timestamp - startEv.timestamp,
+        var delta_time = ev.timeStamp - startEv.timeStamp,
             delta_x = ev.center.pageX - startEv.center.pageX,
             delta_y = ev.center.pageY - startEv.center.pageY,
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);

@@ -39,7 +39,7 @@ Hammer.gestures = Hammer.gestures || {};
  *
  *      @param  {Object}    eventData
  *      event data containing the following properties:
- *          timestamp   {Number}        time the event occurred
+ *          timeStamp   {Number}        time the event occurred
  *          target      {HTMLElement}   target element
  *          touches     {Array}         touches (fingers, pointers, mouse) on the screen
  *          pointerType {String}        kind of pointer that was used. matches Hammer.POINTER_MOUSE|TOUCH
@@ -181,7 +181,7 @@ Hammer.gestures.Tap = {
 
             // check if double tap
             if(prev && prev.name == 'tap' &&
-                (ev.timestamp - prev.lastEvent.timestamp) < inst.options.doubletap_interval &&
+                (ev.timeStamp - prev.lastEvent.timeStamp) < inst.options.doubletap_interval &&
                 ev.distance < inst.options.doubletap_distance) {
                 Hammer.detection.current.name = 'doubletap';
             }
