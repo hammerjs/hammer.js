@@ -263,7 +263,8 @@
 
     // start!
     var hammertime = Hammer(getEl('hitarea'), {
-            prevent_default: true
+            prevent_default: true,
+            no_mouseevents: true
         })
         .on(all_events.join(" "), logEvent);
 

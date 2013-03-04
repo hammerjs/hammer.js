@@ -432,9 +432,17 @@ Hammer.gestures.Touch = {
         // transforming and dragging.
         // be careful with using this, it can be very annoying for users to be stuck
         // on the page
-        prevent_default: false
+        prevent_default: false,
+
+        // disable mouse events, so only touch (or pen!) input triggers events
+        prevent_mouseevents: false
     },
     handler: function touchGesture(ev, inst) {
+        if(inst.options.prevent_mouseevents && ev.pointerType == Hammer.POINTER_MOUSE) {
+            ev.stopDetect();
+            return;
+        }
+
         if(inst.options.prevent_default) {
             ev.preventDefault();
         }

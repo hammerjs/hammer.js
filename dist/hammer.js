@@ -1022,7 +1022,7 @@ Hammer.gestures.Tap = {
         if(ev.eventType == Hammer.EVENT_END) {
             // previous gesture, for the double tap since these are two different gesture detections
             var prev = Hammer.detection.previous;
-            
+
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
             if(ev.deltaTime > inst.options.tap_max_touchtime ||
@@ -1283,9 +1283,17 @@ Hammer.gestures.Touch = {
         // transforming and dragging.
         // be careful with using this, it can be very annoying for users to be stuck
         // on the page
-        prevent_default: false
+        prevent_default: false,
+
+        // disable mouse events, so only touch (or pen!) input triggers events
+        prevent_mouseevents: false
     },
     handler: function touchGesture(ev, inst) {
+        if(inst.options.prevent_mouseevents && ev.pointerType == Hammer.POINTER_MOUSE) {
+            ev.stopDetect();
+            return;
+        }
+
         if(inst.options.prevent_default) {
             ev.preventDefault();
         }
