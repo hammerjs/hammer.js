@@ -157,7 +157,7 @@ Hammer.detection = {
     register: function register(gesture) {
         // add an enable gesture options if there is no given
         var options = gesture.defaults || {};
-        if(typeof(options[gesture.name]) == 'undefined') {
+        if(options[gesture.name] === undefined) {
             options[gesture.name] = true;
         }
 

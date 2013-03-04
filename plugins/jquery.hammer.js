@@ -1,4 +1,4 @@
-(function($) {
+(function($, undefined) {
     'use strict';
 
     // no jQuery!
@@ -18,7 +18,7 @@
             var data = ev.originalEvent;
 
             // IE pageX fix
-            if(!data.pageX) {
+            if(data.pageX === undefined) {
                 data.pageX = ev.pageX;
                 data.pageY = ev.pageY;
             }
@@ -29,7 +29,7 @@
             }
 
             // IE button fix
-            if(!data.which) {
+            if(data.which === undefined) {
                 data.which = data.button;
             }
 

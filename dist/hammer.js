@@ -1,10 +1,10 @@
-/*! Hammer.JS - v1.0.4dev - 2013-03-03
+/*! Hammer.JS - v1.0.4dev - 2013-03-04
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
 
-(function(window) {
+(function(window, undefined) {
     'use strict';
 
 /**
@@ -820,7 +820,7 @@ Hammer.detection = {
     register: function register(gesture) {
         // add an enable gesture options if there is no given
         var options = gesture.defaults || {};
-        if(typeof(options[gesture.name]) == 'undefined') {
+        if(options[gesture.name] === undefined) {
             options[gesture.name] = true;
         }
 
