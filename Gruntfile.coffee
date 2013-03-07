@@ -4,16 +4,18 @@ module.exports = (grunt) ->
 
     # meta options
     meta:
-      banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-      '<%= grunt.template.today("yyyy-mm-dd") %>\n ' + '<%= pkg.homepage ? "* " + pkg.homepage + "\\n *\\n " : "" %>' +
-      '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n' +
-      ' * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
+      banner: '
+/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n
+ * <%= pkg.homepage %>\n
+ *\n
+ * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n
+ * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
     # concat src files
     concat:
       options:
         separator: '\n\n'
-      dev:
+      dist:
         options:
           banner: '<%= meta.banner %>'
         src: [
@@ -28,7 +30,7 @@ module.exports = (grunt) ->
           'src/gestures.js'
           'src/outro.js']
         dest: 'dist/hammer.js'
-      devjquery:
+      distjquery:
         src: [
           'dist/hammer.js'
           'plugins/jquery.hammer.js']
@@ -38,7 +40,7 @@ module.exports = (grunt) ->
     uglify:
       options:
         banner: '<%= meta.banner %>'
-      release:
+      dist:
         files:
           'dist/hammer.min.js': ['dist/hammer.js']
           'dist/jquery.hammer.min.js': ['dist/jquery.hammer.js']
@@ -59,8 +61,13 @@ module.exports = (grunt) ->
         sub: false
         browser: true
         node: true
-      build:
+      dist:
         src: ['dist/hammer.js']
+      distjquery:
+        options:
+          globals:
+            Hammer: true
+        src: ['dist/jquery.hammer.js']
 
     # watch for changes
     watch:

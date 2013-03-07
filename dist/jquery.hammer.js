@@ -1392,7 +1392,7 @@ else {
     'use strict';
 
     // no jQuery or Zepto!
-    if($ == undefined) {
+    if($ === undefined) {
         return;
     }
 
@@ -1485,7 +1485,7 @@ else {
             var inst = el.data('hammer');
             // start new hammer instance
             if(!inst) {
-                el.data('hammer', Hammer(this, options || {}));
+                el.data('hammer', new Hammer(this, options || {}));
             }
             // change the options
             else if(inst && options) {
