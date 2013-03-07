@@ -1,7 +1,7 @@
 (function($, undefined) {
     'use strict';
 
-    // no jQuery!
+    // no jQuery or Zepto!
     if($ == undefined) {
         return;
     }
@@ -15,7 +15,7 @@
      */
     Hammer.event.bindDom = function(element, eventTypes, handler) {
         $(element).on(eventTypes, function(ev) {
-            var data = ev.originalEvent;
+            var data = ev.originalEvent || ev;
 
             // IE pageX fix
             if(data.pageX === undefined) {
@@ -62,27 +62,6 @@
 
 
     /**
-     * trigger events
-     * this is called by the gestures to trigger an event like 'tap'
-     * @this    {Hammer.Instance}
-     * @param   {String}    gesture
-     * @param   {Object}    eventData
-     * @return  {jQuery}
-     */
-    Hammer.Instance.prototype.trigger = function(gesture, eventData){
-        var el = $(this.element);
-        if(el.has(eventData.target).length) {
-            el = $(eventData.target);
-        }
-
-        return el.trigger({
-            type: gesture,
-            gesture: eventData
-        });
-    };
-
-
-    /**
      * jQuery plugin
      * create instance of Hammer and watch for gestures,
      * and when called again you can change the options
@@ -104,4 +83,4 @@
         });
     };
 
-})(window.jQuery);
+})(window.jQuery || window.Zepto);

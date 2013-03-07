@@ -157,6 +157,7 @@
     Proin tristique luctus leo vitae feugiat. Donec sit amet ipsum mi, nec bibendum sem. Nullam sodales aliquet venenatis.
     </p>
 </div>
+<!--
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
 </p>
@@ -166,7 +167,7 @@
 <p>
     Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
 </p>
-
+-->
 <h2>Event log</h2>
 <pre id="event-log"></pre>
 
@@ -268,6 +269,40 @@
         })
         .on(all_events.join(" "), logEvent);
 
+
+    var debug_el = getEl('event-log');
+    function debug(val) {
+        debug_el.innerHTML = val.toString() +"<br>"+
+                debug_el.innerHTML;
+    }
+
+
+
+    Hammer.gestures.startStateClassName = {
+        name: 'startStateClassName',
+        index: -Infinity,
+        defaults: {
+            state_className: 'gesture-in-progress'
+        },
+        handler: function(ev, inst) {
+            if(ev.eventType ==  Hammer.EVENT_START) {
+                inst.element.className =
+                    inst.element.className +' '+ inst.options.state_className;
+            }
+        }
+    };
+
+    Hammer.gestures.endStateClassName = {
+        name: 'endStateClassName',
+        index: Infinity,
+        handler: function(ev, inst) {
+            if(ev.eventType ==  Hammer.EVENT_END) {
+                var regex = new RegExp(inst.options.state_className, "g");
+                inst.element.className =
+                    inst.element.className.replace(regex, '');
+            }
+        }
+    };
 
 </script>
 <script src="assets/js/ga.js"></script>

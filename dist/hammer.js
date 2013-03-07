@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.4dev - 2013-03-04
+/*! Hammer.JS - v1.0.4dev - 2013-03-07
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -176,11 +176,19 @@ Hammer.Instance.prototype = {
      * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
-        // trigger DOM event
+        // create DOM event
         var event = Hammer.DOCUMENT.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-        this.element.dispatchEvent(event);
+
+        // trigger on the target if it is in the instance element,
+        // this is for event delegation tricks
+        var element = this.element;
+        if(Hammer.utils.hasParent(eventData.target, element)) {
+            element = eventData.target;
+        }
+
+        element.dispatchEvent(event);
         return this;
     },
 
@@ -497,8 +505,25 @@ Hammer.utils = {
         for (var key in src) {
             dest[key] = src[key];
         }
-
         return dest;
+    },
+
+
+    /**
+     * find if a node is in the given parent
+     * used for event delegation tricks
+     * @param   {HTMLElement}   node
+     * @param   {HTMLElement}   parent
+     * @returns {boolean}       has_parent
+     */
+    hasParent: function(node, parent) {
+        while(node){
+            if(node == parent) {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
     },
 
 
@@ -706,6 +731,7 @@ Hammer.detection = {
     /**
      * Hammer.gesture detection
      * @param   {Object}    eventData
+     * @param   {Object}    eventData
      */
     detect: function detect(eventData) {
         if(!this.current || this.stopped) {
@@ -736,6 +762,8 @@ Hammer.detection = {
         if(this.current) {
             this.current.lastEvent = eventData;
         }
+
+        return eventData;
     },
 
 

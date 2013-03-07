@@ -78,11 +78,19 @@ Hammer.Instance.prototype = {
      * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
-        // trigger DOM event
+        // create DOM event
         var event = Hammer.DOCUMENT.createEvent('Event');
 		event.initEvent(gesture, true, true);
 		event.gesture = eventData;
-        this.element.dispatchEvent(event);
+
+        // trigger on the target if it is in the instance element,
+        // this is for event delegation tricks
+        var element = this.element;
+        if(Hammer.utils.hasParent(eventData.target, element)) {
+            element = eventData.target;
+        }
+
+        element.dispatchEvent(event);
         return this;
     },
 

@@ -87,13 +87,13 @@
     console.log(hammertime);
 
     // the whole area
-    hammertime.on("tap swipeleft drag dragend", function(ev) {
+    hammertime.on("touch", function(ev) {
         if(window.console) { console.log(ev); }
         highlight(this);
     });
 
     // on elements in the toucharea, with a stopPropagation
-    hammertime.on("tap swipe", "li", function(ev) {
+    hammertime.on("touch", "li", function(ev) {
         if(window.console) { console.log('nested', ev); }
         highlight(this);
         ev.stopPropagation();
@@ -101,8 +101,8 @@
 
 
     // on dynamic items
-    $("#add-list-item").on("tap", function(ev) {
-        $("#items").append("<li>Dynamic added listitem");
+    $("#add-list-item").on("touch", function(ev) {
+        $("#items").append("<li>Dynamic added listitem</li>");
         ev.gesture.preventDefault();
         ev.stopPropagation();
     });

@@ -10,8 +10,25 @@ Hammer.utils = {
         for (var key in src) {
             dest[key] = src[key];
         }
-
         return dest;
+    },
+
+
+    /**
+     * find if a node is in the given parent
+     * used for event delegation tricks
+     * @param   {HTMLElement}   node
+     * @param   {HTMLElement}   parent
+     * @returns {boolean}       has_parent
+     */
+    hasParent: function(node, parent) {
+        while(node){
+            if(node == parent) {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
     },
 
 

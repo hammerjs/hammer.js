@@ -28,6 +28,10 @@
         }
 
         .highlight {
+            background: #ccc68d;
+        }
+
+        .highlight2 {
             background: #fff68d;
         }
 
@@ -46,7 +50,7 @@
 
 <div id="container">
     <div class="page-header">
-    <h1>jquery.hammer.js works on zepto too</h1>
+    <h1>jquery.hammer.js works on Zepto too</h1>
     </div>
 
     <div class="hero-unit">
@@ -76,33 +80,34 @@
 
 <script>
 
-    function highlight(el) {
+    function highlight(el, classname) {
         setTimeout(function() {
-            el.className = el.className.replace("highlight", "");
+            el.className = el.className.replace(/highlight[0-9]*/g, "");
         }, 100);
-        el.className = el.className + " highlight";
+        el.className = el.className +" "+ classname;
     }
 
     var hammertime = $(".toucharea").hammer();
     console.log(hammertime);
 
     // the whole area
-    hammertime.on("tap swipeleft drag dragend", function(ev) {
-        if(window.console) { console.log(ev); }
-        highlight(this);
+    hammertime.on("touch", function(ev) {
+        //if(window.console) { console.log(ev); }
+        highlight(this, 'highlight2');
     });
 
     // on elements in the toucharea, with a stopPropagation
-    hammertime.on("tap swipe", "li", function(ev) {
-        if(window.console) { console.log('nested', ev); }
-        highlight(this);
-        ev.stopPropagation();
+    hammertime.on("touch", "li", function(ev) {
+        //if(window.console) { console.log('nested', ev); }
+        console.log(ev.target, ev.gesture.stopPropagation);
+        highlight(this, 'highlight');
+        ev.gesture.stopPropagation();
     });
 
 
     // on dynamic items
-    $("#add-list-item").on("tap", function(ev) {
-        $("#items").append("<li>Dynamic added listitem");
+    $("#add-list-item").on("touch", function(ev) {
+        $("#items").append("<li>Dynamic added listitem</li>");
         ev.gesture.preventDefault();
         ev.stopPropagation();
     });
