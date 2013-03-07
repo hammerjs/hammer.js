@@ -190,10 +190,6 @@ Hammer.utils = {
             element.onselectstart = function() {
                 return false;
             };
-
-            element.oncontextmenu = function() {
-                return false;
-            };
         }
     }
 };
