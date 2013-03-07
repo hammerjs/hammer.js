@@ -59,7 +59,7 @@ Hammer.utils = {
      * @param   {Number}    delta_y
      * @returns {Object}    velocity
      */
-    getVelocity: function getSimpleDistance(delta_time, delta_x, delta_y) {
+    getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
         return {
             x: Math.abs(delta_x / delta_time) || 0,
             y: Math.abs(delta_y / delta_time) || 0
@@ -188,6 +188,10 @@ Hammer.utils = {
         // also the disable onselectstart
         if(css_props.userSelect == 'none') {
             element.onselectstart = function() {
+                return false;
+            };
+
+            element.oncontextmenu = function() {
                 return false;
             };
         }

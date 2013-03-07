@@ -272,37 +272,8 @@
 
     var debug_el = getEl('event-log');
     function debug(val) {
-        debug_el.innerHTML = val.toString() +"<br>"+
-                debug_el.innerHTML;
+        debug_el.innerHTML = val.toString();
     }
-
-
-
-    Hammer.gestures.startStateClassName = {
-        name: 'startStateClassName',
-        index: -Infinity,
-        defaults: {
-            state_className: 'gesture-in-progress'
-        },
-        handler: function(ev, inst) {
-            if(ev.eventType ==  Hammer.EVENT_START) {
-                inst.element.className =
-                    inst.element.className +' '+ inst.options.state_className;
-            }
-        }
-    };
-
-    Hammer.gestures.endStateClassName = {
-        name: 'endStateClassName',
-        index: Infinity,
-        handler: function(ev, inst) {
-            if(ev.eventType ==  Hammer.EVENT_END) {
-                var regex = new RegExp(inst.options.state_className, "g");
-                inst.element.className =
-                    inst.element.className.replace(regex, '');
-            }
-        }
-    };
 
 </script>
 <script src="assets/js/ga.js"></script>

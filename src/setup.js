@@ -21,7 +21,7 @@ function setup() {
 
     // Add touch events on the document
     Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
-    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.endDetect);
+    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.detect);
 
     // Hammer is ready...!
     Hammer.READY = true;

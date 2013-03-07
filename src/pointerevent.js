@@ -10,12 +10,12 @@ Hammer.PointerEvent = {
      * @returns {Array}     touchlist
      */
     getTouchList: function() {
-        var pointers = this.pointers;
+        var self = this;
         var touchlist = [];
 
         // we can use forEach since pointerEvents only is in IE10
-        Object.keys(pointers).sort().forEach(function(id) {
-            touchlist.push(pointers[id]);
+        Object.keys(self.pointers).sort().forEach(function(id) {
+            touchlist.push(self.pointers[id]);
         });
         return touchlist;
     },
@@ -33,6 +33,8 @@ Hammer.PointerEvent = {
             pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
+
+        return Object.keys(this.pointers).length;
     },
 
     /**

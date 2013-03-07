@@ -72,17 +72,12 @@ Hammer.detection = {
             this.current.lastEvent = eventData;
         }
 
+        // endevent, but not the last touch, so dont stop
+        if(eventData.eventType == Hammer.EVENT_END && !eventData.touches.length-1) {
+            this.stopDetect();
+        }
+
         return eventData;
-    },
-
-
-    /**
-     * end Hammer.gesture detection
-     * @param   {Object}    eventData
-     */
-    endDetect: function endDetect(eventData) {
-        this.detect(eventData);
-        this.stopDetect();
     },
 
 

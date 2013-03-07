@@ -44,20 +44,20 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
-        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+
+        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function bindDomOnTouch(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
             // onmouseup, but when touchend has been fired we do nothing.
             // this is for touchdevices which also fire a mouseup on touchend
-            if(sourceEventType.match(/mouseup/) && touch_triggered) {
-                touch_triggered = false;
+            if(sourceEventType.match(/mouse/) && touch_triggered) {
                 return;
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/touch/) ||   // touch events are always on screen
-                (sourceEventType.match(/mouse/) && ev.which === 1) ||   // mousedown
-                (Hammer.HAS_POINTEREVENTS && sourceEventType.match(/down/))  // pointerevents touch
+            else if( sourceEventType.match(/touch/) ||   // touch events are always on screen
+                sourceEventType.match(/pointerdown/) || // pointerevents touch
+                (sourceEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
             ){
                 enable_detect = true;
             }
@@ -68,38 +68,61 @@ Hammer.event = {
                 touch_triggered = true;
             }
 
+            // count the total touches on the screen
+            var count_touches = 0;
 
             // when touch has been triggered in this detection session
             // and we are now handling a mouse event, we stop that to prevent conflicts
-            if(enable_detect && !(touch_triggered && sourceEventType.match(/mouse/))) {
-                // update pointer
+            if(enable_detect) {
+                // update pointerevent
                 if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
-                    Hammer.PointerEvent.updatePointer(eventType, ev);
+                    count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
+                }
+                // touch
+                else if(sourceEventType.match(/touch/)) {
+                    count_touches = ev.touches.length;
+                }
+                // mouse
+                else if(!touch_triggered) {
+                    count_touches = sourceEventType.match(/up/) ? 0 : 1;
+                }
+
+                // if we are in a end event, but when we remove one touch and
+                // we still have enough, set eventType to move
+                if(count_touches > 0 && eventType == Hammer.EVENT_END) {
+                    eventType = Hammer.EVENT_MOVE;
+                }
+                // no touches, force the end event
+                else if(!count_touches) {
+                    eventType = Hammer.EVENT_END;
                 }
 
                 // because touchend has no touches, and we often want to use these in our gestures,
                 // we send the last move event as our eventData in touchend
-                if(eventType === Hammer.EVENT_END && last_move_event !== null) {
+                if(!count_touches && last_move_event !== null) {
                     ev = last_move_event;
                 }
                 // store the last move event
                 else {
                     last_move_event = ev;
                 }
+
                 // trigger the handler
                 handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
-                // remove pointer after the handler is done
+                // remove pointerevent from list
                 if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
-                    Hammer.PointerEvent.updatePointer(eventType, ev);
+                    count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
             }
 
+            //debug(sourceEventType +" "+ eventType);
 
             // on the end we reset everything
-            if(sourceEventType.match(/up|cancel|end/)) {
-                enable_detect = false;
+            if(!count_touches) {
                 last_move_event = null;
+                enable_detect = false;
+                touch_triggered = false;
                 Hammer.PointerEvent.reset();
             }
         });

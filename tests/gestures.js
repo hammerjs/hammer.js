@@ -55,6 +55,8 @@ function testGesture(gesture, expect_events, callback) {
         if(!success) {
             msg = gesture +" error. Events thrown: "+ events.join(" ");
         }
+
+        // maybe something happens after the end, so wait a moment
         callback(success, msg);
     });
 }

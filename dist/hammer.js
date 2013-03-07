@@ -90,7 +90,7 @@ function setup() {
 
     // Add touch events on the document
     Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
-    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.endDetect);
+    Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.detect);
 
     // Hammer is ready...!
     Hammer.READY = true;
@@ -250,20 +250,20 @@ Hammer.event = {
      */
     onTouch: function onTouch(element, eventType, handler) {
 		var self = this;
-        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function(ev) {
+
+        this.bindDom(element, Hammer.EVENT_TYPES[eventType], function bindDomOnTouch(ev) {
             var sourceEventType = ev.type.toLowerCase();
 
             // onmouseup, but when touchend has been fired we do nothing.
             // this is for touchdevices which also fire a mouseup on touchend
-            if(sourceEventType.match(/mouseup/) && touch_triggered) {
-                touch_triggered = false;
+            if(sourceEventType.match(/mouse/) && touch_triggered) {
                 return;
             }
 
             // mousebutton must be down or a touch event
-            if(sourceEventType.match(/touch/) ||   // touch events are always on screen
-                (sourceEventType.match(/mouse/) && ev.which === 1) ||   // mousedown
-                (Hammer.HAS_POINTEREVENTS && sourceEventType.match(/down/))  // pointerevents touch
+            else if( sourceEventType.match(/touch/) ||   // touch events are always on screen
+                sourceEventType.match(/pointerdown/) || // pointerevents touch
+                (sourceEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
             ){
                 enable_detect = true;
             }
@@ -274,38 +274,61 @@ Hammer.event = {
                 touch_triggered = true;
             }
 
+            // count the total touches on the screen
+            var count_touches = 0;
 
             // when touch has been triggered in this detection session
             // and we are now handling a mouse event, we stop that to prevent conflicts
-            if(enable_detect && !(touch_triggered && sourceEventType.match(/mouse/))) {
-                // update pointer
+            if(enable_detect) {
+                // update pointerevent
                 if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
-                    Hammer.PointerEvent.updatePointer(eventType, ev);
+                    count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
+                }
+                // touch
+                else if(sourceEventType.match(/touch/)) {
+                    count_touches = ev.touches.length;
+                }
+                // mouse
+                else if(!touch_triggered) {
+                    count_touches = sourceEventType.match(/up/) ? 0 : 1;
+                }
+
+                // if we are in a end event, but when we remove one touch and
+                // we still have enough, set eventType to move
+                if(count_touches > 0 && eventType == Hammer.EVENT_END) {
+                    eventType = Hammer.EVENT_MOVE;
+                }
+                // no touches, force the end event
+                else if(!count_touches) {
+                    eventType = Hammer.EVENT_END;
                 }
 
                 // because touchend has no touches, and we often want to use these in our gestures,
                 // we send the last move event as our eventData in touchend
-                if(eventType === Hammer.EVENT_END && last_move_event !== null) {
+                if(!count_touches && last_move_event !== null) {
                     ev = last_move_event;
                 }
                 // store the last move event
                 else {
                     last_move_event = ev;
                 }
+
                 // trigger the handler
                 handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
 
-                // remove pointer after the handler is done
+                // remove pointerevent from list
                 if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
-                    Hammer.PointerEvent.updatePointer(eventType, ev);
+                    count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
                 }
             }
 
+            //debug(sourceEventType +" "+ eventType);
 
             // on the end we reset everything
-            if(sourceEventType.match(/up|cancel|end/)) {
-                enable_detect = false;
+            if(!count_touches) {
                 last_move_event = null;
+                enable_detect = false;
+                touch_triggered = false;
                 Hammer.PointerEvent.reset();
             }
         });
@@ -431,12 +454,12 @@ Hammer.PointerEvent = {
      * @returns {Array}     touchlist
      */
     getTouchList: function() {
-        var pointers = this.pointers;
+        var self = this;
         var touchlist = [];
 
         // we can use forEach since pointerEvents only is in IE10
-        Object.keys(pointers).sort().forEach(function(id) {
-            touchlist.push(pointers[id]);
+        Object.keys(self.pointers).sort().forEach(function(id) {
+            touchlist.push(self.pointers[id]);
         });
         return touchlist;
     },
@@ -454,6 +477,8 @@ Hammer.PointerEvent = {
             pointerEvent.identifier = pointerEvent.pointerId;
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
+
+        return Object.keys(this.pointers).length;
     },
 
     /**
@@ -554,7 +579,7 @@ Hammer.utils = {
      * @param   {Number}    delta_y
      * @returns {Object}    velocity
      */
-    getVelocity: function getSimpleDistance(delta_time, delta_x, delta_y) {
+    getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
         return {
             x: Math.abs(delta_x / delta_time) || 0,
             y: Math.abs(delta_y / delta_time) || 0
@@ -685,6 +710,10 @@ Hammer.utils = {
             element.onselectstart = function() {
                 return false;
             };
+
+            element.oncontextmenu = function() {
+                return false;
+            };
         }
     }
 };
@@ -763,17 +792,12 @@ Hammer.detection = {
             this.current.lastEvent = eventData;
         }
 
+        // endevent, but not the last touch, so dont stop
+        if(eventData.eventType == Hammer.EVENT_END && !eventData.touches.length-1) {
+            this.stopDetect();
+        }
+
         return eventData;
-    },
-
-
-    /**
-     * end Hammer.gesture detection
-     * @param   {Object}    eventData
-     */
-    endDetect: function endDetect(eventData) {
-        this.detect(eventData);
-        this.stopDetect();
     },
 
 
