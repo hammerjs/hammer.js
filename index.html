@@ -11,18 +11,78 @@
     <!-- Le styles -->
     <link href="css/bootstrap.css" rel="stylesheet">
     <style type="text/css">
+        html {
+            background-color: #000;
+            color: #FFF;
+        }
         body {
             padding-top: 20px;
             padding-bottom: 40px;
-            background: #fff url(img/hammer-figure.png) no-repeat right 30px;
+            background: #000 url(img/hammer-figure.png) no-repeat right 30px;
+            color: #FFF;
+        }
+        /* Yellow: #ffca3f; Gold: #a98829;*/
+        a,
+        .masthead h3 { color: #ffca3f; }
+        a:hover, a:focus, a:active { color: #a98829; }
+        hr {
+            border-top-color: #ffca3f;
+            border-bottom-color: #a98829;
+        }
+        .nav > li > a:hover, 
+        .nav > li > a:focus {
+            background-color: rgba(255,255,255,0.3);
+            color: #ffca3f;
+        }
+        .nav-pills > .active > a, 
+        .nav-pills > .active > a:hover, 
+        .nav-pills > .active > a:focus {
+            background-color: #ffca3f;
+            color: #000;
         }
 
-            /* Custom container */
+        .btn-success {
+          color: #000;
+          text-shadow: 0 -1px 0 rgba(255,255,255,0.5);
+          background-color: #ffca3f;
+          *background-color: #ffca3f;
+          background-image: -moz-linear-gradient(top, #ffca3f, #a98829);
+          background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffca3f), to(#a98829));
+          background-image: -webkit-linear-gradient(top, #ffca3f, #a98829);
+          background-image: -o-linear-gradient(top, #ffca3f, #a98829);
+          background-image: linear-gradient(to bottom, #ffca3f, #a98829);
+          background-repeat: repeat-x;
+          border-color: #a98829 #a98829 #a98829;
+          border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+          filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffca3f', endColorstr='#ffa98829', GradientType=0);
+          filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+        }
+
+        .btn-success:hover,
+        .btn-success:focus,
+        .btn-success:active,
+        .btn-success.active,
+        .btn-success.disabled,
+        .btn-success[disabled] {
+          color: #000;
+          background-color: #a98829;
+          *background-color: #a98829;
+        }
+
+        .btn-success:active,
+        .btn-success.active {
+          background-color: #a98829 \9;
+        }
+
+
+
+
+        /* Custom container */
         .container-narrow {
             margin: 0 auto;
             max-width: 700px;
             padding: 20px 30px;
-            background: rgba(255,255,255,.9);
+            background: rgba(0,0,0,.7);
         }
         .container-narrow > hr {
             margin: 0;
