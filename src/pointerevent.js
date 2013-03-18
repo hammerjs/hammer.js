@@ -27,7 +27,7 @@ Hammer.PointerEvent = {
      */
     updatePointer: function(type, pointerEvent) {
         if(type == Hammer.EVENT_END) {
-            delete this.pointers[pointerEvent.pointerId];
+            this.pointers = {};
         }
         else {
             pointerEvent.identifier = pointerEvent.pointerId;
