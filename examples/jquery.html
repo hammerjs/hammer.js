@@ -67,47 +67,92 @@
             </p>    
         </div>
     </div>
+			
+<pre style='color:#000000;background:#ffffff;'><span style='color:#7f0055; font-weight:bold; '>var</span> hammertime = $(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>.toucharea</span><span style='color:#2a00ff; '>"</span>).hammer();
 
+<span style='color:#3f7f59; '>// the whole area</span>
+hammertime.on(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>touch</span><span style='color:#2a00ff; '>"</span>, <span style='color:#7f0055; font-weight:bold; '>function</span>(ev) {
+  $(<span style='color:#7f0055; font-weight:bold; '>this</span>).highlight();
+});
 
+<span style='color:#3f7f59; '>// on elements in the toucharea, with a stopPropagation</span>
+hammertime.on(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>touch</span><span style='color:#2a00ff; '>"</span>, <span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>li</span><span style='color:#2a00ff; '>"</span>, <span style='color:#7f0055; font-weight:bold; '>function</span>(ev) {
+  $(<span style='color:#7f0055; font-weight:bold; '>this</span>).highlight();
+  ev.stopPropagation();
+});
+
+<span style='color:#3f7f59; '>// on dynamic items</span>
+$(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>#add-list-item</span><span style='color:#2a00ff; '>"</span>).on(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>touch</span><span style='color:#2a00ff; '>"</span>, <span style='color:#7f0055; font-weight:bold; '>function</span>(ev) {
+  $(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>#items</span><span style='color:#2a00ff; '>"</span>).append(<span style='color:#2a00ff; '>"</span><span style='color:#2a00ff; '>&lt;li>Dynamic added listitem&lt;/li></span><span style='color:#2a00ff; '>"</span>);
+  ev.gesture.preventDefault();
+  ev.stopPropagation();
+});
+
+<span style='color:#3f7f59; '>// simple helper function</span>
+$.fn.highlight = <span style='color:#7f0055; font-weight:bold; '>function</span>(options) {
+  options = $.extend({},{
+    className: <span style='color:#2a00ff; '>'highlight'</span>,
+    delay: 100
+  }, options);
+    
+  <span style='color:#7f0055; font-weight:bold; '>return</span> <span style='color:#7f0055; font-weight:bold; '>this</span>.each(<span style='color:#7f0055; font-weight:bold; '>function</span>(){
+    (<span style='color:#7f0055; font-weight:bold; '>function</span>(elem, cName, time){
+      setTimeout(<span style='color:#7f0055; font-weight:bold; '>function</span>() {
+        elem.removeClass(cName);
+      }, time);
+      elem.addClass(cName);
+    })($(<span style='color:#7f0055; font-weight:bold; '>this</span>), options.className, options.delay);
+  });
+}
+</pre>
 </div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../dist/jquery.hammer.min.js"></script>
 
-<script>
+<script id="demoScript">
 
-    function highlight(el) {
-        setTimeout(function() {
-            el.className = el.className.replace("highlight", "");
-        }, 100);
-        el.className = el.className + " highlight";
-    }
+var hammertime = $(".toucharea").hammer();
+console.log(hammertime);
 
-    var hammertime = $(".toucharea").hammer();
-    console.log(hammertime);
+// the whole area
+hammertime.on("touch", function(ev) {
+	if(window.console) { console.log(ev); }
+	$(this).highlight();
+});
 
-    // the whole area
-    hammertime.on("touch", function(ev) {
-        if(window.console) { console.log(ev); }
-        highlight(this);
-    });
+// on elements in the toucharea, with a stopPropagation
+hammertime.on("touch", "li", function(ev) {
+	if(window.console) { console.log('nested', ev); }
+  $(this).highlight();
+  ev.stopPropagation();
+});
 
-    // on elements in the toucharea, with a stopPropagation
-    hammertime.on("touch", "li", function(ev) {
-        if(window.console) { console.log('nested', ev); }
-        highlight(this);
-        ev.stopPropagation();
-    });
+// on dynamic items
+$("#add-list-item").on("touch", function(ev) {
+  $("#items").append("<li>Dynamic added listitem</li>");
+  ev.gesture.preventDefault();
+  ev.stopPropagation();
+});
 
-
-    // on dynamic items
-    $("#add-list-item").on("touch", function(ev) {
-        $("#items").append("<li>Dynamic added listitem</li>");
-        ev.gesture.preventDefault();
-        ev.stopPropagation();
-    });
+$.fn.highlight = function(options) {
+	options = $.extend({},{
+		className: 'highlight',
+		delay: 100
+	}, options);
+	
+	return this.each(function(){
+		(function(elem, cName, time){
+			setTimeout(function() {
+				elem.removeClass(cName);
+			}, time);
+			elem.addClass(cName);
+		})($(this), options.className, options.delay);
+	});
+}
 
 </script>
+
 <script src="assets/js/ga.js"></script>
 </body>
 </html>
