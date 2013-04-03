@@ -136,10 +136,20 @@ Hammer.event = {
     determineEventTypes: function determineEventTypes() {
         // determine the eventtype we want to set
         var types;
+
+        // pointerEvents magic
         if(Hammer.HAS_POINTEREVENTS) {
             types = Hammer.PointerEvent.getEvents();
         }
-        // for non pointer events browsers
+        // on Android, iOS, blackberry, windows mobile we dont want any mouseevents
+        else if(Hammer.NO_MOUSEEVENTS) {
+            types = [
+                'touchstart',
+                'touchmove',
+                'touchend touchcancel'];
+        }
+        // for non pointer events browsers and mixed browsers,
+        // like chrome on windows8 touch laptop
         else {
             types = [
                 'touchstart mousedown',

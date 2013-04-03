@@ -32,6 +32,9 @@ Hammer.defaults = {
 Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
+// dont use mouseevents on android, mobile safari and iemobile
+Hammer.NO_MOUSEEVENTS = navigator.userAgent.match(/(mobile.*safari)|android|iemobile/i);
+
 // eventtypes per touchevent (start, move, end)
 // are filled by Hammer.event.determineEventTypes on setup
 Hammer.EVENT_TYPES = {};
