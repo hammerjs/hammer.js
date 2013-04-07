@@ -160,7 +160,7 @@ Hammer.detection = {
         }
 
         // extend Hammer default options with the Hammer.gesture options
-        Hammer.utils.extend(Hammer.defaults, options);
+        Hammer.utils.extend(Hammer.defaults, options, true);
 
         // set its index
         gesture.index = gesture.index || 1000;
