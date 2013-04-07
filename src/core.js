@@ -17,9 +17,12 @@ Hammer.defaults = {
     // the contextmenu, tap highlighting etc
     // set to false to disable this
     stop_browser_behavior: {
-        userSelect: 'none', // this also triggers onselectstart=false for IE
-        touchCallout: 'none',
+		// this also triggers onselectstart=false for IE
+        userSelect: 'none',
+		// this makes the element blocking in IE10 >, you could experiment with the value
+		// see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
         touchAction: 'none',
+		touchCallout: 'none',
         contentZooming: 'none',
         userDrag: 'none',
         tapHighlightColor: 'rgba(0,0,0,0)'
@@ -33,8 +36,8 @@ Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnable
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // dont use mouseevents on android, mobile safari and iemobile
-Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS &&
-    navigator.userAgent.match(/mobile|tablet|ip(ad|hone|od)|android|iemobile/i);
+Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|iemobile/i;
+Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && navigator.userAgent.match(Hammer.MOBILE_REGEX);
 
 // eventtypes per touchevent (start, move, end)
 // are filled by Hammer.event.determineEventTypes on setup
