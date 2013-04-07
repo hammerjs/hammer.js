@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.5dev - 2013-04-03
+/*! Hammer.JS - v1.0.5dev - 2013-04-07
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1033,8 +1033,8 @@ Hammer.gestures.Hold = {
     name: 'hold',
     index: 10,
     defaults: {
-        hold_timeout: 500,
-        hold_threshold: 1
+        hold_timeout	: 500,
+        hold_threshold	: 1
     },
     timer: null,
     handler: function holdGesture(ev, inst) {
@@ -1079,15 +1079,17 @@ Hammer.gestures.Tap = {
     name: 'tap',
     index: 100,
     defaults: {
-        tap_max_touchtime  : 250,
-        tap_max_distance   : 10,
-        doubletap_distance : 20,
-        doubletap_interval : 300
+        tap_max_touchtime	: 250,
+        tap_max_distance	: 10,
+		tap_always			: true,
+        doubletap_distance	: 20,
+        doubletap_interval	: 300
     },
     handler: function tapGesture(ev, inst) {
         if(ev.eventType == Hammer.EVENT_END) {
             // previous gesture, for the double tap since these are two different gesture detections
-            var prev = Hammer.detection.previous;
+            var prev = Hammer.detection.previous,
+				did_doubletap = false;
 
             // when the touchtime is higher then the max touch time
             // or when the moving distance is too much
@@ -1100,13 +1102,15 @@ Hammer.gestures.Tap = {
             if(prev && prev.name == 'tap' &&
                 (ev.timeStamp - prev.lastEvent.timeStamp) < inst.options.doubletap_interval &&
                 ev.distance < inst.options.doubletap_distance) {
-                Hammer.detection.current.name = 'doubletap';
-            }
-            else {
-                Hammer.detection.current.name = 'tap';
+				inst.trigger('doubletap', ev);
+				did_doubletap = true;
             }
 
-            inst.trigger(Hammer.detection.current.name, ev);
+			// do a single tap
+			if(!did_doubletap || inst.options.tap_always) {
+				Hammer.detection.current.name = 'tap';
+				inst.trigger(Hammer.detection.current.name, ev);
+			}
         }
     }
 };
