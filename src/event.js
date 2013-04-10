@@ -62,6 +62,12 @@ Hammer.event = {
                 enable_detect = true;
             }
 
+            // mouse isn't pressed
+            else if(sourceEventType.match(/mouse/) && ev.which !== 1) {
+                enable_detect = false;
+            }
+
+
             // we are in a touch event, set the touch triggered bool to true,
             // this for the conflicts that may occur on ios and android
             if(sourceEventType.match(/touch|pointer/)) {

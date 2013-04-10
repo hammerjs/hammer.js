@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.5 - 2013-04-07
+/*! Hammer.JS - v1.0.6dev - 2013-04-10
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -274,6 +274,12 @@ Hammer.event = {
             ){
                 enable_detect = true;
             }
+
+            // mouse isn't pressed
+            else if(sourceEventType.match(/mouse/) && ev.which !== 1) {
+                enable_detect = false;
+            }
+
 
             // we are in a touch event, set the touch triggered bool to true,
             // this for the conflicts that may occur on ios and android

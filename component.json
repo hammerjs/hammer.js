@@ -1,6 +1,6 @@
 {
     "name": "hammerjs",
-    "version": "1.0.5",
+    "version": "1.0.6dev",
     "main": "dist/jquery.hammer.js",
     "scripts": [
       "dist/jquery.hammer.js"
