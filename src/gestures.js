@@ -289,7 +289,18 @@ Hammer.gestures.Drag = {
                 }
 
                 // we are dragging!
-                Hammer.detection.current.name = this.name;
+                if(Hammer.detection.current.name != this.name) {
+                    // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
+                    // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
+                    // It might be useful to save the original start point somewhere
+                    var factor = Math.abs(inst.options.drag_min_distance/ev.distance);
+					Hammer.detection.current.startEvent.center.pageX += ev.deltaX * factor;
+					Hammer.detection.current.startEvent.center.pageY += ev.deltaY * factor;
+
+                    // recalculate event data using new start point
+                    ev = Hammer.detection.extendEventData(ev);
+                    Hammer.detection.current.name = this.name;
+                }
 
                 // lock drag to axis?
                 if(Hammer.detection.current.lastEvent.drag_locked_to_axis || (inst.options.drag_lock_to_axis && inst.options.drag_lock_min_distance<=ev.distance)) {
