@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+
+        #header {
+            text-align: center;
+        }
+        #header div {
+            display: inline-block;
+            text-align: left;
+        }
+
+        .child {
+            position: absolute;
+            left: 50px;
+            top: 50px;
+            background: #9fe1e7;
+            width: 100px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 10px;
+            box-shadow: 4px 4px 5px rgba(0,0,0,0.2);
+        }
+
+        #parent {
+            text-align: center;
+            position: relative;
+            background: rgba(0,0,0,0.2);
+            height: 300px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .bacon1 {
+            top: 350px;
+        }
+        .bacon2 {
+            left: 90%;
+            top: 350px;
+        }
+
+        svg {
+
+            border: 2px solid black;
+            position: fixed;
+            bottom: 0px;
+            left: 25%;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div id="header">
+    <div>
+        <h1>Event Delegation without JQuery</h1>
+        <h4>This works with:
+            <ul>
+                <li>regular nested HTML elements</li>
+                <li>images</li>
+                <li>even SVG elements</li>
+            </ul>
+        </h4>
+    </div>
+</div>
+
+<div id="parent">
+    <h3>I am a parent div! Drag my child around!</h3>
+    <div class="child">
+    </div>
+    <img src=" http://baconmockup.com/200/100" class="child bacon1" draggable="false"/>
+    <img src=" http://baconmockup.com/200/200" class="child bacon2" draggable="false"/>
+</div>
+
+<svg width="50%" height="300" pointer-events="all" style="-webkit-user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+    <g>
+        <circle class="node" r="20" cx="0" cy="0" style="fill: #1f77b4; stroke: #15537d;"></circle>
+        <circle class="node" r="20" cx="50" cy="50" style="fill: #ff7f0e; stroke: #b25809;"></circle>
+        <circle class="node" r="20" cx="100" cy="100" style="fill: #2ca02c; stroke: #1e701e;"></circle>
+        <circle class="node" r="20" cx="150" cy="150" style="fill: #d62728; stroke: #951b1c;"></circle>
+        <circle class="node" r="20" cx="200" cy="200" style="fill: #9467bd; stroke: #674884;"></circle>
+        <circle class="node" r="20" cx="250" cy="250" style="fill: #8c564b; stroke: #623c34;"></circle>
+        <circle class="node" r="20" cx="342" cy="170" style="fill: #e377c2; stroke: #9e5387;"></circle>
+    </g>
+</svg>
+
+
+<!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.js"></script>
+<script src="../dist/hammer.js"></script>
+
+<script>
+
+    moveTarget = function(ev) {
+
+        var $target = $(ev.gesture.target);
+        var offset = $("#parent").offset();
+
+        // 50 = 0.5 * childDiv
+        var x = ev.gesture.touches[0].pageX - offset.left - 50;
+        var y = ev.gesture.touches[0].pageY - offset.top - 50;
+
+        ev.gesture.preventDefault();
+
+        $target.css({
+            zIndex: 1337,
+            left: x,
+            top: y
+        });
+    };
+
+    moveNode = function(ev) {
+
+        var $target = $(ev.gesture.target);
+        var offset = $("svg").offset();
+
+        // 5 = 0.5 * radius
+        var x = ev.gesture.touches[0].pageX - offset.left - 5;
+        var y = ev.gesture.touches[0].pageY - offset.top - 5;
+
+        $(this)
+            .attr("cx", x)
+            .attr("cy", y);
+
+    }
+
+    var parentDiv = $("#parent")[0];
+    var body = $("body")[0]
+    var svg = $("svg")[0]
+
+    Hammer(parentDiv).on("drag", ".child", moveTarget)
+    Hammer(body).on("drag", "img", moveTarget)
+    Hammer(svg).on("drag", ".node", moveNode)
+
+</script>
+<script src="assets/js/ga.js"></script>
+</body>
+</html>
