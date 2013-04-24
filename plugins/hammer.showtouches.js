@@ -21,7 +21,7 @@
             // remove unused touch elements
             for(var key in touch_elements) {
                 if(touch_elements.hasOwnProperty(key) && !touches_index[key]) {
-                    touch_elements[key].remove();
+                    document.body.removeChild(touch_elements[key]);
                     delete touch_elements[key];
                 }
             }
