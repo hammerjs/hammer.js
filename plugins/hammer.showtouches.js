@@ -1,15 +1,14 @@
 (function(Hammer) {
     /**
      * ShowTouches gesture
-     * requires jQuery
      * show all touch on the screen by placing elements at there pageX and pageY
      * @param   {Boolean}   [force]
      */
     Hammer.plugins.showTouches = function(force) {
         // the circles under your fingers
-        var template = '<div style="position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
+        var template_style = 'position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
             'background:rgba(255,255,255,.7);border-radius:20px;pointer-events:none;' +
-            'margin-top:-9px;margin-left:-9px;"></div>';
+            'margin-top:-9px;margin-left:-9px;';
 
         // elements by identifier
         var touch_elements = {};
@@ -22,7 +21,7 @@
             // remove unused touch elements
             for(var key in touch_elements) {
                 if(touch_elements.hasOwnProperty(key) && !touches_index[key]) {
-                    touch_elements[key].remove();
+                    document.body.removeChild(touch_elements[key]);
                     delete touch_elements[key];
                 }
             }
@@ -49,14 +48,19 @@
 
                     // new touch element
                     if(!touch_elements[id]) {
-                        touch_elements[id] = $(template).appendTo(document.body);
+                        // create new element and attach base styles
+                        var template = document.createElement('div');
+                            template.setAttribute('style', template_style);
+
+                        // append element to body
+                        document.body.appendChild(template);
+
+                        touch_elements[id] = template;
                     }
 
                     // Paul Irish says that translate is faster then left/top
-                    touch_elements[id].css({
-                        left: touch.pageX,
-                        top: touch.pageY
-                    });
+                    touch_elements[id].style.left = touch.pageX + 'px';
+                    touch_elements[id].style.top = touch.pageY + 'px';
                 }
 
                 removeUnusedElements();
