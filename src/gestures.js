@@ -245,6 +245,11 @@ Hammer.gestures.Drag = {
     index: 50,
     defaults: {
         drag_min_distance : 10,
+        // Set correct_for_drag_min_distance to true to make the starting point of the drag
+        // be calculated from where the drag was triggered, not from where the touch started.
+        // Useful to avoid a jerk-starting drag, which can make fine-adjustments
+        // through dragging difficult, and be visually unappealing.
+        correct_for_drag_min_distance : true,
         // set 0 for unlimited, but this can conflict with transform
         drag_max_touches  : 1,
         // prevent default browser behavior when dragging occurs
@@ -289,7 +294,20 @@ Hammer.gestures.Drag = {
                 }
 
                 // we are dragging!
-                Hammer.detection.current.name = this.name;
+                if(Hammer.detection.current.name != this.name) {
+                    Hammer.detection.current.name = this.name;
+                    if (inst.options.correct_for_drag_min_distance) {
+                        // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
+                        // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
+                        // It might be useful to save the original start point somewhere
+                        var factor = Math.abs(inst.options.drag_min_distance/ev.distance);
+                        Hammer.detection.current.startEvent.center.pageX += ev.deltaX * factor;
+                        Hammer.detection.current.startEvent.center.pageY += ev.deltaY * factor;
+
+                        // recalculate event data using new start point
+                        ev = Hammer.detection.extendEventData(ev);
+                    }
+                }
 
                 // lock drag to axis?
                 if(Hammer.detection.current.lastEvent.drag_locked_to_axis || (inst.options.drag_lock_to_axis && inst.options.drag_lock_min_distance<=ev.distance)) {
