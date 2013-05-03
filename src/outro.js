@@ -8,7 +8,7 @@ else {
 
     // requireJS module definition
     if(typeof window.define === 'function' && window.define.amd) {
-        window.define('hammer', [], function() {
+        window.define(function() {
             return Hammer;
         });
     }
