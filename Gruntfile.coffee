@@ -61,12 +61,15 @@ module.exports = (grunt) ->
         sub: false
         browser: true
         node: true
+        globals:
+          define: false
       dist:
         src: ['dist/hammer.js']
       distjquery:
         options:
           globals:
-            Hammer: true
+            Hammer: true,
+            define: false
         src: ['dist/jquery.hammer.js']
 
     # watch for changes
