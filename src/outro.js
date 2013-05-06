@@ -2,6 +2,10 @@
 if(typeof module === 'object' && typeof module.exports === 'object'){
     module.exports = Hammer;
 }
+// export as AngularJS injectable module
+else if(typeof angular === 'object') {
+    angular.module('hammer', []).constant('Hammer', Hammer);
+}
 // just window export
 else {
     window.Hammer = Hammer;
