@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-05-04
+/*! Hammer.JS - v1.0.6dev - 2013-05-07
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -398,12 +398,8 @@ Hammer.event = {
         }
         // make fake touchlist from mouse position
         else {
-            return [{
-                identifier: 1,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }];
+            ev.indentifier = 1;
+            return [ev];
         }
     },
 

@@ -185,12 +185,8 @@ Hammer.event = {
         }
         // make fake touchlist from mouse position
         else {
-            return [{
-                identifier: 1,
-                pageX: ev.pageX,
-                pageY: ev.pageY,
-                target: ev.target
-            }];
+            ev.indentifier = 1;
+            return [ev];
         }
     },
 
