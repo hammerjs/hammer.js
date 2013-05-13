@@ -52,7 +52,7 @@ Hammer.Instance.prototype = {
         var selectorHandler;
 
         if (arguments.length == 2){
-            selectorHandler = selector;
+            selectorHandler = handler = selector;
         }
         else if (arguments.length == 3) {
 
@@ -62,8 +62,7 @@ Hammer.Instance.prototype = {
 
                 if (Hammer.utils.matchesSelector(eventTarget, selector)){
 
-
-                    evt.target = evt.gesture.target = eventTarget;
+                    evt.gesture.target = eventTarget;
                     handler.call(eventTarget, evt);
                 }
             };

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.5 - 2013-04-07
+/*! Hammer.JS - v1.0.5 - 2013-05-02
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -149,13 +149,39 @@ Hammer.Instance.prototype = {
     /**
      * bind events to the instance
      * @param   {String}      gesture
+     * @param   {String}      selector
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    on: function onEvent(gesture, handler){
+    on: function onEvent(gesture, selector, handler){
+        var selectorHandler;
+
+        if (arguments.length == 2){
+            selectorHandler = handler = selector;
+        }
+        else if (arguments.length == 3) {
+
+            selectorHandler = function(evt) {
+
+                var eventTarget = (evt.gesture.startEvent.target) ? evt.gesture.startEvent.target : evt.gesture.target;
+
+                if (Hammer.utils.matchesSelector(eventTarget, selector)){
+
+                    evt.gesture.target = eventTarget;
+                    handler.call(eventTarget, evt);
+                }
+            };
+        }
+
+        if (!this.delegation){
+            this.delegation = [];
+        }
+
+
         var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
-            this.element.addEventListener(gestures[t], handler, false);
+            this.element.addEventListener(gestures[t], selectorHandler, false);
+            this.delegation.push( { handler : selectorHandler, originalHandler : handler, selector : selector} );
         }
         return this;
     },
@@ -164,13 +190,34 @@ Hammer.Instance.prototype = {
     /**
      * unbind events to the instance
      * @param   {String}      gesture
+     * @param   {String}      selector
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    off: function offEvent(gesture, handler){
+    off: function offEvent(gesture, selector, handler){
         var gestures = gesture.split(' ');
+
+        if (arguments.length == 2){
+            handler = selector;
+        }
+
         for(var t=0; t<gestures.length; t++) {
-            this.element.removeEventListener(gestures[t], handler, false);
+
+            if (this.delegation) {
+                for (var i=0; i<this.delegation.length; i++) {
+
+                    var delegate = this.delegation[i];
+
+                    if (handler == delegate.originalHandler){
+                        this.element.removeEventListener(gestures[t], delegate.handler, false);
+                        break;
+                    }
+                }
+            } else {
+                this.element.removeEventListener(gestures[t], handler, false);
+
+            }
+
         }
         return this;
     },
@@ -733,6 +780,27 @@ Hammer.utils = {
                 return false;
             };
         }
+    },
+
+    matchesSelector: function matchesSelector(element, selector) {
+
+        Element && function(ElementPrototype) {
+            ElementPrototype.matchesSelector = ElementPrototype.matchesSelector ||
+            ElementPrototype.mozMatchesSelector ||
+            ElementPrototype.msMatchesSelector ||
+            ElementPrototype.oMatchesSelector ||
+            ElementPrototype.webkitMatchesSelector ||
+            function (selector) {
+                var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+
+                while (nodes[++i] && nodes[i] != node){}
+
+                return !!nodes[i];
+            };
+        }(Element.prototype);
+
+        return element.matchesSelector(selector);
+
     }
 };
 
