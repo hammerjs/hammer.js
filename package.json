@@ -20,6 +20,7 @@
     "bugs": {
         "url": "https://github.com/eightmedia/hammer.js/issues"
     },
+    "dependencies": {},
     "devDependencies": {
         "grunt": "0.4.x",
         "grunt-contrib-connect": "0.1.x",
