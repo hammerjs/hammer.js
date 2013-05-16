@@ -40,7 +40,6 @@ Hammer.detection = {
     /**
      * Hammer.gesture detection
      * @param   {Object}    eventData
-     * @param   {Object}    eventData
      */
     detect: function detect(eventData) {
         if(!this.current || this.stopped) {
