@@ -23,6 +23,9 @@ Hammer.gestures = Hammer.gestures || {};
  * this should be the name of the gesture, lowercase
  * it is also being used to disable/enable the gesture per instance config.
  *
+ * @param   {Array}    events
+ * these are the the event names that the gesture can trigger.
+ *
  * @param   {Number}    [index=1000]
  * the index of the gesture, where it is going to be in the stack of gestures detection
  * like when you build an gesture that depends on the drag gesture, it is a good
@@ -114,6 +117,7 @@ Hammer.gestures = Hammer.gestures || {};
  */
 Hammer.gestures.Hold = {
     name: 'hold',
+    events: ['hold'],
     index: 10,
     defaults: {
         hold_timeout	: 500,
@@ -160,6 +164,7 @@ Hammer.gestures.Hold = {
  */
 Hammer.gestures.Tap = {
     name: 'tap',
+    events: ['tap', 'doubletap'],
     index: 100,
     defaults: {
         tap_max_touchtime	: 250,
@@ -206,6 +211,7 @@ Hammer.gestures.Tap = {
  */
 Hammer.gestures.Swipe = {
     name: 'swipe',
+    events: ['swipe', 'swipeleft', 'swiperight', 'swipeup', 'swipedown'],
     index: 40,
     defaults: {
         // set 0 for unlimited, but this can conflict with transform
@@ -238,10 +244,11 @@ Hammer.gestures.Swipe = {
  * Move with x fingers (default 1) around on the page. Blocking the scrolling when
  * moving left and right is a good practice. When all the drag events are blocking
  * you disable scrolling on that area.
- * @events  drag, drapleft, dragright, dragup, dragdown
+ * @events  drag, dragleft, dragright, dragup, dragdown
  */
 Hammer.gestures.Drag = {
     name: 'drag',
+    events: ['drag', 'dragleft', 'dragright', 'dragup', 'dragdown'],
     index: 50,
     defaults: {
         drag_min_distance : 10,
@@ -363,6 +370,7 @@ Hammer.gestures.Drag = {
  */
 Hammer.gestures.Transform = {
     name: 'transform',
+    events: ['transform', 'pinch', 'pinchin', 'pinchout', 'rotate'],
     index: 45,
     defaults: {
         // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
@@ -453,6 +461,7 @@ Hammer.gestures.Transform = {
  */
 Hammer.gestures.Touch = {
     name: 'touch',
+    events: ['touch'],
     index: -Infinity,
     defaults: {
         // call preventDefault at touchstart, and makes the element blocking by
@@ -489,6 +498,7 @@ Hammer.gestures.Touch = {
  */
 Hammer.gestures.Release = {
     name: 'release',
+    events: ['release'],
     index: Infinity,
     handler: function releaseGesture(ev, inst) {
         if(ev.eventType ==  Hammer.EVENT_END) {
