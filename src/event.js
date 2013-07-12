@@ -103,18 +103,13 @@ Hammer.event = {
                     eventType = Hammer.EVENT_END;
                 }
 
-                // because touchend has no touches, and we often want to use these in our gestures,
-                // we send the last move event as our eventData in touchend
-                if(!count_touches && last_move_event !== null) {
-                    ev = last_move_event;
-                }
                 // store the last move event
-                else {
+                if(count_touches || last_move_event === null) {
                     last_move_event = ev;
                 }
 
                 // trigger the handler
-                handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
+                handler.call(Hammer.detection, self.collectEventData(element, eventType, self.getTouchList(last_move_event, eventType), ev));
 
                 // remove pointerevent from list
                 if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -197,8 +192,7 @@ Hammer.event = {
      * @param   {String}        eventType        like Hammer.EVENT_MOVE
      * @param   {Object}        eventData
      */
-    collectEventData: function collectEventData(element, eventType, ev) {
-        var touches = this.getTouchList(ev, eventType);
+    collectEventData: function collectEventData(element, eventType, touches, ev) {
 
         // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
