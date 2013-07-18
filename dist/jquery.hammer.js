@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-05-07
+/*! Hammer.JS - v1.0.6dev - 2013-07-12
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -41,12 +41,12 @@ Hammer.defaults = {
 };
 
 // detect touchevents
-Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // dont use mouseevents on mobile devices
 Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
-Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && navigator.userAgent.match(Hammer.MOBILE_REGEX);
+Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
 
 // eventtypes per touchevent (start, move, end)
 // are filled by Hammer.event.determineEventTypes on setup
@@ -69,7 +69,7 @@ Hammer.EVENT_MOVE = 'move';
 Hammer.EVENT_END = 'end';
 
 // hammer document where the base events are added at
-Hammer.DOCUMENT = document;
+Hammer.DOCUMENT = window.document;
 
 // plugins namespace
 Hammer.plugins = {};
@@ -316,18 +316,13 @@ Hammer.event = {
                     eventType = Hammer.EVENT_END;
                 }
 
-                // because touchend has no touches, and we often want to use these in our gestures,
-                // we send the last move event as our eventData in touchend
-                if(!count_touches && last_move_event !== null) {
-                    ev = last_move_event;
-                }
                 // store the last move event
-                else {
+                if(count_touches || last_move_event === null) {
                     last_move_event = ev;
                 }
 
                 // trigger the handler
-                handler.call(Hammer.detection, self.collectEventData(element, eventType, ev));
+                handler.call(Hammer.detection, self.collectEventData(element, eventType, self.getTouchList(last_move_event, eventType), ev));
 
                 // remove pointerevent from list
                 if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -410,8 +405,7 @@ Hammer.event = {
      * @param   {String}        eventType        like Hammer.EVENT_MOVE
      * @param   {Object}        eventData
      */
-    collectEventData: function collectEventData(element, eventType, ev) {
-        var touches = this.getTouchList(ev, eventType);
+    collectEventData: function collectEventData(element, eventType, touches, ev) {
 
         // find out pointerType
         var pointerType = Hammer.POINTER_TOUCH;
@@ -779,7 +773,6 @@ Hammer.detection = {
 
     /**
      * Hammer.gesture detection
-     * @param   {Object}    eventData
      * @param   {Object}    eventData
      */
     detect: function detect(eventData) {
