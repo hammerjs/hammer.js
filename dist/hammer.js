@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-07-12
+/*! Hammer.JS - v1.0.6dev - 2013-07-23
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -45,7 +45,7 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 // dont use mouseevents on mobile devices
-Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
 
 // eventtypes per touchevent (start, move, end)
