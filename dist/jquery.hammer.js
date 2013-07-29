@@ -1446,6 +1446,8 @@ else {
     if($ === undefined) {
         return;
     }
+    
+    var eventListenerMethod = typeof $.on == 'undefined' ? 'bind' : 'on';
 
     /**
      * bind dom events
@@ -1455,7 +1457,7 @@ else {
      * @param   {Function}      handler
      */
     Hammer.event.bindDom = function(element, eventTypes, handler) {
-        $(element).on(eventTypes, function(ev) {
+        $(element)[eventListenerMethod](eventTypes, function(ev) {
             var data = ev.originalEvent || ev;
 
             // IE pageX fix
@@ -1495,10 +1497,10 @@ else {
      * @return  {jQuery}
      */
     Hammer.Instance.prototype.on = function(types, handler) {
-        return $(this.element).on(types, handler);
+        return $(this.element)[eventListenerMethod](types, handler);
     };
     Hammer.Instance.prototype.off = function(types, handler) {
-        return $(this.element).off(types, handler);
+        return $(this.element)[eventListenerMethod](types, handler);
     };
 
 
