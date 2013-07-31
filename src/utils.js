@@ -166,7 +166,7 @@ Hammer.utils = {
      */
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
         var prop,
-            vendors = ['webkit','khtml','moz','ms','o',''];
+            vendors = ['webkit','khtml','moz','Moz','ms','o',''];
 
         if(!css_props || !element.style) {
             return;
