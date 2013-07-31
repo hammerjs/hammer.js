@@ -124,22 +124,24 @@ Hammer.detection = {
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
         Hammer.utils.extend(ev, {
-            deltaTime   : delta_time,
+            deltaTime       : delta_time,
 
-            deltaX      : delta_x,
-            deltaY      : delta_y,
+            deltaX          : delta_x,
+            deltaY          : delta_y,
 
-            velocityX   : velocity.x,
-            velocityY   : velocity.y,
+            velocityX       : velocity.x,
+            velocityY       : velocity.y,
 
-            distance    : Hammer.utils.getDistance(startEv.center, ev.center),
-            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
-            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
+            distance        : Hammer.utils.getDistance(startEv.center, ev.center),
+            angle           : Hammer.utils.getAngle(startEv.center, ev.center),
+            interimAngle    : this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center),
+            direction       : Hammer.utils.getDirection(startEv.center, ev.center),
+            interimDirection: this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center),
 
-            scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
-            rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
+            scale           : Hammer.utils.getScale(startEv.touches, ev.touches),
+            rotation        : Hammer.utils.getRotation(startEv.touches, ev.touches),
 
-            startEvent  : startEv
+            startEvent      : startEv
         });
 
         return ev;
