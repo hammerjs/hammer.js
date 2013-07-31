@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-07-23
+/*! Hammer.JS - v1.0.6dev - 2013-07-31
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -700,7 +700,7 @@ Hammer.utils = {
      */
     stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
         var prop,
-            vendors = ['webkit','khtml','moz','ms','o',''];
+            vendors = ['webkit','khtml','moz','Moz','ms','o',''];
 
         if(!css_props || !element.style) {
             return;
@@ -731,6 +731,7 @@ Hammer.utils = {
         }
     }
 };
+
 
 Hammer.detection = {
     // contains all registred Hammer.gestures in the correct order
@@ -1419,11 +1420,6 @@ Hammer.gestures.Release = {
 // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
 // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
 if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-    // Expose Hammer to the global object even when an AMD loader is present in
-    // case Hammer was injected by a third-party script and not intended to be
-    // loaded as a module.
-    window.Hammer = Hammer;
-
     // define as an anonymous module
     define(function() {
         return Hammer;
