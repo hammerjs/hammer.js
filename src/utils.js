@@ -195,5 +195,12 @@ Hammer.utils = {
                 return false;
             };
         }
+        
+        // and disable ondragstart
+        if(css_props.userDrag == 'none') {
+            element.ondragstart = function() {
+            	return false;	
+            };
+        }
     }
 };
