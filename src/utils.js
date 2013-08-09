@@ -199,7 +199,7 @@ Hammer.utils = {
         // and disable ondragstart
         if(css_props.userDrag == 'none') {
             element.ondragstart = function() {
-            	return false;	
+                return false;
             };
         }
     }
