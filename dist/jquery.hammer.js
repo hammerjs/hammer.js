@@ -1435,12 +1435,13 @@ else {
 })(this);
 
 
-(function($, undefined) {
-    'use strict';
+(function(undefined) {
+  'use strict';
+  var init = function(Hammer, $) {
 
     // no jQuery or Zepto!
     if($ === undefined) {
-        return;
+        return Hammer;
     }
 
     /**
@@ -1541,4 +1542,14 @@ else {
         });
     };
 
-})(window.jQuery || window.Zepto);
+    return Hammer;
+  };
+
+
+  if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+    define(["hammer", "jquery"], init);
+  } else {
+    init(window.Hammer, window.jQuery || window.Zepto);
+  }
+
+}());
