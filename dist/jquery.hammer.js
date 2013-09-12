@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-07-31
+/*! Hammer.JS - v1.0.6dev - 2013-09-12
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -179,14 +179,19 @@ Hammer.Instance.prototype = {
     /**
      * trigger gesture event
      * @param   {String}      gesture
-     * @param   {Object}      eventData
+     * @param   {Object}      [eventData]
      * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
+        // optional
+        if(!eventData) {
+            eventData = {};
+        }
+      
         // create DOM event
         var event = Hammer.DOCUMENT.createEvent('Event');
-		event.initEvent(gesture, true, true);
-		event.gesture = eventData;
+        event.initEvent(gesture, true, true);
+        event.gesture = eventData;
 
         // trigger on the target if it is in the instance element,
         // this is for event delegation tricks
@@ -210,6 +215,7 @@ Hammer.Instance.prototype = {
         return this;
     }
 };
+
 
 /**
  * this holds the last move event,
@@ -729,6 +735,13 @@ Hammer.utils = {
                 return false;
             };
         }
+        
+        // and disable ondragstart
+        if(css_props.userDrag == 'none') {
+            element.ondragstart = function() {
+                return false;
+            };
+        }
     }
 };
 
@@ -859,22 +872,24 @@ Hammer.detection = {
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
         Hammer.utils.extend(ev, {
-            deltaTime   : delta_time,
+            deltaTime       : delta_time,
 
-            deltaX      : delta_x,
-            deltaY      : delta_y,
+            deltaX          : delta_x,
+            deltaY          : delta_y,
 
-            velocityX   : velocity.x,
-            velocityY   : velocity.y,
+            velocityX       : velocity.x,
+            velocityY       : velocity.y,
 
-            distance    : Hammer.utils.getDistance(startEv.center, ev.center),
-            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
-            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
+            distance        : Hammer.utils.getDistance(startEv.center, ev.center),
+            angle           : Hammer.utils.getAngle(startEv.center, ev.center),
+            interimAngle    : this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center),
+            direction       : Hammer.utils.getDirection(startEv.center, ev.center),
+            interimDirection: this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center),
 
-            scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
-            rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
+            scale           : Hammer.utils.getScale(startEv.touches, ev.touches),
+            rotation        : Hammer.utils.getRotation(startEv.touches, ev.touches),
 
-            startEvent  : startEv
+            startEvent      : startEv
         });
 
         return ev;
@@ -1089,7 +1104,7 @@ Hammer.gestures.Tap = {
         doubletap_interval	: 300
     },
     handler: function tapGesture(ev, inst) {
-        if(ev.eventType == Hammer.EVENT_END) {
+        if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
             // previous gesture, for the double tap since these are two different gesture detections
             var prev = Hammer.detection.previous,
 				did_doubletap = false;
@@ -1421,7 +1436,7 @@ Hammer.gestures.Release = {
 // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
 if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
     // define as an anonymous module
-    define('hammer', function() {
+    define(function() {
         return Hammer;
     });
 }
