@@ -78,6 +78,7 @@ Hammer.Instance.prototype = {
      * @returns {Hammer.Instance}
      */
     trigger: function triggerEvent(gesture, eventData){
+    	if(!eventData){eventData = {};}
         // create DOM event
         var event = Hammer.DOCUMENT.createEvent('Event');
 		event.initEvent(gesture, true, true);
