@@ -169,7 +169,7 @@ Hammer.gestures.Tap = {
         doubletap_interval	: 300
     },
     handler: function tapGesture(ev, inst) {
-        if(ev.eventType == Hammer.EVENT_END) {
+        if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
             // previous gesture, for the double tap since these are two different gesture detections
             var prev = Hammer.detection.previous,
 				did_doubletap = false;
