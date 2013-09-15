@@ -42,7 +42,7 @@ module.exports = (grunt) ->
           'src/detection.js'
           'src/gestures.js'
           'src/jquery/plugin.js'
-          'src/outro.js']
+          'src/jquery/outro.js']
         dest: 'dist/jquery.hammer.js'
 
     # minify the sourcecode
