@@ -1,4 +1,4 @@
-var init = function(Hammer, $) {
+var extendJquery = function(Hammer, $) {
 
     // no jQuery or Zepto!
     if($ === undefined) {

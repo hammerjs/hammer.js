@@ -6,11 +6,11 @@
     if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
         // define as an anonymous module
         define(['jquery'], function($) {
-          init(Hammer, $);
+          extendJquery(Hammer, $);
         });
 
     } else {
-        init(window.Hammer, window.jQuery || window.Zepto);
+        extendJquery(window.Hammer, window.jQuery || window.Zepto);
     }
 
 })(this);
