@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-07-31
+/*! Hammer.JS - v1.0.6dev - 2013-09-15
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -729,6 +729,13 @@ Hammer.utils = {
                 return false;
             };
         }
+        
+        // and disable ondragstart
+        if(css_props.userDrag == 'none') {
+            element.ondragstart = function() {
+                return false;
+            };
+        }
     }
 };
 
@@ -859,22 +866,24 @@ Hammer.detection = {
             velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
 
         Hammer.utils.extend(ev, {
-            deltaTime   : delta_time,
+            deltaTime       : delta_time,
 
-            deltaX      : delta_x,
-            deltaY      : delta_y,
+            deltaX          : delta_x,
+            deltaY          : delta_y,
 
-            velocityX   : velocity.x,
-            velocityY   : velocity.y,
+            velocityX       : velocity.x,
+            velocityY       : velocity.y,
 
-            distance    : Hammer.utils.getDistance(startEv.center, ev.center),
-            angle       : Hammer.utils.getAngle(startEv.center, ev.center),
-            direction   : Hammer.utils.getDirection(startEv.center, ev.center),
+            distance        : Hammer.utils.getDistance(startEv.center, ev.center),
+            angle           : Hammer.utils.getAngle(startEv.center, ev.center),
+            interimAngle    : this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center),
+            direction       : Hammer.utils.getDirection(startEv.center, ev.center),
+            interimDirection: this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center),
 
-            scale       : Hammer.utils.getScale(startEv.touches, ev.touches),
-            rotation    : Hammer.utils.getRotation(startEv.touches, ev.touches),
+            scale           : Hammer.utils.getScale(startEv.touches, ev.touches),
+            rotation        : Hammer.utils.getRotation(startEv.touches, ev.touches),
 
-            startEvent  : startEv
+            startEvent      : startEv
         });
 
         return ev;
@@ -1417,19 +1426,19 @@ Hammer.gestures.Release = {
     }
 };
 
-// Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
-// some AMD build optimizers, like r.js, check for specific condition patterns like the following:
-if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-    // define as an anonymous module
-    define('hammer', function() {
-        return Hammer;
-    });
-}
-// check for `exports` after `define` in case a build optimizer adds an `exports` object
-else if(typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = Hammer;
-}
-else {
-    window.Hammer = Hammer;
-}
+
+    // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
+    // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
+    if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+        // define as an anonymous module
+        define(function() {
+            return Hammer;
+        });
+    // check for `exports` after `define` in case a build optimizer adds an `exports` object
+    } else if(typeof module === 'object' && typeof module.exports === 'object') {
+        module.exports = Hammer;
+    } else {
+        window.Hammer = Hammer;
+    }
+
 })(this);
