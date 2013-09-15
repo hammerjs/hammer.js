@@ -44,6 +44,12 @@ module.exports = (grunt) ->
           'src/jquery/plugin.js'
           'src/jquery/outro.js']
         dest: 'dist/jquery.hammer.js'
+      distjquerystandalone:
+        src: [
+          'src/intro.js'
+          'src/jquery/plugin.js'
+          'src/jquery/standaloneoutro.js']
+        dest: 'plugins/jquery.hammer.js'
 
     # minify the sourcecode
     uglify:

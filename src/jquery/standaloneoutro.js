@@ -4,9 +4,7 @@
     if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
 
         // define as an anonymous module
-        define(['jquery'], function($) {
-          extendJquery(Hammer, $);
-        });
+        define(['hammer','jquery'], extendJquery);
 
     } else {
         extendJquery(window.Hammer, window.jQuery || window.Zepto);
