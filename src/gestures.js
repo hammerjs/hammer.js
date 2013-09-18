@@ -209,6 +209,7 @@ Hammer.gestures.Swipe = {
     index: 40,
     defaults: {
         // set 0 for unlimited, but this can conflict with transform
+        swipe_min_touches  : 1,
         swipe_max_touches  : 1,
         swipe_velocity     : 0.7
     },
@@ -216,6 +217,7 @@ Hammer.gestures.Swipe = {
         if(ev.eventType == Hammer.EVENT_END) {
             // max touches
             if(inst.options.swipe_max_touches > 0 &&
+                ev.touches.length < inst.options.swipe_min_touches &&
                 ev.touches.length > inst.options.swipe_max_touches) {
                 return;
             }
