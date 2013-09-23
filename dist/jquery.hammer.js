@@ -1547,6 +1547,7 @@ var extendJquery = function(Hammer, $) {
         });
 
     } else {
+        window.Hammer = Hammer;
         extendJquery(window.Hammer, window.jQuery || window.Zepto);
     }
 
