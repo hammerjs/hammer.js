@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+    <style>
+
+        @keyframes highlight {
+            0%{ background: rgba(255, 240, 140, 1); }
+            100%{ background: rgba(255, 240, 140, 0); }
+        }
+        @-moz-keyframes highlight{
+            0%{ background: rgba(255, 240, 140, 1); }
+            100%{ background: rgba(255, 240, 140, 0); }
+        }
+        @-webkit-keyframes highlight{
+            0%{ background: rgba(255, 240, 140, 1); }
+            100%{ background: rgba(255, 240, 140, 0); }
+        }
+
+
+        body { padding: 0; }
+
+        #container {
+            padding: 20px;
+        }
+
+        .highlight {
+            background: #ccc68d;
+        }
+
+        .highlight2 {
+            background: #fff68d;
+        }
+
+        .hero-unit {
+            padding: 0;
+        }
+
+        .toucharea {
+            padding: 30px;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="container">
+    <div class="page-header">
+    <h1>jquery.hammer.js works on Zepto too</h1>
+    </div>
+
+    <div class="hero-unit">
+        <div class="toucharea">
+            <h1>Touch me</h1>
+            <p>The tap event will be fired. Notice in the sourcecode that event delegation is also supported.<br>
+            In the console you can see the event data.</p>
+            <h4>List items with stopPropagation</h4>
+            <ul id="items">
+                <li>List item 1</li>
+                <li>List item 2</li>
+                <li>List item 3</li>
+                <li>List item 4</li>
+                <li>List item 5</li>
+            </ul>
+            <p>
+                <a href="#" id="add-list-item" class="btn btn-success">Add list item</a>
+            </p>    
+        </div>
+    </div>
+
+
+</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.0/zepto.min.js"></script>
+<script src="../dist/jquery.hammer.js"></script>
+
+<script>
+
+    function highlight(el, classname) {
+        setTimeout(function() {
+            el.className = el.className.replace(/highlight[0-9]*/g, "");
+        }, 100);
+        el.className = el.className +" "+ classname;
+    }
+
+    var hammertime = $(".toucharea").hammer();
+    console.log(hammertime);
+
+    // the whole area
+    hammertime.on("touch", function(ev) {
+        //if(window.console) { console.log(ev); }
+        highlight(this, 'highlight2');
+    });
+
+    // on elements in the toucharea, with a stopPropagation
+    hammertime.on("touch", "li", function(ev) {
+        //if(window.console) { console.log('nested', ev); }
+        console.log(ev.target, ev.gesture.stopPropagation);
+        highlight(this, 'highlight');
+        ev.gesture.stopPropagation();
+    });
+
+
+    // on dynamic items
+    $("#add-list-item").on("touch", function(ev) {
+        $("#items").append("<li>Dynamic added listitem</li>");
+        ev.gesture.preventDefault();
+        ev.stopPropagation();
+    });
+
+</script>
+<script src="assets/js/ga.js"></script>
+</body>
+</html>

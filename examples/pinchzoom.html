@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+        body {
+            padding: 0;
+            overflow: hidden;
+        }
+        #pinchzoom {
+            -webkit-transform: translate3d(0,0,0);
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="pinchzoom">
+        <div>
+            <img id="rect" src="assets/img/monalisa.jpg" width="2835" height="4289" ondragstart="return false" alt="" />
+        </div>
+    </div>
+
+    <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="../dist/hammer.js"></script>
+
+    <script src="../plugins/hammer.fakemultitouch.js"></script>
+    <script src="../plugins/hammer.showtouches.js"></script>
+
+    <!--[if !IE]> -->
+    <script>
+        // show touches doesnt work well in older IE versions due lack of support of
+        // the pointer-event css property
+        if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
+            Hammer.plugins.showTouches();
+        }
+    </script>
+    <!-- <![endif]-->
+
+    <script>
+
+        if(!Hammer.HAS_TOUCHEVENTS && !Hammer.HAS_POINTEREVENTS) {
+            Hammer.plugins.fakeMultitouch();
+        }
+
+    var hammertime = Hammer(document.getElementById('pinchzoom'), {
+        transform_always_block: true,
+        transform_min_scale: 1,
+        drag_block_horizontal: true,
+        drag_block_vertical: true,
+        drag_min_distance: 0
+    });
+
+    var rect = document.getElementById('rect');
+
+    var posX=0, posY=0,
+        scale=1, last_scale,
+        rotation= 1, last_rotation;
+
+    hammertime.on('touch drag transform', function(ev) {
+        switch(ev.type) {
+            case 'touch':
+                last_scale = scale;
+                last_rotation = rotation;
+                break;
+
+            case 'drag':
+                posX = ev.gesture.deltaX;
+                posY = ev.gesture.deltaY;
+                break;
+
+            case 'transform':
+                rotation = last_rotation + ev.gesture.rotation;
+                scale = Math.max(1, Math.min(last_scale * ev.gesture.scale, 10));
+                break;
+        }
+
+        // transform!
+        var transform =
+                "translate3d("+posX+"px,"+posY+"px, 0) " +
+                "scale3d("+scale+","+scale+", 0) " +
+                "rotate("+rotation+"deg) ";
+
+        rect.style.transform = transform;
+        rect.style.oTransform = transform;
+        rect.style.msTransform = transform;
+        rect.style.mozTransform = transform;
+        rect.style.webkitTransform = transform;
+    });
+
+
+    </script>
+    <script src="assets/js/ga.js"></script>
+</body>
+</html>

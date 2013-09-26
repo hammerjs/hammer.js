@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+
+        h1 {
+            margin: 30px;
+            text-align: center;
+        }
+
+        .drag {
+            position: absolute;
+            left: 100px;
+            top: 100px;
+            background: #9fe1e7;
+            border-radius: 50px;
+            width: 100px;
+            height: 100px;
+        }
+
+        .drag1 { background: #42d692; }
+        .drag2 { background: #4986e7; }
+        .drag3 { background: #d06b64; }
+        .drag4 { background: #cd74e6; }
+        .drag5 { background: #9fe1e7; }
+
+    </style>
+</head>
+
+<body>
+
+<h1>Drag the balls!</h1>
+
+<div class="drag drag1"></div>
+<div class="drag drag2"></div>
+<div class="drag drag3"></div>
+<div class="drag drag4"></div>
+<div class="drag drag5"></div>
+
+
+<!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="assets/js/modernizr.js"></script>
+
+<script src="../dist/jquery.hammer.js"></script>
+
+<script>
+
+    $(".drag")
+            .hammer({ drag_max_touches:0})
+            .on("touch drag", function(ev) {
+                var touches = ev.gesture.touches;
+
+                ev.gesture.preventDefault();
+
+                for(var t=0,len=touches.length; t<len; t++) {
+                    var target = $(touches[t].target);
+                    target.css({
+                        zIndex: 1337,
+                        left: touches[t].pageX-50,
+                        top: touches[t].pageY-50
+                    });
+                }
+            });
+
+
+</script>
+<script src="assets/js/ga.js"></script>
+</body>
+</html>

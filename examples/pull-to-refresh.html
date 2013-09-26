@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer.js</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <style>
+        body { padding: 0; }
+
+            /* pull down is a translate3d y position */
+        #container {
+            position: relative;
+            padding: 20px;
+            -webkit-transition: -webkit-transform 0ms;
+            transform: translate3d(0,0,0) scale3d(1,1,1);
+            -o-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -ms-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -moz-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+            -webkit-backface-visibility: hidden;
+        }
+
+            /* slide up with small animation */
+        #container.pullrefresh-slideup,
+        #container.pullrefresh-loading {
+            -o-transition: -o-transform .3s;
+            -ms-transition: -ms-transform .3s;
+            -moz-transition: -moz-transform .3s;
+            -webkit-transition: -webkit-transform .3s;
+        }
+
+            /* place the pullrefresh box above the container */
+        #pullrefresh {
+            display: block;
+            overflow: hidden;
+            position: absolute;
+            top: -490px;
+            left: 0;
+            width: 100%;
+            height: 490px;
+            background: #ccc;
+            box-shadow: 0 -5px 10px #bbb inset;
+        }
+
+        #pullrefresh .message {
+            position: absolute;
+            left: 0;
+            bottom: 20px;
+            right: 0;
+            color: #777;
+            text-align: center;
+            text-shadow: 1px 1px 0 #dfdfdf;
+            font-weight: bold;
+        }
+
+            /* change message with css */
+        #pullrefresh .message span:after { content: "Pull to refresh..."; }
+        .pullrefresh-breakpoint #pullrefresh .message span:after { content: "Release to refresh..."; }
+        .pullrefresh-loading #pullrefresh .message span:after { content: "Loading new image..."; }
+
+
+            /* icon */
+        #pullrefresh .icon {
+            position: absolute;
+            left: 20px;
+        }
+
+            /* arrow icon */
+        #pullrefresh .icon.arrow {
+            background: url(assets/img/arrow.png) no-repeat;
+            width: 71px;
+            height: 28px;
+            bottom: 10px;
+
+            transform: rotate(90deg);
+            transition: transform .3s;
+            -o-transform: rotate(90deg);
+            -o-transition: -o-transform .3s;
+            -ms-transform: rotate(90deg);
+            -ms-transition: -ms-transform .3s;
+            -moz-transform: rotate(90deg);
+            -moz-transition: -moz-transform .3s;
+            -webkit-transform: rotate(90deg);
+            -webkit-transition: -webkit-transform .3s;
+            -webkit-backface-visibility: hidden;
+        }
+
+        #pullrefresh .icon.arrow.arrow-up {
+            transform: rotate(-90deg);
+            -o-transform: rotate(-90deg);
+            -ms-transform: rotate(-90deg);
+            -moz-transform: rotate(-90deg);
+            -webkit-transform: rotate(-90deg);
+        }
+
+            /* spinner icon */
+            /* rotate spinner with css animation */
+        @keyframes rotate{ 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
+        @-o-keyframes rotate{ 0%{ -o-transform: rotate(0deg); } 100%{ -o-transform: rotate(360deg); } }
+        @-ms-keyframes rotate{ 0%{ -ms-transform: rotate(0deg); } 100%{ -ms-transform: rotate(360deg); } }
+        @-moz-keyframes rotate{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(360deg); } }
+        @-webkit-keyframes rotate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(360deg); } }
+
+        #pullrefresh .icon.loading {
+            background: url(assets/img/spinner.png) no-repeat;
+            width: 19px;
+            height: 19px;
+            background-size: 100%;
+            bottom: 0;
+
+            animation: rotate 1s linear infinite;
+            -o-animation: rotate 1s linear infinite;
+            -ms-animation: rotate 1s linear infinite;
+            -moz-animation: rotate 1s linear infinite;
+            -webkit-animation: rotate 1s linear infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="container">
+
+    <div id="pullrefresh">
+        <div class="message">
+            <div id="pullrefresh-icon" class="icon arrow arrow-down"></div>
+            <span></span>
+        </div>
+    </div>
+
+    <div id="content">
+        <h4>Pull-to-Refresh <small>random images</small></h4>
+        <p>
+            <img id="random-image" class="img-rounded" src="http://lorempixel.com/800/600/">
+        </p>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+        </p>
+        <p>
+            Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+        </p>
+        <p>
+            Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+        </p>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
+        </p>
+        <p>
+            Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
+        </p>
+        <p>
+            Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
+        </p>
+    </div>
+</div>
+
+
+<script src="../dist/hammer.js"></script>
+<script src="assets/js/modernizr.js"></script>
+
+<script>
+
+    /**
+     * requestAnimationFrame and cancel polyfill
+     */
+    (function() {
+        var lastTime = 0;
+        var vendors = ['ms', 'moz', 'webkit', 'o'];
+        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+            window.cancelAnimationFrame =
+                    window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+        }
+
+        if (!window.requestAnimationFrame)
+            window.requestAnimationFrame = function(callback, element) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                        timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+
+        if (!window.cancelAnimationFrame)
+            window.cancelAnimationFrame = function(id) {
+                clearTimeout(id);
+            };
+    }());
+
+
+    /**
+     * pull to refresh
+     * @type {*}
+     */
+    var PullToRefresh = (function() {
+        function Main(container, slidebox, slidebox_icon, handler) {
+            var self = this;
+
+            this.breakpoint = 80;
+
+            this.container = container;
+            this.slidebox = slidebox;
+            this.slidebox_icon = slidebox_icon;
+            this.handler = handler;
+
+            this._slidedown_height = 0;
+            this._anim = null;
+            this._dragged_down = false;
+
+            this.hammertime = Hammer(this.container)
+                .on("touch dragdown release", function(ev) {
+                    self.handleHammer(ev);
+                });
+        };
+
+
+        /**
+         * Handle HammerJS callback
+         * @param ev
+         */
+        Main.prototype.handleHammer = function(ev) {
+            var self = this;
+
+            switch(ev.type) {
+                // reset element on start
+                case 'touch':
+                    this.hide();
+                    break;
+
+                // on release we check how far we dragged
+                case 'release':
+                    if(!this._dragged_down) {
+                        return;
+                    }
+
+                    // cancel animation
+                    cancelAnimationFrame(this._anim);
+
+                    // over the breakpoint, trigger the callback
+                    if(ev.gesture.deltaY >= this.breakpoint) {
+                        container_el.className = 'pullrefresh-loading';
+                        pullrefresh_icon_el.className = 'icon loading';
+
+                        this.setHeight(60);
+                        this.handler.call(this);
+                    }
+                    // just hide it
+                    else {
+                        pullrefresh_el.className = 'slideup';
+                        container_el.className = 'pullrefresh-slideup';
+
+                        this.hide();
+                    }
+                    break;
+
+                // when we dragdown
+                case 'dragdown':
+                    this._dragged_down = true;
+
+                    // if we are not at the top move down
+                    var scrollY = window.scrollY;
+                    if(scrollY > 5) {
+                        return;
+                    } else if(scrollY !== 0) {
+                        window.scrollTo(0,0);
+                    }
+
+                    // no requestAnimationFrame instance is running, start one
+                    if(!this._anim) {
+                        this.updateHeight();
+                    }
+
+                    // stop browser scrolling
+                    ev.gesture.preventDefault();
+
+                    // update slidedown height
+                    // it will be updated when requestAnimationFrame is called
+                    this._slidedown_height = ev.gesture.deltaY * 0.4;
+                    break;
+            }
+        };
+
+
+        /**
+         * when we set the height, we just change the container y
+         * @param   {Number}    height
+         */
+        Main.prototype.setHeight = function(height) {
+            if(Modernizr.csstransforms3d) {
+                this.container.style.transform = 'translate3d(0,'+height+'px,0) ';
+                this.container.style.oTransform = 'translate3d(0,'+height+'px,0)';
+                this.container.style.msTransform = 'translate3d(0,'+height+'px,0)';
+                this.container.style.mozTransform = 'translate3d(0,'+height+'px,0)';
+                this.container.style.webkitTransform = 'translate3d(0,'+height+'px,0) scale3d(1,1,1)';
+            }
+            else if(Modernizr.csstransforms) {
+                this.container.style.transform = 'translate(0,'+height+'px) ';
+                this.container.style.oTransform = 'translate(0,'+height+'px)';
+                this.container.style.msTransform = 'translate(0,'+height+'px)';
+                this.container.style.mozTransform = 'translate(0,'+height+'px)';
+                this.container.style.webkitTransform = 'translate(0,'+height+'px)';
+            }
+            else {
+                this.container.style.top = height+"px";
+            }
+        };
+
+
+        /**
+         * hide the pullrefresh message and reset the vars
+         */
+        Main.prototype.hide = function() {
+            container_el.className = '';
+            this._slidedown_height = 0;
+            this.setHeight(0);
+            cancelAnimationFrame(this._anim);
+            this._anim = null;
+            this._dragged_down = false;
+        };
+
+
+        /**
+         * hide the pullrefresh message and reset the vars
+         */
+        Main.prototype.slideUp = function() {
+            var self = this;
+            cancelAnimationFrame(this._anim);
+
+            pullrefresh_el.className = 'slideup';
+            container_el.className = 'pullrefresh-slideup';
+
+            this.setHeight(0);
+
+            setTimeout(function() {
+                self.hide();
+            }, 500);
+        };
+
+
+        /**
+         * update the height of the slidedown message
+         */
+        Main.prototype.updateHeight = function() {
+            var self = this;
+
+            this.setHeight(this._slidedown_height);
+
+            if(this._slidedown_height >= this.breakpoint){
+                this.slidebox.className = 'breakpoint';
+                this.slidebox_icon.className = 'icon arrow arrow-up';
+            }
+            else {
+                this.slidebox.className = '';
+                this.slidebox_icon.className = 'icon arrow';
+            }
+
+            this._anim = requestAnimationFrame(function() {
+                self.updateHeight();
+            });
+        };
+
+        return Main;
+    })();
+
+
+
+    function getEl(id) {
+        return document.getElementById(id);
+    }
+
+    var container_el = getEl('container');
+    var pullrefresh_el = getEl('pullrefresh');
+    var pullrefresh_icon_el = getEl('pullrefresh-icon');
+    var image_el = getEl('random-image');
+
+    var refresh = new PullToRefresh(container_el, pullrefresh_el, pullrefresh_icon_el);
+
+    // update image onrefresh
+    refresh.handler = function() {
+        var self = this;
+        // a small timeout to demo the loading state
+        setTimeout(function() {
+            var preload = new Image();
+            preload.onload = function() {
+                image_el.src = this.src;
+                self.slideUp();
+            };
+            preload.src = 'http://lorempixel.com/800/600/?'+ (new Date().getTime());
+        }, 1000);
+    };
+
+</script>
+<script src="assets/js/ga.js"></script>
+
+</body>
+</html>
