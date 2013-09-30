@@ -298,7 +298,7 @@ Hammer.gestures.Drag = {
                 // we are dragging!
                 if(Hammer.detection.current.name != this.name) {
                     Hammer.detection.current.name = this.name;
-                    if (inst.options.correct_for_drag_min_distance) {
+                    if (inst.options.correct_for_drag_min_distance && ev.distance > 0) {
                         // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
                         // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
                         // It might be useful to save the original start point somewhere
