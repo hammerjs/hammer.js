@@ -73,6 +73,7 @@ module.exports = (grunt) ->
         unused: true
         maxerr: 100
         eqnull: true
+        indent: 4
         sub: false
         browser: true
         node: true
