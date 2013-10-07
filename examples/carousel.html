@@ -235,8 +235,8 @@
                     var drag_offset = ((100/pane_width)*ev.gesture.deltaX) / pane_count;
 
                     // slow down at the first and last pane
-                    if((current_pane == 0 && ev.gesture.direction == Hammer.DIRECTION_RIGHT) ||
-                        (current_pane == pane_count-1 && ev.gesture.direction == Hammer.DIRECTION_LEFT)) {
+                    if((current_pane == 0 && ev.gesture.direction == "right") ||
+                        (current_pane == pane_count-1 && ev.gesture.direction == "left")) {
                         drag_offset *= .4;
                     }
 
