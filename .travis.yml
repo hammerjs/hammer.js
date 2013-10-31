@@ -4,8 +4,8 @@ node_js:
 
 env:
   global:
-    - SAUCE_USERNAME=eightmedia
-    - SAUCE_ACCESS_KEY=974a3041-9fa1-4710-94cd-3802d418ff79
+    - SAUCE_USERNAME=jtangelder
+    - SAUCE_ACCESS_KEY=1fc8e677-0934-4c59-9f8a-a0ec3082037e
     - SAUCE_CONNECT_READY_FILE=/tmp/sauce-connect-ready
     - LOGS_DIR=/tmp/hammer-build/logs
 
