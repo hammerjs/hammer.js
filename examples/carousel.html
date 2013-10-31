@@ -187,15 +187,14 @@
 
         /**
          * show pane by index
-         * @param   {Number}    index
          */
-        this.showPane = function( index ) {
+        this.showPane = function(index, animate) {
             // between the bounds
             index = Math.max(0, Math.min(index, pane_count-1));
             current_pane = index;
 
             var offset = -((100/pane_count)*current_pane);
-            setContainerOffset(offset, true);
+            setContainerOffset(offset, animate);
         };
 
 
@@ -236,8 +235,8 @@
                     var drag_offset = ((100/pane_width)*ev.gesture.deltaX) / pane_count;
 
                     // slow down at the first and last pane
-                    if((current_pane == 0 && ev.gesture.direction == Hammer.DIRECTION_RIGHT) ||
-                        (current_pane == pane_count-1 && ev.gesture.direction == Hammer.DIRECTION_LEFT)) {
+                    if((current_pane == 0 && ev.gesture.direction == "right") ||
+                        (current_pane == pane_count-1 && ev.gesture.direction == "left")) {
                         drag_offset *= .4;
                     }
 
