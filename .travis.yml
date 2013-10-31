@@ -11,9 +11,7 @@ env:
 
 before_script:
   - mkdir -p $LOGS_DIR
-  - ./tests/sauce/sauce_connect_setup.sh
-  - npm install -g grunt-cli
-  - ./tests/sauce/sauce_connect_block.sh
+  - ./sauce_connect_setup.sh
 
 script:
   - ./travis_build.sh
