@@ -10,19 +10,20 @@ module.exports = (config) ->
     logColors: true
     browsers: browsers
     browserDisconnectTimeout: 5000
+    singleRun: true
     files: [
       'node_modules/underscore/underscore.js'
       'node_modules/faketouches/faketouches.js'
       'dist/hammer.js'
       'tests/*.js'
     ]
-    singleRun: true
 
     # config for Travis CI
     sauceLabs:
       testName: 'Hammer.js'
       startConnect: true
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
+
 
     # For more browsers on Sauce Labs see:
     # https://saucelabs.com/docs/platforms/webdriver
