@@ -20,6 +20,8 @@ module.exports = (config) ->
 
     # config for Travis CI
     sauceLabs:
+      username: 'eightmedia'
+      accessKey: '974a3041-9fa1-4710-94cd-3802d418ff79'
       testName: 'Hammer.js'
       startConnect: true
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
