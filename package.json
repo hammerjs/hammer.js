@@ -50,7 +50,7 @@
     "karma-qunit": "~0.1.1",
     "underscore": "~1.5.2"
   },
-  "main": "dist/hammer.js",
+  "main": "hammer.js",
   "engines": {
     "node": ">=0.8.0"
   },

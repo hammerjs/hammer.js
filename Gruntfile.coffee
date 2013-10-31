@@ -29,27 +29,7 @@ module.exports = (grunt) ->
           'src/detection.js'
           'src/gestures.js'
           'src/outro.js']
-        dest: 'dist/hammer.js'
-      distjquery:
-        src: [
-          'src/intro.js'
-          'src/core.js'
-          'src/setup.js'
-          'src/instance.js'
-          'src/event.js'
-          'src/pointerevent.js'
-          'src/utils.js'
-          'src/detection.js'
-          'src/gestures.js'
-          'src/jquery/plugin.js'
-          'src/jquery/outro.js']
-        dest: 'dist/jquery.hammer.js'
-      distjquerystandalone:
-        src: [
-          'src/intro.js'
-          'src/jquery/plugin.js'
-          'src/jquery/standaloneoutro.js']
-        dest: 'plugins/jquery.hammer.js'
+        dest: 'hammer.js'
 
     # minify the sourcecode
     uglify:
@@ -57,8 +37,7 @@ module.exports = (grunt) ->
         banner: '<%= meta.banner %>'
       dist:
         files:
-          'dist/hammer.min.js': ['dist/hammer.js']
-          'dist/jquery.hammer.min.js': ['dist/jquery.hammer.js']
+          'hammer.min.js': ['hammer.js']
 
     # check for optimisations and errors
     jshint:
@@ -79,18 +58,12 @@ module.exports = (grunt) ->
         globals:
           define: false
       dist:
-        src: ['dist/hammer.js']
-      distjquery:
-        options:
-          globals:
-            Hammer: true,
-            define: false
-        src: ['dist/jquery.hammer.js']
+        src: ['hammer.js']
 
     # watch for changes
     watch:
       scripts:
-        files: ['src/*.js','plugins/*.js']
+        files: ['src/*.js']
         tasks: ['concat']
         options:
           interrupt: true

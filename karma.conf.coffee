@@ -14,7 +14,7 @@ module.exports = (config) ->
     files: [
       'node_modules/underscore/underscore.js'
       'node_modules/faketouches/faketouches.js'
-      'dist/hammer.js'
+      'hammer.js'
       'tests/*.js'
     ]
 
