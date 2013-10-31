@@ -1,1 +1,0 @@
-# [jquery.hammer.js](https://github.com/EightMedia/hammer.js)
