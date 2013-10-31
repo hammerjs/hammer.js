@@ -16,8 +16,6 @@
 - Debug plugins
 - Custom gestures
 - Chainable instance methods
-- jQuery plugin with events delegation (the on/off methods) available
-- IE8 and older compatibility with jQuery plugin
 - AMD support (RequireJS)
 - Unit tests
 - Option to disable mouse support, so only for touch and pen input.
