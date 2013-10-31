@@ -147,8 +147,10 @@ Hammer.detection = {
             velocityY       : velocity.y,
 
             distance        : Hammer.utils.getDistance(startEv.center, ev.center),
+
             angle           : Hammer.utils.getAngle(startEv.center, ev.center),
             interimAngle    : interimAngle,
+
             direction       : Hammer.utils.getDirection(startEv.center, ev.center),
             interimDirection: interimDirection,
 

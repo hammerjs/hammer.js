@@ -17,18 +17,20 @@ Hammer.defaults = {
     // the contextmenu, tap highlighting etc
     // set to false to disable this
     stop_browser_behavior: {
-		// this also triggers onselectstart=false for IE
+        // this also triggers onselectstart=false for IE
         userSelect: 'none',
-		// this makes the element blocking in IE10 >, you could experiment with the value
-		// see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
+        // this makes the element blocking in IE10 >, you could experiment with the value
+        // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
         touchAction: 'none',
-		touchCallout: 'none',
+        touchCallout: 'none',
         contentZooming: 'none',
         userDrag: 'none',
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
+    //
     // more settings are defined per gesture at gestures.js
+    //
 };
 
 // detect touchevents

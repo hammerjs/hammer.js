@@ -101,10 +101,6 @@ module.exports = (grunt) ->
         options:
           hostname: "0.0.0.0"
 
-    # tests
-    qunit:
-      all: ['tests/**/*.html']
-
     # release
     tagrelease:
       file: 'package.json'
@@ -113,6 +109,12 @@ module.exports = (grunt) ->
       prefix: 'v'
       annotate: false
 
+    # tests
+    karma:
+      hammer:
+        options:
+          configFile: 'karma.conf.coffee'
+
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -120,11 +122,11 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-  grunt.loadNpmTasks 'grunt-contrib-qunit'
+  grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-tagrelease'
 
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'test', ['jshint','qunit']
+  grunt.registerTask 'test', ['jshint','karma']
   grunt.registerTask 'build', ['concat','uglify','test']

@@ -1,5 +1,22 @@
 language: node_js
 node_js:
-  - 0.8
+  - 0.10
+
+env:
+  global:
+    - SAUCE_USERNAME=eightmedia
+    - SAUCE_ACCESS_KEY=974a3041-9fa1-4710-94cd-3802d418ff79
+    - SAUCE_CONNECT_READY_FILE=/tmp/sauce-connect-ready
+    - LOGS_DIR=/tmp/hammer-build/logs
+
 before_script:
+  - mkdir -p $LOGS_DIR
+  - ./tests/sauce/sauce_connect_setup.sh
   - npm install -g grunt-cli
+  - ./tests/sauce/sauce_connect_block.sh
+
+script:
+  - ./travis_build.sh
+
+after_script:
+  - ./travis_print_logs.sh

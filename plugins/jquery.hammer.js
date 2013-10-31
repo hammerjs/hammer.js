@@ -2,7 +2,6 @@
     'use strict';
 
 var extendJquery = function(Hammer, $) {
-
     // no jQuery or Zepto!
     if($ === undefined) {
         return Hammer;
@@ -19,28 +18,23 @@ var extendJquery = function(Hammer, $) {
         $(element).on(eventTypes, function(ev) {
             var data = ev.originalEvent || ev;
 
-            // IE pageX fix
             if(data.pageX === undefined) {
                 data.pageX = ev.pageX;
                 data.pageY = ev.pageY;
             }
 
-            // IE target fix
             if(!data.target) {
                 data.target = ev.target;
             }
 
-            // IE button fix
             if(data.which === undefined) {
                 data.which = data.button;
             }
 
-            // IE preventDefault
             if(!data.preventDefault) {
                 data.preventDefault = ev.preventDefault;
             }
 
-            // IE stopPropagation
             if(!data.stopPropagation) {
                 data.stopPropagation = ev.stopPropagation;
             }
@@ -108,16 +102,13 @@ var extendJquery = function(Hammer, $) {
 
 };
 
-
     // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
     // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
     if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-
         // define as an anonymous module
         define(['hammer','jquery'], extendJquery);
 
     } else {
         extendJquery(window.Hammer, window.jQuery || window.Zepto);
     }
-
 })(this);

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-09-26
+/*! Hammer.JS - v1.0.6 - 2013-10-31
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -26,18 +26,20 @@ Hammer.defaults = {
     // the contextmenu, tap highlighting etc
     // set to false to disable this
     stop_browser_behavior: {
-		// this also triggers onselectstart=false for IE
+        // this also triggers onselectstart=false for IE
         userSelect: 'none',
-		// this makes the element blocking in IE10 >, you could experiment with the value
-		// see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
+        // this makes the element blocking in IE10 >, you could experiment with the value
+        // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
         touchAction: 'none',
-		touchCallout: 'none',
+        touchCallout: 'none',
         contentZooming: 'none',
         userDrag: 'none',
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 
+    //
     // more settings are defined per gesture at gestures.js
+    //
 };
 
 // detect touchevents
@@ -869,7 +871,21 @@ Hammer.detection = {
         var delta_time = ev.timeStamp - startEv.timeStamp,
             delta_x = ev.center.pageX - startEv.center.pageX,
             delta_y = ev.center.pageY - startEv.center.pageY,
-            velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
+            velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y),
+            interimAngle,
+            interimDirection;
+
+        // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
+        // because the previous event has exactly the same coordinates
+        // so for end events, take the previous values of interimDirection & interimAngle
+        // instead of recalculating them and getting a spurious '0'
+        if (ev.eventType === 'end') {
+            interimAngle = this.current.lastEvent && this.current.lastEvent.interimAngle;
+            interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
+        } else {
+            interimAngle = this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
+            interimDirection = this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
+        }
 
         Hammer.utils.extend(ev, {
             deltaTime       : delta_time,
@@ -881,10 +897,12 @@ Hammer.detection = {
             velocityY       : velocity.y,
 
             distance        : Hammer.utils.getDistance(startEv.center, ev.center),
+
             angle           : Hammer.utils.getAngle(startEv.center, ev.center),
-            interimAngle    : this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center),
+            interimAngle    : interimAngle,
+
             direction       : Hammer.utils.getDirection(startEv.center, ev.center),
-            interimDirection: this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center),
+            interimDirection: interimDirection,
 
             scale           : Hammer.utils.getScale(startEv.touches, ev.touches),
             rotation        : Hammer.utils.getRotation(startEv.touches, ev.touches),
@@ -1233,7 +1251,7 @@ Hammer.gestures.Drag = {
                 // we are dragging!
                 if(Hammer.detection.current.name != this.name) {
                     Hammer.detection.current.name = this.name;
-                    if (inst.options.correct_for_drag_min_distance) {
+                    if (inst.options.correct_for_drag_min_distance && ev.distance > 0) {
                         // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
                         // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
                         // It might be useful to save the original start point somewhere
