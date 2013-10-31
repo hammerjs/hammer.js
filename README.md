@@ -8,6 +8,7 @@
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
 
+[__Looking for the jQuery plugin?__](https://github.com/EightMedia/jquery.hammer.js)
 
 ## Features
 - Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures
