@@ -1,10 +1,14 @@
 # an example karma.conf.coffee
 module.exports = (config) ->
+  browsers = ['Chrome','Firefox']
+  if process.env.TRAVIS
+    browsers = 'SL_Chrome,SL_Safari,SL_Firefox,SL_IE_8,SL_IE_9,SL_IE_10,SL_ANDROID_4,SL_IOS_4,SL_IOS_5,SL_IOS_6'.split(",")
+
   config.set
     frameworks: ['qunit']
     logLevel: config.LOG_DEBUG
     logColors: true
-    browsers: ['Chrome','Firefox']
+    browsers: browsers
     browserDisconnectTimeout: 5000
     files: [
       'node_modules/underscore/underscore.js'
