@@ -36,8 +36,8 @@
     "grunt-contrib-watch": "0.2.x",
     "grunt-tagrelease": "0.1.x",
     "faketouches": "0.0.x",
-    "underscore": "~1.5.2",
-    "grunt-saucelabs": "*"
+    "underscore": "1.5.x",
+    "grunt-saucelabs": "4.1.x"
   },
   "main": "hammer.js",
   "engines": {
