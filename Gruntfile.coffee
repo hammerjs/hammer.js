@@ -83,10 +83,29 @@ module.exports = (grunt) ->
       annotate: false
 
     # tests
-    karma:
-      hammer:
+    'saucelabs-qunit':
+      all:
         options:
-          configFile: 'karma.conf.coffee'
+          username: 'hammerjs-ci'
+          key: '2ede6d02-65b3-4ba9-aec8-44a787af0c81'
+          build: process.env.TRAVIS_JOB_ID || 'dev'
+          concurrency: 3
+          testname: 'Hammer.JS'
+
+          urls: [
+            'http://0.0.0.0:8000/tests/utils.html',
+            'http://0.0.0.0:8000/tests/mouseevents.html',
+            'http://0.0.0.0:8000/tests/mousetouchevents.html',
+            'http://0.0.0.0:8000/tests/touchevents.html',
+            'http://0.0.0.0:8000/tests/pointerevents_mouse.html',
+            'http://0.0.0.0:8000/tests/pointerevents_touch.html'
+          ]
+          browsers: [
+            { browserName: 'chrome' }
+            { browserName: 'firefox' }
+            { browserName: 'internet explorer', platform: 'Windows 7', version: '9' }
+            { browserName: 'internet explorer', platform: 'Windows 8', version: '10'}
+          ]
 
 
   # Load tasks
@@ -95,11 +114,11 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-  grunt.loadNpmTasks 'grunt-karma'
+  grunt.loadNpmTasks 'grunt-saucelabs'
   grunt.loadNpmTasks 'grunt-tagrelease'
 
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'test', ['jshint','karma']
+  grunt.registerTask 'test', ['jshint','connect','saucelabs-qunit']
   grunt.registerTask 'build', ['concat','uglify','test']

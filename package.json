@@ -36,19 +36,8 @@
     "grunt-contrib-watch": "0.2.x",
     "grunt-tagrelease": "0.1.x",
     "faketouches": "0.0.x",
-    "karma-script-launcher": "~0.1.0",
-    "karma-chrome-launcher": "~0.1.0",
-    "karma-firefox-launcher": "~0.1.0",
-    "karma-sauce-launcher": "~0.1.1",
-    "karma-jasmine": "~0.1.3",
-    "karma-requirejs": "~0.1.0",
-    "karma-coffee-preprocessor": "~0.1.0",
-    "karma-phantomjs-launcher": "~0.1.0",
-    "karma": "~0.10.4",
-    "grunt-karma": "~0.6.2",
-    "qunitjs": "~1.12.0",
-    "karma-qunit": "~0.1.1",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "grunt-saucelabs": "*"
   },
   "main": "hammer.js",
   "engines": {
