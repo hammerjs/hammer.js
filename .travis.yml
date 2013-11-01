@@ -2,13 +2,7 @@ language: node_js
 node_js:
   - "0.10"
 
-env:
-  global:
-    - SAUCE_USERNAME=hammerjs-ci
-    - SAUCE_ACCESS_KEY=2ede6d02-65b3-4ba9-aec8-44a787af0c81
-
 before_script:
-  - curl https://gist.github.com/santiycr/5139565/raw/sauce_connect_setup.sh | bash
   - npm install -g grunt-cli
 
 script:
