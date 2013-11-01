@@ -20,8 +20,6 @@ module.exports = (config) ->
 
     # config for Travis CI
     sauceLabs:
-      username: 'eightmedia'
-      accessKey: '974a3041-9fa1-4710-94cd-3802d418ff79'
       testName: 'Hammer.js'
       startConnect: true
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
@@ -89,11 +87,3 @@ module.exports = (config) ->
         platform: 'OS X 10.8'
         version: '6.0'
         'device-orientation': 'portrait'
-
-
-  if process.env.TRAVIS
-    # Debug logging into a file, that we print out at the end of the build.
-    config.loggers.push
-      type: 'file'
-      filename: "#{process.env.LOGS_DIR}/karma.log"
-      level: config.LOG_DEBUG
