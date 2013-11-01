@@ -2,7 +2,7 @@
 module.exports = (config) ->
   browsers = ['Chrome','Firefox']
   if process.env.TRAVIS
-    browsers = 'SL_Chrome,SL_Safari,SL_Firefox,SL_IE_8,SL_IE_9,SL_IE_10,SL_ANDROID_4,SL_IOS_4,SL_IOS_5,SL_IOS_6'.split(",")
+    browsers = 'SL_Chrome,SL_Safari,SL_Firefox,SL_IE_9,SL_IE_10,SL_ANDROID_4,SL_IOS_4,SL_IOS_5,SL_IOS_6'.split(",")
 
   config.set
     frameworks: ['qunit']
@@ -42,19 +42,16 @@ module.exports = (config) ->
         platform: 'Mac 10.8'
         version: '6'
 
-      'SL_IE_8':
-        base: 'SauceLabs',
-        browserName: 'internet explorer'
-        version: '8'
-
       'SL_IE_9':
         base: 'SauceLabs'
         browserName: 'internet explorer'
+        platform: 'Windows 7'
         version: '9'
 
       'SL_IE_10':
         base: 'SauceLabs'
         browserName: 'internet explorer'
+        platform: 'Windows 8'
         version: '10'
 
       'SL_ANDROID_4':
