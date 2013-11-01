@@ -8,6 +8,7 @@
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
 
+[__Looking for the jQuery plugin? It has his own repository now.__](https://github.com/EightMedia/jquery.hammer.js)
 
 ## Features
 - Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures
@@ -15,8 +16,6 @@
 - Debug plugins
 - Custom gestures
 - Chainable instance methods
-- jQuery plugin with events delegation (the on/off methods) available
-- IE8 and older compatibility with jQuery plugin
 - AMD support (RequireJS)
 - Unit tests
 - Option to disable mouse support, so only for touch and pen input.

@@ -1,0 +1,3 @@
+[submodule "plugins/jquery.hammer.js"]
+	path = plugins/jquery.hammer.js
+	url = git://github.com/EightMedia/jquery.hammer.js.git
