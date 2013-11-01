@@ -1,8 +1,9 @@
 # an example karma.conf.coffee
 module.exports = (config) ->
   browsers = ['Chrome','Firefox']
-  if process.env.TRAVIS
-    browsers = 'SL_Chrome,SL_Safari,SL_Firefox,SL_IE_9,SL_IE_10,SL_ANDROID_4,SL_IOS_5,SL_IOS_6'.split(",")
+
+  #if process.env.TRAVIS
+  #  browsers = 'SL_Chrome,SL_Firefox,SL_IE_9,SL_IE_10,SL_ANDROID_4,SL_IOS_6'.split(",")
 
   config.set
     frameworks: ['qunit']
@@ -22,7 +23,7 @@ module.exports = (config) ->
     sauceLabs:
       testName: 'Hammer.js'
       startConnect: false
-      #tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
+      tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
 
 
     # For more browsers on Sauce Labs see:

@@ -45,26 +45,28 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="assets/js/modernizr.js"></script>
 
-<script src="../dist/jquery.hammer.js"></script>
+<script src="../hammer.js"></script>
 
 <script>
 
+
+    var hammertime = new Hammer($(".drag")[0], { drag_max_touches:0});
+
     $(".drag")
-            .hammer({ drag_max_touches:0})
-            .on("touch drag", function(ev) {
-                var touches = ev.gesture.touches;
+        .on("touch drag", function(ev) {
+            var touches = ev.gesture.touches;
 
-                ev.gesture.preventDefault();
+            ev.gesture.preventDefault();
 
-                for(var t=0,len=touches.length; t<len; t++) {
-                    var target = $(touches[t].target);
-                    target.css({
-                        zIndex: 1337,
-                        left: touches[t].pageX-50,
-                        top: touches[t].pageY-50
-                    });
-                }
-            });
+            for(var t=0,len=touches.length; t<len; t++) {
+                var target = $(touches[t].target);
+                target.css({
+                    zIndex: 1337,
+                    left: touches[t].pageX-50,
+                    top: touches[t].pageY-50
+                });
+            }
+        });
 
 
 </script>
