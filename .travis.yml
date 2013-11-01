@@ -4,8 +4,8 @@ node_js:
 
 env:
   global:
-    - SAUCE_USERNAME=eightmedia
-    - SAUCE_ACCESS_KEY=974a3041-9fa1-4710-94cd-3802d418ff79
+    - SAUCE_USERNAME = eightmedia
+    - SAUCE_ACCESS_KEY = s974a3041-9fa1-4710-94cd-3802d418ff79
 
 before_script:
   - curl https://gist.github.com/santiycr/5139565/raw/sauce_connect_setup.sh | bash
