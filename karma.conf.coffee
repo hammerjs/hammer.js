@@ -22,7 +22,7 @@ module.exports = (config) ->
     sauceLabs:
       testName: 'Hammer.js'
       startConnect: false
-      tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
+      #tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
 
 
     # For more browsers on Sauce Labs see:
@@ -35,12 +35,6 @@ module.exports = (config) ->
       'SL_Firefox':
         base: 'SauceLabs',
         browserName: 'firefox'
-
-      'SL_Safari':
-        base: 'SauceLabs'
-        browserName: 'safari'
-        platform: 'Mac 10.8'
-        version: '6'
 
       'SL_IE_9':
         base: 'SauceLabs'
@@ -59,13 +53,6 @@ module.exports = (config) ->
         browserName: 'android'
         platform: 'Linux'
         version: '4.0'
-        'device-orientation': 'portrait'
-
-      'SL_IOS_5':
-        base: 'SauceLabs'
-        browserName: 'iphone'
-        platform: 'OS X 10.6'
-        version: '5.0'
         'device-orientation': 'portrait'
 
       'SL_IOS_6':
