@@ -90,7 +90,6 @@ module.exports = (grunt) ->
           key: '2ede6d02-65b3-4ba9-aec8-44a787af0c81'
           build: process.env.TRAVIS_JOB_ID || 'dev'
           concurrency: 3
-          testname: 'Hammer.JS'
 
           urls: [
             'http://0.0.0.0:8000/tests/utils.html',
