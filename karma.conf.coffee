@@ -21,7 +21,7 @@ module.exports = (config) ->
     # config for Travis CI
     sauceLabs:
       testName: 'Hammer.js'
-      startConnect: true
+      startConnect: false
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
 
 
@@ -45,19 +45,16 @@ module.exports = (config) ->
       'SL_IE_8':
         base: 'SauceLabs',
         browserName: 'internet explorer'
-        platform: 'Windows 7'
         version: '8'
 
       'SL_IE_9':
         base: 'SauceLabs'
         browserName: 'internet explorer'
-        platform: 'Windows 8'
         version: '9'
 
       'SL_IE_10':
         base: 'SauceLabs'
         browserName: 'internet explorer'
-        platform: 'Windows 8'
         version: '10'
 
       'SL_ANDROID_4':
