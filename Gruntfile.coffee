@@ -27,13 +27,15 @@ module.exports = (grunt) ->
           'src/pointerevent.js'
           'src/utils.js'
           'src/detection.js'
-          'src/gestures.js'
+          'src/gestures/*.js'
           'src/outro.js']
         dest: 'hammer.js'
 
     # minify the sourcecode
     uglify:
       options:
+        report: 'gzip'
+        sourceMap: 'hammer.min.map'
         banner: '<%= meta.banner %>'
       dist:
         files:
@@ -55,6 +57,8 @@ module.exports = (grunt) ->
         sub: false
         browser: true
         node: true
+        strict: true
+        laxcomma: true
         globals:
           define: false
       dist:
@@ -63,7 +67,7 @@ module.exports = (grunt) ->
     # watch for changes
     watch:
       scripts:
-        files: ['src/*.js']
+        files: ['src/**/*.js']
         tasks: ['concat']
         options:
           interrupt: true
@@ -121,3 +125,4 @@ module.exports = (grunt) ->
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'test', ['jshint','connect','saucelabs-qunit']
   grunt.registerTask 'build', ['concat','uglify','test']
+  grunt.registerTask 'build-simple', ['concat','uglify','jshint']
