@@ -37,7 +37,8 @@
     "grunt-tagrelease": "0.1.x",
     "faketouches": "0.0.x",
     "underscore": "1.5.x",
-    "grunt-saucelabs": "4.1.x"
+    "grunt-saucelabs": "4.1.x",
+    "grunt-contrib-qunit": "~0.3.0"
   },
   "main": "hammer.js",
   "engines": {

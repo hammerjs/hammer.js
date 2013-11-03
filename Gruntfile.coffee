@@ -85,8 +85,12 @@ module.exports = (grunt) ->
       message: 'Release %version%'
       prefix: 'v'
       annotate: false
-
+      
     # tests
+    qunit:
+      all: ['tests/**/*.html']
+
+    # saucelabs tests
     'saucelabs-qunit':
       all:
         options:
@@ -117,12 +121,13 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
+  grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-saucelabs'
   grunt.loadNpmTasks 'grunt-tagrelease'
 
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'test', ['jshint','connect','saucelabs-qunit']
   grunt.registerTask 'build', ['concat','uglify','test']
-  grunt.registerTask 'build-simple', ['concat','uglify','jshint']
+  grunt.registerTask 'test', ['jshint','qunit']
+  grunt.registerTask 'test-full', ['build','jshint','connect','saucelabs-qunit']

@@ -6,4 +6,4 @@ before_script:
   - npm install -g grunt-cli
 
 script:
-  - grunt test
+  - grunt test-full
