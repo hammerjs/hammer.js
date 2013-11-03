@@ -7,30 +7,30 @@
  * @constructor
  */
 var Hammer = function(element, options) {
-    return new Hammer.Instance(element, options || {});
+  return new Hammer.Instance(element, options || {});
 };
 
 // default settings
 Hammer.defaults = {
-    // add styles and attributes to the element to prevent the browser from doing
-    // its native behavior. this doesnt prevent the scrolling, but cancels
-    // the contextmenu, tap highlighting etc
-    // set to false to disable this
-    stop_browser_behavior: {
-        // this also triggers onselectstart=false for IE
-        userSelect: 'none',
-        // this makes the element blocking in IE10 >, you could experiment with the value
-        // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-        touchAction: 'none',
-        touchCallout: 'none',
-        contentZooming: 'none',
-        userDrag: 'none',
-        tapHighlightColor: 'rgba(0,0,0,0)'
-    }
+  // add styles and attributes to the element to prevent the browser from doing
+  // its native behavior. this doesnt prevent the scrolling, but cancels
+  // the contextmenu, tap highlighting etc
+  // set to false to disable this
+  stop_browser_behavior: {
+    // this also triggers onselectstart=false for IE
+    userSelect       : 'none',
+    // this makes the element blocking in IE10 >, you could experiment with the value
+    // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
+    touchAction      : 'none',
+    touchCallout     : 'none',
+    contentZooming   : 'none',
+    userDrag         : 'none',
+    tapHighlightColor: 'rgba(0,0,0,0)'
+  }
 
-    //
-    // more settings are defined per gesture at gestures.js
-    //
+  //
+  // more settings are defined per gesture at gestures.js
+  //
 };
 
 // detect touchevents
@@ -64,5 +64,6 @@ Hammer.EVENT_END = 'end';
 // hammer document where the base events are added at
 Hammer.DOCUMENT = window.document;
 
-// plugins namespace
-Hammer.plugins = {};
+// plugins and gestures namespaces
+Hammer.plugins = Hammer.plugins || {};
+Hammer.gestures = Hammer.gestures || {};
