@@ -1,6 +1,6 @@
 # Hammer.js 
 [![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
-[![Selenium Test Status](https://saucelabs.com/browser-matrix/hammerjs-ci.svg)](https://saucelabs.com/u/hammerjs-ci)
+[![Selenium Test Status](https://saucelabs.com/buildstatus/hammerjs-ci)](https://saucelabs.com/u/hammerjs-ci)
 
 ### A javascript library for multi-touch gestures
 
