@@ -117,8 +117,6 @@ Hammer.event = {
         }
       }
 
-      //debug(sourceEventType +" "+ eventType);
-
       // on the end we reset everything
       if(!count_touches) {
         last_move_event = null;
@@ -193,7 +191,6 @@ Hammer.event = {
    * @param   {Object}        eventData
    */
   collectEventData: function collectEventData(element, eventType, touches, ev) {
-
     // find out pointerType
     var pointerType = Hammer.POINTER_TOUCH;
     if(ev.type.match(/mouse/) || Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)) {
