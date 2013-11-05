@@ -42,11 +42,13 @@ Hammer.utils = {
    * @returns {Object}    center
    */
   getCenter: function getCenter(touches) {
-    var valuesX = [], valuesY = [];
+    var valuesX = [], valuesY = [], touch;
 
     for(var t = 0, len = touches.length; t < len; t++) {
-      valuesX.push(touches[t].pageX);
-      valuesY.push(touches[t].pageY);
+      touch = touches[t];
+      // I prefer clientX because it ignore the scrolling position
+      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX );
+      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY );
     }
 
     return {
