@@ -8,77 +8,44 @@
     <style>
 
         body {
-            padding: 30px;
+            padding: 15px;
         }
-
-        #center-pos {
+        
+        .container { position: relative; }
+        
+        .hitarea {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            overflow: hidden;
-            border-radius: 30px;
-            border: solid 1px rgba(0,0,0,.3);
-            margin-left: -16px;
-            margin-top: -16px;
-            pointer-events: none;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,.05);
+          text-align: center;
+          border: dashed 3px red;
+        }
+        
+
+        .log li {
+            display: inline-block;
+            width: 49%;
         }
 
-        .sidebar {
-            float: right;
-            width: 150px;
-            font-size: 12px;
+        @media screen and (min-width: 640px) {
+          .log li { width: 30%; }
         }
-
-        .sidebar li {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .events li.active { background: lightgreen; }
-
+        
         .properties li { white-space: nowrap; }
         .properties span { margin-left: 5px; }
 
-        .hitarea {
-            background: aliceblue;
-            padding: 20px;
-            border: solid #ccc 1px;
-        }
-
-        .hitarea-nested {
-            background: lightblue;
-        }
-
-        @media screen and (max-width:640px) {
-            body {
-                padding: 10px;
-            }
-
-            .sidebar {
-                float: none;
-                width: auto;
-                margin-bottom: 25px;
-            }
-
-            .sidebar li {
-                display: inline-block;
-                width: 30%;
-            }
-
-            .sidebar li.property-gesture {
-                position: fixed;
-                right: 0;
-                top: 0;
-                background: lightgreen;
-                padding: 1px 4px;
-                width: auto;
-            }
-        }
-
-        @media screen and (max-width:480px) {
-            .sidebar li {
-                width: 49%;
-            }
+        .log li.active { background: lightgreen; }
+        
+        .log li.property-gesture {
+            position: fixed;
+            right: 0;
+            top: 0;
+            background: lightgreen;
+            padding: 1px 4px;
+            width: auto;
         }
 
     </style>
@@ -88,12 +55,14 @@
 
 <p class="alert"><strong>Press shift on your desktop for multitouch.</strong></p>
 
-
-<div class="sidebar well well-small">
-    <h4>Events</h4>
+<p>
     <label class="checkbox">
         <input type="checkbox" checked id="prevent-default"> block browser behavior (preventDefault)
     </label>
+</p>
+<div class="container">
+<div class="log well well-small">
+    <h4>Events</h4>
     <ul class="unstyled events" id="events-list">
         <li>touch</li>
         <li>release</li>
@@ -147,29 +116,8 @@
     </ul>
 </div>
 
-<div id="hitarea" class="hitarea">
-    <h3>Hitarea</h3>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <a href="#">Praesent at erat felis.</a> Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
-    </p>
-    <p>
-    Donec nisi ante, eleifend vitae luctus vel, auctor et nibh. Donec scelerisque urna id massa ultricies in facilisis purus rutrum.
-    Proin tristique luctus leo vitae feugiat. Donec sit amet ipsum mi, nec bibendum sem. Nullam sodales aliquet venenatis.
-    </p>
+<div id="hitarea" class="hitarea"></div>
 </div>
-<!--
-<p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent at erat felis. Donec ornare ligula non nibh vulputate sollicitudin. Cras sodales eros a velit pulvinar vehicula. In sed lorem lectus, vel dapibus nulla. Mauris lacus massa, volutpat vel suscipit at, lacinia condimentum libero. Praesent nec metus ligula. Morbi porttitor rhoncus mattis.
-</p>
-<p>
-    Donec adipiscing porttitor risus, vel commodo ante tincidunt vitae. Fusce lacinia augue non sapien volutpat facilisis. Integer varius faucibus metus, sit amet viverra justo venenatis id. Nam ornare rhoncus tempus. Nulla eleifend, mauris quis auctor bibendum, mi purus interdum sapien, id fringilla nunc mi ut tortor. Sed pretium egestas augue, eget volutpat ipsum egestas nec. Aliquam a elementum justo. Suspendisse tempus, nisi id tincidunt vulputate, nunc sem scelerisque risus, molestie facilisis lacus velit et nunc. Phasellus sed convallis libero. Phasellus sit amet neque non arcu pellentesque laoreet id sed ligula. Donec gravida laoreet condimentum. Ut ornare dignissim tempus. Mauris aliquet tincidunt turpis, quis pulvinar nisl pulvinar id. Sed in gravida ligula.
-</p>
-<p>
-    Ut molestie, lectus vel pharetra pharetra, nunc libero interdum ligula, eget vulputate purus nulla sit amet turpis. Aliquam volutpat porttitor erat ac volutpat. Donec ligula elit, tincidunt non congue id, iaculis feugiat sem. Phasellus vestibulum mi id enim interdum imperdiet. Ut dolor ante, tempus sit amet ornare a, faucibus sed massa. Curabitur adipiscing, mauris eget vestibulum lacinia, nisl lorem viverra velit, vitae facilisis urna erat et est. Pellentesque fringilla metus libero, at accumsan nisl. Etiam nisl lorem, placerat ut tristique vel, luctus id nulla. Sed vel nunc ut justo volutpat eleifend ac nec risus. Praesent at viverra tellus. Maecenas semper pellentesque quam, et bibendum nisl eleifend sit amet. Donec sed elit eget magna dictum dignissim.
-</p>
--->
-<h2>Event log</h2>
-<pre id="event-log"></pre>
 
 <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
@@ -269,12 +217,6 @@
             no_mouseevents: true
         })
         .on(all_events.join(" "), logEvent);
-
-
-    var debug_el = getEl('event-log');
-    function debug(val) {
-        debug_el.innerHTML = val.toString();
-    }
 
 </script>
 <script src="assets/js/ga.js" async></script>
