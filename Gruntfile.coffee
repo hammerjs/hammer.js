@@ -22,10 +22,10 @@ module.exports = (grunt) ->
           'src/intro.js'
           'src/core.js'
           'src/setup.js'
+          'src/utils.js'
           'src/instance.js'
           'src/event.js'
           'src/pointerevent.js'
-          'src/utils.js'
           'src/detection.js'
           'src/gestures/*.js'
           'src/outro.js']
