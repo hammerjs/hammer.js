@@ -53,18 +53,16 @@ Hammer.detection = {
     var inst_options = this.current.inst.options;
 
     // call Hammer.gesture handlers
-    for(var g=0, len=this.gestures.length; g<len; g++) {
-      var gesture = this.gestures[g];
-
+    Hammer.utils.each(this.gestures, function(gesture) {
       // only when the instance options have enabled this gesture
       if(!this.stopped && inst_options[gesture.name] !== false) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
           this.stopDetect();
-          break;
+          return false;
         }
       }
-    }
+    }, this);
 
     // store as previous event event
     if(this.current) {
@@ -113,9 +111,9 @@ Hammer.detection = {
     if(startEv && (ev.touches.length != startEv.touches.length || ev.touches === startEv.touches)) {
       // extend 1 level deep to get the touchlist with the touch objects
       startEv.touches = [];
-      for(var i = 0, len = ev.touches.length; i < len; i++) {
-        startEv.touches.push(Hammer.utils.extend({}, ev.touches[i]));
-      }
+      Hammer.utils.each(ev.touches, function(touch) {
+        startEv.touches.push(Hammer.utils.extend({}, touch));
+      });
     }
 
     var delta_time = ev.timeStamp - startEv.timeStamp

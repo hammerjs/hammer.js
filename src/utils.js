@@ -19,6 +19,34 @@ Hammer.utils = {
 
 
   /**
+   * for each
+   * @param obj
+   * @param iterator
+   */
+  each: function(obj, iterator, context) {
+    // native forEach on arrays
+    if ("forEach" in obj) {
+      obj.forEach(iterator, context);
+    } 
+    // arrays
+    else if(obj.length != undefined) {
+      for (var i = 0, length = obj.length; i < length; i++) {
+        if (iterator.call(context, obj[i], i, obj) === false) { 
+          return;
+        }
+      }
+    }
+    // objects
+    else {
+      for (var i in obj) {
+        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) { 
+          return;
+        }
+      }
+    }
+  },
+
+  /**
    * find if a node is in the given parent
    * used for event delegation tricks
    * @param   {HTMLElement}   node
@@ -42,14 +70,13 @@ Hammer.utils = {
    * @returns {Object}    center
    */
   getCenter: function getCenter(touches) {
-    var valuesX = [], valuesY = [], touch;
+    var valuesX = [], valuesY = [];
 
-    for(var t = 0, len = touches.length; t < len; t++) {
-      touch = touches[t];
+    Hammer.utils.each(touches, function(touch) {
       // I prefer clientX because it ignore the scrolling position
       valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX );
       valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY );
-    }
+    });
 
     return {
       pageX: ((Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2),
@@ -170,26 +197,23 @@ Hammer.utils = {
     var prop,
       vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
 
-    if(!css_props || !element.style) {
+    if(!css_props || !element || !element.style) {
       return;
     }
 
     // with css properties for modern browsers
-    for(var i = 0; i < vendors.length; i++) {
-      for(var p in css_props) {
-        if(css_props.hasOwnProperty(p)) {
-          prop = p;
-
+    Hammer.utils.each(vendors, function(vendor) {
+      Hammer.utils.each(css_props, function(prop) {
           // vender prefix at the property
-          if(vendors[i]) {
-            prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+          if(vendor) {
+            prop = vendors + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
-
           // set the style
-          element.style[prop] = css_props[p];
-        }
-      }
-    }
+          if(prop in element.style) {
+            element.style[prop] = prop;
+          }
+      });
+    });
 
     // also the disable onselectstart
     if(css_props.userSelect == 'none') {

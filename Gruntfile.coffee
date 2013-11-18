@@ -76,6 +76,7 @@ module.exports = (grunt) ->
     connect:
       server:
         options:
+          directory: "."
           hostname: "0.0.0.0"
 
     # release

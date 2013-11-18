@@ -30,9 +30,9 @@ Hammer.event = {
    */
   bindDom: function(element, type, handler) {
     var types = type.split(' ');
-    for(var t = 0; t < types.length; t++) {
-      element.addEventListener(types[t], handler, false);
-    }
+    Hammer.utils.each(types, function(type){
+      element.addEventListener(type, handler, false);
+    });
   },
 
 
@@ -63,7 +63,7 @@ Hammer.event = {
       }
 
       // mouse isn't pressed
-      else if(sourceEventType.match(/mouse/) && ev.which !== 1) {
+      else if(sourceEventType.match(/mouse/) && !ev.which) {
         enable_detect = false;
       }
 

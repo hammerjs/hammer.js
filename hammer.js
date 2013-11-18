@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6dev - 2013-11-05
+/*! Hammer.JS - v1.0.6dev - 2013-11-18
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -92,11 +92,9 @@ function setup() {
   Hammer.event.determineEventTypes();
 
   // Register all gestures inside Hammer.gestures
-  for(var name in Hammer.gestures) {
-    if(Hammer.gestures.hasOwnProperty(name)) {
-      Hammer.detection.register(Hammer.gestures[name]);
-    }
-  }
+  Hammer.utils.each(Hammer.gestures, function(gesture){
+    Hammer.detection.register(gesture);
+  });
 
   // Add touch events on the document
   Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
@@ -105,6 +103,240 @@ function setup() {
   // Hammer is ready...!
   Hammer.READY = true;
 }
+
+Hammer.utils = {
+  /**
+   * extend method,
+   * also used for cloning when dest is an empty object
+   * @param   {Object}    dest
+   * @param   {Object}    src
+   * @parm  {Boolean}  merge    do a merge
+   * @returns {Object}    dest
+   */
+  extend: function extend(dest, src, merge) {
+    for(var key in src) {
+      if(dest[key] !== undefined && merge) {
+        continue;
+      }
+      dest[key] = src[key];
+    }
+    return dest;
+  },
+
+
+  /**
+   * for each
+   * @param obj
+   * @param iterator
+   */
+  each: function(obj, iterator, context) {
+    // native forEach on arrays
+    if ("forEach" in obj) {
+      obj.forEach(iterator, context);
+    } 
+    // arrays
+    else if(obj.length != undefined) {
+      for (var i = 0, length = obj.length; i < length; i++) {
+        if (iterator.call(context, obj[i], i, obj) === false) { 
+          return;
+        }
+      }
+    }
+    // objects
+    else {
+      for (var i in obj) {
+        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) { 
+          return;
+        }
+      }
+    }
+  },
+
+  /**
+   * find if a node is in the given parent
+   * used for event delegation tricks
+   * @param   {HTMLElement}   node
+   * @param   {HTMLElement}   parent
+   * @returns {boolean}       has_parent
+   */
+  hasParent: function(node, parent) {
+    while(node) {
+      if(node == parent) {
+        return true;
+      }
+      node = node.parentNode;
+    }
+    return false;
+  },
+
+
+  /**
+   * get the center of all the touches
+   * @param   {Array}     touches
+   * @returns {Object}    center
+   */
+  getCenter: function getCenter(touches) {
+    var valuesX = [], valuesY = [];
+
+    Hammer.utils.each(touches, function(touch) {
+      // I prefer clientX because it ignore the scrolling position
+      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX );
+      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY );
+    });
+
+    return {
+      pageX: ((Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2),
+      pageY: ((Math.min.apply(Math, valuesY) + Math.max.apply(Math, valuesY)) / 2)
+    };
+  },
+
+
+  /**
+   * calculate the velocity between two points
+   * @param   {Number}    delta_time
+   * @param   {Number}    delta_x
+   * @param   {Number}    delta_y
+   * @returns {Object}    velocity
+   */
+  getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
+    return {
+      x: Math.abs(delta_x / delta_time) || 0,
+      y: Math.abs(delta_y / delta_time) || 0
+    };
+  },
+
+
+  /**
+   * calculate the angle between two coordinates
+   * @param   {Touch}     touch1
+   * @param   {Touch}     touch2
+   * @returns {Number}    angle
+   */
+  getAngle: function getAngle(touch1, touch2) {
+    var y = touch2.pageY - touch1.pageY,
+      x = touch2.pageX - touch1.pageX;
+    return Math.atan2(y, x) * 180 / Math.PI;
+  },
+
+
+  /**
+   * angle to direction define
+   * @param   {Touch}     touch1
+   * @param   {Touch}     touch2
+   * @returns {String}    direction constant, like Hammer.DIRECTION_LEFT
+   */
+  getDirection: function getDirection(touch1, touch2) {
+    var x = Math.abs(touch1.pageX - touch2.pageX),
+      y = Math.abs(touch1.pageY - touch2.pageY);
+
+    if(x >= y) {
+      return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
+    }
+    else {
+      return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
+    }
+  },
+
+
+  /**
+   * calculate the distance between two touches
+   * @param   {Touch}     touch1
+   * @param   {Touch}     touch2
+   * @returns {Number}    distance
+   */
+  getDistance: function getDistance(touch1, touch2) {
+    var x = touch2.pageX - touch1.pageX,
+      y = touch2.pageY - touch1.pageY;
+    return Math.sqrt((x * x) + (y * y));
+  },
+
+
+  /**
+   * calculate the scale factor between two touchLists (fingers)
+   * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+   * @param   {Array}     start
+   * @param   {Array}     end
+   * @returns {Number}    scale
+   */
+  getScale: function getScale(start, end) {
+    // need two fingers...
+    if(start.length >= 2 && end.length >= 2) {
+      return this.getDistance(end[0], end[1]) /
+        this.getDistance(start[0], start[1]);
+    }
+    return 1;
+  },
+
+
+  /**
+   * calculate the rotation degrees between two touchLists (fingers)
+   * @param   {Array}     start
+   * @param   {Array}     end
+   * @returns {Number}    rotation
+   */
+  getRotation: function getRotation(start, end) {
+    // need two fingers
+    if(start.length >= 2 && end.length >= 2) {
+      return this.getAngle(end[1], end[0]) -
+        this.getAngle(start[1], start[0]);
+    }
+    return 0;
+  },
+
+
+  /**
+   * boolean if the direction is vertical
+   * @param    {String}    direction
+   * @returns  {Boolean}   is_vertical
+   */
+  isVertical: function isVertical(direction) {
+    return (direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN);
+  },
+
+
+  /**
+   * stop browser default behavior with css props
+   * @param   {HtmlElement}   element
+   * @param   {Object}        css_props
+   */
+  stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
+    var prop,
+      vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
+
+    if(!css_props || !element || !element.style) {
+      return;
+    }
+
+    // with css properties for modern browsers
+    Hammer.utils.each(vendors, function(vendor) {
+      Hammer.utils.each(css_props, function(prop) {
+          // vender prefix at the property
+          if(vendor) {
+            prop = vendors + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+          }
+          // set the style
+          if(prop in element.style) {
+            element.style[prop] = prop;
+          }
+      });
+    });
+
+    // also the disable onselectstart
+    if(css_props.userSelect == 'none') {
+      element.onselectstart = function() {
+        return false;
+      };
+    }
+
+    // and disable ondragstart
+    if(css_props.userDrag == 'none') {
+      element.ondragstart = function() {
+        return false;
+      };
+    }
+  }
+};
+
 
 /**
  * create new hammer instance
@@ -157,9 +389,9 @@ Hammer.Instance.prototype = {
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    for(var t = 0; t < gestures.length; t++) {
-      this.element.addEventListener(gestures[t], handler, false);
-    }
+    Hammer.utils.each(gestures, function(gesture) {
+      this.element.addEventListener(gesture, handler, false);
+    }, this);
     return this;
   },
 
@@ -172,9 +404,9 @@ Hammer.Instance.prototype = {
    */
   off: function offEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    for(var t = 0; t < gestures.length; t++) {
-      this.element.removeEventListener(gestures[t], handler, false);
-    }
+    Hammer.utils.each(gestures, function(gesture) {
+      this.element.removeEventListener(gesture, handler, false);
+    }, this);
     return this;
   },
 
@@ -252,9 +484,9 @@ Hammer.event = {
    */
   bindDom: function(element, type, handler) {
     var types = type.split(' ');
-    for(var t = 0; t < types.length; t++) {
-      element.addEventListener(types[t], handler, false);
-    }
+    Hammer.utils.each(types, function(type){
+      element.addEventListener(type, handler, false);
+    });
   },
 
 
@@ -285,7 +517,7 @@ Hammer.event = {
       }
 
       // mouse isn't pressed
-      else if(sourceEventType.match(/mouse/) && ev.which !== 1) {
+      else if(sourceEventType.match(/mouse/) && !ev.which) {
         enable_detect = false;
       }
 
@@ -477,9 +709,10 @@ Hammer.PointerEvent = {
     var touchlist = [];
 
     // we can use forEach since pointerEvents only is in IE10
-    Object.keys(self.pointers).sort().forEach(function(id) {
-      touchlist.push(self.pointers[id]);
+    Hammer.utils.each(self.pointers, function(pointer){
+      touchlist.push(pointer);
     });
+    
     return touchlist;
   },
 
@@ -510,10 +743,11 @@ Hammer.PointerEvent = {
       return false;
     }
 
-    var types = {};
-    types[Hammer.POINTER_MOUSE] = (ev.pointerType == ev.MSPOINTER_TYPE_MOUSE || ev.pointerType == Hammer.POINTER_MOUSE);
-    types[Hammer.POINTER_TOUCH] = (ev.pointerType == ev.MSPOINTER_TYPE_TOUCH || ev.pointerType == Hammer.POINTER_TOUCH);
-    types[Hammer.POINTER_PEN] = (ev.pointerType == ev.MSPOINTER_TYPE_PEN || ev.pointerType == Hammer.POINTER_PEN);
+    var pt = ev.pointerType,
+      types = {};
+    types[Hammer.POINTER_MOUSE] = (pt === ev.MSPOINTER_TYPE_MOUSE || pt === Hammer.POINTER_MOUSE);
+    types[Hammer.POINTER_TOUCH] = (pt === ev.MSPOINTER_TYPE_TOUCH || pt === Hammer.POINTER_TOUCH);
+    types[Hammer.POINTER_PEN] = (pt === ev.MSPOINTER_TYPE_PEN || pt === Hammer.POINTER_PEN);
     return types[pointerType];
   },
 
@@ -534,216 +768,6 @@ Hammer.PointerEvent = {
    */
   reset: function() {
     this.pointers = {};
-  }
-};
-
-
-Hammer.utils = {
-  /**
-   * extend method,
-   * also used for cloning when dest is an empty object
-   * @param   {Object}    dest
-   * @param   {Object}    src
-   * @parm  {Boolean}  merge    do a merge
-   * @returns {Object}    dest
-   */
-  extend: function extend(dest, src, merge) {
-    for(var key in src) {
-      if(dest[key] !== undefined && merge) {
-        continue;
-      }
-      dest[key] = src[key];
-    }
-    return dest;
-  },
-
-
-  /**
-   * find if a node is in the given parent
-   * used for event delegation tricks
-   * @param   {HTMLElement}   node
-   * @param   {HTMLElement}   parent
-   * @returns {boolean}       has_parent
-   */
-  hasParent: function(node, parent) {
-    while(node) {
-      if(node == parent) {
-        return true;
-      }
-      node = node.parentNode;
-    }
-    return false;
-  },
-
-
-  /**
-   * get the center of all the touches
-   * @param   {Array}     touches
-   * @returns {Object}    center
-   */
-  getCenter: function getCenter(touches) {
-    var valuesX = [], valuesY = [], touch;
-
-    for(var t = 0, len = touches.length; t < len; t++) {
-      touch = touches[t];
-      // I prefer clientX because it ignore the scrolling position
-      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX );
-      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY );
-    }
-
-    return {
-      pageX: ((Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2),
-      pageY: ((Math.min.apply(Math, valuesY) + Math.max.apply(Math, valuesY)) / 2)
-    };
-  },
-
-
-  /**
-   * calculate the velocity between two points
-   * @param   {Number}    delta_time
-   * @param   {Number}    delta_x
-   * @param   {Number}    delta_y
-   * @returns {Object}    velocity
-   */
-  getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
-    return {
-      x: Math.abs(delta_x / delta_time) || 0,
-      y: Math.abs(delta_y / delta_time) || 0
-    };
-  },
-
-
-  /**
-   * calculate the angle between two coordinates
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {Number}    angle
-   */
-  getAngle: function getAngle(touch1, touch2) {
-    var y = touch2.pageY - touch1.pageY,
-      x = touch2.pageX - touch1.pageX;
-    return Math.atan2(y, x) * 180 / Math.PI;
-  },
-
-
-  /**
-   * angle to direction define
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {String}    direction constant, like Hammer.DIRECTION_LEFT
-   */
-  getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.pageX - touch2.pageX),
-      y = Math.abs(touch1.pageY - touch2.pageY);
-
-    if(x >= y) {
-      return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
-    }
-    else {
-      return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
-    }
-  },
-
-
-  /**
-   * calculate the distance between two touches
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {Number}    distance
-   */
-  getDistance: function getDistance(touch1, touch2) {
-    var x = touch2.pageX - touch1.pageX,
-      y = touch2.pageY - touch1.pageY;
-    return Math.sqrt((x * x) + (y * y));
-  },
-
-
-  /**
-   * calculate the scale factor between two touchLists (fingers)
-   * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-   * @param   {Array}     start
-   * @param   {Array}     end
-   * @returns {Number}    scale
-   */
-  getScale: function getScale(start, end) {
-    // need two fingers...
-    if(start.length >= 2 && end.length >= 2) {
-      return this.getDistance(end[0], end[1]) /
-        this.getDistance(start[0], start[1]);
-    }
-    return 1;
-  },
-
-
-  /**
-   * calculate the rotation degrees between two touchLists (fingers)
-   * @param   {Array}     start
-   * @param   {Array}     end
-   * @returns {Number}    rotation
-   */
-  getRotation: function getRotation(start, end) {
-    // need two fingers
-    if(start.length >= 2 && end.length >= 2) {
-      return this.getAngle(end[1], end[0]) -
-        this.getAngle(start[1], start[0]);
-    }
-    return 0;
-  },
-
-
-  /**
-   * boolean if the direction is vertical
-   * @param    {String}    direction
-   * @returns  {Boolean}   is_vertical
-   */
-  isVertical: function isVertical(direction) {
-    return (direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN);
-  },
-
-
-  /**
-   * stop browser default behavior with css props
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   */
-  stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    var prop,
-      vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
-
-    if(!css_props || !element.style) {
-      return;
-    }
-
-    // with css properties for modern browsers
-    for(var i = 0; i < vendors.length; i++) {
-      for(var p in css_props) {
-        if(css_props.hasOwnProperty(p)) {
-          prop = p;
-
-          // vender prefix at the property
-          if(vendors[i]) {
-            prop = vendors[i] + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-          }
-
-          // set the style
-          element.style[prop] = css_props[p];
-        }
-      }
-    }
-
-    // also the disable onselectstart
-    if(css_props.userSelect == 'none') {
-      element.onselectstart = function() {
-        return false;
-      };
-    }
-
-    // and disable ondragstart
-    if(css_props.userDrag == 'none') {
-      element.ondragstart = function() {
-        return false;
-      };
-    }
   }
 };
 
@@ -803,18 +827,16 @@ Hammer.detection = {
     var inst_options = this.current.inst.options;
 
     // call Hammer.gesture handlers
-    for(var g=0, len=this.gestures.length; g<len; g++) {
-      var gesture = this.gestures[g];
-
+    Hammer.utils.each(this.gestures, function(gesture) {
       // only when the instance options have enabled this gesture
       if(!this.stopped && inst_options[gesture.name] !== false) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
           this.stopDetect();
-          break;
+          return false;
         }
       }
-    }
+    }, this);
 
     // store as previous event event
     if(this.current) {
@@ -863,9 +885,9 @@ Hammer.detection = {
     if(startEv && (ev.touches.length != startEv.touches.length || ev.touches === startEv.touches)) {
       // extend 1 level deep to get the touchlist with the touch objects
       startEv.touches = [];
-      for(var i = 0, len = ev.touches.length; i < len; i++) {
-        startEv.touches.push(Hammer.utils.extend({}, ev.touches[i]));
-      }
+      Hammer.utils.each(ev.touches, function(touch) {
+        startEv.touches.push(Hammer.utils.extend({}, touch));
+      });
     }
 
     var delta_time = ev.timeStamp - startEv.timeStamp

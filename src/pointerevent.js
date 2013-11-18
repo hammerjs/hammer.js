@@ -14,9 +14,10 @@ Hammer.PointerEvent = {
     var touchlist = [];
 
     // we can use forEach since pointerEvents only is in IE10
-    Object.keys(self.pointers).sort().forEach(function(id) {
-      touchlist.push(self.pointers[id]);
+    Hammer.utils.each(self.pointers, function(pointer){
+      touchlist.push(pointer);
     });
+    
     return touchlist;
   },
 
@@ -47,10 +48,11 @@ Hammer.PointerEvent = {
       return false;
     }
 
-    var types = {};
-    types[Hammer.POINTER_MOUSE] = (ev.pointerType == ev.MSPOINTER_TYPE_MOUSE || ev.pointerType == Hammer.POINTER_MOUSE);
-    types[Hammer.POINTER_TOUCH] = (ev.pointerType == ev.MSPOINTER_TYPE_TOUCH || ev.pointerType == Hammer.POINTER_TOUCH);
-    types[Hammer.POINTER_PEN] = (ev.pointerType == ev.MSPOINTER_TYPE_PEN || ev.pointerType == Hammer.POINTER_PEN);
+    var pt = ev.pointerType,
+      types = {};
+    types[Hammer.POINTER_MOUSE] = (pt === ev.MSPOINTER_TYPE_MOUSE || pt === Hammer.POINTER_MOUSE);
+    types[Hammer.POINTER_TOUCH] = (pt === ev.MSPOINTER_TYPE_TOUCH || pt === Hammer.POINTER_TOUCH);
+    types[Hammer.POINTER_PEN] = (pt === ev.MSPOINTER_TYPE_PEN || pt === Hammer.POINTER_PEN);
     return types[pointerType];
   },
 

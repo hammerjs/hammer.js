@@ -13,11 +13,9 @@ function setup() {
   Hammer.event.determineEventTypes();
 
   // Register all gestures inside Hammer.gestures
-  for(var name in Hammer.gestures) {
-    if(Hammer.gestures.hasOwnProperty(name)) {
-      Hammer.detection.register(Hammer.gestures[name]);
-    }
-  }
+  Hammer.utils.each(Hammer.gestures, function(gesture){
+    Hammer.detection.register(gesture);
+  });
 
   // Add touch events on the document
   Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
