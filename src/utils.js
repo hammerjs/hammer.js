@@ -24,22 +24,24 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
+    var i, length;
+
     // native forEach on arrays
-    if ("forEach" in obj) {
+    if ('forEach' in obj) {
       obj.forEach(iterator, context);
-    } 
+    }
     // arrays
-    else if(obj.length != undefined) {
-      for (var i = 0, length = obj.length; i < length; i++) {
-        if (iterator.call(context, obj[i], i, obj) === false) { 
+    else if(obj.length !== undefined) {
+      for (i = 0, length = obj.length; i < length; i++) {
+        if (iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
     }
     // objects
     else {
-      for (var i in obj) {
-        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) { 
+      for (i in obj) {
+        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
@@ -194,8 +196,7 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    var prop,
-      vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
+    var vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
 
     if(!css_props || !element || !element.style) {
       return;
