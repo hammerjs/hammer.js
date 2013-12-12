@@ -1,4 +1,13 @@
-(function(Hammer) {
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['hammer'], factory);
+    } else {
+        // Browser globals
+        factory(root.Hammer);
+    }
+}(this, function (Hammer) {
+
   /**
    * enable multitouch on the desktop by pressing the shiftkey
    * the other touch goes in the opposite direction so the center keeps at its place
@@ -77,5 +86,4 @@
       }
     };
   };
-
-})(window.Hammer);
+}));
