@@ -66,6 +66,7 @@ Hammer.gestures.Transform = {
         // trigger rotate event
         if(rotation_threshold > inst.options.transform_min_rotation) {
           inst.trigger('rotate', ev);
+          inst.trigger('rotate' + ((ev.angle < 0) ? 'left' : 'right'), ev);
         }
 
         // trigger pinch event
