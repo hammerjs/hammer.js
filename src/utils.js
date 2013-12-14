@@ -24,22 +24,23 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
+    var i, length;
     // native forEach on arrays
-    if ("forEach" in obj) {
+    if ('forEach' in obj) {
       obj.forEach(iterator, context);
-    } 
+    }
     // arrays
-    else if(obj.length != undefined) {
-      for (var i = 0, length = obj.length; i < length; i++) {
-        if (iterator.call(context, obj[i], i, obj) === false) { 
+    else if(obj.length !== undefined) {
+      for (i = 0, length = obj.length; i < length; i++) {
+        if (iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
     }
     // objects
     else {
-      for (var i in obj) {
-        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) { 
+      for (i in obj) {
+        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
@@ -194,19 +195,16 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    var prop,
-      vendors = ['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''];
-
     if(!css_props || !element || !element.style) {
       return;
     }
 
     // with css properties for modern browsers
-    Hammer.utils.each(vendors, function(vendor) {
+    Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
       Hammer.utils.each(css_props, function(prop) {
           // vender prefix at the property
           if(vendor) {
-            prop = vendors + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+            prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
           // set the style
           if(prop in element.style) {
