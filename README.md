@@ -21,7 +21,7 @@
 - Unit tests
 - Option to disable mouse support, so only for touch and pen input.
 - Sourcemaps
-- [jQuery plugin available](https://github.com/EightMedia/jquery.hammer.js)
+- [jQuery plugin available here](https://github.com/EightMedia/jquery.hammer.js)
 
 ## Getting Started
 See the [Wiki on GitHub](https://github.com/EightMedia/hammer.js/wiki) for documentation.
