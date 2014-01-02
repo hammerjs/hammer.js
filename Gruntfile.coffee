@@ -122,4 +122,4 @@ module.exports = (grunt) ->
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','uglify','test']
   grunt.registerTask 'test', ['jshint','qunit']
-  grunt.registerTask 'test-travis', ['build','jshint','connect','saucelabs-qunit']
+  grunt.registerTask 'test-travis', ['build','jshint']
