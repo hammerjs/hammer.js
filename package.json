@@ -34,7 +34,6 @@
     "grunt-contrib-uglify": "0.2.x",
     "grunt-contrib-jshint": "0.7.x",
     "grunt-contrib-watch": "0.5.x",
-    "grunt-tagrelease": "0.1.x",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
     "underscore": "1.5.x",
     "grunt-saucelabs": "4.1.x",

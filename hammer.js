@@ -1,7 +1,7 @@
-/*! Hammer.JS - v1.0.6dev - 2013-12-14
+/*! Hammer.JS - v1.0.6dev - 2014-01-02
  * http://eightmedia.github.com/hammer.js
  *
- * Copyright (c) 2013 Jorik Tangelder <j.tangelder@gmail.com>;
+ * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
 
 (function(window, undefined) {

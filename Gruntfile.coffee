@@ -78,14 +78,6 @@ module.exports = (grunt) ->
         options:
           directory: "."
           hostname: "0.0.0.0"
-
-    # release
-    tagrelease:
-      file: 'package.json'
-      commit: true
-      message: 'Release %version%'
-      prefix: 'v'
-      annotate: false
       
     # tests
     qunit:
@@ -124,11 +116,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-saucelabs'
-  grunt.loadNpmTasks 'grunt-tagrelease'
 
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','uglify','test']
   grunt.registerTask 'test', ['jshint','qunit']
-  grunt.registerTask 'test-full', ['build','jshint','connect','saucelabs-qunit']
+  grunt.registerTask 'test-travis', ['build','jshint','connect','saucelabs-qunit']
