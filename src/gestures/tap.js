@@ -14,15 +14,17 @@ Hammer.gestures.Tap = {
     doubletap_interval: 300
   },
   handler : function tapGesture(ev, inst) {
-    if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
+    if(ev.eventType == Hammer.EVENT_MOVE && !Hammer.detection.current.reachedTapMaxDistance) {
+      //Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
+      Hammer.detection.current.reachedTapMaxDistance = (ev.distance > inst.options.tap_max_distance);
+    } else if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
       // previous gesture, for the double tap since these are two different gesture detections
       var prev = Hammer.detection.previous,
         did_doubletap = false;
 
       // when the touchtime is higher then the max touch time
       // or when the moving distance is too much
-      if(ev.deltaTime > inst.options.tap_max_touchtime ||
-        ev.distance > inst.options.tap_max_distance) {
+      if(Hammer.detection.current.reachedTapMaxDistance || ev.deltaTime > inst.options.tap_max_touchtime) {
         return;
       }
 
