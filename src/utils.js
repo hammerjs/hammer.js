@@ -201,14 +201,14 @@ Hammer.utils = {
 
     // with css properties for modern browsers
     Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(prop) {
+      Hammer.utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
           // set the style
           if(prop in element.style) {
-            element.style[prop] = prop;
+            element.style[prop] = value;
           }
       });
     });
