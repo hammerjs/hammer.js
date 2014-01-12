@@ -52,12 +52,12 @@
           {
             identifier: 1,
             pageX     : start_pos.pageX - distance_x - 50,
-            pageY     : start_pos.pageY - distance_y - -50,
+            pageY     : start_pos.pageY - distance_y + 50,
             target    : ev.target
           },
           {
             identifier: 2,
-            pageX     : start_pos.pageX + distance_x - -50,
+            pageX     : start_pos.pageX + distance_x + 50,
             pageY     : start_pos.pageY + distance_y - 50,
             target    : ev.target
           }
