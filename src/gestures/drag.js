@@ -10,31 +10,31 @@ Hammer.gestures.Drag = {
   index    : 50,
   defaults : {
     drag_min_distance            : 10,
-    
+
     // Set correct_for_drag_min_distance to true to make the starting point of the drag
     // be calculated from where the drag was triggered, not from where the touch started.
     // Useful to avoid a jerk-starting drag, which can make fine-adjustments
     // through dragging difficult, and be visually unappealing.
     correct_for_drag_min_distance: true,
-    
+
     // set 0 for unlimited, but this can conflict with transform
     drag_max_touches             : 1,
-    
+
     // prevent default browser behavior when dragging occurs
     // be careful with it, it makes the element a blocking element
     // when you are using the drag gesture, it is a good practice to set this true
     drag_block_horizontal        : false,
     drag_block_vertical          : false,
-    
+
     // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
     // It disallows vertical directions if the initial direction was horizontal, and vice versa.
     drag_lock_to_axis            : false,
-    
+
     // drag lock only kicks in when distance > drag_lock_min_distance
     // This way, locking occurs only when the distance has become large enough to reliably determine the direction
     drag_lock_min_distance       : 25
   },
-  
+
   triggered: false,
   handler  : function dragGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true

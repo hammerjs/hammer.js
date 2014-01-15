@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.6 - 2014-01-02
+/*! Hammer.JS - v1.0.7dev - 2014-01-15
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -307,14 +307,14 @@ Hammer.utils = {
 
     // with css properties for modern browsers
     Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(prop) {
+      Hammer.utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
           // set the style
           if(prop in element.style) {
-            element.style[prop] = prop;
+            element.style[prop] = value;
           }
       });
     });
@@ -980,31 +980,31 @@ Hammer.gestures.Drag = {
   index    : 50,
   defaults : {
     drag_min_distance            : 10,
-    
+
     // Set correct_for_drag_min_distance to true to make the starting point of the drag
     // be calculated from where the drag was triggered, not from where the touch started.
     // Useful to avoid a jerk-starting drag, which can make fine-adjustments
     // through dragging difficult, and be visually unappealing.
     correct_for_drag_min_distance: true,
-    
+
     // set 0 for unlimited, but this can conflict with transform
     drag_max_touches             : 1,
-    
+
     // prevent default browser behavior when dragging occurs
     // be careful with it, it makes the element a blocking element
     // when you are using the drag gesture, it is a good practice to set this true
     drag_block_horizontal        : false,
     drag_block_vertical          : false,
-    
+
     // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
     // It disallows vertical directions if the initial direction was horizontal, and vice versa.
     drag_lock_to_axis            : false,
-    
+
     // drag lock only kicks in when distance > drag_lock_min_distance
     // This way, locking occurs only when the distance has become large enough to reliably determine the direction
     drag_lock_min_distance       : 25
   },
-  
+
   triggered: false,
   handler  : function dragGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
@@ -1271,6 +1271,7 @@ Hammer.gestures.Touch = {
   }
 };
 
+
 /**
  * Transform
  * User want to scale or rotate with 2 fingers
@@ -1362,17 +1363,18 @@ Hammer.gestures.Transform = {
 
   // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
   // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
-  if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+  if(typeof define == 'function' && define.amd) {
     // define as an anonymous module
-    define(function() {
-      return Hammer;
-    });
-    // check for `exports` after `define` in case a build optimizer adds an `exports` object
+    define(function() { return Hammer; });
   }
-  else if(typeof module === 'object' && typeof module.exports === 'object') {
+
+  // check for `exports` after `define` in case a build optimizer adds an `exports` object
+  else if(typeof module === 'object' && module.exports) {
     module.exports = Hammer;
   }
+
   else {
     window.Hammer = Hammer;
   }
-})(this);
+
+})(window);
