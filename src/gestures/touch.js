@@ -23,7 +23,7 @@ Hammer.gestures.Touch = {
       return;
     }
 
-    if(inst.options.prevent_default) {
+    if(inst.options.prevent_default && (ev.target === inst.element)) {
       ev.preventDefault();
     }
 

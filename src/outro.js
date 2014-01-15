@@ -13,4 +13,4 @@
   else {
     window.Hammer = Hammer;
   }
-})(this);
+})(window);
