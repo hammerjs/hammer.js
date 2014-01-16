@@ -191,7 +191,7 @@ Hammer.event = {
    * @param   {Object}    ev
    */
   normalizeTouchEndTouches: function normalizeTouchEndTouches(ev) {
-    if(ev.type.toLowerCase() != "touchend") {
+    if(ev.type.toLowerCase() != 'touchend') {
       return ev.touches;
     }
 
