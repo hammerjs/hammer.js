@@ -14,4 +14,6 @@
     window.Hammer = Hammer;
   }
 
-})(window);
+})(function () {
+    return this;
+}());
