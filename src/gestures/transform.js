@@ -8,13 +8,15 @@ Hammer.gestures.Transform = {
   index    : 45,
   defaults : {
     // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-    transform_min_scale   : 0.01,
+    transform_min_scale      : 0.01,
     // rotation in degrees
-    transform_min_rotation: 1,
+    transform_min_rotation   : 1,
     // prevent default browser behavior when two touches are on the screen
     // but it makes the element a blocking element
     // when you are using the transform gesture, it is a good practice to set this true
-    transform_always_block: false
+    transform_always_block   : false,
+    // ensures that all touches occurred within the instance element
+    transform_within_instance: false
   },
   triggered: false,
   handler  : function transformGesture(ev, inst) {
@@ -26,7 +28,7 @@ Hammer.gestures.Transform = {
       return;
     }
 
-    // atleast multitouch
+    // at least multitouch
     if(ev.touches.length < 2) {
       return;
     }
@@ -34,6 +36,19 @@ Hammer.gestures.Transform = {
     // prevent default when two fingers are on the screen
     if(inst.options.transform_always_block) {
       ev.preventDefault();
+    }
+
+    // check if all touches occurred within the instance element
+    if(inst.options.transform_within_instance) {
+      var inside = true;
+      Hammer.utils.each(ev.touches, function(touch) {
+        if(!Hammer.utils.hasParent(touch.target, inst.element)) {
+          inside = false;
+        }
+      });
+      if(!inside) {
+        return;
+      }
     }
 
     switch(ev.eventType) {
