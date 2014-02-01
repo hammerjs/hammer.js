@@ -37,6 +37,20 @@ Hammer.event = {
 
 
   /**
+   * simple removeEventListener
+   * @param   {HTMLElement}   element
+   * @param   {String}        type
+   * @param   {Function}      handler
+   */
+  unbindDom: function(element, type, handler) {
+    var types = type.split(' ');
+    Hammer.utils.each(types, function(type){
+      element.removeEventListener(type, handler, false);
+    });
+  },
+
+
+  /**
    * touch events with mouse fallback
    * @param   {HTMLElement}   element
    * @param   {String}        eventType        like Hammer.EVENT_MOVE
@@ -45,7 +59,7 @@ Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], function bindDomOnTouch(ev) {
+    var fn = function bindDomOnTouch(ev) {
       var sourceEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
@@ -124,8 +138,13 @@ Hammer.event = {
         touch_triggered = false;
         Hammer.PointerEvent.reset();
       }
-    });
-  },
+    };
+
+    this.bindDom(element, Hammer.EVENT_TYPES[eventType], fn);
+
+    // return the bound function to be able to unbind it later
+    return fn;
+    },
 
 
   /**
