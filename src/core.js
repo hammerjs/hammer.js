@@ -56,6 +56,9 @@ Hammer.POINTER_MOUSE = 'mouse';
 Hammer.POINTER_TOUCH = 'touch';
 Hammer.POINTER_PEN = 'pen';
 
+// interval in which Hammer recalculates current velocity in ms
+Hammer.UPDATE_VELOCITY_INTERVAL = 20;
+
 // touch event defines
 Hammer.EVENT_START = 'start';
 Hammer.EVENT_MOVE = 'move';
