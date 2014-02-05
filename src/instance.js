@@ -74,15 +74,15 @@ Hammer.Instance.prototype = {
       // remove the event handler from the internal list
       var index = -1;
       Hammer.utils.each(this._eventHandler, function(eventHandler, i) {
-        if (i === -1 && eventHandler.gesture === gesture && eventHandler.handler === handler) {
+        if (index === -1 && eventHandler.gesture === gesture && eventHandler.handler === handler) {
           index = i;
         }
       }, this);
 
       if (index > -1) {
-        this._eventHander.splice(index, 1);
+        this._eventHandler.splice(index, 1);
       }
-    });
+    }, this);
     return this;
   },
 
@@ -142,6 +142,7 @@ Hammer.Instance.prototype = {
     Hammer.utils.each(this._eventHandler, function(eventHandler) {
       this.element.removeEventListener(eventHandler.gesture, eventHandler.handler, false);
     }, this);
+    this._eventHandler.length = 0;
 
     // unbind the start event listener
     Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this._eventStartHandler);
