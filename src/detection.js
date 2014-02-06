@@ -135,7 +135,7 @@ Hammer.detection = {
             this.current.velocity = velocity;
         }
   
-    } else if(this.current.velocity == false) {
+    } else if(this.current.velocity === false) {
         velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
         this.current.velocity = velocity;
         this.current.lastVEvent = ev;
