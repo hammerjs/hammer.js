@@ -29,9 +29,9 @@ Hammer.detection = {
     this.current = {
       inst      : inst, // reference to HammerInstance we're working for
       startEvent: Hammer.utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent: false, // last eventData
+      lastEvent : false, // last eventData
       lastVEvent: false, // last eventData for velocity.
-      velocity: false, // current velocity
+      velocity  : false, // current velocity
       name      : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
     };
 
@@ -136,7 +136,8 @@ Hammer.detection = {
         }
   
     } else if(this.current.velocity == false) {
-        velocity = this.current.velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
+        velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
+        this.current.velocity = velocity;
         this.current.lastVEvent = ev;
     }
 
