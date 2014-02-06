@@ -105,7 +105,7 @@ Hammer.detection = {
    */
   extendEventData: function extendEventData(ev) {
     var startEv = this.current.startEvent,
-        lastVEv this.current.lastVEvent;
+        lastVEv = this.current.lastVEvent;
 
     // if the touches change, set the new touches over the startEvent touches
     // this because touchevents don't have all the touches on touchstart, or the
