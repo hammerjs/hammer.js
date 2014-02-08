@@ -14,20 +14,10 @@
             position: relative;
         }
 
-        #debug {
-            position: fixed;
-            background: #fff;
-            padding: 5px;
-            color: #000;
-            top: 0;
-            left: 0;
-            z-index: 1337;
-        }
-
         #carousel {
             background: silver;
             overflow: hidden;
-            width:100%;
+            width: 100%;
             -webkit-backface-visibility: hidden;
             -webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
             -webkit-transform-style: preserve-3d;
@@ -41,11 +31,11 @@
         }
 
         #carousel ul {
-            transform: translate3d(0%,0,0) scale3d(1,1,1);
-            -o-transform: translate3d(0%,0,0) scale3d(1,1,1);
-            -ms-transform: translate3d(0%,0,0) scale3d(1,1,1);
-            -moz-transform: translate3d(0%,0,0) scale3d(1,1,1);
             -webkit-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -moz-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -ms-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            -o-transform: translate3d(0%,0,0) scale3d(1,1,1);
+            transform: translate3d(0%,0,0) scale3d(1,1,1);
             overflow: hidden;
             -webkit-backface-visibility: hidden;
             -webkit-transform-style: preserve-3d;
@@ -86,8 +76,6 @@
 
 <body>
 
-    <!--<div id="debug">Log</div>-->
-
     <div id="carousel">
         <ul>
             <li class="pane1"><h2>Swipe...</h2></li>
@@ -106,41 +94,6 @@
     <script src="../hammer.js"></script>
 
     <script>
-
-    var debug_el = $("#debug");
-    function debug(text) {
-        debug_el.text(text);
-    }
-
-
-    /**
-     * requestAnimationFrame and cancel polyfill
-     */
-    (function() {
-        var lastTime = 0;
-        var vendors = ['ms', 'moz', 'webkit', 'o'];
-        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-            window.cancelAnimationFrame =
-                    window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-        }
-
-        if (!window.requestAnimationFrame)
-            window.requestAnimationFrame = function(callback, element) {
-                var currTime = new Date().getTime();
-                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                        timeToCall);
-                lastTime = currTime + timeToCall;
-                return id;
-            };
-
-        if (!window.cancelAnimationFrame)
-            window.cancelAnimationFrame = function(id) {
-                clearTimeout(id);
-            };
-    }());
-
 
     /**
     * super simple carousel
@@ -168,7 +121,6 @@
 
             $(window).on("load resize orientationchange", function() {
                 setPaneDimensions();
-                //updateOffset();
             })
         };
 
@@ -221,7 +173,6 @@
         this.prev = function() { return this.showPane(current_pane-1, true); };
 
 
-
         function handleHammer(ev) {
             console.log(ev);
             // disable browser scrolling
@@ -269,13 +220,11 @@
             }
         }
 
-        var hammertime = new Hammer(element[0], { drag_lock_to_axis: true }).on("release dragleft dragright swipeleft swiperight", handleHammer);
+        new Hammer(element[0], { drag_lock_to_axis: true }).on("release dragleft dragright swipeleft swiperight", handleHammer);
     }
-
 
     var carousel = new Carousel("#carousel");
     carousel.init();
-
 
     </script>
 
