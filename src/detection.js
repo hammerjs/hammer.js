@@ -70,7 +70,7 @@ Hammer.detection = {
     }
 
     // endevent, but not the last touch, so dont stop
-    if(eventData.eventType == Hammer.EVENT_END && eventData.touches.length == 1) {
+    if(eventData.eventType == Hammer.EVENT_END && !eventData.touches.length - 1) {
       this.stopDetect();
     }
 
