@@ -30,6 +30,8 @@ Hammer.detection = {
       inst      : inst, // reference to HammerInstance we're working for
       startEvent: Hammer.utils.extend({}, eventData), // start eventData for distances, timing etc
       lastEvent : false, // last eventData
+      lastVEvent: false, // last eventData for velocity.
+      velocity  : false, // current velocity
       name      : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
     };
 
@@ -102,7 +104,8 @@ Hammer.detection = {
    * @returns {Object}   ev
    */
   extendEventData: function extendEventData(ev) {
-    var startEv = this.current.startEvent;
+    var startEv = this.current.startEvent,
+        lastVEv = this.current.lastVEvent;
 
     // if the touches change, set the new touches over the startEvent touches
     // this because touchevents don't have all the touches on touchstart, or the
@@ -119,9 +122,24 @@ Hammer.detection = {
     var delta_time = ev.timeStamp - startEv.timeStamp
       , delta_x = ev.center.pageX - startEv.center.pageX
       , delta_y = ev.center.pageY - startEv.center.pageY
-      , velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y)
       , interimAngle
-      , interimDirection;
+      , interimDirection
+      , velocity = this.current.velocity;
+  
+    if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+  
+        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp, ev.center.pageX - lastVEv.center.pageX, ev.center.pageY - lastVEv.center.pageY);
+        this.current.lastVEvent = ev;
+  
+        if (velocity.x > 0 && velocity.y > 0) {
+            this.current.velocity = velocity;
+        }
+  
+    } else if(this.current.velocity === false) {
+        velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
+        this.current.velocity = velocity;
+        this.current.lastVEvent = ev;
+    }
 
     // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
     // because the previous event has exactly the same coordinates
