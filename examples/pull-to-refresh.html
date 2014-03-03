@@ -258,8 +258,6 @@
 
                 // when we dragdown
                 case 'dragdown':
-                    this._dragged_down = true;
-
                     // if we are not at the top move down
                     var scrollY = window.scrollY;
                     if(scrollY > 5) {
@@ -267,6 +265,8 @@
                     } else if(scrollY !== 0) {
                         window.scrollTo(0,0);
                     }
+
+                    this._dragged_down = true;
 
                     // no requestAnimationFrame instance is running, start one
                     if(!this._anim) {
