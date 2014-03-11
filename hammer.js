@@ -325,16 +325,11 @@ Hammer.utils = {
 
     // also the disable onselectstart
     if(css_props.userSelect == 'none') {
-      element.onselectstart = function() {
-        return toggle;
-      };
+      element.onselectstart = !toggle && function(){ return false; };
     }
-
     // and disable ondragstart
     if(css_props.userDrag == 'none') {
-      element.ondragstart = function() {
-        return toggle;
-      };
+      element.ondragstart = !toggle && function(){ return false; };
     }
   }
 };
