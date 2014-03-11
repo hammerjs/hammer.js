@@ -19,7 +19,7 @@ module.exports = (grunt) ->
         options:
           banner: '<%= meta.banner %>'
         src: [
-          'src/intro.js'
+          'src/hammer.prefix'
           'src/core.js'
           'src/setup.js'
           'src/utils.js'
@@ -28,7 +28,8 @@ module.exports = (grunt) ->
           'src/pointerevent.js'
           'src/detection.js'
           'src/gestures/*.js'
-          'src/outro.js']
+          'src/export.js'
+          'src/hammer.suffix']
         dest: 'hammer.js'
 
     # minify the sourcecode
