@@ -76,13 +76,13 @@ Hammer.utils = {
 
     Hammer.utils.each(touches, function(touch) {
       // I prefer clientX because it ignore the scrolling position
-      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX );
-      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY );
+      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX);
+      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY);
     });
 
     return {
-      pageX: ((Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2),
-      pageY: ((Math.min.apply(Math, valuesY) + Math.max.apply(Math, valuesY)) / 2)
+      pageX: (Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2,
+      pageY: (Math.min.apply(Math, valuesY) + Math.max.apply(Math, valuesY)) / 2
     };
   },
 
@@ -184,7 +184,7 @@ Hammer.utils = {
    * @returns  {Boolean}   is_vertical
    */
   isVertical: function isVertical(direction) {
-    return (direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN);
+    return direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN;
   },
 
 
