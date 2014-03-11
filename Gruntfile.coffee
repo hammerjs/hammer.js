@@ -45,23 +45,7 @@ module.exports = (grunt) ->
     # check for optimisations and errors
     jshint:
       options:
-        curly: true
-        expr: true
-        newcap: true
-        quotmark: 'single'
-        regexdash: true
-        trailing: true
-        undef: true
-        unused: true
-        maxerr: 100
-        eqnull: true
-        sub: false
-        browser: true
-        node: true
-        strict: true
-        laxcomma: true
-        globals:
-          define: false
+        jshintrc: true
       dist:
         src: ['hammer.js']
 
