@@ -1,7 +1,7 @@
 {
     "name": "hammerjs",
     "version": "1.0.7dev",
-    "main": ["hammer.js"],
+    "main": "hammer.js",
     "ignore": [
         "tests",
         "component.json",
