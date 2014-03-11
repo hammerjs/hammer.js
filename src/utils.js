@@ -24,14 +24,14 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
-    var i, length;
+    var i;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);
     }
     // arrays
     else if(obj.length !== undefined) {
-      for (i = 0, length = obj.length; i < length; i++) {
+      for(i=-1; obj[++i];) {
         if (iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
@@ -39,8 +39,9 @@ Hammer.utils = {
     }
     // objects
     else {
-      for (i in obj) {
-        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) {
+      for(i in obj) {
+        if(obj.hasOwnProperty(i) &&
+            iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
@@ -127,9 +128,7 @@ Hammer.utils = {
     if(x >= y) {
       return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
     }
-    else {
-      return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
-    }
+    return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
   },
 
 
@@ -195,37 +194,7 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    if(!css_props || !element || !element.style) {
-      return;
-    }
-
-    // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(value, prop) {
-          // vender prefix at the property
-          if(vendor) {
-            prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-          }
-          // set the style
-          if(prop in element.style) {
-            element.style[prop] = value;
-          }
-      });
-    });
-
-    // also the disable onselectstart
-    if(css_props.userSelect == 'none') {
-      element.onselectstart = function() {
-        return false;
-      };
-    }
-
-    // and disable ondragstart
-    if(css_props.userDrag == 'none') {
-      element.ondragstart = function() {
-        return false;
-      };
-    }
+    return this.toggleDefaultBrowserBehavior(element, css_props, false);
   },
 
 
@@ -235,32 +204,47 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   startDefaultBrowserBehavior: function startDefaultBrowserBehavior(element, css_props) {
+    return this.toggleDefaultBrowserBehavior(element, css_props, true);
+  },
+
+
+  /**
+   * stop browser default behavior with css props
+   * @param   {HtmlElement}   element
+   * @param   {Object}        css_props
+   * @param   {Boolean}       toggle
+   */
+  toggleDefaultBrowserBehavior: function toggleDefaultBrowserBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }
 
     // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+    Hammer.utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
       Hammer.utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
-          // reset the style
+          // set the style
           if(prop in element.style) {
-            element.style[prop] = '';
+            element.style[prop] = !toggle && value;
           }
       });
     });
 
-    // also the enable onselectstart
+    // also the disable onselectstart
     if(css_props.userSelect == 'none') {
-      element.onselectstart = null;
+      element.onselectstart = function() {
+        return toggle;
+      };
     }
 
-    // and enable ondragstart
+    // and disable ondragstart
     if(css_props.userDrag == 'none') {
-      element.ondragstart = null;
+      element.ondragstart = function() {
+        return toggle;
+      };
     }
   }
 };

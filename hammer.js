@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.7dev - 2014-02-18
+/*! Hammer.JS - v1.0.7dev - 2014-03-11
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -66,7 +66,7 @@ Hammer.POINTER_TOUCH = 'touch';
 Hammer.POINTER_PEN = 'pen';
 
 // interval in which Hammer recalculates current velocity in ms
-Hammer.UPDATE_VELOCITY_INTERVAL = 20;
+Hammer.UPDATE_VELOCITY_INTERVAL = 16;
 
 // touch event defines
 Hammer.EVENT_START = 'start';
@@ -134,14 +134,14 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
-    var i, length;
+    var i;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);
     }
     // arrays
     else if(obj.length !== undefined) {
-      for (i = 0, length = obj.length; i < length; i++) {
+      for(i=-1; obj[++i];) {
         if (iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
@@ -149,8 +149,9 @@ Hammer.utils = {
     }
     // objects
     else {
-      for (i in obj) {
-        if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) {
+      for(i in obj) {
+        if(obj.hasOwnProperty(i) &&
+            iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
@@ -237,9 +238,7 @@ Hammer.utils = {
     if(x >= y) {
       return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
     }
-    else {
-      return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
-    }
+    return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
   },
 
 
@@ -305,37 +304,7 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    if(!css_props || !element || !element.style) {
-      return;
-    }
-
-    // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(value, prop) {
-          // vender prefix at the property
-          if(vendor) {
-            prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-          }
-          // set the style
-          if(prop in element.style) {
-            element.style[prop] = value;
-          }
-      });
-    });
-
-    // also the disable onselectstart
-    if(css_props.userSelect == 'none') {
-      element.onselectstart = function() {
-        return false;
-      };
-    }
-
-    // and disable ondragstart
-    if(css_props.userDrag == 'none') {
-      element.ondragstart = function() {
-        return false;
-      };
-    }
+    return this.toggleDefaultBrowserBehavior(element, css_props, false);
   },
 
 
@@ -345,32 +314,47 @@ Hammer.utils = {
    * @param   {Object}        css_props
    */
   startDefaultBrowserBehavior: function startDefaultBrowserBehavior(element, css_props) {
+    return this.toggleDefaultBrowserBehavior(element, css_props, true);
+  },
+
+
+  /**
+   * stop browser default behavior with css props
+   * @param   {HtmlElement}   element
+   * @param   {Object}        css_props
+   * @param   {Boolean}       toggle
+   */
+  toggleDefaultBrowserBehavior: function toggleDefaultBrowserBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }
 
     // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'khtml', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+    Hammer.utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
       Hammer.utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
           }
-          // reset the style
+          // set the style
           if(prop in element.style) {
-            element.style[prop] = '';
+            element.style[prop] = !toggle && value;
           }
       });
     });
 
-    // also the enable onselectstart
+    // also the disable onselectstart
     if(css_props.userSelect == 'none') {
-      element.onselectstart = null;
+      element.onselectstart = function() {
+        return toggle;
+      };
     }
 
-    // and enable ondragstart
+    // and disable ondragstart
     if(css_props.userDrag == 'none') {
-      element.ondragstart = null;
+      element.ondragstart = function() {
+        return toggle;
+      };
     }
   }
 };
@@ -510,7 +494,6 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   dispose: function dispose() {
-
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
       Hammer.utils.startDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
@@ -537,13 +520,11 @@ Hammer.Instance.prototype = {
  */
 var last_move_event = null;
 
-
 /**
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
 var enable_detect = false;
-
 
 /**
  * when touch events have been fired, this is true
@@ -995,16 +976,17 @@ Hammer.detection = {
       , interimAngle
       , interimDirection
       , velocity = this.current.velocity;
-  
+
     if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-  
-        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp, ev.center.pageX - lastVEv.center.pageX, ev.center.pageY - lastVEv.center.pageY);
+        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
+                                             ev.center.pageX - lastVEv.center.pageX,
+                                             ev.center.pageY - lastVEv.center.pageY);
         this.current.lastVEvent = ev;
-  
+
         if (velocity.x > 0 && velocity.y > 0) {
             this.current.velocity = velocity;
         }
-  
+
     } else if(this.current.velocity === false) {
         velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
         this.current.velocity = velocity;
@@ -1020,8 +1002,10 @@ Hammer.detection = {
       interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
     }
     else {
-      interimAngle = this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
-      interimDirection = this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
+      interimAngle = this.current.lastEvent &&
+        Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
+      interimDirection = this.current.lastEvent &&
+        Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
     }
 
     Hammer.utils.extend(ev, {
@@ -1167,7 +1151,10 @@ Hammer.gestures.Drag = {
         }
 
         // lock drag to axis?
-        if(Hammer.detection.current.lastEvent.drag_locked_to_axis || (inst.options.drag_lock_to_axis && inst.options.drag_lock_min_distance <= ev.distance)) {
+        if(Hammer.detection.current.lastEvent.drag_locked_to_axis ||
+            ( inst.options.drag_lock_to_axis &&
+              inst.options.drag_lock_min_distance <= ev.distance
+            )) {
           ev.drag_locked_to_axis = true;
         }
         var last_direction = Hammer.detection.current.lastEvent.direction;
@@ -1187,15 +1174,15 @@ Hammer.gestures.Drag = {
           this.triggered = true;
         }
 
-        // trigger normal event
+        // trigger events
         inst.trigger(this.name, ev);
-
-        // direction event, like dragdown
         inst.trigger(this.name + ev.direction, ev);
 
+        var is_vertical = Hammer.utils.isVertical(ev.direction);
+
         // block the browser events
-        if((inst.options.drag_block_vertical && Hammer.utils.isVertical(ev.direction)) ||
-          (inst.options.drag_block_horizontal && !Hammer.utils.isVertical(ev.direction))) {
+        if((inst.options.drag_block_vertical && is_vertical) ||
+          (inst.options.drag_block_horizontal && !is_vertical)) {
           ev.preventDefault();
         }
         break;
@@ -1225,6 +1212,7 @@ Hammer.gestures.Hold = {
     hold_threshold: 1
   },
   timer   : null,
+
   handler : function holdGesture(ev, inst) {
     switch(ev.eventType) {
       case Hammer.EVENT_START:
@@ -1275,6 +1263,7 @@ Hammer.gestures.Release = {
 /**
  * Swipe
  * triggers swipe events when the end velocity is above the threshold
+ * for best usage, set prevent_default (on the drag gesture) to true
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
 Hammer.gestures.Swipe = {
@@ -1322,25 +1311,33 @@ Hammer.gestures.Tap = {
     doubletap_distance: 20,
     doubletap_interval: 300
   },
+
+  has_moved: false,
+
   handler : function tapGesture(ev, inst) {
-    if(ev.eventType == Hammer.EVENT_MOVE && !Hammer.detection.current.reachedTapMaxDistance) {
-      //Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
-      Hammer.detection.current.reachedTapMaxDistance = (ev.distance > inst.options.tap_max_distance);
-    } else if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
+    // reset moved state
+    if(ev.eventType == Hammer.EVENT_START) {
+      this.has_moved = false;
+    }
+
+    // Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
+    else if(ev.eventType == Hammer.EVENT_MOVE && !this.moved) {
+      this.has_moved = (ev.distance > inst.options.tap_max_distance);
+    }
+
+    else if(ev.eventType == Hammer.EVENT_END &&
+        ev.srcEvent.type != 'touchcancel' &&
+        ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
+
       // previous gesture, for the double tap since these are two different gesture detections
       var prev = Hammer.detection.previous,
+        since_prev = (ev.timeStamp - prev.lastEvent.timeStamp),
         did_doubletap = false;
-
-      // when the touchtime is higher then the max touch time
-      // or when the moving distance is too much
-      if(Hammer.detection.current.reachedTapMaxDistance || ev.deltaTime > inst.options.tap_max_touchtime) {
-        return;
-      }
 
       // check if double tap
       if(prev && prev.name == 'tap' &&
-        (ev.timeStamp - prev.lastEvent.timeStamp) < inst.options.doubletap_interval &&
-        ev.distance < inst.options.doubletap_distance) {
+          since_prev < inst.options.doubletap_interval &&
+          ev.distance < inst.options.doubletap_distance) {
         inst.trigger('doubletap', ev);
         did_doubletap = true;
       }
@@ -1374,7 +1371,8 @@ Hammer.gestures.Touch = {
     prevent_mouseevents: false
   },
   handler : function touchGesture(ev, inst) {
-    if(inst.options.prevent_mouseevents && ev.pointerType == Hammer.POINTER_MOUSE) {
+    if(inst.options.prevent_mouseevents &&
+        ev.pointerType == Hammer.POINTER_MOUSE) {
       ev.stopDetect();
       return;
     }
@@ -1400,15 +1398,19 @@ Hammer.gestures.Transform = {
   index    : 45,
   defaults : {
     // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-    transform_min_scale   : 0.01,
+    transform_min_scale      : 0.01,
     // rotation in degrees
-    transform_min_rotation: 1,
+    transform_min_rotation   : 1,
     // prevent default browser behavior when two touches are on the screen
     // but it makes the element a blocking element
     // when you are using the transform gesture, it is a good practice to set this true
-    transform_always_block: false
+    transform_always_block   : false,
+    // ensures that all touches occurred within the instance element
+    transform_within_instance: false
   },
+
   triggered: false,
+
   handler  : function transformGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
     // this means an other gesture is busy. now call dragend
@@ -1418,7 +1420,7 @@ Hammer.gestures.Transform = {
       return;
     }
 
-    // atleast multitouch
+    // at least multitouch
     if(ev.touches.length < 2) {
       return;
     }
@@ -1426,6 +1428,15 @@ Hammer.gestures.Transform = {
     // prevent default when two fingers are on the screen
     if(inst.options.transform_always_block) {
       ev.preventDefault();
+    }
+
+    // check if all touches occurred within the instance element
+    if(inst.options.transform_within_instance) {
+      for(var i=-1; ev.touches[++i];) {
+        if(!Hammer.utils.hasParent(ev.touches[i].target, inst.element)) {
+          return;
+        }
+      }
     }
 
     switch(ev.eventType) {
@@ -1479,20 +1490,19 @@ Hammer.gestures.Transform = {
   }
 };
 
-  // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
-  // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
-  if(typeof define == 'function' && define.amd) {
-    // define as an anonymous module
-    define(function() { return Hammer; });
-  }
-
-  // check for `exports` after `define` in case a build optimizer adds an `exports` object
-  else if(typeof module === 'object' && module.exports) {
-    module.exports = Hammer;
-  }
-
-  else {
-    window.Hammer = Hammer;
-  }
+// AMD export
+if(typeof define === 'function' && define.amd) {
+  define(function(){
+    return Hammer;
+  });
+}
+// commonjs export
+else if(typeof module === 'object' && module.exports) {
+  module.exports = Hammer;
+}
+// browser export
+else {
+  window.Hammer = Hammer;
+}
 
 })(window);

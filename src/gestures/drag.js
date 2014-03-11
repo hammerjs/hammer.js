@@ -81,7 +81,10 @@ Hammer.gestures.Drag = {
         }
 
         // lock drag to axis?
-        if(Hammer.detection.current.lastEvent.drag_locked_to_axis || (inst.options.drag_lock_to_axis && inst.options.drag_lock_min_distance <= ev.distance)) {
+        if(Hammer.detection.current.lastEvent.drag_locked_to_axis ||
+            ( inst.options.drag_lock_to_axis &&
+              inst.options.drag_lock_min_distance <= ev.distance
+            )) {
           ev.drag_locked_to_axis = true;
         }
         var last_direction = Hammer.detection.current.lastEvent.direction;
@@ -101,15 +104,15 @@ Hammer.gestures.Drag = {
           this.triggered = true;
         }
 
-        // trigger normal event
+        // trigger events
         inst.trigger(this.name, ev);
-
-        // direction event, like dragdown
         inst.trigger(this.name + ev.direction, ev);
 
+        var is_vertical = Hammer.utils.isVertical(ev.direction);
+
         // block the browser events
-        if((inst.options.drag_block_vertical && Hammer.utils.isVertical(ev.direction)) ||
-          (inst.options.drag_block_horizontal && !Hammer.utils.isVertical(ev.direction))) {
+        if((inst.options.drag_block_vertical && is_vertical) ||
+          (inst.options.drag_block_horizontal && !is_vertical)) {
           ev.preventDefault();
         }
         break;

@@ -132,7 +132,6 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   dispose: function dispose() {
-
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
       Hammer.utils.startDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);

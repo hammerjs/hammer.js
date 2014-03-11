@@ -13,25 +13,33 @@ Hammer.gestures.Tap = {
     doubletap_distance: 20,
     doubletap_interval: 300
   },
+
+  has_moved: false,
+
   handler : function tapGesture(ev, inst) {
-    if(ev.eventType == Hammer.EVENT_MOVE && !Hammer.detection.current.reachedTapMaxDistance) {
-      //Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
-      Hammer.detection.current.reachedTapMaxDistance = (ev.distance > inst.options.tap_max_distance);
-    } else if(ev.eventType == Hammer.EVENT_END && ev.srcEvent.type != 'touchcancel') {
+    // reset moved state
+    if(ev.eventType == Hammer.EVENT_START) {
+      this.has_moved = false;
+    }
+
+    // Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
+    else if(ev.eventType == Hammer.EVENT_MOVE && !this.moved) {
+      this.has_moved = (ev.distance > inst.options.tap_max_distance);
+    }
+
+    else if(ev.eventType == Hammer.EVENT_END &&
+        ev.srcEvent.type != 'touchcancel' &&
+        ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
+
       // previous gesture, for the double tap since these are two different gesture detections
       var prev = Hammer.detection.previous,
+        since_prev = (ev.timeStamp - prev.lastEvent.timeStamp),
         did_doubletap = false;
-
-      // when the touchtime is higher then the max touch time
-      // or when the moving distance is too much
-      if(Hammer.detection.current.reachedTapMaxDistance || ev.deltaTime > inst.options.tap_max_touchtime) {
-        return;
-      }
 
       // check if double tap
       if(prev && prev.name == 'tap' &&
-        (ev.timeStamp - prev.lastEvent.timeStamp) < inst.options.doubletap_interval &&
-        ev.distance < inst.options.doubletap_distance) {
+          since_prev < inst.options.doubletap_interval &&
+          ev.distance < inst.options.doubletap_distance) {
         inst.trigger('doubletap', ev);
         did_doubletap = true;
       }

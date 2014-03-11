@@ -6,13 +6,11 @@
  */
 var last_move_event = null;
 
-
 /**
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
 var enable_detect = false;
-
 
 /**
  * when touch events have been fired, this is true

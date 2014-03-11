@@ -125,16 +125,17 @@ Hammer.detection = {
       , interimAngle
       , interimDirection
       , velocity = this.current.velocity;
-  
+
     if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-  
-        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp, ev.center.pageX - lastVEv.center.pageX, ev.center.pageY - lastVEv.center.pageY);
+        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
+                                             ev.center.pageX - lastVEv.center.pageX,
+                                             ev.center.pageY - lastVEv.center.pageY);
         this.current.lastVEvent = ev;
-  
+
         if (velocity.x > 0 && velocity.y > 0) {
             this.current.velocity = velocity;
         }
-  
+
     } else if(this.current.velocity === false) {
         velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
         this.current.velocity = velocity;
@@ -150,8 +151,10 @@ Hammer.detection = {
       interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
     }
     else {
-      interimAngle = this.current.lastEvent && Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
-      interimDirection = this.current.lastEvent && Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
+      interimAngle = this.current.lastEvent &&
+        Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
+      interimDirection = this.current.lastEvent &&
+        Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
     }
 
     Hammer.utils.extend(ev, {

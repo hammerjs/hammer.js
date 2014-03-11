@@ -18,7 +18,9 @@ Hammer.gestures.Transform = {
     // ensures that all touches occurred within the instance element
     transform_within_instance: false
   },
+
   triggered: false,
+
   handler  : function transformGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
     // this means an other gesture is busy. now call dragend
@@ -40,14 +42,10 @@ Hammer.gestures.Transform = {
 
     // check if all touches occurred within the instance element
     if(inst.options.transform_within_instance) {
-      var inside = true;
-      Hammer.utils.each(ev.touches, function(touch) {
-        if(!Hammer.utils.hasParent(touch.target, inst.element)) {
-          inside = false;
+      for(var i=-1; ev.touches[++i];) {
+        if(!Hammer.utils.hasParent(ev.touches[i].target, inst.element)) {
+          return;
         }
-      });
-      if(!inside) {
-        return;
       }
     }
 

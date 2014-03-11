@@ -18,7 +18,8 @@ Hammer.gestures.Touch = {
     prevent_mouseevents: false
   },
   handler : function touchGesture(ev, inst) {
-    if(inst.options.prevent_mouseevents && ev.pointerType == Hammer.POINTER_MOUSE) {
+    if(inst.options.prevent_mouseevents &&
+        ev.pointerType == Hammer.POINTER_MOUSE) {
       ev.stopDetect();
       return;
     }

@@ -11,6 +11,7 @@ Hammer.gestures.Hold = {
     hold_threshold: 1
   },
   timer   : null,
+
   handler : function holdGesture(ev, inst) {
     switch(ev.eventType) {
       case Hammer.EVENT_START:

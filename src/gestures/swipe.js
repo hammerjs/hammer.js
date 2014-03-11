@@ -1,6 +1,7 @@
 /**
  * Swipe
  * triggers swipe events when the end velocity is above the threshold
+ * for best usage, set prevent_default (on the drag gesture) to true
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
 Hammer.gestures.Swipe = {

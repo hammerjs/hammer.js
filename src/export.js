@@ -4,12 +4,10 @@ if(typeof define === 'function' && define.amd) {
     return Hammer;
   });
 }
-
 // commonjs export
 else if(typeof module === 'object' && module.exports) {
   module.exports = Hammer;
 }
-
 // browser export
 else {
   window.Hammer = Hammer;
