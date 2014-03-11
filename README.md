@@ -11,6 +11,7 @@
 [__Looking for the jQuery plugin? It has his own repository now.__](https://github.com/EightMedia/jquery.hammer.js)
 
 ## Features
+- Under 3k minified and gzipped!
 - Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures
 - DOM Events
 - Debug plugins
