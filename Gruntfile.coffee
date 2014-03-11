@@ -68,7 +68,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat']
+        tasks: ['concat','uglify']
         options:
           interrupt: true
 
@@ -76,36 +76,12 @@ module.exports = (grunt) ->
     connect:
       server:
         options:
-          directory: "."
           hostname: "0.0.0.0"
-      
+          port: 8000
+
     # tests
     qunit:
       all: ['tests/**/*.html']
-
-    # saucelabs tests
-    'saucelabs-qunit':
-      all:
-        options:
-          username: 'hammerjs-ci'
-          key: '2ede6d02-65b3-4ba9-aec8-44a787af0c81'
-          build: process.env.TRAVIS_JOB_ID || 'dev'
-          concurrency: 3
-
-          urls: [
-            'http://0.0.0.0:8000/tests/utils.html',
-            'http://0.0.0.0:8000/tests/mouseevents.html',
-            'http://0.0.0.0:8000/tests/mousetouchevents.html',
-            'http://0.0.0.0:8000/tests/touchevents.html',
-            'http://0.0.0.0:8000/tests/pointerevents_mouse.html',
-            'http://0.0.0.0:8000/tests/pointerevents_touch.html'
-          ]
-          browsers: [
-            { browserName: 'chrome' }
-            { browserName: 'firefox' }
-            { browserName: 'internet explorer', platform: 'Windows 7', version: '9' }
-            { browserName: 'internet explorer', platform: 'Windows 8', version: '10'}
-          ]
 
 
   # Load tasks
@@ -115,7 +91,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
-  grunt.loadNpmTasks 'grunt-saucelabs'
 
 
   # Default task(s).

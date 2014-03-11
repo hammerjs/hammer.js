@@ -29,15 +29,14 @@
   "dependencies": {},
   "devDependencies": {
     "grunt": "0.4.x",
-    "grunt-contrib-connect": "0.5.x",
+    "grunt-contrib-connect": "0.7.x",
     "grunt-contrib-concat": "0.3.x",
-    "grunt-contrib-uglify": "0.2.x",
-    "grunt-contrib-jshint": "0.7.x",
+    "grunt-contrib-uglify": "0.4.x",
+    "grunt-contrib-jshint": "0.8.x",
     "grunt-contrib-watch": "0.5.x",
+    "grunt-contrib-qunit": "~0.3.0",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
-    "underscore": "1.5.x",
-    "grunt-saucelabs": "4.1.x",
-    "grunt-contrib-qunit": "~0.3.0"
+    "underscore": "1.5.x"
   },
   "main": "hammer.js",
   "engines": {
