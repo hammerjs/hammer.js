@@ -134,15 +134,15 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
-    var i;
+    var i, o;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);
     }
     // arrays
     else if(obj.length !== undefined) {
-      for(i=-1; obj[++i];) {
-        if (iterator.call(context, obj[i], i, obj) === false) {
+      for(i=-1; (o=obj[++i]);) {
+        if (iterator.call(context, o, i, obj) === false) {
           return;
         }
       }
@@ -299,32 +299,12 @@ Hammer.utils = {
 
 
   /**
-   * stop browser default behavior with css props
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   */
-  stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    return this.toggleDefaultBrowserBehavior(element, css_props, false);
-  },
-
-
-  /**
-   * reverts all changes made by 'stopDefaultBrowserBehavior'
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   */
-  startDefaultBrowserBehavior: function startDefaultBrowserBehavior(element, css_props) {
-    return this.toggleDefaultBrowserBehavior(element, css_props, true);
-  },
-
-
-  /**
-   * stop browser default behavior with css props
+   * toggle browser default behavior with css props
    * @param   {HtmlElement}   element
    * @param   {Object}        css_props
    * @param   {Boolean}       toggle
    */
-  toggleDefaultBrowserBehavior: function toggleDefaultBrowserBehavior(element, css_props, toggle) {
+  toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }
@@ -387,18 +367,18 @@ Hammer.Instance = function(element, options) {
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
-    Hammer.utils.stopDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
+    Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
   // start detection on touchstart
-  this._eventStartHandler = Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
+  this.eventStartHandler = Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
     if(self.enabled) {
       Hammer.detection.startDetect(self, ev);
     }
   });
 
   // keep a list of user event handlers which needs to be removed when calling 'dispose'
-  this._eventHandler = [];
+  this.eventHandlers = [];
 
   // return instance
   return this;
@@ -416,7 +396,7 @@ Hammer.Instance.prototype = {
     var gestures = gesture.split(' ');
     Hammer.utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
-      this._eventHandler.push({ gesture: gesture, handler: handler });
+      this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
     return this;
   },
@@ -429,20 +409,16 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   off: function offEvent(gesture, handler) {
-    var gestures = gesture.split(' ');
+    var gestures = gesture.split(' '),
+      i, eh;
     Hammer.utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 
       // remove the event handler from the internal list
-      var index = -1;
-      Hammer.utils.each(this._eventHandler, function(eventHandler, i) {
-        if (index === -1 && eventHandler.gesture === gesture && eventHandler.handler === handler) {
-          index = i;
+      for(i=-1; (eh=this.eventHandlers[++i]);) {
+        if(eh.gesture === gesture && eh.handler === handler) {
+          this.eventHandlers.splice(i, 1);
         }
-      }, this);
-
-      if (index > -1) {
-        this._eventHandler.splice(index, 1);
       }
     }, this);
     return this;
@@ -494,20 +470,23 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   dispose: function dispose() {
+    var i, eh;
+
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
-      Hammer.utils.startDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
+      Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
     }
 
     // unbind all custom event handlers
-    Hammer.utils.each(this._eventHandler, function(eventHandler) {
-      this.element.removeEventListener(eventHandler.gesture, eventHandler.handler, false);
-    }, this);
-    this._eventHandler.length = 0;
+    for(i=-1; (eh=this.eventHandlers[++i]);) {
+      this.element.removeEventListener(eh.gesture, eh.handler, false);
+    }
+    this.eventHandlers = [];
 
     // unbind the start event listener
-    Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this._eventStartHandler);
-    return this;
+    Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this.eventStartHandler);
+
+    return null;
   }
 };
 
@@ -571,32 +550,32 @@ Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    var fn = function bindDomOnTouch(ev) {
-      var sourceEventType = ev.type.toLowerCase();
+    var bindDomOnTouch = function(ev) {
+      var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
-      if(sourceEventType.match(/mouse/) && touch_triggered) {
+      if(srcEventType.match(/mouse/) && touch_triggered) {
         return;
       }
 
       // mousebutton must be down or a touch event
-      else if(sourceEventType.match(/touch/) ||   // touch events are always on screen
-        sourceEventType.match(/pointerdown/) || // pointerevents touch
-        (sourceEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
+      else if(srcEventType.match(/touch/) ||   // touch events are always on screen
+        srcEventType.match(/pointerdown/) || // pointerevents touch
+        (srcEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
         ) {
         enable_detect = true;
       }
 
       // mouse isn't pressed
-      else if(sourceEventType.match(/mouse/) && !ev.which) {
+      else if(srcEventType.match(/mouse/) && !ev.which) {
         enable_detect = false;
       }
 
 
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
-      if(sourceEventType.match(/touch|pointer/)) {
+      if(srcEventType.match(/touch|pointer/)) {
         touch_triggered = true;
       }
 
@@ -611,12 +590,12 @@ Hammer.event = {
           count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
         }
         // touch
-        else if(sourceEventType.match(/touch/)) {
+        else if(srcEventType.match(/touch/)) {
           count_touches = ev.touches.length;
         }
         // mouse
         else if(!touch_triggered) {
-          count_touches = sourceEventType.match(/up/) ? 0 : 1;
+          count_touches = srcEventType.match(/up/) ? 0 : 1;
         }
 
         // if we are in a end event, but when we remove one touch and
@@ -652,11 +631,11 @@ Hammer.event = {
       }
     };
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], fn);
+    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
 
     // return the bound function to be able to unbind it later
-    return fn;
-    },
+    return bindDomOnTouch;
+  },
 
 
   /**

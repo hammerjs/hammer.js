@@ -25,18 +25,18 @@ Hammer.Instance = function(element, options) {
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
-    Hammer.utils.stopDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
+    Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
   // start detection on touchstart
-  this._eventStartHandler = Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
+  this.eventStartHandler = Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
     if(self.enabled) {
       Hammer.detection.startDetect(self, ev);
     }
   });
 
   // keep a list of user event handlers which needs to be removed when calling 'dispose'
-  this._eventHandler = [];
+  this.eventHandlers = [];
 
   // return instance
   return this;
@@ -54,7 +54,7 @@ Hammer.Instance.prototype = {
     var gestures = gesture.split(' ');
     Hammer.utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
-      this._eventHandler.push({ gesture: gesture, handler: handler });
+      this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
     return this;
   },
@@ -67,20 +67,16 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   off: function offEvent(gesture, handler) {
-    var gestures = gesture.split(' ');
+    var gestures = gesture.split(' '),
+      i, eh;
     Hammer.utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 
       // remove the event handler from the internal list
-      var index = -1;
-      Hammer.utils.each(this._eventHandler, function(eventHandler, i) {
-        if (index === -1 && eventHandler.gesture === gesture && eventHandler.handler === handler) {
-          index = i;
+      for(i=-1; (eh=this.eventHandlers[++i]);) {
+        if(eh.gesture === gesture && eh.handler === handler) {
+          this.eventHandlers.splice(i, 1);
         }
-      }, this);
-
-      if (index > -1) {
-        this._eventHandler.splice(index, 1);
       }
     }, this);
     return this;
@@ -132,19 +128,22 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   dispose: function dispose() {
+    var i, eh;
+
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
-      Hammer.utils.startDefaultBrowserBehavior(this.element, this.options.stop_browser_behavior);
+      Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
     }
 
     // unbind all custom event handlers
-    Hammer.utils.each(this._eventHandler, function(eventHandler) {
-      this.element.removeEventListener(eventHandler.gesture, eventHandler.handler, false);
-    }, this);
-    this._eventHandler.length = 0;
+    for(i=-1; (eh=this.eventHandlers[++i]);) {
+      this.element.removeEventListener(eh.gesture, eh.handler, false);
+    }
+    this.eventHandlers = [];
 
     // unbind the start event listener
-    Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this._eventStartHandler);
-    return this;
+    Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this.eventStartHandler);
+
+    return null;
   }
 };

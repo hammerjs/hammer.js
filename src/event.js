@@ -57,32 +57,32 @@ Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    var fn = function bindDomOnTouch(ev) {
-      var sourceEventType = ev.type.toLowerCase();
+    var bindDomOnTouch = function(ev) {
+      var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
-      if(sourceEventType.match(/mouse/) && touch_triggered) {
+      if(srcEventType.match(/mouse/) && touch_triggered) {
         return;
       }
 
       // mousebutton must be down or a touch event
-      else if(sourceEventType.match(/touch/) ||   // touch events are always on screen
-        sourceEventType.match(/pointerdown/) || // pointerevents touch
-        (sourceEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
+      else if(srcEventType.match(/touch/) ||   // touch events are always on screen
+        srcEventType.match(/pointerdown/) || // pointerevents touch
+        (srcEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
         ) {
         enable_detect = true;
       }
 
       // mouse isn't pressed
-      else if(sourceEventType.match(/mouse/) && !ev.which) {
+      else if(srcEventType.match(/mouse/) && !ev.which) {
         enable_detect = false;
       }
 
 
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
-      if(sourceEventType.match(/touch|pointer/)) {
+      if(srcEventType.match(/touch|pointer/)) {
         touch_triggered = true;
       }
 
@@ -97,12 +97,12 @@ Hammer.event = {
           count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
         }
         // touch
-        else if(sourceEventType.match(/touch/)) {
+        else if(srcEventType.match(/touch/)) {
           count_touches = ev.touches.length;
         }
         // mouse
         else if(!touch_triggered) {
-          count_touches = sourceEventType.match(/up/) ? 0 : 1;
+          count_touches = srcEventType.match(/up/) ? 0 : 1;
         }
 
         // if we are in a end event, but when we remove one touch and
@@ -138,11 +138,11 @@ Hammer.event = {
       }
     };
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], fn);
+    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
 
     // return the bound function to be able to unbind it later
-    return fn;
-    },
+    return bindDomOnTouch;
+  },
 
 
   /**

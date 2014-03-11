@@ -24,15 +24,15 @@ Hammer.utils = {
    * @param iterator
    */
   each: function(obj, iterator, context) {
-    var i;
+    var i, o;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);
     }
     // arrays
     else if(obj.length !== undefined) {
-      for(i=-1; obj[++i];) {
-        if (iterator.call(context, obj[i], i, obj) === false) {
+      for(i=-1; (o=obj[++i]);) {
+        if (iterator.call(context, o, i, obj) === false) {
           return;
         }
       }
@@ -189,32 +189,12 @@ Hammer.utils = {
 
 
   /**
-   * stop browser default behavior with css props
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   */
-  stopDefaultBrowserBehavior: function stopDefaultBrowserBehavior(element, css_props) {
-    return this.toggleDefaultBrowserBehavior(element, css_props, false);
-  },
-
-
-  /**
-   * reverts all changes made by 'stopDefaultBrowserBehavior'
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   */
-  startDefaultBrowserBehavior: function startDefaultBrowserBehavior(element, css_props) {
-    return this.toggleDefaultBrowserBehavior(element, css_props, true);
-  },
-
-
-  /**
-   * stop browser default behavior with css props
+   * toggle browser default behavior with css props
    * @param   {HtmlElement}   element
    * @param   {Object}        css_props
    * @param   {Boolean}       toggle
    */
-  toggleDefaultBrowserBehavior: function toggleDefaultBrowserBehavior(element, css_props, toggle) {
+  toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }

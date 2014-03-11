@@ -34,7 +34,7 @@
     "grunt-contrib-uglify": "0.4.x",
     "grunt-contrib-jshint": "0.8.x",
     "grunt-contrib-watch": "0.5.x",
-    "grunt-contrib-qunit": "~0.3.0",
+    "grunt-contrib-qunit": "0.4.x",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
     "underscore": "1.5.x"
   },
