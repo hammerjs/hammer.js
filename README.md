@@ -16,10 +16,11 @@
 - Debug plugins
 - Custom gestures
 - Chainable instance methods
-- AMD support (RequireJS)
+- AMD/CommonJS support
 - Unit tests
 - Option to disable mouse support, so only for touch and pen input.
 - Sourcemaps
+- Highly configurable
 - [jQuery plugin available here](https://github.com/EightMedia/jquery.hammer.js)
 
 ## Getting Started
