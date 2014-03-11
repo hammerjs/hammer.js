@@ -957,9 +957,9 @@ Hammer.detection = {
       , velocity = this.current.velocity;
 
     if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
-                                             ev.center.pageX - lastVEv.center.pageX,
-                                             ev.center.pageY - lastVEv.center.pageY);
+        velocity = Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
+                                            ev.center.pageX - lastVEv.center.pageX,
+                                            ev.center.pageY - lastVEv.center.pageY);
         this.current.lastVEvent = ev;
 
         if (velocity.x > 0 && velocity.y > 0) {
@@ -976,7 +976,7 @@ Hammer.detection = {
     // because the previous event has exactly the same coordinates
     // so for end events, take the previous values of interimDirection & interimAngle
     // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType === 'end') {
+    if(ev.eventType == 'end') {
       interimAngle = this.current.lastEvent && this.current.lastEvent.interimAngle;
       interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
     }
@@ -1453,7 +1453,7 @@ Hammer.gestures.Transform = {
         // trigger pinch event
         if(scale_threshold > inst.options.transform_min_scale) {
           inst.trigger('pinch', ev);
-          inst.trigger('pinch' + ((ev.scale < 1) ? 'in' : 'out'), ev);
+          inst.trigger('pinch' + (ev.scale<1 ? 'in' : 'out'), ev);
         }
         break;
 
@@ -1470,13 +1470,13 @@ Hammer.gestures.Transform = {
 };
 
 // AMD export
-if(typeof define === 'function' && define.amd) {
+if(typeof define == 'function' && define.amd) {
   define(function(){
     return Hammer;
   });
 }
 // commonjs export
-else if(typeof module === 'object' && module.exports) {
+else if(typeof module == 'object' && module.exports) {
   module.exports = Hammer;
 }
 // browser export

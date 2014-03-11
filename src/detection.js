@@ -127,9 +127,9 @@ Hammer.detection = {
       , velocity = this.current.velocity;
 
     if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-        velocity =  Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
-                                             ev.center.pageX - lastVEv.center.pageX,
-                                             ev.center.pageY - lastVEv.center.pageY);
+        velocity = Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
+                                            ev.center.pageX - lastVEv.center.pageX,
+                                            ev.center.pageY - lastVEv.center.pageY);
         this.current.lastVEvent = ev;
 
         if (velocity.x > 0 && velocity.y > 0) {
@@ -146,7 +146,7 @@ Hammer.detection = {
     // because the previous event has exactly the same coordinates
     // so for end events, take the previous values of interimDirection & interimAngle
     // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType === 'end') {
+    if(ev.eventType == 'end') {
       interimAngle = this.current.lastEvent && this.current.lastEvent.interimAngle;
       interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
     }

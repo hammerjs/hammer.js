@@ -84,7 +84,7 @@ Hammer.gestures.Transform = {
         // trigger pinch event
         if(scale_threshold > inst.options.transform_min_scale) {
           inst.trigger('pinch', ev);
-          inst.trigger('pinch' + ((ev.scale < 1) ? 'in' : 'out'), ev);
+          inst.trigger('pinch' + (ev.scale<1 ? 'in' : 'out'), ev);
         }
         break;
 
