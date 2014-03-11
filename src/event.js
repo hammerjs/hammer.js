@@ -121,7 +121,10 @@ Hammer.event = {
         }
 
         // trigger the handler
-        handler.call(Hammer.detection, self.collectEventData(element, eventType, self.getTouchList(last_move_event, eventType), ev));
+        handler.call(Hammer.detection,
+                     self.collectEventData(element, eventType,
+                                           self.getTouchList(last_move_event, eventType),
+                                           ev));
 
         // remove pointerevent from list
         if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {

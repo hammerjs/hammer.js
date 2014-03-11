@@ -614,7 +614,10 @@ Hammer.event = {
         }
 
         // trigger the handler
-        handler.call(Hammer.detection, self.collectEventData(element, eventType, self.getTouchList(last_move_event, eventType), ev));
+        handler.call(Hammer.detection,
+                     self.collectEventData(element, eventType,
+                                           self.getTouchList(last_move_event, eventType),
+                                           ev));
 
         // remove pointerevent from list
         if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
@@ -976,7 +979,7 @@ Hammer.detection = {
     // because the previous event has exactly the same coordinates
     // so for end events, take the previous values of interimDirection & interimAngle
     // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType == 'end') {
+    if(ev.eventType == Hammer.EVENT_END) {
       interimAngle = this.current.lastEvent && this.current.lastEvent.interimAngle;
       interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
     }
