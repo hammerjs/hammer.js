@@ -16,7 +16,7 @@ The object structure of a gesture:
   defaults: {
 	mygesture_option: true
   }
-  handler: function(type, ev, inst) {
+  handler: function(ev, inst) {
 	// trigger gesture event
 	inst.trigger(this.name, ev);
   }
