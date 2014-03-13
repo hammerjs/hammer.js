@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.7 - 2014-03-11
+/*! Hammer.JS - v1.0.7 - 2014-03-13
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1290,6 +1290,8 @@ Hammer.gestures.Tap = {
   has_moved: false,
 
   handler : function tapGesture(ev, inst) {
+    var prev, since_prev, did_doubletap;
+
     // reset moved state
     if(ev.eventType == Hammer.EVENT_START) {
       this.has_moved = false;
@@ -1305,13 +1307,13 @@ Hammer.gestures.Tap = {
         ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
 
       // previous gesture, for the double tap since these are two different gesture detections
-      var prev = Hammer.detection.previous,
-        since_prev = (ev.timeStamp - prev.lastEvent.timeStamp),
-        did_doubletap = false;
+      prev = Hammer.detection.previous;
+      since_prev = prev && ev.timeStamp - prev.lastEvent.timeStamp;
+      did_doubletap = false;
 
       // check if double tap
       if(prev && prev.name == 'tap' &&
-          since_prev < inst.options.doubletap_interval &&
+          (since_prev && since_prev < inst.options.doubletap_interval) &&
           ev.distance < inst.options.doubletap_distance) {
         inst.trigger('doubletap', ev);
         did_doubletap = true;
