@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.8 - 2014-03-13
+/*! Hammer.JS - v1.0.8 - 2014-03-18
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -96,7 +96,7 @@ function setup() {
   Hammer.event.determineEventTypes();
 
   // Register all gestures inside Hammer.gestures
-  Hammer.utils.each(Hammer.gestures, function(gesture){
+  utils.each(Hammer.gestures, function(gesture){
     Hammer.detection.register(gesture);
   });
 
@@ -108,7 +108,7 @@ function setup() {
   Hammer.READY = true;
 }
 
-Hammer.utils = {
+var utils = Hammer.utils = {
   /**
    * extend method,
    * also used for cloning when dest is an empty object
@@ -184,7 +184,7 @@ Hammer.utils = {
   getCenter: function getCenter(touches) {
     var valuesX = [], valuesY = [];
 
-    Hammer.utils.each(touches, function(touch) {
+    utils.each(touches, function(touch) {
       // I prefer clientX because it ignore the scrolling position
       valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX);
       valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY);
@@ -310,8 +310,8 @@ Hammer.utils = {
     }
 
     // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(value, prop) {
+    utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+      utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
@@ -356,13 +356,13 @@ Hammer.Instance = function(element, options) {
   this.enabled = true;
 
   // merge options
-  this.options = Hammer.utils.extend(
-    Hammer.utils.extend({}, Hammer.defaults),
+  this.options = utils.extend(
+    utils.extend({}, Hammer.defaults),
     options || {});
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
-    Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
+    utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
   // start detection on touchstart
@@ -389,7 +389,7 @@ Hammer.Instance.prototype = {
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    Hammer.utils.each(gestures, function(gesture) {
+    utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
@@ -406,7 +406,7 @@ Hammer.Instance.prototype = {
   off: function offEvent(gesture, handler) {
     var gestures = gesture.split(' '),
       i, eh;
-    Hammer.utils.each(gestures, function(gesture) {
+    utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 
       // remove the event handler from the internal list
@@ -440,7 +440,7 @@ Hammer.Instance.prototype = {
     // trigger on the target if it is in the instance element,
     // this is for event delegation tricks
     var element = this.element;
-    if(Hammer.utils.hasParent(eventData.target, element)) {
+    if(utils.hasParent(eventData.target, element)) {
       element = eventData.target;
     }
 
@@ -469,7 +469,7 @@ Hammer.Instance.prototype = {
 
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
-      Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
+      utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
     }
 
     // unbind all custom event handlers
@@ -516,7 +516,7 @@ Hammer.event = {
    */
   bindDom: function(element, type, handler) {
     var types = type.split(' ');
-    Hammer.utils.each(types, function(type){
+    utils.each(types, function(type){
       element.addEventListener(type, handler, false);
     });
   },
@@ -530,7 +530,7 @@ Hammer.event = {
    */
   unbindDom: function(element, type, handler) {
     var types = type.split(' ');
-    Hammer.utils.each(types, function(type){
+    utils.each(types, function(type){
       element.removeEventListener(type, handler, false);
     });
   },
@@ -706,7 +706,7 @@ Hammer.event = {
     }
 
     return {
-      center     : Hammer.utils.getCenter(touches),
+      center     : utils.getCenter(touches),
       timeStamp  : new Date().getTime(),
       target     : ev.target,
       touches    : touches,
@@ -763,7 +763,7 @@ Hammer.PointerEvent = {
     var touchlist = [];
 
     // we can use forEach since pointerEvents only is in IE10
-    Hammer.utils.each(self.pointers, function(pointer){
+    utils.each(self.pointers, function(pointer){
       touchlist.push(pointer);
     });
 
@@ -855,12 +855,12 @@ Hammer.detection = {
     this.stopped = false;
 
     this.current = {
-      inst      : inst, // reference to HammerInstance we're working for
-      startEvent: Hammer.utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent : false, // last eventData
-      lastVEvent: false, // last eventData for velocity.
-      velocity  : false, // current velocity
-      name      : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
+      inst              : inst, // reference to HammerInstance we're working for
+      startEvent        : utils.extend({}, eventData), // start eventData for distances, timing etc
+      lastEvent         : false, // last eventData
+      lastVelocityEvent : false, // last eventData for velocity.
+      velocity          : false, // current velocity
+      name              : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
     };
 
     this.detect(eventData);
@@ -883,7 +883,7 @@ Hammer.detection = {
     var inst_options = this.current.inst.options;
 
     // call Hammer.gesture handlers
-    Hammer.utils.each(this.gestures, function(gesture) {
+    utils.each(this.gestures, function(gesture) {
       // only when the instance options have enabled this gesture
       if(!this.stopped && inst_options[gesture.name] !== false) {
         // if a handler returns false, we stop with the detection
@@ -916,7 +916,7 @@ Hammer.detection = {
   stopDetect: function stopDetect() {
     // clone current data to the store as the previous gesture
     // used for the double tap gesture, since this is an other gesture detect session
-    this.previous = Hammer.utils.extend({}, this.current);
+    this.previous = utils.extend({}, this.current);
 
     // reset the current
     this.current = null;
@@ -932,18 +932,18 @@ Hammer.detection = {
    * @returns {Object}   ev
    */
   extendEventData: function extendEventData(ev) {
-    var startEv = this.current.startEvent,
-        lastVEv = this.current.lastVEvent;
+    var cur = this.current,
+      startEv = cur.startEvent;
 
     // if the touches change, set the new touches over the startEvent touches
     // this because touchevents don't have all the touches on touchstart, or the
     // user must place his fingers at the EXACT same time on the screen, which is not realistic
     // but, sometimes it happens that both fingers are touching at the EXACT same time
-    if(startEv && (ev.touches.length != startEv.touches.length || ev.touches === startEv.touches)) {
+    if(ev.touches.length != startEv.touches.length || ev.touches === startEv.touches) {
       // extend 1 level deep to get the touchlist with the touch objects
       startEv.touches = [];
-      Hammer.utils.each(ev.touches, function(touch) {
-        startEv.touches.push(Hammer.utils.extend({}, touch));
+      utils.each(ev.touches, function(touch) {
+        startEv.touches.push(utils.extend({}, touch));
       });
     }
 
@@ -952,22 +952,23 @@ Hammer.detection = {
       , delta_y = ev.center.pageY - startEv.center.pageY
       , interimAngle
       , interimDirection
-      , velocity = this.current.velocity;
+      , velocityEv = cur.lastVelocityEvent
+      , velocity = cur.velocity;
 
-    if (lastVEv !== false && ev.timeStamp - lastVEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-        velocity = Hammer.utils.getVelocity(ev.timeStamp - lastVEv.timeStamp,
-                                            ev.center.pageX - lastVEv.center.pageX,
-                                            ev.center.pageY - lastVEv.center.pageY);
-        this.current.lastVEvent = ev;
+    // calculate velocity every x ms
+    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+        velocity = utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
+                                            ev.center.pageX - velocityEv.center.pageX,
+                                            ev.center.pageY - velocityEv.center.pageY);
 
-        if (velocity.x > 0 && velocity.y > 0) {
-            this.current.velocity = velocity;
-        }
+        cur.lastVelocityEvent = ev;
+        cur.velocity = velocity;
+    }
+    else if(!cur.velocity) {
+        velocity = utils.getVelocity(delta_time, delta_x, delta_y);
 
-    } else if(this.current.velocity === false) {
-        velocity = Hammer.utils.getVelocity(delta_time, delta_x, delta_y);
-        this.current.velocity = velocity;
-        this.current.lastVEvent = ev;
+        cur.lastVelocityEvent = ev;
+        cur.velocity = velocity;
     }
 
     // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
@@ -975,17 +976,17 @@ Hammer.detection = {
     // so for end events, take the previous values of interimDirection & interimAngle
     // instead of recalculating them and getting a spurious '0'
     if(ev.eventType == Hammer.EVENT_END) {
-      interimAngle = this.current.lastEvent && this.current.lastEvent.interimAngle;
-      interimDirection = this.current.lastEvent && this.current.lastEvent.interimDirection;
+      interimAngle = cur.lastEvent && cur.lastEvent.interimAngle;
+      interimDirection = cur.lastEvent && cur.lastEvent.interimDirection;
     }
     else {
-      interimAngle = this.current.lastEvent &&
-        Hammer.utils.getAngle(this.current.lastEvent.center, ev.center);
-      interimDirection = this.current.lastEvent &&
-        Hammer.utils.getDirection(this.current.lastEvent.center, ev.center);
+      interimAngle = cur.lastEvent &&
+        utils.getAngle(cur.lastEvent.center, ev.center);
+      interimDirection = cur.lastEvent &&
+        utils.getDirection(cur.lastEvent.center, ev.center);
     }
 
-    Hammer.utils.extend(ev, {
+    utils.extend(ev, {
       deltaTime: delta_time,
 
       deltaX: delta_x,
@@ -994,16 +995,16 @@ Hammer.detection = {
       velocityX: velocity.x,
       velocityY: velocity.y,
 
-      distance: Hammer.utils.getDistance(startEv.center, ev.center),
+      distance: utils.getDistance(startEv.center, ev.center),
 
-      angle: Hammer.utils.getAngle(startEv.center, ev.center),
+      angle: utils.getAngle(startEv.center, ev.center),
       interimAngle: interimAngle,
 
-      direction: Hammer.utils.getDirection(startEv.center, ev.center),
+      direction: utils.getDirection(startEv.center, ev.center),
       interimDirection: interimDirection,
 
-      scale: Hammer.utils.getScale(startEv.touches, ev.touches),
-      rotation: Hammer.utils.getRotation(startEv.touches, ev.touches),
+      scale: utils.getScale(startEv.touches, ev.touches),
+      rotation: utils.getRotation(startEv.touches, ev.touches),
 
       startEvent: startEv
     });
@@ -1025,7 +1026,7 @@ Hammer.detection = {
     }
 
     // extend Hammer default options with the Hammer.gesture options
-    Hammer.utils.extend(Hammer.defaults, options, true);
+    utils.extend(Hammer.defaults, options, true);
 
     // set its index
     gesture.index = gesture.index || 1000;
@@ -1137,7 +1138,7 @@ Hammer.gestures.Drag = {
         var last_direction = Hammer.detection.current.lastEvent.direction;
         if(ev.drag_locked_to_axis && last_direction !== ev.direction) {
           // keep direction on the axis that the drag gesture started on
-          if(Hammer.utils.isVertical(last_direction)) {
+          if(utils.isVertical(last_direction)) {
             ev.direction = (ev.deltaY < 0) ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
           }
           else {
@@ -1155,7 +1156,7 @@ Hammer.gestures.Drag = {
         inst.trigger(this.name, ev);
         inst.trigger(this.name + ev.direction, ev);
 
-        var is_vertical = Hammer.utils.isVertical(ev.direction);
+        var is_vertical = utils.isVertical(ev.direction);
 
         // block the browser events
         if((inst.options.drag_block_vertical && is_vertical) ||
@@ -1308,7 +1309,7 @@ Hammer.gestures.Tap = {
 
       // previous gesture, for the double tap since these are two different gesture detections
       prev = Hammer.detection.previous;
-      since_prev = prev && ev.timeStamp - prev.lastEvent.timeStamp;
+      since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
       did_doubletap = false;
 
       // check if double tap
@@ -1410,7 +1411,7 @@ Hammer.gestures.Transform = {
     // check if all touches occurred within the instance element
     if(inst.options.transform_within_instance) {
       for(var i=-1; ev.touches[++i];) {
-        if(!Hammer.utils.hasParent(ev.touches[i].target, inst.element)) {
+        if(!utils.hasParent(ev.touches[i].target, inst.element)) {
           return;
         }
       }
