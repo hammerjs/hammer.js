@@ -1,5 +1,4 @@
-# Hammer.js
-[![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
+# Hammer.js [![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
 
 ### A javascript library for multi-touch gestures
 
@@ -8,11 +7,9 @@
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
 
-[__Looking for the jQuery plugin? It has his own repository now.__](https://github.com/EightMedia/jquery.hammer.js)
-
 ## Features
 - Under 3kb minified and gzipped!
-- Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures
+- [Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures](http://rawgithub.com/EightMedia/hammer.js/master/examples/events.html)
 - DOM Events
 - Debug plugins
 - Custom gestures
