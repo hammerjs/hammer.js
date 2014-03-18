@@ -4,7 +4,8 @@
   "description": "A javascript library for multi-touch gestures",
   "version": "1.0.9",
   "homepage": "http://eightmedia.github.com/hammer.js",
-  "licenses": [{
+  "licenses": [
+    {
       "type": "MIT",
       "url": "https://github.com/eightmedia/hammer.js/blob/master/LICENSE"
     }
@@ -34,7 +35,8 @@
     "grunt-contrib-watch": "0.6.x",
     "grunt-contrib-qunit": "0.4.x",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
-    "underscore": "1.6.x"
+    "underscore": "1.6.x",
+    "grunt-string-replace": "^0.2.7"
   },
   "main": "hammer.js",
   "engines": {

@@ -19,6 +19,8 @@ var Hammer = function(element, options) {
   return new Hammer.Instance(element, options || {});
 };
 
+Hammer.VERSION = '1.0.9';
+
 // default settings
 Hammer.defaults = {
   // add styles and attributes to the element to prevent the browser from doing

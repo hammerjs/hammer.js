@@ -10,6 +10,8 @@ var Hammer = function(element, options) {
   return new Hammer.Instance(element, options || {});
 };
 
+Hammer.VERSION = '{{PKG_VERSION}}';
+
 // default settings
 Hammer.defaults = {
   // add styles and attributes to the element to prevent the browser from doing
