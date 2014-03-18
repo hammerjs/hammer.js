@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.8 - 2014-03-18
+/*! Hammer.JS - v1.0.8dev - 2014-03-18
  * http://eightmedia.github.com/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
