@@ -9,7 +9,7 @@
 
 ## Features
 - Under 3kb minified and gzipped!
-- Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures
+- [Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures](http://rawgithub.com/EightMedia/hammer.js/master/examples/events.html)
 - DOM Events
 - Debug plugins
 - Custom gestures
