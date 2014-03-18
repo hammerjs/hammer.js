@@ -35,7 +35,7 @@ Hammer.gestures.Tap = {
 
       // previous gesture, for the double tap since these are two different gesture detections
       prev = Hammer.detection.previous;
-      since_prev = prev && ev.timeStamp - prev.lastEvent.timeStamp;
+      since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
       did_doubletap = false;
 
       // check if double tap
