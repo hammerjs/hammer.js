@@ -1,4 +1,4 @@
-Hammer.utils = {
+var utils = Hammer.utils = {
   /**
    * extend method,
    * also used for cloning when dest is an empty object
@@ -74,7 +74,7 @@ Hammer.utils = {
   getCenter: function getCenter(touches) {
     var valuesX = [], valuesY = [];
 
-    Hammer.utils.each(touches, function(touch) {
+    utils.each(touches, function(touch) {
       // I prefer clientX because it ignore the scrolling position
       valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX);
       valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY);
@@ -200,8 +200,8 @@ Hammer.utils = {
     }
 
     // with css properties for modern browsers
-    Hammer.utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      Hammer.utils.each(css_props, function(value, prop) {
+    utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+      utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);

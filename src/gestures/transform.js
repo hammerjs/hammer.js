@@ -43,7 +43,7 @@ Hammer.gestures.Transform = {
     // check if all touches occurred within the instance element
     if(inst.options.transform_within_instance) {
       for(var i=-1; ev.touches[++i];) {
-        if(!Hammer.utils.hasParent(ev.touches[i].target, inst.element)) {
+        if(!utils.hasParent(ev.touches[i].target, inst.element)) {
           return;
         }
       }

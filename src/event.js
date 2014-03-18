@@ -28,7 +28,7 @@ Hammer.event = {
    */
   bindDom: function(element, type, handler) {
     var types = type.split(' ');
-    Hammer.utils.each(types, function(type){
+    utils.each(types, function(type){
       element.addEventListener(type, handler, false);
     });
   },
@@ -42,7 +42,7 @@ Hammer.event = {
    */
   unbindDom: function(element, type, handler) {
     var types = type.split(' ');
-    Hammer.utils.each(types, function(type){
+    utils.each(types, function(type){
       element.removeEventListener(type, handler, false);
     });
   },
@@ -218,7 +218,7 @@ Hammer.event = {
     }
 
     return {
-      center     : Hammer.utils.getCenter(touches),
+      center     : utils.getCenter(touches),
       timeStamp  : new Date().getTime(),
       target     : ev.target,
       touches    : touches,

@@ -19,13 +19,13 @@ Hammer.Instance = function(element, options) {
   this.enabled = true;
 
   // merge options
-  this.options = Hammer.utils.extend(
-    Hammer.utils.extend({}, Hammer.defaults),
+  this.options = utils.extend(
+    utils.extend({}, Hammer.defaults),
     options || {});
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
-    Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
+    utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
   // start detection on touchstart
@@ -52,7 +52,7 @@ Hammer.Instance.prototype = {
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    Hammer.utils.each(gestures, function(gesture) {
+    utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
@@ -69,7 +69,7 @@ Hammer.Instance.prototype = {
   off: function offEvent(gesture, handler) {
     var gestures = gesture.split(' '),
       i, eh;
-    Hammer.utils.each(gestures, function(gesture) {
+    utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 
       // remove the event handler from the internal list
@@ -103,7 +103,7 @@ Hammer.Instance.prototype = {
     // trigger on the target if it is in the instance element,
     // this is for event delegation tricks
     var element = this.element;
-    if(Hammer.utils.hasParent(eventData.target, element)) {
+    if(utils.hasParent(eventData.target, element)) {
       element = eventData.target;
     }
 
@@ -132,7 +132,7 @@ Hammer.Instance.prototype = {
 
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
-      Hammer.utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
+      utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
     }
 
     // unbind all custom event handlers

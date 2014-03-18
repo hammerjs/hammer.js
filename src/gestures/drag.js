@@ -90,7 +90,7 @@ Hammer.gestures.Drag = {
         var last_direction = Hammer.detection.current.lastEvent.direction;
         if(ev.drag_locked_to_axis && last_direction !== ev.direction) {
           // keep direction on the axis that the drag gesture started on
-          if(Hammer.utils.isVertical(last_direction)) {
+          if(utils.isVertical(last_direction)) {
             ev.direction = (ev.deltaY < 0) ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
           }
           else {
@@ -108,7 +108,7 @@ Hammer.gestures.Drag = {
         inst.trigger(this.name, ev);
         inst.trigger(this.name + ev.direction, ev);
 
-        var is_vertical = Hammer.utils.isVertical(ev.direction);
+        var is_vertical = utils.isVertical(ev.direction);
 
         // block the browser events
         if((inst.options.drag_block_vertical && is_vertical) ||

@@ -13,7 +13,7 @@ function setup() {
   Hammer.event.determineEventTypes();
 
   // Register all gestures inside Hammer.gestures
-  Hammer.utils.each(Hammer.gestures, function(gesture){
+  utils.each(Hammer.gestures, function(gesture){
     Hammer.detection.register(gesture);
   });
 

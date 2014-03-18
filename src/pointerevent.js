@@ -14,7 +14,7 @@ Hammer.PointerEvent = {
     var touchlist = [];
 
     // we can use forEach since pointerEvents only is in IE10
-    Hammer.utils.each(self.pointers, function(pointer){
+    utils.each(self.pointers, function(pointer){
       touchlist.push(pointer);
     });
 
