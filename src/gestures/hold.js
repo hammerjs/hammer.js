@@ -14,30 +14,30 @@ Hammer.gestures.Hold = {
 
   handler : function holdGesture(ev, inst) {
     switch(ev.eventType) {
-      case Hammer.EVENT_START:
+      case EVENT_START:
         // clear any running timers
         clearTimeout(this.timer);
 
         // set the gesture so we can check in the timeout if it still is
-        Hammer.detection.current.name = this.name;
+        Detection.current.name = this.name;
 
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
         this.timer = setTimeout(function() {
-          if(Hammer.detection.current.name == 'hold') {
+          if(Detection.current.name == 'hold') {
             inst.trigger('hold', ev);
           }
         }, inst.options.hold_timeout);
         break;
 
       // when you move or end we clear the timer
-      case Hammer.EVENT_MOVE:
+      case EVENT_MOVE:
         if(ev.distance > inst.options.hold_threshold) {
           clearTimeout(this.timer);
         }
         break;
 
-      case Hammer.EVENT_END:
+      case EVENT_END:
         clearTimeout(this.timer);
         break;
     }

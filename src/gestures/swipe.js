@@ -13,7 +13,7 @@ Hammer.gestures.Swipe = {
     swipe_velocity   : 0.7
   },
   handler : function swipeGesture(ev, inst) {
-    if(ev.eventType == Hammer.EVENT_END) {
+    if(ev.eventType == EVENT_END) {
       // max touches
       if(ev.touches.length < inst.options.swipe_min_touches ||
         ev.touches.length > inst.options.swipe_max_touches) {

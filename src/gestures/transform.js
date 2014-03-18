@@ -24,7 +24,7 @@ Hammer.gestures.Transform = {
   handler  : function transformGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
     // this means an other gesture is busy. now call dragend
-    if(Hammer.detection.current.name != this.name && this.triggered) {
+    if(Detection.current.name != this.name && this.triggered) {
       inst.trigger(this.name + 'end', ev);
       this.triggered = false;
       return;
@@ -43,18 +43,18 @@ Hammer.gestures.Transform = {
     // check if all touches occurred within the instance element
     if(inst.options.transform_within_instance) {
       for(var i=-1; ev.touches[++i];) {
-        if(!utils.hasParent(ev.touches[i].target, inst.element)) {
+        if(!Utils.hasParent(ev.touches[i].target, inst.element)) {
           return;
         }
       }
     }
 
     switch(ev.eventType) {
-      case Hammer.EVENT_START:
+      case EVENT_START:
         this.triggered = false;
         break;
 
-      case Hammer.EVENT_MOVE:
+      case EVENT_MOVE:
         var scale_threshold = Math.abs(1 - ev.scale);
         var rotation_threshold = Math.abs(ev.rotation);
 
@@ -66,7 +66,7 @@ Hammer.gestures.Transform = {
         }
 
         // we are transforming!
-        Hammer.detection.current.name = this.name;
+        Detection.current.name = this.name;
 
         // first time, trigger dragstart event
         if(!this.triggered) {
@@ -88,7 +88,7 @@ Hammer.gestures.Transform = {
         }
         break;
 
-      case Hammer.EVENT_END:
+      case EVENT_END:
         // trigger dragend
         if(this.triggered) {
           inst.trigger(this.name + 'end', ev);

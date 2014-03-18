@@ -10,16 +10,16 @@ function setup() {
   }
 
   // find what eventtypes we add listeners to
-  Hammer.event.determineEventTypes();
+  Event.determineEventTypes();
 
   // Register all gestures inside Hammer.gestures
-  utils.each(Hammer.gestures, function(gesture){
-    Hammer.detection.register(gesture);
+  Utils.each(Hammer.gestures, function(gesture){
+    Detection.register(gesture);
   });
 
   // Add touch events on the document
-  Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_MOVE, Hammer.detection.detect);
-  Hammer.event.onTouch(Hammer.DOCUMENT, Hammer.EVENT_END, Hammer.detection.detect);
+  Event.onTouch(Hammer.DOCUMENT, EVENT_MOVE, Detection.detect);
+  Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
 
   // Hammer is ready...!
   Hammer.READY = true;

@@ -7,7 +7,7 @@ Hammer.gestures.Release = {
   name   : 'release',
   index  : Infinity,
   handler: function releaseGesture(ev, inst) {
-    if(ev.eventType == Hammer.EVENT_END) {
+    if(ev.eventType == EVENT_END) {
       inst.trigger(this.name, ev);
     }
   }

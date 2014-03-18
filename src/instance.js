@@ -19,19 +19,19 @@ Hammer.Instance = function(element, options) {
   this.enabled = true;
 
   // merge options
-  this.options = utils.extend(
-    utils.extend({}, Hammer.defaults),
+  this.options = Utils.extend(
+    Utils.extend({}, Hammer.defaults),
     options || {});
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
-    utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
+    Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
   // start detection on touchstart
-  this.eventStartHandler = Hammer.event.onTouch(element, Hammer.EVENT_START, function(ev) {
+  this.eventStartHandler = Event.onTouch(element, EVENT_START, function(ev) {
     if(self.enabled) {
-      Hammer.detection.startDetect(self, ev);
+      Detection.startDetect(self, ev);
     }
   });
 
@@ -52,7 +52,7 @@ Hammer.Instance.prototype = {
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    utils.each(gestures, function(gesture) {
+    Utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
@@ -69,7 +69,7 @@ Hammer.Instance.prototype = {
   off: function offEvent(gesture, handler) {
     var gestures = gesture.split(' '),
       i, eh;
-    utils.each(gestures, function(gesture) {
+    Utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 
       // remove the event handler from the internal list
@@ -103,7 +103,7 @@ Hammer.Instance.prototype = {
     // trigger on the target if it is in the instance element,
     // this is for event delegation tricks
     var element = this.element;
-    if(utils.hasParent(eventData.target, element)) {
+    if(Utils.hasParent(eventData.target, element)) {
       element = eventData.target;
     }
 
@@ -132,7 +132,7 @@ Hammer.Instance.prototype = {
 
     // undo all changes made by stop_browser_behavior
     if(this.options.stop_browser_behavior) {
-      utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
+      Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
     }
 
     // unbind all custom event handlers
@@ -142,7 +142,7 @@ Hammer.Instance.prototype = {
     this.eventHandlers = [];
 
     // unbind the start event listener
-    Hammer.event.unbindDom(this.element, Hammer.EVENT_TYPES[Hammer.EVENT_START], this.eventStartHandler);
+    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
   }

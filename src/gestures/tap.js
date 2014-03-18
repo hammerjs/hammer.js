@@ -20,21 +20,21 @@ Hammer.gestures.Tap = {
     var prev, since_prev, did_doubletap;
 
     // reset moved state
-    if(ev.eventType == Hammer.EVENT_START) {
+    if(ev.eventType == EVENT_START) {
       this.has_moved = false;
     }
 
     // Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
-    else if(ev.eventType == Hammer.EVENT_MOVE && !this.moved) {
+    else if(ev.eventType == EVENT_MOVE && !this.moved) {
       this.has_moved = (ev.distance > inst.options.tap_max_distance);
     }
 
-    else if(ev.eventType == Hammer.EVENT_END &&
+    else if(ev.eventType == EVENT_END &&
         ev.srcEvent.type != 'touchcancel' &&
         ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
 
       // previous gesture, for the double tap since these are two different gesture detections
-      prev = Hammer.detection.previous;
+      prev = Detection.previous;
       since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
       did_doubletap = false;
 
@@ -48,8 +48,8 @@ Hammer.gestures.Tap = {
 
       // do a single tap
       if(!did_doubletap || inst.options.tap_always) {
-        Hammer.detection.current.name = 'tap';
-        inst.trigger(Hammer.detection.current.name, ev);
+        Detection.current.name = 'tap';
+        inst.trigger(Detection.current.name, ev);
       }
     }
   }

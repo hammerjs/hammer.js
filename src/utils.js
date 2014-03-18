@@ -1,4 +1,4 @@
-var utils = Hammer.utils = {
+var Utils = Hammer.utils = {
   /**
    * extend method,
    * also used for cloning when dest is an empty object
@@ -74,7 +74,7 @@ var utils = Hammer.utils = {
   getCenter: function getCenter(touches) {
     var valuesX = [], valuesY = [];
 
-    utils.each(touches, function(touch) {
+    Utils.each(touches, function(touch) {
       // I prefer clientX because it ignore the scrolling position
       valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX);
       valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY);
@@ -119,16 +119,16 @@ var utils = Hammer.utils = {
    * angle to direction define
    * @param   {Touch}     touch1
    * @param   {Touch}     touch2
-   * @returns {String}    direction constant, like Hammer.DIRECTION_LEFT
+   * @returns {String}    direction constant, like DIRECTION_LEFT
    */
   getDirection: function getDirection(touch1, touch2) {
     var x = Math.abs(touch1.pageX - touch2.pageX),
       y = Math.abs(touch1.pageY - touch2.pageY);
 
     if(x >= y) {
-      return touch1.pageX - touch2.pageX > 0 ? Hammer.DIRECTION_LEFT : Hammer.DIRECTION_RIGHT;
+      return touch1.pageX - touch2.pageX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
-    return touch1.pageY - touch2.pageY > 0 ? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN;
+    return touch1.pageY - touch2.pageY > 0 ? DIRECTION_UP : DIRECTION_DOWN;
   },
 
 
@@ -184,7 +184,7 @@ var utils = Hammer.utils = {
    * @returns  {Boolean}   is_vertical
    */
   isVertical: function isVertical(direction) {
-    return direction == Hammer.DIRECTION_UP || direction == Hammer.DIRECTION_DOWN;
+    return direction == DIRECTION_UP || direction == DIRECTION_DOWN;
   },
 
 
@@ -200,8 +200,8 @@ var utils = Hammer.utils = {
     }
 
     // with css properties for modern browsers
-    utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
-      utils.each(css_props, function(value, prop) {
+    Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+      Utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
             prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
@@ -213,13 +213,15 @@ var utils = Hammer.utils = {
       });
     });
 
+    var false_fn = function(){ return false; };
+
     // also the disable onselectstart
     if(css_props.userSelect == 'none') {
-      element.onselectstart = !toggle && function(){ return false; };
+      element.onselectstart = !toggle && false_fn;
     }
     // and disable ondragstart
     if(css_props.userDrag == 'none') {
-      element.ondragstart = !toggle && function(){ return false; };
+      element.ondragstart = !toggle && false_fn;
     }
   }
 };

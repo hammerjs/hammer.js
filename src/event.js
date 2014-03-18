@@ -18,8 +18,7 @@ var enable_detect = false;
  */
 var touch_triggered = false;
 
-
-Hammer.event = {
+var Event = Hammer.event = {
   /**
    * simple addEventListener
    * @param   {HTMLElement}   element
@@ -28,7 +27,7 @@ Hammer.event = {
    */
   bindDom: function(element, type, handler) {
     var types = type.split(' ');
-    utils.each(types, function(type){
+    Utils.each(types, function(type){
       element.addEventListener(type, handler, false);
     });
   },
@@ -42,7 +41,7 @@ Hammer.event = {
    */
   unbindDom: function(element, type, handler) {
     var types = type.split(' ');
-    utils.each(types, function(type){
+    Utils.each(types, function(type){
       element.removeEventListener(type, handler, false);
     });
   },
@@ -51,7 +50,7 @@ Hammer.event = {
   /**
    * touch events with mouse fallback
    * @param   {HTMLElement}   element
-   * @param   {String}        eventType        like Hammer.EVENT_MOVE
+   * @param   {String}        eventType        like EVENT_MOVE
    * @param   {Function}      handler
    */
   onTouch: function onTouch(element, eventType, handler) {
@@ -93,8 +92,8 @@ Hammer.event = {
       // and we are now handling a mouse event, we stop that to prevent conflicts
       if(enable_detect) {
         // update pointerevent
-        if(Hammer.HAS_POINTEREVENTS && eventType != Hammer.EVENT_END) {
-          count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
+          count_touches = PointerEvent.updatePointer(eventType, ev);
         }
         // touch
         else if(srcEventType.match(/touch/)) {
@@ -107,12 +106,12 @@ Hammer.event = {
 
         // if we are in a end event, but when we remove one touch and
         // we still have enough, set eventType to move
-        if(count_touches > 0 && eventType == Hammer.EVENT_END) {
-          eventType = Hammer.EVENT_MOVE;
+        if(count_touches > 0 && eventType == EVENT_END) {
+          eventType = EVENT_MOVE;
         }
         // no touches, force the end event
         else if(!count_touches) {
-          eventType = Hammer.EVENT_END;
+          eventType = EVENT_END;
         }
 
         // store the last move event
@@ -121,14 +120,13 @@ Hammer.event = {
         }
 
         // trigger the handler
-        handler.call(Hammer.detection,
-                     self.collectEventData(element, eventType,
-                                           self.getTouchList(last_move_event, eventType),
-                                           ev));
+        handler.call(Detection, self.collectEventData(element, eventType,
+                                         self.getTouchList(last_move_event, eventType),
+                                         ev));
 
         // remove pointerevent from list
-        if(Hammer.HAS_POINTEREVENTS && eventType == Hammer.EVENT_END) {
-          count_touches = Hammer.PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
+          count_touches = PointerEvent.updatePointer(eventType, ev);
         }
       }
 
@@ -137,7 +135,7 @@ Hammer.event = {
         last_move_event = null;
         enable_detect = false;
         touch_triggered = false;
-        Hammer.PointerEvent.reset();
+        PointerEvent.reset();
       }
     };
 
@@ -158,7 +156,7 @@ Hammer.event = {
 
     // pointerEvents magic
     if(Hammer.HAS_POINTEREVENTS) {
-      types = Hammer.PointerEvent.getEvents();
+      types = PointerEvent.getEvents();
     }
     // on Android, iOS, blackberry, windows mobile we dont want any mouseevents
     else if(Hammer.NO_MOUSEEVENTS) {
@@ -176,9 +174,9 @@ Hammer.event = {
         'touchend touchcancel mouseup'];
     }
 
-    Hammer.EVENT_TYPES[Hammer.EVENT_START] = types[0];
-    Hammer.EVENT_TYPES[Hammer.EVENT_MOVE] = types[1];
-    Hammer.EVENT_TYPES[Hammer.EVENT_END] = types[2];
+    Hammer.EVENT_TYPES[EVENT_START] = types[0];
+    Hammer.EVENT_TYPES[EVENT_MOVE] = types[1];
+    Hammer.EVENT_TYPES[EVENT_END] = types[2];
   },
 
 
@@ -190,35 +188,35 @@ Hammer.event = {
   getTouchList: function getTouchList(ev/*, eventType*/) {
     // get the fake pointerEvent touchlist
     if(Hammer.HAS_POINTEREVENTS) {
-      return Hammer.PointerEvent.getTouchList();
+      return PointerEvent.getTouchList();
     }
+
     // get the touchlist
-    else if(ev.touches) {
+    if(ev.touches) {
       return ev.touches;
     }
+
     // make fake touchlist from mouse position
-    else {
-      ev.identifier = 1;
-      return [ev];
-    }
+    ev.identifier = 1;
+    return [ev];
   },
 
 
   /**
    * collect event data for Hammer js
    * @param   {HTMLElement}   element
-   * @param   {String}        eventType        like Hammer.EVENT_MOVE
+   * @param   {String}        eventType        like EVENT_MOVE
    * @param   {Object}        eventData
    */
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType
-    var pointerType = Hammer.POINTER_TOUCH;
-    if(ev.type.match(/mouse/) || Hammer.PointerEvent.matchType(Hammer.POINTER_MOUSE, ev)) {
-      pointerType = Hammer.POINTER_MOUSE;
+    var pointerType = POINTER_TOUCH;
+    if(ev.type.match(/mouse/) || PointerEvent.matchType(POINTER_MOUSE, ev)) {
+      pointerType = POINTER_MOUSE;
     }
 
     return {
-      center     : utils.getCenter(touches),
+      center     : Utils.getCenter(touches),
       timeStamp  : new Date().getTime(),
       target     : ev.target,
       touches    : touches,
@@ -253,7 +251,7 @@ Hammer.event = {
        * @return {*}
        */
       stopDetect: function() {
-        return Hammer.detection.stopDetect();
+        return Detection.stopDetect();
       }
     };
   }
