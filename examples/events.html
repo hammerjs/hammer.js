@@ -113,6 +113,9 @@
         <li><strong>scale</strong>  <span id="log-prop-scale"></span></li>
         <li><strong>rotation</strong> <span id="log-prop-rotation"></span>&deg;</li>
 
+        <li><strong>interimDirection</strong>  <span id="log-prop-interimDirection"></span></li>
+        <li><strong>interimAngle</strong> <span id="log-prop-interimAngle"></span>&deg;</li>
+
         <li><strong>target</strong> <span id="log-prop-target"></span></li>
     </ul>
 </div>
@@ -164,6 +167,7 @@
     // log properties
     var properties = ['gesture','center','deltaTime','angle','direction',
         'distance','deltaX','deltaY','velocityX','velocityY', 'pointerType',
+        'interimDirection','interimAngle',
         'scale','rotation','touches','target'];
 
     function logEvent(ev) {

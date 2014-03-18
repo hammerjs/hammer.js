@@ -93,6 +93,10 @@ for(var gesture in gesture_tests) {
     }
 }
 
+window.onerror = function(ev) {
+  throws(ev);
+};
+
 
 /**
  * test if event data contains wright values
@@ -110,6 +114,11 @@ function testEventData(name, ev) {
     ok(ev.gesture.eventType, 'ev.gesture.eventType');
 
     ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
+
+    if(ev.gesture.interimAngle !== false) {
+      ok(_.isNumber(ev.gesture.interimAngle), 'ev.gesture.interimAngle');
+    }
+
     ok(_.isObject(ev.gesture.center), 'ev.gesture.center');
     ok(_.isNumber(ev.gesture.deltaTime), 'ev.gesture.deltatime');
     ok(_.isNumber(ev.gesture.deltaX), 'ev.gesture.deltaX');
@@ -118,9 +127,15 @@ function testEventData(name, ev) {
 
     // direction
     ok(ev.gesture.direction, 'ev.gesture.direction');
-    var dir;
-    if(dir = ev.type.match(/up|down|left|right/)) {
+    var dir = ev.type.match(/up|down|left|right/);
+    if(dir) {
         ok(ev.gesture.direction === Hammer['DIRECTION_'+ dir[0].toUpperCase()]);
+    }
+
+    // direction
+    var idir = ev.type.match(/up|down|left|right/);
+    if(ev.gesture.interimDirection !== false && idir) {
+        ok(ev.gesture.interimDirection === Hammer['DIRECTION_'+ idir[0].toUpperCase()]);
     }
 
     // pointerType
