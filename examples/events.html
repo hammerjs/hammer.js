@@ -147,6 +147,7 @@
     }
 
 
+    var hammertime;
     var log_elements = {};
     var prevent_scroll_drag = true;
 
@@ -174,10 +175,6 @@
         if(!ev.gesture) {
             return;
         }
-
-        // add to the large event log at the bottom of the page
-        var log = [this.id, ev.type];
-        //event_log.innerHTML = log.join(" - ") +"\n" + event_log.innerHTML;
 
         // highlight gesture
         var event_el = getLogElement('gesture', ev.type);
@@ -217,11 +214,11 @@
 
 
     // start!
-    var hammertime = Hammer(getEl('hitarea'), {
-            prevent_default: true,
-            no_mouseevents: true
-        })
-        .on(all_events.join(" "), logEvent);
+    hammertime = Hammer(getEl('hitarea'), {
+          prevent_default: true,
+          no_mouseevents: true
+      })
+      .on(all_events.join(" "), logEvent);
 
 </script>
 <script src="assets/js/ga.js" async></script>
