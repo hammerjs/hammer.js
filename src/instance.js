@@ -67,8 +67,8 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   off: function offEvent(gesture, handler) {
-    var gestures = gesture.split(' '),
-      i, eh;
+    var gestures = gesture.split(' ')
+      , i, eh;
     Utils.each(gestures, function(gesture) {
       this.element.removeEventListener(gesture, handler, false);
 

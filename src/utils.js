@@ -109,8 +109,8 @@ var Utils = Hammer.utils = {
    * @returns {Number}    angle
    */
   getAngle: function getAngle(touch1, touch2) {
-    var y = touch2.pageY - touch1.pageY,
-      x = touch2.pageX - touch1.pageX;
+    var y = touch2.pageY - touch1.pageY
+      , x = touch2.pageX - touch1.pageX;
     return Math.atan2(y, x) * 180 / Math.PI;
   },
 
@@ -122,9 +122,8 @@ var Utils = Hammer.utils = {
    * @returns {String}    direction constant, like DIRECTION_LEFT
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.pageX - touch2.pageX),
-      y = Math.abs(touch1.pageY - touch2.pageY);
-
+    var x = Math.abs(touch1.pageX - touch2.pageX)
+      , y = Math.abs(touch1.pageY - touch2.pageY);
     if(x >= y) {
       return touch1.pageX - touch2.pageX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
@@ -139,8 +138,8 @@ var Utils = Hammer.utils = {
    * @returns {Number}    distance
    */
   getDistance: function getDistance(touch1, touch2) {
-    var x = touch2.pageX - touch1.pageX,
-      y = touch2.pageY - touch1.pageY;
+    var x = touch2.pageX - touch1.pageX
+      , y = touch2.pageY - touch1.pageY;
     return Math.sqrt((x * x) + (y * y));
   },
 
@@ -155,8 +154,7 @@ var Utils = Hammer.utils = {
   getScale: function getScale(start, end) {
     // need two fingers...
     if(start.length >= 2 && end.length >= 2) {
-      return this.getDistance(end[0], end[1]) /
-        this.getDistance(start[0], start[1]);
+      return this.getDistance(end[0], end[1]) / this.getDistance(start[0], start[1]);
     }
     return 1;
   },
@@ -171,8 +169,7 @@ var Utils = Hammer.utils = {
   getRotation: function getRotation(start, end) {
     // need two fingers
     if(start.length >= 2 && end.length >= 2) {
-      return this.getAngle(end[1], end[0]) -
-        this.getAngle(start[1], start[0]);
+      return this.getAngle(end[1], end[0]) - this.getAngle(start[1], start[0]);
     }
     return 0;
   },
