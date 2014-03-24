@@ -52,15 +52,16 @@ var Detection = Hammer.detection = {
     // extend event data with calculations about scale, distance etc
     eventData = this.extendEventData(eventData);
 
-    // instance options
-    var inst_options = this.current.inst.options;
+    // hammer instance and instance options
+    var inst = this.current.inst,
+        inst_options = inst.options;
 
     // call Hammer.gesture handlers
     Utils.each(this.gestures, function(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false) {
+      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
         // if a handler returns false, we stop with the detection
-        if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
+        if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();
           return false;
         }
@@ -72,7 +73,7 @@ var Detection = Hammer.detection = {
       this.current.lastEvent = eventData;
     }
 
-    // endevent, but not the last touch, so dont stop
+    // end event, but not the last touch, so dont stop
     if(eventData.eventType == EVENT_END && !eventData.touches.length - 1) {
       this.stopDetect();
     }
