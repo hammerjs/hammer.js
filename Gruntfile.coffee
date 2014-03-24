@@ -10,7 +10,6 @@ module.exports = (grunt) ->
  * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n
  * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
-
     concat:
       options:
         separator: '\n\n'
@@ -30,7 +29,6 @@ module.exports = (grunt) ->
           'src/hammer.suffix']
         dest: 'hammer.js'
 
-
     uglify:
       options:
         report: 'gzip'
@@ -39,7 +37,6 @@ module.exports = (grunt) ->
       dist:
         files:
           'hammer.min.js': ['hammer.js']
-
 
     'string-replace':
       version:
@@ -51,13 +48,11 @@ module.exports = (grunt) ->
               replacement: '<%= pkg.version %>'
             ]
 
-
     jshint:
       options:
         jshintrc: true
       dist:
         src: ['hammer.js']
-
 
     watch:
       scripts:
@@ -66,17 +61,14 @@ module.exports = (grunt) ->
         options:
           interrupt: true
 
-
     connect:
       server:
         options:
           hostname: "0.0.0.0"
           port: 8000
 
-
     qunit:
       all: ['tests/**/*.html']
-
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -87,9 +79,8 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-string-replace'
 
-
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','string-replace','uglify','test']
   grunt.registerTask 'test', ['jshint','qunit']
-  grunt.registerTask 'test-travis', ['build','jshint']
+  grunt.registerTask 'test-travis', ['build']
