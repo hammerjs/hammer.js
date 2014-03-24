@@ -1,5 +1,5 @@
-/*! Hammer.JS - v1.0.9 - 2014-03-18
- * http://eightmedia.github.com/hammer.js
+/*! Hammer.JS - v1.0.9 - 2014-03-24
+ * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
@@ -856,6 +856,7 @@ var Detection = Hammer.detection = {
 
     this.stopped = false;
 
+    // holds current session
     this.current = {
       inst              : inst, // reference to HammerInstance we're working for
       startEvent        : Utils.extend({}, eventData), // start eventData for distances, timing etc
@@ -929,9 +930,67 @@ var Detection = Hammer.detection = {
 
 
   /**
+   * calculate velocity
+   * @param   {Object}  ev
+   * @param   {Number}  delta_time
+   * @param   {Number}  delta_x
+   * @param   {Number}  delta_y
+   */
+  getVelocityData: function getVelocityData(ev, delta_time, delta_x, delta_y) {
+    var cur = this.current
+      , velocityEv = cur.lastVelocityEvent
+      , velocity = cur.velocity;
+
+    // calculate velocity every x ms
+    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+      velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
+                                   ev.center.pageX - velocityEv.center.pageX,
+                                  ev.center.pageY - velocityEv.center.pageY);
+      cur.lastVelocityEvent = ev;
+    }
+    else if(!cur.velocity) {
+      velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
+      cur.lastVelocityEvent = ev;
+    }
+    
+    cur.velocity = velocity;
+    
+    ev.velocityX = velocity.x;
+    ev.velocityY = velocity.y;
+  },
+  
+  
+  /**
+   * calculate interim angle and direction
+   * @param   {Object}  ev
+   */
+  getInterimData: function getInterimData(ev) {
+    var cur = this.current
+      , angle
+      , direction;
+
+    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
+    // because the previous event has exactly the same coordinates
+    // so for end events, take the previous values of interimDirection & interimAngle
+    // instead of recalculating them and getting a spurious '0'
+    if(ev.eventType == EVENT_END) {
+      angle = cur.lastEvent && cur.lastEvent.interimAngle;
+      direction = cur.lastEvent && cur.lastEvent.interimDirection;
+    }
+    else {
+      angle = cur.lastEvent && Utils.getAngle(cur.lastEvent.center, ev.center);
+      direction = cur.lastEvent && Utils.getDirection(cur.lastEvent.center, ev.center);
+    }
+    
+    ev.interimAngle = angle;
+    ev.interimDirection = direction;
+  },
+
+
+  /**
    * extend eventData for Hammer.gestures
-   * @param   {Object}   ev
-   * @returns {Object}   ev
+   * @param   {Object}   evData
+   * @returns {Object}   evData
    */
   extendEventData: function extendEventData(ev) {
     var cur = this.current
@@ -951,64 +1010,23 @@ var Detection = Hammer.detection = {
 
     var delta_time = ev.timeStamp - startEv.timeStamp
       , delta_x = ev.center.pageX - startEv.center.pageX
-      , delta_y = ev.center.pageY - startEv.center.pageY
-      , interimAngle
-      , interimDirection
-      , velocityEv = cur.lastVelocityEvent
-      , velocity = cur.velocity;
-
-    // calculate velocity every x ms
-    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-        velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
-                                            ev.center.pageX - velocityEv.center.pageX,
-                                            ev.center.pageY - velocityEv.center.pageY);
-
-        cur.lastVelocityEvent = ev;
-        cur.velocity = velocity;
-    }
-    else if(!cur.velocity) {
-        velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
-
-        cur.lastVelocityEvent = ev;
-        cur.velocity = velocity;
-    }
-
-    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
-    // because the previous event has exactly the same coordinates
-    // so for end events, take the previous values of interimDirection & interimAngle
-    // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType == EVENT_END) {
-      interimAngle = cur.lastEvent && cur.lastEvent.interimAngle;
-      interimDirection = cur.lastEvent && cur.lastEvent.interimDirection;
-    }
-    else {
-      interimAngle = cur.lastEvent &&
-        Utils.getAngle(cur.lastEvent.center, ev.center);
-      interimDirection = cur.lastEvent &&
-        Utils.getDirection(cur.lastEvent.center, ev.center);
-    }
+      , delta_y = ev.center.pageY - startEv.center.pageY;
+    
+    this.getVelocityData(ev, delta_time, delta_x, delta_y);
+    this.getInterimData(ev);
 
     Utils.extend(ev, {
-      deltaTime: delta_time,
+      startEvent: startEv,
+      
+      deltaTime : delta_time,
+      deltaX    : delta_x,
+      deltaY    : delta_y,
 
-      deltaX: delta_x,
-      deltaY: delta_y,
-
-      velocityX: velocity.x,
-      velocityY: velocity.y,
-
-      distance: Utils.getDistance(startEv.center, ev.center),
-
-      angle: Utils.getAngle(startEv.center, ev.center),
-      interimAngle: interimAngle,
-
-      direction: Utils.getDirection(startEv.center, ev.center),
-      interimDirection: interimDirection,
-
-      scale: Utils.getScale(startEv.touches, ev.touches),
-      rotation: Utils.getRotation(startEv.touches, ev.touches),
-
-      startEvent: startEv
+      distance  : Utils.getDistance(startEv.center, ev.center),
+      angle     : Utils.getAngle(startEv.center, ev.center),
+      direction : Utils.getDirection(startEv.center, ev.center),
+      scale     : Utils.getScale(startEv.touches, ev.touches),
+      rotation  : Utils.getRotation(startEv.touches, ev.touches)
     });
 
     return ev;
