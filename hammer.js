@@ -139,7 +139,7 @@ var Utils = Hammer.utils = {
    * @param obj
    * @param iterator
    */
-  each: function(obj, iterator, context) {
+  each: function each(obj, iterator, context) {
     var i, o;
     // native forEach on arrays
     if ('forEach' in obj) {
@@ -163,10 +163,18 @@ var Utils = Hammer.utils = {
       }
     }
   },
-  
-  inStr: function(src, find) {
-    return ~src.indexOf(find);
+
+
+  /**
+   * find if a string contains the needle
+   * @param   {String}  src
+   * @param   {String}  needle
+   * @returns {Boolean} found
+   */
+  inStr: function inStr(src, needle) {
+    return src.indexOf(needle) > -1;
   },
+  
 
   /**
    * find if a node is in the given parent
@@ -175,7 +183,7 @@ var Utils = Hammer.utils = {
    * @param   {HTMLElement}   parent
    * @returns {boolean}       has_parent
    */
-  hasParent: function(node, parent) {
+  hasParent: function hasParent(node, parent) {
     while(node) {
       if(node == parent) {
         return true;
@@ -317,7 +325,7 @@ var Utils = Hammer.utils = {
     }
 
     // with css properties for modern browsers
-    Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+    Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
       Utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {
@@ -553,7 +561,7 @@ var Event = Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
     
-    var bindDomOnTouch = function(ev) {
+    var bindDomOnTouch = function bindDomOnTouch(ev) {
       var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
@@ -761,7 +769,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * get a list of pointers
    * @returns {Array}     touchlist
    */
-  getTouchList: function() {
+  getTouchList: function getTouchList() {
     var touchlist = [];
     // we can use forEach since pointerEvents only is in IE10
     Utils.each(this.pointers, function(pointer){
@@ -776,7 +784,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * @param   {String}   type             EVENT_END
    * @param   {Object}   pointerEvent
    */
-  updatePointer: function(type, pointerEvent) {
+  updatePointer: function updatePointer(type, pointerEvent) {
     if(type == EVENT_END) {
       delete this.pointers[pointerEvent.pointerId];
     }
@@ -794,7 +802,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * @param   {String}        pointerType     POINTER_MOUSE
    * @param   {PointerEvent}  ev
    */
-  matchType: function(pointerType, ev) {
+  matchType: function matchType(pointerType, ev) {
     if(!ev.pointerType) {
       return false;
     }
@@ -812,7 +820,7 @@ var PointerEvent = Hammer.PointerEvent = {
   /**
    * get events
    */
-  getEvents: function() {
+  getEvents: function getEvents() {
     return [
       'pointerdown MSPointerDown',
       'pointermove MSPointerMove',
@@ -823,7 +831,7 @@ var PointerEvent = Hammer.PointerEvent = {
   /**
    * reset the list
    */
-  reset: function() {
+  reset: function resetList() {
     this.pointers = {};
   }
 };
@@ -888,7 +896,7 @@ var Detection = Hammer.detection = {
         inst_options = inst.options;
 
     // call Hammer.gesture handlers
-    Utils.each(this.gestures, function(gesture) {
+    Utils.each(this.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
       if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
         // if a handler returns false, we stop with the detection

@@ -23,7 +23,7 @@ var Utils = Hammer.utils = {
    * @param obj
    * @param iterator
    */
-  each: function(obj, iterator, context) {
+  each: function each(obj, iterator, context) {
     var i, o;
     // native forEach on arrays
     if ('forEach' in obj) {
@@ -55,7 +55,7 @@ var Utils = Hammer.utils = {
    * @param   {String}  needle
    * @returns {Boolean} found
    */
-  inStr: function(src, needle) {
+  inStr: function inStr(src, needle) {
     return src.indexOf(needle) > -1;
   },
   
@@ -67,7 +67,7 @@ var Utils = Hammer.utils = {
    * @param   {HTMLElement}   parent
    * @returns {boolean}       has_parent
    */
-  hasParent: function(node, parent) {
+  hasParent: function hasParent(node, parent) {
     while(node) {
       if(node == parent) {
         return true;
@@ -209,7 +209,7 @@ var Utils = Hammer.utils = {
     }
 
     // with css properties for modern browsers
-    Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function(vendor) {
+    Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
       Utils.each(css_props, function(value, prop) {
           // vender prefix at the property
           if(vendor) {

@@ -56,7 +56,7 @@ var Event = Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
     
-    var bindDomOnTouch = function(ev) {
+    var bindDomOnTouch = function bindDomOnTouch(ev) {
       var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.

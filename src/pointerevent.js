@@ -9,7 +9,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * get a list of pointers
    * @returns {Array}     touchlist
    */
-  getTouchList: function() {
+  getTouchList: function getTouchList() {
     var touchlist = [];
     // we can use forEach since pointerEvents only is in IE10
     Utils.each(this.pointers, function(pointer){
@@ -24,7 +24,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * @param   {String}   type             EVENT_END
    * @param   {Object}   pointerEvent
    */
-  updatePointer: function(type, pointerEvent) {
+  updatePointer: function updatePointer(type, pointerEvent) {
     if(type == EVENT_END) {
       delete this.pointers[pointerEvent.pointerId];
     }
@@ -42,7 +42,7 @@ var PointerEvent = Hammer.PointerEvent = {
    * @param   {String}        pointerType     POINTER_MOUSE
    * @param   {PointerEvent}  ev
    */
-  matchType: function(pointerType, ev) {
+  matchType: function matchType(pointerType, ev) {
     if(!ev.pointerType) {
       return false;
     }
@@ -60,7 +60,7 @@ var PointerEvent = Hammer.PointerEvent = {
   /**
    * get events
    */
-  getEvents: function() {
+  getEvents: function getEvents() {
     return [
       'pointerdown MSPointerDown',
       'pointermove MSPointerMove',
@@ -71,7 +71,7 @@ var PointerEvent = Hammer.PointerEvent = {
   /**
    * reset the list
    */
-  reset: function() {
+  reset: function resetList() {
     this.pointers = {};
   }
 };
