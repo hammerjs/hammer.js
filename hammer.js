@@ -30,7 +30,7 @@ Hammer.defaults = {
   stop_browser_behavior: {
     // this also triggers onselectstart=false for IE
     userSelect       : 'none',
-    // this makes the element blocking in IE10 >, you could experiment with the value
+    // this makes the element blocking in IE10>, you could experiment with the value
     // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
     touchAction      : 'none',
     touchCallout     : 'none',
@@ -40,7 +40,7 @@ Hammer.defaults = {
   }
 
   //
-  // more settings are defined per gesture at gestures.js
+  // more settings are defined per gesture at /gestures
   //
 };
 
@@ -63,7 +63,7 @@ Hammer.UPDATE_VELOCITY_INTERVAL = 16;
 // hammer document where the base events are added at
 Hammer.DOCUMENT = window.document;
 
-// define these also as vars, for internal usage.
+// define these also as vars, for better minification
 // direction defines
 var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = 'down';
 var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
@@ -88,6 +88,7 @@ Hammer.gestures = Hammer.gestures || {};
 
 // if the window events are set...
 Hammer.READY = false;
+
 
 /**
  * setup events to detect gestures on the document

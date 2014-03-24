@@ -19,7 +19,6 @@ module.exports = (grunt) ->
           banner: '<%= meta.banner %>'
         src: [
           'src/hammer.prefix'
-          'src/core.js'
           'src/setup.js'
           'src/utils.js'
           'src/instance.js'
