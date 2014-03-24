@@ -965,7 +965,7 @@ var Detection = Hammer.detection = {
    * @param   {Object}  ev
    */
   getInterimData: function getInterimData(ev) {
-    var cur = this.current
+    var lastEvent = this.current.lastEvent
       , angle
       , direction;
 
@@ -974,12 +974,12 @@ var Detection = Hammer.detection = {
     // so for end events, take the previous values of interimDirection & interimAngle
     // instead of recalculating them and getting a spurious '0'
     if(ev.eventType == EVENT_END) {
-      angle = cur.lastEvent && cur.lastEvent.interimAngle;
-      direction = cur.lastEvent && cur.lastEvent.interimDirection;
+      angle = lastEvent && lastEvent.interimAngle;
+      direction = lastEvent && lastEvent.interimDirection;
     }
     else {
-      angle = cur.lastEvent && Utils.getAngle(cur.lastEvent.center, ev.center);
-      direction = cur.lastEvent && Utils.getDirection(cur.lastEvent.center, ev.center);
+      angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
+      direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
     }
     
     ev.interimAngle = angle;
