@@ -31,7 +31,7 @@ Hammer.defaults = {
   }
 
   //
-  // more settings are defined per gesture at gestures.js
+  // more settings are defined per gesture at /gestures
   //
 };
 
