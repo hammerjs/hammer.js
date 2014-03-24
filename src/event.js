@@ -61,27 +61,27 @@ var Event = Hammer.event = {
 
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
-      if(srcEventType.match(/mouse/) && touch_triggered) {
+      if(~srcEventType.indexOf('mouse') && touch_triggered) {
         return;
       }
 
       // mousebutton must be down or a touch event
-      else if(srcEventType.match(/touch/) ||   // touch events are always on screen
-        srcEventType.match(/pointerdown/) || // pointerevents touch
-        (srcEventType.match(/mouse/) && ev.which === 1)   // mouse is pressed
+      else if(~srcEventType.indexOf('touch') ||   // touch events are always on screen
+        ~srcEventType.indexOf('pointerdown') || // pointerevents touch
+        (~srcEventType.indexOf('mouse') && ev.which === 1)   // mouse is pressed
         ) {
         enable_detect = true;
       }
 
       // mouse isn't pressed
-      else if(srcEventType.match(/mouse/) && !ev.which) {
+      else if(~srcEventType.indexOf('mouse') && !ev.which) {
         enable_detect = false;
       }
 
 
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
-      if(srcEventType.match(/touch|pointer/)) {
+      if(~srcEventType.indexOf('touch') || ~srcEventType.indexOf('pointer')) {
         touch_triggered = true;
       }
 
@@ -96,12 +96,12 @@ var Event = Hammer.event = {
           count_touches = PointerEvent.updatePointer(eventType, ev);
         }
         // touch
-        else if(srcEventType.match(/touch/)) {
+        else if(~srcEventType.indexOf('touch')) {
           count_touches = ev.touches.length;
         }
         // mouse
         else if(!touch_triggered) {
-          count_touches = srcEventType.match(/up/) ? 0 : 1;
+          count_touches = ~srcEventType.indexOf('up') ? 0 : 1;
         }
 
         // if we are in a end event, but when we remove one touch and
@@ -121,8 +121,8 @@ var Event = Hammer.event = {
 
         // trigger the handler
         handler.call(Detection, self.collectEventData(element, eventType,
-                                         self.getTouchList(last_move_event, eventType),
-                                         ev));
+                                  self.getTouchList(last_move_event, eventType),
+                                  ev) );
 
         // remove pointerevent from list
         if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
@@ -211,7 +211,7 @@ var Event = Hammer.event = {
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType
     var pointerType = POINTER_TOUCH;
-    if(ev.type.match(/mouse/) || PointerEvent.matchType(POINTER_MOUSE, ev)) {
+    if(~ev.type.indexOf('mouse') || PointerEvent.matchType(POINTER_MOUSE, ev)) {
       pointerType = POINTER_MOUSE;
     }
 
@@ -229,13 +229,9 @@ var Event = Hammer.event = {
        * mostly used to disable scrolling of the browser
        */
       preventDefault: function() {
-        if(this.srcEvent.preventManipulation) {
-          this.srcEvent.preventManipulation();
-        }
-
-        if(this.srcEvent.preventDefault) {
-          this.srcEvent.preventDefault();
-        }
+        var srcEvent = this.srcEvent;
+        srcEvent.preventManipulation && srcEvent.preventManipulation();
+        srcEvent.preventDefault && srcEvent.preventDefault();
       },
 
       /**
