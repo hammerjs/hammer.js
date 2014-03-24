@@ -55,8 +55,10 @@
 
         ev.gesture.preventDefault();
 
+        // updating the style immediately isn't best practice, 
+        // but it suits the simpleness of the demo
         for(var t = 0, len = touches.length; t < len; t++) {
-            target = touches[t].target;
+            var target = touches[t].target;
             if(target.className.indexOf("drag") < 0) {
                 return;
             }
