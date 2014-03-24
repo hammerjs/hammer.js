@@ -54,7 +54,7 @@ Hammer.UPDATE_VELOCITY_INTERVAL = 16;
 // hammer document where the base events are added at
 Hammer.DOCUMENT = window.document;
 
-// define these also as vars, for internal usage.
+// define these also as vars, for better minification
 // direction defines
 var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = 'down';
 var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
