@@ -48,6 +48,18 @@ var Utils = Hammer.utils = {
     }
   },
 
+
+  /**
+   * find if a string contains the needle
+   * @param   {String}  src
+   * @param   {String}  needle
+   * @returns {Boolean} found
+   */
+  inStr: function(src, needle) {
+    return src.indexOf(needle) > -1;
+  },
+  
+
   /**
    * find if a node is in the given parent
    * used for event delegation tricks

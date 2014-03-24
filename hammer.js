@@ -163,6 +163,10 @@ var Utils = Hammer.utils = {
       }
     }
   },
+  
+  inStr: function(src, find) {
+    return ~src.indexOf(find);
+  },
 
   /**
    * find if a node is in the given parent
@@ -548,33 +552,33 @@ var Event = Hammer.event = {
    */
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
-
+    
     var bindDomOnTouch = function(ev) {
       var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
-      if(~srcEventType.indexOf('mouse') && touch_triggered) {
+      if(Utils.inStr(srcEventType, 'mouse') && touch_triggered) {
         return;
       }
 
       // mousebutton must be down or a touch event
-      else if(~srcEventType.indexOf('touch') ||   // touch events are always on screen
-        ~srcEventType.indexOf('pointerdown') || // pointerevents touch
-        (~srcEventType.indexOf('mouse') && ev.which === 1)   // mouse is pressed
+      else if(Utils.inStr(srcEventType, 'touch') ||   // touch events are always on screen
+        Utils.inStr(srcEventType, 'pointerdown') || // pointerevents touch
+        (Utils.inStr(srcEventType, 'mouse') && ev.which === 1)   // mouse is pressed
         ) {
         enable_detect = true;
       }
 
       // mouse isn't pressed
-      else if(~srcEventType.indexOf('mouse') && !ev.which) {
+      else if(Utils.inStr(srcEventType, 'mouse') && !ev.which) {
         enable_detect = false;
       }
 
 
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
-      if(~srcEventType.indexOf('touch') || ~srcEventType.indexOf('pointer')) {
+      if(Utils.inStr(srcEventType, 'touch') || Utils.inStr(srcEventType, 'pointer')) {
         touch_triggered = true;
       }
 
@@ -589,12 +593,12 @@ var Event = Hammer.event = {
           count_touches = PointerEvent.updatePointer(eventType, ev);
         }
         // touch
-        else if(~srcEventType.indexOf('touch')) {
+        else if(Utils.inStr(srcEventType, 'touch')) {
           count_touches = ev.touches.length;
         }
         // mouse
         else if(!touch_triggered) {
-          count_touches = ~srcEventType.indexOf('up') ? 0 : 1;
+          count_touches = Utils.inStr(srcEventType, 'up') ? 0 : 1;
         }
 
         // if we are in a end event, but when we remove one touch and
@@ -704,7 +708,7 @@ var Event = Hammer.event = {
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType
     var pointerType = POINTER_TOUCH;
-    if(~ev.type.indexOf('mouse') || PointerEvent.matchType(POINTER_MOUSE, ev)) {
+    if(Utils.inStr(ev.type, 'mouse') || PointerEvent.matchType(POINTER_MOUSE, ev)) {
       pointerType = POINTER_MOUSE;
     }
 
