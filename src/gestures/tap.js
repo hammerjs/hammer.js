@@ -3,7 +3,11 @@
  * Quick touch at a place or double at the same place
  * @events  tap, doubletap
  */
-Hammer.gestures.Tap = {
+
+Hammer.gestures.Tap = function() {
+  
+};
+Hammer.gestures.Tap.prototype = {
   name    : 'tap',
   index   : 100,
   defaults: {

@@ -3,7 +3,11 @@
  * Touch stays at the same place for x time
  * @events  hold
  */
-Hammer.gestures.Hold = {
+
+Hammer.gestures.Hold = function() {
+  
+};
+Hammer.gestures.Hold.prototype = {
   name    : 'hold',
   index   : 10,
   defaults: {

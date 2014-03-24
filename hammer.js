@@ -372,10 +372,33 @@ Hammer.Instance = function(element, options) {
   // start/stop detection option
   this.enabled = true;
 
-  // merge options
-  this.options = Utils.extend(
-    Utils.extend({}, Hammer.defaults),
-    options || {});
+  this.options = {};
+  this.gestures = [];
+
+  Detection.gestures.forEach(function (GestureKlass) {
+
+    // the instance is always created to get its gesture name
+    // instead of defining any convention which could break the existing api
+    var gestureInstance = new GestureKlass();
+    
+    //if ( gestureInstance.name !== 'show_touches' && options[gestureInstance.name] !== false ) {
+    if ( options[gestureInstance.name] !== false ) {
+      gestureInstance.index = gestureInstance.index || 1000;
+
+      self.options = Utils.extend(self.options, Hammer.defaults || {});
+      self.options = Utils.extend(self.options, gestureInstance.defaults || {});
+      self.options = Utils.extend(self.options, options || {});
+      self.gestures.push(gestureInstance);
+    } else {
+      gestureInstance = null;
+    }
+  });
+
+  this.gestures.sort(function(a, b) {
+    if(a.index < b.index) { return -1; }
+    if(a.index > b.index) { return 1; }
+    return 0;
+  });
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
@@ -838,7 +861,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
 
 var Detection = Hammer.detection = {
-  // contains all registred Hammer.gestures in the correct order
+  // contains all registred Hammer.gestures
   gestures: [],
 
   // data of the current Hammer.gesture detection session
@@ -896,7 +919,7 @@ var Detection = Hammer.detection = {
         inst_options = inst.options;
 
     // call Hammer.gesture handlers
-    Utils.each(this.gestures, function triggerGesture(gesture) {
+    Utils.each(inst.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
       if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
         // if a handler returns false, we stop with the detection
@@ -1049,28 +1072,8 @@ var Detection = Hammer.detection = {
    * @returns {Array}     gestures
    */
   register: function register(gesture) {
-    // add an enable gesture options if there is no given
-    var options = gesture.defaults || {};
-    if(options[gesture.name] === undefined) {
-      options[gesture.name] = true;
-    }
-
-    // extend Hammer default options with the Hammer.gesture options
-    Utils.extend(Hammer.defaults, options, true);
-
-    // set its index
-    gesture.index = gesture.index || 1000;
-
-    // add Hammer.gesture to the list
+    console.assert(typeof(gesture) === 'function', 'Breaking change: Define custom gestures as function object');
     this.gestures.push(gesture);
-
-    // sort the list by index
-    this.gestures.sort(function(a, b) {
-      if(a.index < b.index) { return -1; }
-      if(a.index > b.index) { return 1; }
-      return 0;
-    });
-
     return this.gestures;
   }
 };
@@ -1083,7 +1086,11 @@ var Detection = Hammer.detection = {
  * you disable scrolling on that area.
  * @events  drag, drapleft, dragright, dragup, dragdown
  */
-Hammer.gestures.Drag = {
+
+Hammer.gestures.Drag = function() {
+  
+};
+Hammer.gestures.Drag.prototype = {
   name     : 'drag',
   index    : 50,
   defaults : {
@@ -1207,12 +1214,17 @@ Hammer.gestures.Drag = {
   }
 };
 
+
 /**
  * Hold
  * Touch stays at the same place for x time
  * @events  hold
  */
-Hammer.gestures.Hold = {
+
+Hammer.gestures.Hold = function() {
+  
+};
+Hammer.gestures.Hold.prototype = {
   name    : 'hold',
   index   : 10,
   defaults: {
@@ -1253,12 +1265,17 @@ Hammer.gestures.Hold = {
   }
 };
 
+
 /**
  * Release
  * Called as last, tells the user has released the screen
  * @events  release
  */
-Hammer.gestures.Release = {
+
+Hammer.gestures.Release = function() {
+  
+};
+Hammer.gestures.Release.prototype = {
   name   : 'release',
   index  : Infinity,
   handler: function releaseGesture(ev, inst) {
@@ -1268,13 +1285,17 @@ Hammer.gestures.Release = {
   }
 };
 
+
 /**
  * Swipe
  * triggers swipe events when the end velocity is above the threshold
  * for best usage, set prevent_default (on the drag gesture) to true
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
-Hammer.gestures.Swipe = {
+Hammer.gestures.Swipe = function() {
+  
+};
+Hammer.gestures.Swipe.prototype = {
   name    : 'swipe',
   index   : 40,
   defaults: {
@@ -1302,12 +1323,17 @@ Hammer.gestures.Swipe = {
   }
 };
 
+
 /**
  * Tap/DoubleTap
  * Quick touch at a place or double at the same place
  * @events  tap, doubletap
  */
-Hammer.gestures.Tap = {
+
+Hammer.gestures.Tap = function() {
+  
+};
+Hammer.gestures.Tap.prototype = {
   name    : 'tap',
   index   : 100,
   defaults: {
@@ -1359,12 +1385,17 @@ Hammer.gestures.Tap = {
   }
 };
 
+
 /**
  * Touch
  * Called as first, tells the user has touched the screen
  * @events  touch
  */
-Hammer.gestures.Touch = {
+
+Hammer.gestures.Touch = function() {
+  
+};
+Hammer.gestures.Touch.prototype = {
   name    : 'touch',
   index   : -Infinity,
   defaults: {
@@ -1401,7 +1432,11 @@ Hammer.gestures.Touch = {
  * User want to scale or rotate with 2 fingers
  * @events  transform, pinch, pinchin, pinchout, rotate
  */
-Hammer.gestures.Transform = {
+
+Hammer.gestures.Transform = function() {
+  
+};
+Hammer.gestures.Transform.prototype = {
   name     : 'transform',
   index    : 45,
   defaults : {
@@ -1497,6 +1532,7 @@ Hammer.gestures.Transform = {
     }
   }
 };
+
 
 // AMD export
 if(typeof define == 'function' && define.amd) {
