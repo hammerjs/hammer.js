@@ -1,5 +1,5 @@
-/*! Hammer.JS - v1.0.9 - 2014-03-18
- * http://eightmedia.github.com/hammer.js
+/*! Hammer.JS - v1.0.9 - 2014-03-24
+ * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
  * Licensed under the MIT license */
@@ -881,15 +881,17 @@ var Detection = Hammer.detection = {
     // extend event data with calculations about scale, distance etc
     eventData = this.extendEventData(eventData);
 
+    var inst = this.current.inst;
+
     // instance options
-    var inst_options = this.current.inst.options;
+    var inst_options = inst.options;
 
     // call Hammer.gesture handlers
     Utils.each(this.gestures, function(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false) {
+      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
         // if a handler returns false, we stop with the detection
-        if(gesture.handler.call(gesture, eventData, this.current.inst) === false) {
+        if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();
           return false;
         }
