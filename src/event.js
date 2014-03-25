@@ -10,13 +10,14 @@ var last_move_event = null;
  * when the mouse is hold down, this is true
  * @type {Boolean}
  */
-var enable_detect = false;
+var should_detect = false;
 
 /**
  * when touch events have been fired, this is true
  * @type {Boolean}
  */
 var touch_triggered = false;
+
 
 var Event = Hammer.event = {
   /**
@@ -55,7 +56,8 @@ var Event = Hammer.event = {
    */
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
-    
+
+
     var bindDomOnTouch = function bindDomOnTouch(ev) {
       var srcEventType = ev.type.toLowerCase();
 
@@ -70,12 +72,12 @@ var Event = Hammer.event = {
         Utils.inStr(srcEventType, 'pointerdown') || // pointerevents touch
         (Utils.inStr(srcEventType, 'mouse') && ev.which === 1)   // mouse is pressed
         ) {
-        enable_detect = true;
+        should_detect = true;
       }
 
       // mouse isn't pressed
       else if(Utils.inStr(srcEventType, 'mouse') && !ev.which) {
-        enable_detect = false;
+        should_detect = false;
       }
 
 
@@ -90,7 +92,7 @@ var Event = Hammer.event = {
 
       // when touch has been triggered in this detection session
       // and we are now handling a mouse event, we stop that to prevent conflicts
-      if(enable_detect) {
+      if(should_detect) {
         // update pointerevent
         if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
           count_touches = PointerEvent.updatePointer(eventType, ev);
@@ -103,6 +105,7 @@ var Event = Hammer.event = {
         else if(!touch_triggered) {
           count_touches = Utils.inStr(srcEventType, 'up') ? 0 : 1;
         }
+
 
         // if we are in a end event, but when we remove one touch and
         // we still have enough, set eventType to move
@@ -119,6 +122,7 @@ var Event = Hammer.event = {
           last_move_event = ev;
         }
 
+
         // trigger the handler
         handler.call(Detection, self.collectEventData(element, eventType,
                                   self.getTouchList(last_move_event, eventType),
@@ -133,7 +137,7 @@ var Event = Hammer.event = {
       // on the end we reset everything
       if(!count_touches) {
         last_move_event = null;
-        enable_detect = false;
+        should_detect = false;
         touch_triggered = false;
         PointerEvent.reset();
       }

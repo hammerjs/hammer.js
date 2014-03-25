@@ -88,8 +88,8 @@ var Utils = Hammer.utils = {
       , y = [];
 
     Utils.each(touches, function(touch) {
-      x.push(touch.pageX);
-      y.push(touch.pageY);
+      x.push(touch.clientX !== undefined ? touch.clientX : touch.pageX);
+      y.push(touch.clientY !== undefined ? touch.clientY : touch.pageY);
     });
 
     return {
