@@ -115,22 +115,22 @@ var Detection = Hammer.detection = {
     // calculate velocity every x ms
     if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
       velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
-                                   ev.center.pageX - velocityEv.center.pageX,
-                                  ev.center.pageY - velocityEv.center.pageY);
+                                   ev.center.clientX - velocityEv.center.clientX,
+                                  ev.center.clientY - velocityEv.center.clientY);
       cur.lastVelocityEvent = ev;
     }
     else if(!cur.velocity) {
       velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
       cur.lastVelocityEvent = ev;
     }
-    
+
     cur.velocity = velocity;
-    
+
     ev.velocityX = velocity.x;
     ev.velocityY = velocity.y;
   },
-  
-  
+
+
   /**
    * calculate interim angle and direction
    * @param   {Object}  ev
@@ -152,7 +152,7 @@ var Detection = Hammer.detection = {
       angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
       direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
     }
-    
+
     ev.interimAngle = angle;
     ev.interimDirection = direction;
   },
@@ -179,16 +179,18 @@ var Detection = Hammer.detection = {
       });
     }
 
+    console.log(ev.center);
+
     var delta_time = ev.timeStamp - startEv.timeStamp
-      , delta_x = ev.center.pageX - startEv.center.pageX
-      , delta_y = ev.center.pageY - startEv.center.pageY;
-    
+      , delta_x = ev.center.clientX - startEv.center.clientX
+      , delta_y = ev.center.clientY - startEv.center.clientY;
+
     this.getVelocityData(ev, delta_time, delta_x, delta_y);
     this.getInterimData(ev);
 
     Utils.extend(ev, {
       startEvent: startEv,
-      
+
       deltaTime : delta_time,
       deltaX    : delta_x,
       deltaY    : delta_y,

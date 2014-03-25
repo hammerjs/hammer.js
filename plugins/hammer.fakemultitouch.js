@@ -40,7 +40,9 @@
         if(!start_pos) {
           start_pos = {
             pageX: ev.pageX,
-            pageY: ev.pageY
+            pageY: ev.pageY,
+            clientX: ev.clientX,
+            clientY: ev.clientY
           };
         }
 
@@ -53,12 +55,16 @@
             identifier: 1,
             pageX     : start_pos.pageX - distance_x - 50,
             pageY     : start_pos.pageY - distance_y + 50,
+            clientX   : start_pos.clientX - distance_x - 50,
+            clientY   : start_pos.clientY - distance_y + 50,
             target    : ev.target
           },
           {
             identifier: 2,
             pageX     : start_pos.pageX + distance_x + 50,
             pageY     : start_pos.pageY + distance_y - 50,
+            clientX   : start_pos.clientX + distance_x + 50,
+            clientY   : start_pos.clientY + distance_y - 50,
             target    : ev.target
           }
         ];
@@ -71,6 +77,8 @@
             identifier: 1,
             pageX     : ev.pageX,
             pageY     : ev.pageY,
+            clientX   : ev.clientX,
+            clientY   : ev.clientY,
             target    : ev.target
           }
         ];

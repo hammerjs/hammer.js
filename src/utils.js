@@ -84,17 +84,23 @@ var Utils = Hammer.utils = {
    * @returns {Object}    center
    */
   getCenter: function getCenter(touches) {
-    var x = []
-      , y = [];
+    var pageX = []
+      , pageY = []
+      , clientX = []
+      , clientY = [];
 
     Utils.each(touches, function(touch) {
-      x.push(touch.clientX !== undefined ? touch.clientX : touch.pageX);
-      y.push(touch.clientY !== undefined ? touch.clientY : touch.pageY);
+      pageX.push(touch.pageX);
+      pageY.push(touch.pageY);
+      clientX.push(touch.clientX);
+      clientY.push(touch.clientY);
     });
 
     return {
-      pageX: (Math.min.apply(Math, x) + Math.max.apply(Math, x)) / 2,
-      pageY: (Math.min.apply(Math, y) + Math.max.apply(Math, y)) / 2
+      pageX: (Math.min.apply(Math, pageX) + Math.max.apply(Math, pageX)) / 2,
+      pageY: (Math.min.apply(Math, pageY) + Math.max.apply(Math, pageY)) / 2,
+      clientX: (Math.min.apply(Math, clientX) + Math.max.apply(Math, clientX)) / 2,
+      clientY: (Math.min.apply(Math, clientY) + Math.max.apply(Math, clientY)) / 2
     };
   },
 
@@ -121,8 +127,8 @@ var Utils = Hammer.utils = {
    * @returns {Number}    angle
    */
   getAngle: function getAngle(touch1, touch2) {
-    var y = touch2.pageY - touch1.pageY
-      , x = touch2.pageX - touch1.pageX;
+    var x = touch2.clientX - touch1.clientX
+      , y = touch2.clientY - touch1.clientY;
     return Math.atan2(y, x) * 180 / Math.PI;
   },
 
@@ -134,12 +140,12 @@ var Utils = Hammer.utils = {
    * @returns {String}    direction constant, like DIRECTION_LEFT
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.pageX - touch2.pageX)
-      , y = Math.abs(touch1.pageY - touch2.pageY);
+    var x = Math.abs(touch1.clientX - touch2.clientX)
+      , y = Math.abs(touch1.clientY - touch2.clientY);
     if(x >= y) {
-      return touch1.pageX - touch2.pageX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+      return touch1.clientX - touch2.clientX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
-    return touch1.pageY - touch2.pageY > 0 ? DIRECTION_UP : DIRECTION_DOWN;
+    return touch1.clientY - touch2.clientY > 0 ? DIRECTION_UP : DIRECTION_DOWN;
   },
 
 
@@ -150,8 +156,8 @@ var Utils = Hammer.utils = {
    * @returns {Number}    distance
    */
   getDistance: function getDistance(touch1, touch2) {
-    var x = touch2.pageX - touch1.pageX
-      , y = touch2.pageY - touch1.pageY;
+    var x = touch2.clientX - touch1.clientX
+      , y = touch2.clientY - touch1.clientY;
     return Math.sqrt((x * x) + (y * y));
   },
 
