@@ -216,8 +216,7 @@
     // start!
     hammertime = Hammer(getEl('hitarea'), {
           prevent_default: true,
-          no_mouseevents: true,
-          drag_max_touches: 0
+          no_mouseevents: true
       })
       .on(all_events.join(" "), logEvent);
 
