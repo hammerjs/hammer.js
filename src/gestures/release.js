@@ -3,7 +3,11 @@
  * Called as last, tells the user has released the screen
  * @events  release
  */
-Hammer.gestures.Release = {
+
+Hammer.gestures.Release = function() {
+  
+};
+Hammer.gestures.Release.prototype = {
   name   : 'release',
   index  : Infinity,
   handler: function releaseGesture(ev, inst) {

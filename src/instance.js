@@ -18,10 +18,35 @@ Hammer.Instance = function(element, options) {
   // start/stop detection option
   this.enabled = true;
 
-  // merge options
-  this.options = Utils.extend(
-    Utils.extend({}, Hammer.defaults),
-    options || {});
+  this.options = {};
+  this.gestures = [];
+
+  Detection.gestures.forEach(function (GestureKlass) {
+
+    // the instance is always created to get its gesture name
+    // instead of defining any convention which could break the existing api
+    var gestureInstance = new GestureKlass();
+    
+    //if ( gestureInstance.name !== 'show_touches' && options[gestureInstance.name] !== false ) {
+    if ( options[gestureInstance.name] !== false ) {
+
+      gestureInstance.enabled = true;
+      gestureInstance.index = gestureInstance.index || 1000;
+
+      self.options = Utils.extend(self.options, Hammer.defaults || {});
+      self.options = Utils.extend(self.options, gestureInstance.defaults || {});
+      self.options = Utils.extend(self.options, options || {});
+      self.gestures.push(gestureInstance);
+    } else {
+      gestureInstance = null;
+    }
+  });
+
+  this.gestures.sort(function(a, b) {
+    if(a.index < b.index) { return -1; }
+    if(a.index > b.index) { return 1; }
+    return 0;
+  });
 
   // add some css to the element to prevent the browser from doing its native behavoir
   if(this.options.stop_browser_behavior) {
@@ -122,6 +147,19 @@ Hammer.Instance.prototype = {
     return this;
   },
 
+  /**
+   * enable/disable a specific gesture
+   * @param   {String}   gestureName
+   * @param   {Boolean}   state
+   * @returns {Hammer.Instance}
+   */
+  enableGesture: function enableGesture(name, state) {
+    var gesture = this.findGesture(name);
+    console.assert(!!gesture, 'cannot enableGesture '+name);
+    gesture.enabled = state;
+    return this;
+  },
+
 
   /**
    * dispose this hammer instance
@@ -145,5 +183,13 @@ Hammer.Instance.prototype = {
     Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
+  },
+
+  findGesture: function(name) {
+    var gesture;
+    for (var i = 0, j = this.gestures.length; i < j; i++) {
+      gesture = this.gestures[i];
+      if (gesture.name === name) { return gesture; }
+    }
   }
 };

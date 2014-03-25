@@ -5,7 +5,11 @@
  * you disable scrolling on that area.
  * @events  drag, drapleft, dragright, dragup, dragdown
  */
-Hammer.gestures.Drag = {
+
+Hammer.gestures.Drag = function() {
+  
+};
+Hammer.gestures.Drag.prototype = {
   name     : 'drag',
   index    : 50,
   defaults : {

@@ -3,7 +3,11 @@
  * Called as first, tells the user has touched the screen
  * @events  touch
  */
-Hammer.gestures.Touch = {
+
+Hammer.gestures.Touch = function() {
+  
+};
+Hammer.gestures.Touch.prototype = {
   name    : 'touch',
   index   : -Infinity,
   defaults: {

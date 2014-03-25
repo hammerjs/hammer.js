@@ -4,7 +4,10 @@
  * for best usage, set prevent_default (on the drag gesture) to true
  * @events  swipe, swipeleft, swiperight, swipeup, swipedown
  */
-Hammer.gestures.Swipe = {
+Hammer.gestures.Swipe = function() {
+  
+};
+Hammer.gestures.Swipe.prototype = {
   name    : 'swipe',
   index   : 40,
   defaults: {

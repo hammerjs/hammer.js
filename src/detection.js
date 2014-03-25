@@ -1,5 +1,5 @@
 var Detection = Hammer.detection = {
-  // contains all registred Hammer.gestures in the correct order
+  // contains all registred Hammer.gestures
   gestures: [],
 
   // data of the current Hammer.gesture detection session
@@ -53,13 +53,12 @@ var Detection = Hammer.detection = {
     eventData = this.extendEventData(eventData);
 
     // hammer instance and instance options
-    var inst = this.current.inst,
-        inst_options = inst.options;
+    var inst = this.current.inst;
 
     // call Hammer.gesture handlers
-    Utils.each(this.gestures, function triggerGesture(gesture) {
+    Utils.each(inst.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
+      if(!this.stopped && inst.enabled && gesture.enabled) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();
@@ -210,28 +209,8 @@ var Detection = Hammer.detection = {
    * @returns {Array}     gestures
    */
   register: function register(gesture) {
-    // add an enable gesture options if there is no given
-    var options = gesture.defaults || {};
-    if(options[gesture.name] === undefined) {
-      options[gesture.name] = true;
-    }
-
-    // extend Hammer default options with the Hammer.gesture options
-    Utils.extend(Hammer.defaults, options, true);
-
-    // set its index
-    gesture.index = gesture.index || 1000;
-
-    // add Hammer.gesture to the list
+    console.assert(typeof(gesture) === 'function', 'Breaking change: Define custom gestures as function object');
     this.gestures.push(gesture);
-
-    // sort the list by index
-    this.gestures.sort(function(a, b) {
-      if(a.index < b.index) { return -1; }
-      if(a.index > b.index) { return 1; }
-      return 0;
-    });
-
     return this.gestures;
   }
 };

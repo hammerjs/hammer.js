@@ -3,7 +3,11 @@
  * User want to scale or rotate with 2 fingers
  * @events  transform, pinch, pinchin, pinchout, rotate
  */
-Hammer.gestures.Transform = {
+
+Hammer.gestures.Transform = function() {
+  
+};
+Hammer.gestures.Transform.prototype = {
   name     : 'transform',
   index    : 45,
   defaults : {
