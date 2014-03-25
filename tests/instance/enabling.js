@@ -80,3 +80,45 @@ test("can disable the default gesture recognition settings based on the hammer i
   ok(!wasCalled, 'tap was not fired on touchEnd because the gesture is disabled');
 
 });
+
+
+test("can enable/disable a specific gesture with hammerInstance.enableGesture method", function() {
+
+  hammer = new Hammer(el);
+
+  var wasCalled = false;
+  hammer.on("tap", function() {
+    wasCalled = true;
+  });
+
+  event = document.createEvent('Event');
+  event.initEvent('touchstart', true, true);
+  event.touches = [{pageX: 0, pageY: 10}];
+  el.dispatchEvent(event);
+
+  ok(!wasCalled, 'tap was not fired on touch start');
+
+  hammer.enableGesture('tap', false);
+
+  event = document.createEvent('Event');
+  event.initEvent('touchend', true, true);
+  event.touches = [];
+  el.dispatchEvent(event);
+
+  ok(!wasCalled, 'tap was not fired on touchEnd because gesture is disabled');
+
+  hammer.enableGesture('tap', true);
+
+  event = document.createEvent('Event');
+  event.initEvent('touchstart', true, true);
+  event.touches = [{pageX: 0, pageY: 10}];
+  el.dispatchEvent(event);
+
+  event = document.createEvent('Event');
+  event.initEvent('touchend', true, true);
+  event.touches = [];
+  el.dispatchEvent(event);
+
+  ok(wasCalled, 'tap was fired when the gesture has been enabled and the touch events are executed again');
+
+});

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.9 - 2014-03-24
+/*! Hammer.JS - v1.0.9 - 2014-03-25
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -383,6 +383,8 @@ Hammer.Instance = function(element, options) {
     
     //if ( gestureInstance.name !== 'show_touches' && options[gestureInstance.name] !== false ) {
     if ( options[gestureInstance.name] !== false ) {
+
+      gestureInstance.enabled = true;
       gestureInstance.index = gestureInstance.index || 1000;
 
       self.options = Utils.extend(self.options, Hammer.defaults || {});
@@ -499,6 +501,19 @@ Hammer.Instance.prototype = {
     return this;
   },
 
+  /**
+   * enable/disable a specific gesture
+   * @param   {String}   gestureName
+   * @param   {Boolean}   state
+   * @returns {Hammer.Instance}
+   */
+  enableGesture: function enableGesture(name, state) {
+    var gesture = this.findGesture(name);
+    console.assert(!!gesture, 'cannot enableGesture '+name);
+    gesture.enabled = state;
+    return this;
+  },
+
 
   /**
    * dispose this hammer instance
@@ -522,6 +537,14 @@ Hammer.Instance.prototype = {
     Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
+  },
+
+  findGesture: function(name) {
+    var gesture;
+    for (var i = 0, j = this.gestures.length; i < j; i++) {
+      gesture = this.gestures[i];
+      if (gesture.name === name) { return gesture; }
+    }
   }
 };
 
@@ -915,13 +938,12 @@ var Detection = Hammer.detection = {
     eventData = this.extendEventData(eventData);
 
     // hammer instance and instance options
-    var inst = this.current.inst,
-        inst_options = inst.options;
+    var inst = this.current.inst;
 
     // call Hammer.gesture handlers
     Utils.each(inst.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
+      if(!this.stopped && inst.enabled && gesture.enabled) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();

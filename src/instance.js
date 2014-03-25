@@ -29,6 +29,8 @@ Hammer.Instance = function(element, options) {
     
     //if ( gestureInstance.name !== 'show_touches' && options[gestureInstance.name] !== false ) {
     if ( options[gestureInstance.name] !== false ) {
+
+      gestureInstance.enabled = true;
       gestureInstance.index = gestureInstance.index || 1000;
 
       self.options = Utils.extend(self.options, Hammer.defaults || {});
@@ -145,6 +147,19 @@ Hammer.Instance.prototype = {
     return this;
   },
 
+  /**
+   * enable/disable a specific gesture
+   * @param   {String}   gestureName
+   * @param   {Boolean}   state
+   * @returns {Hammer.Instance}
+   */
+  enableGesture: function enableGesture(name, state) {
+    var gesture = this.findGesture(name);
+    console.assert(!!gesture, 'cannot enableGesture '+name);
+    gesture.enabled = state;
+    return this;
+  },
+
 
   /**
    * dispose this hammer instance
@@ -168,5 +183,13 @@ Hammer.Instance.prototype = {
     Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
+  },
+
+  findGesture: function(name) {
+    var gesture;
+    for (var i = 0, j = this.gestures.length; i < j; i++) {
+      gesture = this.gestures[i];
+      if (gesture.name === name) { return gesture; }
+    }
   }
 };
