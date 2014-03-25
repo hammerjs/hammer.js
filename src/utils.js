@@ -58,7 +58,7 @@ var Utils = Hammer.utils = {
   inStr: function inStr(src, needle) {
     return src.indexOf(needle) > -1;
   },
-  
+
 
   /**
    * find if a node is in the given parent
@@ -84,17 +84,17 @@ var Utils = Hammer.utils = {
    * @returns {Object}    center
    */
   getCenter: function getCenter(touches) {
-    var valuesX = [], valuesY = [];
+    var x = []
+      , y = [];
 
     Utils.each(touches, function(touch) {
-      // I prefer clientX because it ignore the scrolling position
-      valuesX.push(typeof touch.clientX !== 'undefined' ? touch.clientX : touch.pageX);
-      valuesY.push(typeof touch.clientY !== 'undefined' ? touch.clientY : touch.pageY);
+      x.push(touch.pageX);
+      y.push(touch.pageY);
     });
 
     return {
-      pageX: (Math.min.apply(Math, valuesX) + Math.max.apply(Math, valuesX)) / 2,
-      pageY: (Math.min.apply(Math, valuesY) + Math.max.apply(Math, valuesY)) / 2
+      pageX: (Math.min.apply(Math, x) + Math.max.apply(Math, x)) / 2,
+      pageY: (Math.min.apply(Math, y) + Math.max.apply(Math, y)) / 2
     };
   },
 
