@@ -179,8 +179,6 @@ var Detection = Hammer.detection = {
       });
     }
 
-    console.log(ev.center);
-
     var delta_time = ev.timeStamp - startEv.timeStamp
       , delta_x = ev.center.clientX - startEv.center.clientX
       , delta_y = ev.center.clientY - startEv.center.clientY;
@@ -198,6 +196,7 @@ var Detection = Hammer.detection = {
       distance  : Utils.getDistance(startEv.center, ev.center),
       angle     : Utils.getAngle(startEv.center, ev.center),
       direction : Utils.getDirection(startEv.center, ev.center),
+
       scale     : Utils.getScale(startEv.touches, ev.touches),
       rotation  : Utils.getRotation(startEv.touches, ev.touches)
     });

@@ -8,7 +8,7 @@ Hammer.gestures.Hold = {
   index   : 10,
   defaults: {
     hold_timeout  : 500,
-    hold_threshold: 1
+    hold_threshold: 2
   },
   timer   : null,
 
