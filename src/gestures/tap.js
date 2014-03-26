@@ -19,9 +19,10 @@ Hammer.gestures.Tap.prototype = {
   },
 
   has_moved: false,
+  previousSession: null,
 
   handler : function tapGesture(ev, inst) {
-    var prev, since_prev, did_doubletap;
+    var since_prev, did_doubletap;
 
     // reset moved state
     if(ev.eventType == EVENT_START) {
@@ -36,25 +37,25 @@ Hammer.gestures.Tap.prototype = {
     else if(ev.eventType == EVENT_END &&
         ev.srcEvent.type != 'touchcancel' &&
         ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
-
+      
+      var lastEvent = this.session.lastEvent;
       // previous gesture, for the double tap since these are two different gesture detections
-      prev = Detection.previous;
-      since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
+      since_prev = lastEvent && ev.timeStamp - lastEvent.timeStamp;
       did_doubletap = false;
 
       // check if double tap
-      if(prev && prev.name == 'tap' &&
-          (since_prev && since_prev < inst.options.doubletap_interval) &&
-          ev.distance < inst.options.doubletap_distance) {
+      if ( since_prev && 
+           since_prev < inst.options.doubletap_interval && 
+           ev.distance < inst.options.doubletap_distance ) {
         inst.trigger('doubletap', ev);
         did_doubletap = true;
       }
 
       // do a single tap
       if(!did_doubletap || inst.options.tap_always) {
-        Detection.current.name = 'tap';
-        inst.trigger(Detection.current.name, ev);
+        inst.trigger('tap', ev);
       }
     }
+
   }
 };

@@ -40,14 +40,10 @@ Hammer.gestures.Drag.prototype = {
   },
 
   triggered: false,
+
   handler  : function dragGesture(ev, inst) {
-    // current gesture isnt drag, but dragged is true
-    // this means an other gesture is busy. now call dragend
-    if(Detection.current.name != this.name && this.triggered) {
-      inst.trigger(this.name + 'end', ev);
-      this.triggered = false;
-      return;
-    }
+
+    var session = this.session;
 
     // max touches
     if(inst.options.drag_max_touches > 0 &&
@@ -63,35 +59,34 @@ Hammer.gestures.Drag.prototype = {
       case EVENT_MOVE:
         // when the distance we moved is too small we skip this gesture
         // or we can be already in dragging
-        if(ev.distance < inst.options.drag_min_distance &&
-          Detection.current.name != this.name) {
+        if(ev.distance < inst.options.drag_min_distance ) {
           return;
         }
 
-        // we are dragging!
-        if(Detection.current.name != this.name) {
-          Detection.current.name = this.name;
-          if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
-            // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
-            // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
-            // It might be useful to save the original start point somewhere
-            var factor = Math.abs(inst.options.drag_min_distance / ev.distance);
-            Detection.current.startEvent.center.pageX += ev.deltaX * factor;
-            Detection.current.startEvent.center.pageY += ev.deltaY * factor;
+        var lastEvent = session.lastEvent;
 
-            // recalculate event data using new start point
-            ev = Detection.extendEventData(ev);
-          }
+        if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
+          // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
+          // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
+          // It might be useful to save the original start point somewhere
+          var factor = Math.abs(inst.options.drag_min_distance / ev.distance);
+          var startEvent = session.startEvent;
+          startEvent.center.pageX += ev.deltaX * factor;
+          startEvent.center.pageY += ev.deltaY * factor;
+
+          // recalculate event data using new start point
+          ev = Utils.extendEventData(ev, session);
         }
 
+
         // lock drag to axis?
-        if(Detection.current.lastEvent.drag_locked_to_axis ||
+        if(lastEvent.drag_locked_to_axis ||
             ( inst.options.drag_lock_to_axis &&
               inst.options.drag_lock_min_distance <= ev.distance
             )) {
           ev.drag_locked_to_axis = true;
         }
-        var last_direction = Detection.current.lastEvent.direction;
+        var last_direction = lastEvent.direction;
         if(ev.drag_locked_to_axis && last_direction !== ev.direction) {
           // keep direction on the axis that the drag gesture started on
           if(Utils.isVertical(last_direction)) {
@@ -130,5 +125,7 @@ Hammer.gestures.Drag.prototype = {
         this.triggered = false;
         break;
     }
+
+
   }
 };

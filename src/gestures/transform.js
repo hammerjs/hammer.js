@@ -28,7 +28,7 @@ Hammer.gestures.Transform.prototype = {
   handler  : function transformGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
     // this means an other gesture is busy. now call dragend
-    if(Detection.current.name != this.name && this.triggered) {
+    if (this.triggered) {
       inst.trigger(this.name + 'end', ev);
       this.triggered = false;
       return;
@@ -69,8 +69,6 @@ Hammer.gestures.Transform.prototype = {
           return;
         }
 
-        // we are transforming!
-        Detection.current.name = this.name;
 
         // first time, trigger dragstart event
         if(!this.triggered) {

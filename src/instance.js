@@ -55,9 +55,15 @@ Hammer.Instance = function(element, options) {
 
   // start detection on touchstart
   this.eventStartHandler = Event.onTouch(element, EVENT_START, function(ev) {
-    if(self.enabled) {
-      Detection.startDetect(self, ev);
-    }
+    Detection.detect(self, ev);
+  });
+
+  this.eventMoveHandler = Event.onTouch(element, EVENT_MOVE, function(ev) {
+    Detection.detect(self, ev);
+  });
+
+  this.eventEndHandler = Event.onTouch(element, EVENT_END, function(ev) {
+    Detection.detect(self, ev);
   });
 
   // keep a list of user event handlers which needs to be removed when calling 'dispose'
@@ -179,8 +185,10 @@ Hammer.Instance.prototype = {
     }
     this.eventHandlers = [];
 
-    // unbind the start event listener
+    // unbind the event listeners
     Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_MOVE], this.eventMoveHandler);
+    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_END], this.eventEndHandler);
 
     return null;
   },

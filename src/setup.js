@@ -97,10 +97,6 @@ function setup() {
     Detection.register(gesture);
   });
 
-  // Add touch events on the document
-  Event.onTouch(Hammer.DOCUMENT, EVENT_MOVE, Detection.detect);
-  Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
-
   // Hammer is ready...!
   Hammer.READY = true;
 }

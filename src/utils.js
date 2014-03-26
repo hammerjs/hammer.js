@@ -232,5 +232,117 @@ var Utils = Hammer.utils = {
     if(css_props.userDrag == 'none') {
       element.ondragstart = !toggle && false_fn;
     }
+  },
+
+
+
+  /**
+   * calculate velocity
+   * @param   {Object}  ev
+   * @param   {Number}  delta_time
+   * @param   {Number}  delta_x
+   * @param   {Number}  delta_y
+   */
+  _getVelocityData: function _getVelocityData(ev, currentLastVelocityEvent, currentVelocity, delta_time, delta_x, delta_y) {
+    
+    var result;
+
+    // calculate velocity every x ms
+    if (currentLastVelocityEvent && ev.timeStamp - currentLastVelocityEvent.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+      result = Utils.getVelocity(ev.timeStamp - currentLastVelocityEvent.timeStamp,
+                                   ev.center.pageX - currentLastVelocityEvent.center.pageX,
+                                  ev.center.pageY - currentLastVelocityEvent.center.pageY);
+    }
+    else if(!currentVelocity) {
+      result = Utils.getVelocity(delta_time, delta_x, delta_y);
+    } else {
+      result = currentVelocity;
+    }
+
+    return result;
+
+  },
+  
+  
+  /**
+   * calculate interim angle and direction
+   * @param   {Object}  ev
+   */
+  _getInterimData: function _getInterimData(ev, lastEvent) {
+    var angle,
+        direction;
+
+    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
+    // because the previous event has exactly the same coordinates
+    // so for end events, take the previous values of interimDirection & interimAngle
+    // instead of recalculating them and getting a spurious '0'
+    if(ev.eventType == EVENT_END) {
+      angle = lastEvent && lastEvent.interimAngle;
+      direction = lastEvent && lastEvent.interimDirection;
+    }
+    else {
+      angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
+      direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
+    }
+
+    return {angle: angle, direction: direction};
+  },
+
+
+  /**
+   * extend eventData for Hammer.gestures
+   * @param   {Object}   evData
+   * @returns {Object}   evData
+   */
+  extendEventData: function extendEventData(ev, gestureSession) {
+
+    var startEv = gestureSession.startEvent,
+        lastEvent = gestureSession.lastEvent;
+
+    // if the touches change, set the new touches over the startEvent touches
+    // this because touchevents don't have all the touches on touchstart, or the
+    // user must place his fingers at the EXACT same time on the screen, which is not realistic
+    // but, sometimes it happens that both fingers are touching at the EXACT same time
+    if(ev.touches.length != startEv.touches.length || ev.touches === startEv.touches) {
+      // extend 1 level deep to get the touchlist with the touch objects
+      startEv.touches = [];
+      Utils.each(ev.touches, function(touch) {
+        startEv.touches.push(Utils.extend({}, touch));
+      });
+    }
+
+    var delta_time = ev.timeStamp - startEv.timeStamp
+      , delta_x = ev.center.pageX - startEv.center.pageX
+      , delta_y = ev.center.pageY - startEv.center.pageY;
+    
+    var velocity = this._getVelocityData(ev, gestureSession.lastVelocityEvent, gestureSession.velocity, delta_time, delta_x, delta_y);
+  
+    // update gestureSession
+    gestureSession.lastVelocityEvent = ev;
+    gestureSession.velocity = velocity;
+
+    ev.velocityX = velocity.x;
+    ev.velocityY = velocity.y;
+
+    var interimData = this._getInterimData(ev, lastEvent);
+    ev.interimAngle = interimData.angle;
+    ev.interimDirection = interimData.direction;
+
+
+    Utils.extend(ev, {
+      startEvent: startEv,
+      
+      deltaTime : delta_time,
+      deltaX    : delta_x,
+      deltaY    : delta_y,
+
+      distance  : Utils.getDistance(startEv.center, ev.center),
+      angle     : Utils.getAngle(startEv.center, ev.center),
+      direction : Utils.getDirection(startEv.center, ev.center),
+      scale     : Utils.getScale(startEv.touches, ev.touches),
+      rotation  : Utils.getRotation(startEv.touches, ev.touches)
+    });
+
+    return ev;
   }
 };

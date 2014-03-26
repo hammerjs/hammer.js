@@ -22,15 +22,10 @@ Hammer.gestures.Hold.prototype = {
         // clear any running timers
         clearTimeout(this.timer);
 
-        // set the gesture so we can check in the timeout if it still is
-        Detection.current.name = this.name;
-
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
         this.timer = setTimeout(function() {
-          if(Detection.current.name == 'hold') {
-            inst.trigger('hold', ev);
-          }
+           inst.trigger('hold', ev);
         }, inst.options.hold_timeout);
         break;
 

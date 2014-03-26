@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.9 - 2014-03-25
+/*! Hammer.JS - v1.0.9 - 2014-03-26
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -106,13 +106,10 @@ function setup() {
     Detection.register(gesture);
   });
 
-  // Add touch events on the document
-  Event.onTouch(Hammer.DOCUMENT, EVENT_MOVE, Detection.detect);
-  Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
-
   // Hammer is ready...!
   Hammer.READY = true;
 }
+
 
 var Utils = Hammer.utils = {
   /**
@@ -348,6 +345,118 @@ var Utils = Hammer.utils = {
     if(css_props.userDrag == 'none') {
       element.ondragstart = !toggle && false_fn;
     }
+  },
+
+
+
+  /**
+   * calculate velocity
+   * @param   {Object}  ev
+   * @param   {Number}  delta_time
+   * @param   {Number}  delta_x
+   * @param   {Number}  delta_y
+   */
+  _getVelocityData: function _getVelocityData(ev, currentLastVelocityEvent, currentVelocity, delta_time, delta_x, delta_y) {
+    
+    var result;
+
+    // calculate velocity every x ms
+    if (currentLastVelocityEvent && ev.timeStamp - currentLastVelocityEvent.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+      result = Utils.getVelocity(ev.timeStamp - currentLastVelocityEvent.timeStamp,
+                                   ev.center.pageX - currentLastVelocityEvent.center.pageX,
+                                  ev.center.pageY - currentLastVelocityEvent.center.pageY);
+    }
+    else if(!currentVelocity) {
+      result = Utils.getVelocity(delta_time, delta_x, delta_y);
+    } else {
+      result = currentVelocity;
+    }
+
+    return result;
+
+  },
+  
+  
+  /**
+   * calculate interim angle and direction
+   * @param   {Object}  ev
+   */
+  _getInterimData: function _getInterimData(ev, lastEvent) {
+    var angle,
+        direction;
+
+    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
+    // because the previous event has exactly the same coordinates
+    // so for end events, take the previous values of interimDirection & interimAngle
+    // instead of recalculating them and getting a spurious '0'
+    if(ev.eventType == EVENT_END) {
+      angle = lastEvent && lastEvent.interimAngle;
+      direction = lastEvent && lastEvent.interimDirection;
+    }
+    else {
+      angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
+      direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
+    }
+
+    return {angle: angle, direction: direction};
+  },
+
+
+  /**
+   * extend eventData for Hammer.gestures
+   * @param   {Object}   evData
+   * @returns {Object}   evData
+   */
+  extendEventData: function extendEventData(ev, gestureSession) {
+
+    var startEv = gestureSession.startEvent,
+        lastEvent = gestureSession.lastEvent;
+
+    // if the touches change, set the new touches over the startEvent touches
+    // this because touchevents don't have all the touches on touchstart, or the
+    // user must place his fingers at the EXACT same time on the screen, which is not realistic
+    // but, sometimes it happens that both fingers are touching at the EXACT same time
+    if(ev.touches.length != startEv.touches.length || ev.touches === startEv.touches) {
+      // extend 1 level deep to get the touchlist with the touch objects
+      startEv.touches = [];
+      Utils.each(ev.touches, function(touch) {
+        startEv.touches.push(Utils.extend({}, touch));
+      });
+    }
+
+    var delta_time = ev.timeStamp - startEv.timeStamp
+      , delta_x = ev.center.pageX - startEv.center.pageX
+      , delta_y = ev.center.pageY - startEv.center.pageY;
+    
+    var velocity = this._getVelocityData(ev, gestureSession.lastVelocityEvent, gestureSession.velocity, delta_time, delta_x, delta_y);
+  
+    // update gestureSession
+    gestureSession.lastVelocityEvent = ev;
+    gestureSession.velocity = velocity;
+
+    ev.velocityX = velocity.x;
+    ev.velocityY = velocity.y;
+
+    var interimData = this._getInterimData(ev, lastEvent);
+    ev.interimAngle = interimData.angle;
+    ev.interimDirection = interimData.direction;
+
+
+    Utils.extend(ev, {
+      startEvent: startEv,
+      
+      deltaTime : delta_time,
+      deltaX    : delta_x,
+      deltaY    : delta_y,
+
+      distance  : Utils.getDistance(startEv.center, ev.center),
+      angle     : Utils.getAngle(startEv.center, ev.center),
+      direction : Utils.getDirection(startEv.center, ev.center),
+      scale     : Utils.getScale(startEv.touches, ev.touches),
+      rotation  : Utils.getRotation(startEv.touches, ev.touches)
+    });
+
+    return ev;
   }
 };
 
@@ -409,9 +518,15 @@ Hammer.Instance = function(element, options) {
 
   // start detection on touchstart
   this.eventStartHandler = Event.onTouch(element, EVENT_START, function(ev) {
-    if(self.enabled) {
-      Detection.startDetect(self, ev);
-    }
+    Detection.detect(self, ev);
+  });
+
+  this.eventMoveHandler = Event.onTouch(element, EVENT_MOVE, function(ev) {
+    Detection.detect(self, ev);
+  });
+
+  this.eventEndHandler = Event.onTouch(element, EVENT_END, function(ev) {
+    Detection.detect(self, ev);
   });
 
   // keep a list of user event handlers which needs to be removed when calling 'dispose'
@@ -533,8 +648,10 @@ Hammer.Instance.prototype = {
     }
     this.eventHandlers = [];
 
-    // unbind the start event listener
+    // unbind the event listeners
     Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_MOVE], this.eventMoveHandler);
+    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_END], this.eventEndHandler);
 
     return null;
   },
@@ -804,6 +921,7 @@ var Event = Hammer.event = {
   }
 };
 
+
 var PointerEvent = Hammer.PointerEvent = {
   /**
    * holds all pointers
@@ -887,204 +1005,53 @@ var Detection = Hammer.detection = {
   // contains all registred Hammer.gestures
   gestures: [],
 
-  // data of the current Hammer.gesture detection session
-  current : null,
-
-  // the previous Hammer.gesture session data
-  // is a full clone of the previous gesture.current object
-  previous: null,
-
   // when this becomes true, no gestures are fired
   stopped : false,
-
-
-  /**
-   * start Hammer.gesture detection
-   * @param   {Hammer.Instance}   inst
-   * @param   {Object}            eventData
-   */
-  startDetect: function startDetect(inst, eventData) {
-    // already busy with a Hammer.gesture detection on an element
-    if(this.current) {
-      return;
-    }
-
-    this.stopped = false;
-
-    // holds current session
-    this.current = {
-      inst              : inst, // reference to HammerInstance we're working for
-      startEvent        : Utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent         : false, // last eventData
-      lastVelocityEvent : false, // last eventData for velocity.
-      velocity          : false, // current velocity
-      name              : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
-    };
-
-    this.detect(eventData);
-  },
-
 
   /**
    * Hammer.gesture detection
    * @param   {Object}    eventData
    */
-  detect: function detect(eventData) {
-    if(!this.current || this.stopped) {
+  detect: function detect(inst, ev) {
+
+    if(this.stopped) {
       return;
     }
 
-    // extend event data with calculations about scale, distance etc
-    eventData = this.extendEventData(eventData);
-
-    // hammer instance and instance options
-    var inst = this.current.inst;
+    // TODO: disabled with inst_options
 
     // call Hammer.gesture handlers
     Utils.each(inst.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst.enabled && gesture.enabled) {
+      if(inst.enabled && gesture.enabled) {
+
+        if(ev.eventType === EVENT_START ) {
+
+          // start the gestureSession
+          gesture.session = {
+            startEvent        : Utils.extend({}, ev), // start eventData for distances, timing etc
+            lastEvent         : false, // last eventData
+            lastVelocityEvent : false, // last eventData for velocity.
+            velocity          : false // current velocity
+          };
+
+        }
+
+        // clone the event because each gesture can update its event data
+        var eventData = Utils.extend({}, ev);
+        eventData = Utils.extendEventData(eventData, gesture.session);
+
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, inst) === false) {
-          this.stopDetect();
-          return false;
+          //this.stopDetect();
+          //return false;
         }
+        gesture.session.lastEvent = eventData;
       }
     }, this);
-
-    // store as previous event event
-    if(this.current) {
-      this.current.lastEvent = eventData;
-    }
-
-    // end event, but not the last touch, so dont stop
-    if(eventData.eventType == EVENT_END && !eventData.touches.length - 1) {
-      this.stopDetect();
-    }
-
-    return eventData;
-  },
-
-
-  /**
-   * clear the Hammer.gesture vars
-   * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
-   * to stop other Hammer.gestures from being fired
-   */
-  stopDetect: function stopDetect() {
-    // clone current data to the store as the previous gesture
-    // used for the double tap gesture, since this is an other gesture detect session
-    this.previous = Utils.extend({}, this.current);
-
-    // reset the current
-    this.current = null;
-
-    // stopped!
-    this.stopped = true;
-  },
-
-
-  /**
-   * calculate velocity
-   * @param   {Object}  ev
-   * @param   {Number}  delta_time
-   * @param   {Number}  delta_x
-   * @param   {Number}  delta_y
-   */
-  getVelocityData: function getVelocityData(ev, delta_time, delta_x, delta_y) {
-    var cur = this.current
-      , velocityEv = cur.lastVelocityEvent
-      , velocity = cur.velocity;
-
-    // calculate velocity every x ms
-    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
-      velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
-                                   ev.center.pageX - velocityEv.center.pageX,
-                                  ev.center.pageY - velocityEv.center.pageY);
-      cur.lastVelocityEvent = ev;
-    }
-    else if(!cur.velocity) {
-      velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
-      cur.lastVelocityEvent = ev;
-    }
     
-    cur.velocity = velocity;
-    
-    ev.velocityX = velocity.x;
-    ev.velocityY = velocity.y;
-  },
-  
-  
-  /**
-   * calculate interim angle and direction
-   * @param   {Object}  ev
-   */
-  getInterimData: function getInterimData(ev) {
-    var lastEvent = this.current.lastEvent
-      , angle
-      , direction;
-
-    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
-    // because the previous event has exactly the same coordinates
-    // so for end events, take the previous values of interimDirection & interimAngle
-    // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType == EVENT_END) {
-      angle = lastEvent && lastEvent.interimAngle;
-      direction = lastEvent && lastEvent.interimDirection;
-    }
-    else {
-      angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
-      direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
-    }
-    
-    ev.interimAngle = angle;
-    ev.interimDirection = direction;
-  },
 
 
-  /**
-   * extend eventData for Hammer.gestures
-   * @param   {Object}   evData
-   * @returns {Object}   evData
-   */
-  extendEventData: function extendEventData(ev) {
-    var cur = this.current
-      , startEv = cur.startEvent;
-
-    // if the touches change, set the new touches over the startEvent touches
-    // this because touchevents don't have all the touches on touchstart, or the
-    // user must place his fingers at the EXACT same time on the screen, which is not realistic
-    // but, sometimes it happens that both fingers are touching at the EXACT same time
-    if(ev.touches.length != startEv.touches.length || ev.touches === startEv.touches) {
-      // extend 1 level deep to get the touchlist with the touch objects
-      startEv.touches = [];
-      Utils.each(ev.touches, function(touch) {
-        startEv.touches.push(Utils.extend({}, touch));
-      });
-    }
-
-    var delta_time = ev.timeStamp - startEv.timeStamp
-      , delta_x = ev.center.pageX - startEv.center.pageX
-      , delta_y = ev.center.pageY - startEv.center.pageY;
-    
-    this.getVelocityData(ev, delta_time, delta_x, delta_y);
-    this.getInterimData(ev);
-
-    Utils.extend(ev, {
-      startEvent: startEv,
-      
-      deltaTime : delta_time,
-      deltaX    : delta_x,
-      deltaY    : delta_y,
-
-      distance  : Utils.getDistance(startEv.center, ev.center),
-      angle     : Utils.getAngle(startEv.center, ev.center),
-      direction : Utils.getDirection(startEv.center, ev.center),
-      scale     : Utils.getScale(startEv.touches, ev.touches),
-      rotation  : Utils.getRotation(startEv.touches, ev.touches)
-    });
-
-    return ev;
   },
 
 
@@ -1143,14 +1110,10 @@ Hammer.gestures.Drag.prototype = {
   },
 
   triggered: false,
+
   handler  : function dragGesture(ev, inst) {
-    // current gesture isnt drag, but dragged is true
-    // this means an other gesture is busy. now call dragend
-    if(Detection.current.name != this.name && this.triggered) {
-      inst.trigger(this.name + 'end', ev);
-      this.triggered = false;
-      return;
-    }
+
+    var session = this.session;
 
     // max touches
     if(inst.options.drag_max_touches > 0 &&
@@ -1166,35 +1129,34 @@ Hammer.gestures.Drag.prototype = {
       case EVENT_MOVE:
         // when the distance we moved is too small we skip this gesture
         // or we can be already in dragging
-        if(ev.distance < inst.options.drag_min_distance &&
-          Detection.current.name != this.name) {
+        if(ev.distance < inst.options.drag_min_distance ) {
           return;
         }
 
-        // we are dragging!
-        if(Detection.current.name != this.name) {
-          Detection.current.name = this.name;
-          if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
-            // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
-            // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
-            // It might be useful to save the original start point somewhere
-            var factor = Math.abs(inst.options.drag_min_distance / ev.distance);
-            Detection.current.startEvent.center.pageX += ev.deltaX * factor;
-            Detection.current.startEvent.center.pageY += ev.deltaY * factor;
+        var lastEvent = session.lastEvent;
 
-            // recalculate event data using new start point
-            ev = Detection.extendEventData(ev);
-          }
+        if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
+          // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
+          // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
+          // It might be useful to save the original start point somewhere
+          var factor = Math.abs(inst.options.drag_min_distance / ev.distance);
+          var startEvent = session.startEvent;
+          startEvent.center.pageX += ev.deltaX * factor;
+          startEvent.center.pageY += ev.deltaY * factor;
+
+          // recalculate event data using new start point
+          ev = Utils.extendEventData(ev, session);
         }
 
+
         // lock drag to axis?
-        if(Detection.current.lastEvent.drag_locked_to_axis ||
+        if(lastEvent.drag_locked_to_axis ||
             ( inst.options.drag_lock_to_axis &&
               inst.options.drag_lock_min_distance <= ev.distance
             )) {
           ev.drag_locked_to_axis = true;
         }
-        var last_direction = Detection.current.lastEvent.direction;
+        var last_direction = lastEvent.direction;
         if(ev.drag_locked_to_axis && last_direction !== ev.direction) {
           // keep direction on the axis that the drag gesture started on
           if(Utils.isVertical(last_direction)) {
@@ -1233,6 +1195,8 @@ Hammer.gestures.Drag.prototype = {
         this.triggered = false;
         break;
     }
+
+
   }
 };
 
@@ -1261,15 +1225,10 @@ Hammer.gestures.Hold.prototype = {
         // clear any running timers
         clearTimeout(this.timer);
 
-        // set the gesture so we can check in the timeout if it still is
-        Detection.current.name = this.name;
-
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
         this.timer = setTimeout(function() {
-          if(Detection.current.name == 'hold') {
-            inst.trigger('hold', ev);
-          }
+           inst.trigger('hold', ev);
         }, inst.options.hold_timeout);
         break;
 
@@ -1367,9 +1326,10 @@ Hammer.gestures.Tap.prototype = {
   },
 
   has_moved: false,
+  previousSession: null,
 
   handler : function tapGesture(ev, inst) {
-    var prev, since_prev, did_doubletap;
+    var since_prev, did_doubletap;
 
     // reset moved state
     if(ev.eventType == EVENT_START) {
@@ -1384,26 +1344,26 @@ Hammer.gestures.Tap.prototype = {
     else if(ev.eventType == EVENT_END &&
         ev.srcEvent.type != 'touchcancel' &&
         ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
-
+      
+      var lastEvent = this.session.lastEvent;
       // previous gesture, for the double tap since these are two different gesture detections
-      prev = Detection.previous;
-      since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
+      since_prev = lastEvent && ev.timeStamp - lastEvent.timeStamp;
       did_doubletap = false;
 
       // check if double tap
-      if(prev && prev.name == 'tap' &&
-          (since_prev && since_prev < inst.options.doubletap_interval) &&
-          ev.distance < inst.options.doubletap_distance) {
+      if ( since_prev && 
+           since_prev < inst.options.doubletap_interval && 
+           ev.distance < inst.options.doubletap_distance ) {
         inst.trigger('doubletap', ev);
         did_doubletap = true;
       }
 
       // do a single tap
       if(!did_doubletap || inst.options.tap_always) {
-        Detection.current.name = 'tap';
-        inst.trigger(Detection.current.name, ev);
+        inst.trigger('tap', ev);
       }
     }
+
   }
 };
 
@@ -1479,7 +1439,7 @@ Hammer.gestures.Transform.prototype = {
   handler  : function transformGesture(ev, inst) {
     // current gesture isnt drag, but dragged is true
     // this means an other gesture is busy. now call dragend
-    if(Detection.current.name != this.name && this.triggered) {
+    if (this.triggered) {
       inst.trigger(this.name + 'end', ev);
       this.triggered = false;
       return;
@@ -1520,8 +1480,6 @@ Hammer.gestures.Transform.prototype = {
           return;
         }
 
-        // we are transforming!
-        Detection.current.name = this.name;
 
         // first time, trigger dragstart event
         if(!this.triggered) {
