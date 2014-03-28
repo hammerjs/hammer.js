@@ -221,7 +221,7 @@ var Event = Hammer.event = {
 
     return {
       center     : Utils.getCenter(touches),
-      timeStamp  : new Date().getTime(),
+      timeStamp  : Date.now(),
       target     : ev.target,
       touches    : touches,
       eventType  : eventType,
