@@ -1,6 +1,6 @@
 {
     "name": "hammerjs",
-    "version": "1.0.10dev",
+    "version": "1.0.10",
     "main": "hammer.js",
     "ignore": [
         "tests",
