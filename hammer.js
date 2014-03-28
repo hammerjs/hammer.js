@@ -204,11 +204,7 @@ var Utils = Hammer.utils = {
       , pageY = []
       , clientX = []
       , clientY = [];
-
-		if(touches.length === 1) {
-			return touches[0];
-		}
-
+		
     Utils.each(touches, function(touch) {
       pageX.push(touch.pageX);
       pageY.push(touch.pageY);
