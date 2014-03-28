@@ -81,13 +81,17 @@ var Utils = Hammer.utils = {
   /**
    * get the center of all the touches
    * @param   {Array}     touches
-   * @returns {Object}    center
+   * @returns {Object}    center pageXY clientXY
    */
   getCenter: function getCenter(touches) {
     var pageX = []
       , pageY = []
       , clientX = []
       , clientY = [];
+
+		if(touches.length === 1) {
+			return touches[0];
+		}
 
     Utils.each(touches, function(touch) {
       pageX.push(touch.pageX);
