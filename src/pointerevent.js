@@ -50,9 +50,9 @@ var PointerEvent = Hammer.PointerEvent = {
     var pt = ev.pointerType
       , types = {};
 
-    types[POINTER_MOUSE] = (pt === POINTER_MOUSE);
-    types[POINTER_TOUCH] = (pt === POINTER_TOUCH);
-    types[POINTER_PEN] = (pt === POINTER_PEN);
+    types[POINTER_MOUSE] = (pt === (ev.MSPOINTER_TYPE_MOUSE || POINTER_MOUSE));
+    types[POINTER_TOUCH] = (pt === (ev.MSPOINTER_TYPE_TOUCH || POINTER_TOUCH));
+    types[POINTER_PEN] = (pt === (ev.MSPOINTER_TYPE_PEN || POINTER_PEN));
     return types[pointerType];
   },
 
