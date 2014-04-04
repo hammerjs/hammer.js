@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.10 - 2014-04-04
+/*! Hammer.JS - v1.0.11dev - 2014-04-04
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -19,7 +19,7 @@ var Hammer = function(element, options) {
   return new Hammer.Instance(element, options || {});
 };
 
-Hammer.VERSION = '1.0.10';
+Hammer.VERSION = '1.0.11dev';
 
 // default settings
 Hammer.defaults = {
@@ -732,7 +732,8 @@ var Event = Hammer.event = {
 
   /**
    * Normalizes the "touches" of a touchend event, otherwise returns the touches as they are.
-   * @param   {Object}    ev
+   * @param   {Object}  ev
+   * @return  {Array}   touches
    */
   normalizeTouchEndTouches: function normalizeTouchEndTouches(ev) {
     if(ev.type.toLowerCase() != 'touchend') {
@@ -743,16 +744,17 @@ var Event = Hammer.event = {
     var touches = [];
     Utils.each(ev.touches, function(t) {
       var contains = false;
+
+      // remove those touches which are on the exact same position as a changed touch
       Utils.each(ev.changedTouches, function(ct) {
-        // remove those touches which are on the exact same position as a changed touch
-        if(!contains) {
-          contains = t.clientX === ct.clientX && t.clientY === ct.clientY;
-        }
+        return !(contains = (t.clientX === ct.clientX && t.clientY === ct.clientY));
       });
+
       if(!contains) {
         touches.push(t);
       }
     });
+
     return touches;
   },
 
@@ -761,7 +763,8 @@ var Event = Hammer.event = {
    * collect event data for Hammer js
    * @param   {HTMLElement}   element
    * @param   {String}        eventType        like EVENT_MOVE
-   * @param   {Object}        eventData
+   * @param   {Array}         touches
+   * @param   {Object}        ev
    */
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType

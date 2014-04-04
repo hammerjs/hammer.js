@@ -209,7 +209,8 @@ var Event = Hammer.event = {
 
   /**
    * Normalizes the "touches" of a touchend event, otherwise returns the touches as they are.
-   * @param   {Object}    ev
+   * @param   {Object}  ev
+   * @return  {Array}   touches
    */
   normalizeTouchEndTouches: function normalizeTouchEndTouches(ev) {
     if(ev.type.toLowerCase() != 'touchend') {
@@ -220,16 +221,17 @@ var Event = Hammer.event = {
     var touches = [];
     Utils.each(ev.touches, function(t) {
       var contains = false;
+
+      // remove those touches which are on the exact same position as a changed touch
       Utils.each(ev.changedTouches, function(ct) {
-        // remove those touches which are on the exact same position as a changed touch
-        if(!contains) {
-          contains = t.clientX === ct.clientX && t.clientY === ct.clientY;
-        }
+        return !(contains = (t.clientX === ct.clientX && t.clientY === ct.clientY));
       });
+
       if(!contains) {
         touches.push(t);
       }
     });
+
     return touches;
   },
 
@@ -238,7 +240,8 @@ var Event = Hammer.event = {
    * collect event data for Hammer js
    * @param   {HTMLElement}   element
    * @param   {String}        eventType        like EVENT_MOVE
-   * @param   {Object}        eventData
+   * @param   {Array}         touches
+   * @param   {Object}        ev
    */
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType
