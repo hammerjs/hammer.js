@@ -57,8 +57,9 @@ var Event = Hammer.event = {
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-
     var bindDomOnTouch = function bindDomOnTouch(ev) {
+      // do not use the outer "eventType" variable because changing it will affect all following events
+      var currentEventType = eventType;
       var srcEventType = ev.type.toLowerCase();
 
       // onmouseup, but when touchend has been fired we do nothing.
@@ -94,12 +95,12 @@ var Event = Hammer.event = {
       // and we are now handling a mouse event, we stop that to prevent conflicts
       if(should_detect) {
         // update pointerevent
-        if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
-          count_touches = PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && currentEventType != Hammer.EVENT_END) {
+          count_touches = Hammer.PointerEvent.updatePointer(currentEventType, ev);
         }
         // touch
         else if(Utils.inStr(srcEventType, 'touch')) {
-          count_touches = ev.touches.length;
+          count_touches = self.normalizeTouchEndTouches(ev).length;
         }
         // mouse
         else if(!touch_triggered) {
@@ -108,13 +109,13 @@ var Event = Hammer.event = {
 
 
         // if we are in a end event, but when we remove one touch and
-        // we still have enough, set eventType to move
-        if(count_touches > 0 && eventType == EVENT_END) {
-          eventType = EVENT_MOVE;
+        // we still have enough, set currentEventType to move
+        if(count_touches > 0 && currentEventType == Hammer.EVENT_END) {
+          currentEventType = Hammer.EVENT_MOVE;
         }
         // no touches, force the end event
         else if(!count_touches) {
-          eventType = EVENT_END;
+          currentEventType = Hammer.EVENT_END;
         }
 
         // store the last move event
@@ -124,13 +125,13 @@ var Event = Hammer.event = {
 
 
         // trigger the handler
-        handler.call(Detection, self.collectEventData(element, eventType,
-                                  self.getTouchList(last_move_event, eventType),
-                                  ev) );
+        handler.call(Detection, self.collectEventData(element, currentEventType,
+                                 self.getTouchList(last_move_event, currentEventType),
+                                 ev));
 
         // remove pointerevent from list
-        if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
-          count_touches = PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && currentEventType == Hammer.EVENT_END) {
+          count_touches = Hammer.PointerEvent.updatePointer(currentEventType, ev);
         }
       }
 
@@ -203,6 +204,33 @@ var Event = Hammer.event = {
     // make fake touchlist from mouse position
     ev.identifier = 1;
     return [ev];
+  },
+
+
+  /**
+   * Normalizes the "touches" of a touchend event, otherwise returns the touches as they are.
+   * @param   {Object}    ev
+   */
+  normalizeTouchEndTouches: function normalizeTouchEndTouches(ev) {
+    if(ev.type.toLowerCase() != 'touchend') {
+      return ev.touches;
+    }
+
+    // Firefox OS also include the changed touches in the ev.touches whereas android/iOS doesn't
+    var touches = [];
+    Utils.each(ev.touches, function(t) {
+      var contains = false;
+      Utils.each(ev.changedTouches, function(ct) {
+        // remove those touches which are on the exact same position as a changed touch
+        if(!contains) {
+          contains = t.clientX === ct.clientX && t.clientY === ct.clientY;
+        }
+      });
+      if(!contains) {
+        touches.push(t);
+      }
+    });
+    return touches;
   },
 
 
