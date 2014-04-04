@@ -31,8 +31,10 @@ Hammer.defaults = {
     // this also triggers onselectstart=false for IE
     userSelect       : 'none',
     // this makes the element blocking in IE10>, you could experiment with the value
+    // it doesnt block on the y-axis, change this to support vertical touches on IE10>
     // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-    touchAction      : 'none',
+    touchAction      : 'pan-x pinch-zoom double-tap-zoom',
+    // properties, mainly for ios/android
     touchCallout     : 'none',
     contentZooming   : 'none',
     userDrag         : 'none',
