@@ -7,3 +7,4 @@
 - Added CHANGELOG.md!
 - New gesture event: `gesture`. This is a lowlevel gesture which passes all data. Disabled by default.
 - The setting `touchAction` changed from `none` to `pan-x pinch-zoom double-tap-zoom`.
+- Dropped NO_MOUSEEVENTS check to be more future friendly.

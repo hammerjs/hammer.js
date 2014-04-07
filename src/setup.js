@@ -91,23 +91,6 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 
 /**
- * simple regex to detect mobile browsers
- * @property MOBILE_REGEX
- * @type {RegExp}
- */
-Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
-
-
-/**
- * bind to mouseevents. 
- * default is a condition based on HAS_TOUCHEVENTS and userAgent matches MOBILE_REGEX
- * @property NO_MOUSEEVENTS
- * @type {Boolean}
- */
-Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
-
-
-/**
  * interval in which Hammer recalculates current velocity in ms
  * @property VELOCITY_INTERVAL
  * @type {Number}
