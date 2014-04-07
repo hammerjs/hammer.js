@@ -1,6 +1,6 @@
 {
     "name": "hammerjs",
-    "version": "1.0.11dev",
+    "version": "1.1.0dev",
     "main": "hammer.js",
     "scripts": [
       "hammer.js"

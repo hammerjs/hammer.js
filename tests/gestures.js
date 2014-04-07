@@ -110,7 +110,7 @@ function testEventData(name, ev) {
     // has gesture object
     ok(_.isObject(ev.gesture), 'ev.gesture');
 
-    // EVENT_START|MOVE|END
+    // EVENT_START|MOVE|END|TOUCH|RELEASE
     ok(ev.gesture.eventType, 'ev.gesture.eventType');
 
     ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
@@ -145,7 +145,7 @@ function testEventData(name, ev) {
         faker.touch_type == FakeTouches.MOUSE_EVENTS) {
         pointer_type = Hammer.POINTER_MOUSE;
     }
-    ok(ev.gesture.pointerType == pointer_type, 'not matching pointertype: '+ ev.gesture.pointerType +':'+ pointer_type);
+    ok(ev.gesture.pointerType == pointer_type, 'not matching pointertype: '+ ev.gesture.eventType +':'+ ev.gesture.pointerType +':'+ pointer_type);
 
     ok(_.isFunction(ev.gesture.preventDefault), 'ev.gesture.preventDefault');
     ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');

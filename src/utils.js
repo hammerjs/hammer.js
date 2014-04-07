@@ -1,15 +1,22 @@
+/**
+ * @module hammer
+ * 
+ * @class Utils
+ * @static
+ */
 var Utils = Hammer.utils = {
   /**
-   * extend method,
-   * also used for cloning when dest is an empty object
-   * @param   {Object}    dest
-   * @param   {Object}    src
-   * @parm  {Boolean}  merge    do a merge
-   * @returns {Object}    dest
+   * extend method, could also be used for cloning when `dest` is an empty object.
+   * changes the dest object
+   * @method extend
+   * @param {Object} dest
+   * @param {Object} src
+   * @param {Boolean} [merge=false]  do a merge
+   * @return {Object} dest 
    */
   extend: function extend(dest, src, merge) {
     for(var key in src) {
-      if(dest[key] !== undefined && merge || !src.hasOwnProperty(key)) {
+      if(!src.hasOwnProperty(key) || dest[key] !== undefined && merge) {
         continue;
       }
       dest[key] = src[key];
@@ -19,9 +26,14 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * for each
-   * @param obj
-   * @param iterator
+   * forEach over arrays and objects
+	 * @method each
+   * @param {Object|Array} obj 
+   * @param {Function} iterator 
+   * @param	{any} iterator.item 
+   * @param {Number} iterator.index 
+   * @param {Object|Array} iterator.obj the source object
+	 * @param	{Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
     var i, o;
@@ -50,22 +62,56 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * find if a string contains the needle
-   * @param   {String}  src
-   * @param   {String}  needle
-   * @returns {Boolean} found
+   * find if a string contains the string using indexOf
+	 * @method inStr
+   * @param {String} src
+   * @param {String} find
+   * @return {Boolean} found
    */
-  inStr: function inStr(src, needle) {
-    return src.indexOf(needle) > -1;
+  inStr: function inStr(src, find) {
+    return src.indexOf(find) > -1;
+  },
+  
+  
+  /**
+   * find if a array contains the object using indexOf or a simple polyfill
+	 * @method inArray
+   * @param {String} src
+   * @param {String} find
+   * @return {Boolean} found
+   */
+  inArray: function inArray(src, find) {
+    if(src.indexOf) {
+      return src.indexOf(find) > -1;
+    }
+    else {
+      for(var i= 0,len=src.length;i<len; i++) {
+        if(src[i] === find) {
+          return true;
+        }
+      }
+      return false;
+    }
+  },
+
+
+  /**
+   * convert an array-like object (`arguments`, `touchlist`) to an array
+   * @method toArray
+   * @param {Object} obj
+   * @returns {Array}
+   */
+  toArray: function toArray(obj) {
+    return Array.prototype.slice.call(obj, 0);
   },
 
 
   /**
    * find if a node is in the given parent
-   * used for event delegation tricks
-   * @param   {HTMLElement}   node
-   * @param   {HTMLElement}   parent
-   * @returns {boolean}       has_parent
+	 * @method hasParent
+   * @param {HTMLElement} node
+   * @param {HTMLElement} parent
+   * @return {Boolean} found
    */
   hasParent: function hasParent(node, parent) {
     while(node) {
@@ -80,8 +126,9 @@ var Utils = Hammer.utils = {
 
   /**
    * get the center of all the touches
-   * @param   {Array}     touches
-   * @returns {Object}    center pageXY clientXY
+	 * @method getCenter
+   * @param {Array} touches
+   * @return {Object} center contains `pageX`, `pageY`, `clientX` and `clientY` properties
    */
   getCenter: function getCenter(touches) {
     var pageX = []
@@ -119,10 +166,11 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the velocity between two points
-   * @param   {Number}    delta_time
-   * @param   {Number}    delta_x
-   * @param   {Number}    delta_y
-   * @returns {Object}    velocity
+	 * @method getVelocity
+   * @param {Number} delta_time
+   * @param {Number} delta_x
+   * @param {Number} delta_y
+   * @return {Object} velocity `x` and `y`
    */
   getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
     return {
@@ -134,9 +182,10 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the angle between two coordinates
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {Number}    angle
+	 * @method getAngle
+   * @param {Touch} touch1
+   * @param {Touch} touch2
+   * @return {Number} angle
    */
   getAngle: function getAngle(touch1, touch2) {
     var x = touch2.clientX - touch1.clientX
@@ -146,10 +195,11 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * angle to direction define
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {String}    direction constant, like DIRECTION_LEFT
+   * do a small comparision to get the direction between two touches.
+	 * @method getDirection
+   * @param {Touch} touch1
+   * @param {Touch} touch2
+   * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
    */
   getDirection: function getDirection(touch1, touch2) {
     var x = Math.abs(touch1.clientX - touch2.clientX)
@@ -163,9 +213,10 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the distance between two touches
-   * @param   {Touch}     touch1
-   * @param   {Touch}     touch2
-   * @returns {Number}    distance
+	 * @method getDistance
+   * @param {Touch}touch1
+   * @param {Touch} touch2 
+   * @return {Number} distance
    */
   getDistance: function getDistance(touch1, touch2) {
     var x = touch2.clientX - touch1.clientX
@@ -175,11 +226,12 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * calculate the scale factor between two touchLists (fingers)
+   * calculate the scale factor between two touchLists
    * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-   * @param   {Array}     start
-   * @param   {Array}     end
-   * @returns {Number}    scale
+	 * @method getScale
+   * @param {Array} start array of touches
+   * @param {Array} end array of touches
+   * @return {Number} scale
    */
   getScale: function getScale(start, end) {
     // need two fingers...
@@ -191,10 +243,11 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * calculate the rotation degrees between two touchLists (fingers)
-   * @param   {Array}     start
-   * @param   {Array}     end
-   * @returns {Number}    rotation
+   * calculate the rotation degrees between two touchLists
+	 * @method getRotation
+   * @param {Array} start array of touches
+   * @param {Array} end array of touches
+   * @return {Number} rotation
    */
   getRotation: function getRotation(start, end) {
     // need two fingers
@@ -206,9 +259,10 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * boolean if the direction is vertical
-   * @param    {String}    direction
-   * @returns  {Boolean}   is_vertical
+   * find out if the direction is vertical	 * 
+	 * @method isVertical
+   * @param {String} direction matches `DIRECTION_UP|DOWN`
+   * @return {Boolean} is_vertical
    */
   isVertical: function isVertical(direction) {
     return direction == DIRECTION_UP || direction == DIRECTION_DOWN;
@@ -216,10 +270,14 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * toggle browser default behavior with css props
-   * @param   {HtmlElement}   element
-   * @param   {Object}        css_props
-   * @param   {Boolean}       toggle
+   * toggle browser default behavior by setting css properties.
+	 * `userSelect='none'` also sets `element.onselectstart` to false
+	 * `userDrag='none'` also sets `element.ondragstart` to false
+	 * 
+	 * @method toggleDefaultBehavior
+   * @param {HtmlElement} element
+   * @param {Object} css_props
+   * @param {Boolean} [toggle=false]
    */
   toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {

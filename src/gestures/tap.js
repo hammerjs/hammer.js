@@ -1,16 +1,57 @@
 /**
- * Tap/DoubleTap
- * Quick touch at a place or double at the same place
- * @events  tap, doubletap
+ * @module gestures
+ */
+/**
+ * Single tap and a double tap on a place
+ * 
+ * @class Tap
+ * @static
+ * 
+ * @event tap
+ * @event doubletap
  */
 Hammer.gestures.Tap = {
   name    : 'tap',
   index   : 100,
   defaults: {
+    /**
+     * max time of a tap, this is for the slow tappers
+     * @property tap_max_touchtime
+     * @type {Number}
+     * @default 250
+     */
     tap_max_touchtime : 250,
+    
+    /**
+     * max distance of movement of a tap, this is for the slow tappers
+     * @property tap_max_distance
+     * @type {Number}
+     * @default 10
+     */
     tap_max_distance  : 10,
+    
+    /**
+     * always trigger the `tap` event, even while double-tapping
+     * @property tap_always
+     * @type {Boolean}
+     * @default true
+     */
     tap_always        : true,
+    
+    /**
+     * max distance between two taps
+     * @property doubletap_distance
+     * @type {Number}
+     * @default 20
+     */
     doubletap_distance: 20,
+       
+    /**
+     * max time between two taps
+     * @property doubletap_interval
+     * @type {Number}
+     * @default 300
+     */
     doubletap_interval: 300
   },
 

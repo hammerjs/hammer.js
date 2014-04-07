@@ -1,10 +1,16 @@
 /**
+ * @module hammer
+ */
+
+/**
  * create new hammer instance
  * all methods should return the instance itself, so it is chainable.
- * @param   {HTMLElement}       element
- * @param   {Object}            [options={}]
- * @returns {Hammer.Instance}
+ * 
+ * @class Instance
  * @constructor
+ * @param {HTMLElement} element    
+ * @param {Object} [options={}] options are merged with `Hammer.defaults`
+ * @return {Hammer.Instance}
  */
 Hammer.Instance = function(element, options) {
   var self = this;
@@ -13,12 +19,27 @@ Hammer.Instance = function(element, options) {
   // this also sets up the default options
   setup();
 
+
+  /**
+   * @property element
+   * @type {HTMLElement}
+   */
   this.element = element;
 
-  // start/stop detection option
+
+  /**
+   * @property enabled
+   * @type {Boolean}
+   * @protected
+   */
   this.enabled = true;
 
-  // merge options
+
+  /**
+   * options, merged with the defaults
+   * @property options
+   * @type {Object}
+   */
   this.options = Utils.extend(
     Utils.extend({}, Hammer.defaults),
     options || {});
@@ -28,43 +49,58 @@ Hammer.Instance = function(element, options) {
     Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
-  // start detection on touchstart
+
+  /**
+   * event start handler on the element to start the detection
+   * @property eventStartHandler
+   * @type {Object}
+   */
   this.eventStartHandler = Event.onTouch(element, EVENT_START, function(ev) {
-    if(self.enabled) {
+    if(self.enabled && ev.eventType == EVENT_START) {
       Detection.startDetect(self, ev);
+    }
+    else if(ev.eventType == EVENT_TOUCH) {
+      Detection.detect(ev);
     }
   });
 
-  // keep a list of user event handlers which needs to be removed when calling 'dispose'
-  this.eventHandlers = [];
 
-  // return instance
-  return this;
+  /**
+   * keep a list of user event handlers which needs to be removed when calling 'dispose'
+   * @property eventHandlers
+   * @type {Array}
+   */
+  this.eventHandlers = [];
 };
 
 
 Hammer.Instance.prototype = {
   /**
    * bind events to the instance
-   * @param   {String}      gesture
-   * @param   {Function}    handler
-   * @returns {Hammer.Instance}
+	 * @method on
+	 * @chainable
+   * @param {String} gesture multiple gestures by splitting with a space
+   * @param {Function} handler
+   * @param {Object} handler.ev event object
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
+    
     Utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
+    
     return this;
   },
 
 
   /**
    * unbind events to the instance
-   * @param   {String}      gesture
-   * @param   {Function}    handler
-   * @returns {Hammer.Instance}
+   * @method off 
+	 * @chainable
+   * @param {String} gesture
+   * @param {Function} handler
    */
   off: function offEvent(gesture, handler) {
     var gestures = gesture.split(' ')
@@ -85,9 +121,10 @@ Hammer.Instance.prototype = {
 
   /**
    * trigger gesture event
-   * @param   {String}      gesture
-   * @param   {Object}      [eventData]
-   * @returns {Hammer.Instance}
+   * @method trigger
+   * @chainable
+   * @param {String} gesture
+   * @param {Object} [eventData]
    */
   trigger: function triggerEvent(gesture, eventData) {
     // optional
@@ -114,8 +151,9 @@ Hammer.Instance.prototype = {
 
   /**
    * enable of disable hammer.js detection
-   * @param   {Boolean}   state
-   * @returns {Hammer.Instance}
+   * @method enable
+   * @chainable
+   * @param {Boolean} state
    */
   enable: function enable(state) {
     this.enabled = state;
@@ -125,7 +163,8 @@ Hammer.Instance.prototype = {
 
   /**
    * dispose this hammer instance
-   * @returns {Hammer.Instance}
+   * @method dispose
+   * @return {Null}
    */
   dispose: function dispose() {
     var i, eh;

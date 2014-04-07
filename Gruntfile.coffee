@@ -13,7 +13,7 @@ module.exports = (grunt) ->
     concat:
       options:
         separator: '\n\n'
-      dist:
+      build:
         options:
           banner: '<%= meta.banner %>'
         src: [
@@ -34,7 +34,7 @@ module.exports = (grunt) ->
         report: 'gzip'
         sourceMap: 'hammer.min.map'
         banner: '<%= meta.banner %>'
-      dist:
+      build:
         files:
           'hammer.min.js': ['hammer.js']
 
@@ -51,7 +51,7 @@ module.exports = (grunt) ->
     jshint:
       options:
         jshintrc: true
-      dist:
+      build:
         src: ['hammer.js']
 
     watch:
@@ -69,6 +69,16 @@ module.exports = (grunt) ->
 
     qunit:
       all: ['tests/**/*.html']
+      
+    yuidoc:
+      build:
+        name: '<%= pkg.name %>'
+        description: '<%= pkg.description %>'
+        version: '<%= pkg.version %>'
+        url: '<%= pkg.homepage %>'
+        options:
+          paths: 'src/'
+          outdir: 'docs/'
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -77,6 +87,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
+  grunt.loadNpmTasks 'grunt-contrib-yuidoc'
   grunt.loadNpmTasks 'grunt-string-replace'
 
   # Default task(s).

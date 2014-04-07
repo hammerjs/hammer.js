@@ -1,13 +1,31 @@
 /**
- * Hold
+ * @module gestures
+ */
+/**
  * Touch stays at the same place for x time
- * @events  hold
+ * 
+ * @class Hold
+ * @static
+ * 
+ * @event hold
  */
 Hammer.gestures.Hold = {
   name    : 'hold',
   index   : 10,
   defaults: {
+    /**
+     * @property hold_timeout
+     * @type {Number}
+     * @default 500
+     */
     hold_timeout  : 500,
+    
+    /**
+     * movement allowed while holding
+     * @property hold_threshold
+     * @type {Number}
+     * @default 2
+     */
     hold_threshold: 2
   },
   timer   : null,
@@ -24,7 +42,7 @@ Hammer.gestures.Hold = {
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
         this.timer = setTimeout(function() {
-          if(Detection.current.name == 'hold') {
+          if(Detection.current && Detection.current.name == 'hold') {
             inst.trigger('hold', ev);
           }
         }, inst.options.hold_timeout);
@@ -37,7 +55,7 @@ Hammer.gestures.Hold = {
         }
         break;
 
-      case EVENT_END:
+      case EVENT_RELEASE:
         clearTimeout(this.timer);
         break;
     }

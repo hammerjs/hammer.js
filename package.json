@@ -2,7 +2,7 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "1.0.11dev",
+  "version": "1.1.0dev",
   "homepage": "http://eightmedia.github.io/hammer.js",
   "licenses": [
     {
@@ -36,7 +36,8 @@
     "grunt-contrib-qunit": "0.4.x",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
     "underscore": "1.6.x",
-    "grunt-string-replace": "^0.2.7"
+    "grunt-string-replace": "^0.2.7",
+    "grunt-contrib-yuidoc": "^0.5.2"
   },
   "main": "hammer.js",
   "engines": {

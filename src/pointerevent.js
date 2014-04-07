@@ -1,13 +1,22 @@
+/**
+ * @module hammer
+ * 
+ * @class PointerEvent
+ * @static
+ */
 var PointerEvent = Hammer.PointerEvent = {
   /**
-   * holds all pointers
+   * holds all pointers, by `identifier`
+	 * @property pointers
    * @type {Object}
    */
   pointers: {},
 
+	
   /**
-   * get a list of pointers
-   * @returns {Array}     touchlist
+   * get the pointers as an array
+	 * @method getTouchList
+   * @return {Array} touchlist
    */
   getTouchList: function getTouchList() {
     var touchlist = [];
@@ -18,11 +27,14 @@ var PointerEvent = Hammer.PointerEvent = {
 
     return touchlist;
   },
+	
 
   /**
    * update the position of a pointer
-   * @param   {String}   type             EVENT_END
-   * @param   {Object}   pointerEvent
+	 * @method updatePointer
+   * @param {String} type matches `EVENT_START|MOVE|END`
+   * @param {Object} pointerEvent
+	 * @return count {Number} count the pointers
    */
   updatePointer: function updatePointer(type, pointerEvent) {
     if(type == EVENT_END) {
@@ -36,11 +48,13 @@ var PointerEvent = Hammer.PointerEvent = {
     // it's save to use Object.keys, since pointerEvents are only in newer browsers
     return Object.keys(this.pointers).length;
   },
+	
 
   /**
    * check if ev matches pointertype
-   * @param   {String}        pointerType     POINTER_MOUSE
-   * @param   {PointerEvent}  ev
+	 * @method matchType
+   * @param {String} pointerType matches `POINTER_MOUSE|TOUCH|PEN`
+   * @param {PointerEvent} ev
    */
   matchType: function matchType(pointerType, ev) {
     if(!ev.pointerType) {
@@ -58,7 +72,9 @@ var PointerEvent = Hammer.PointerEvent = {
 
 
   /**
-   * get events
+   * get events to bind to
+	 * @method getEvents
+	 * @return {Array} events, in order of start, move and end
    */
   getEvents: function getEvents() {
     return [
@@ -67,9 +83,11 @@ var PointerEvent = Hammer.PointerEvent = {
       'pointerup pointercancel MSPointerUp MSPointerCancel'
     ];
   },
+	
 
   /**
-   * reset the list
+   * reset the stored pointers
+	 * @method reset
    */
   reset: function resetList() {
     this.pointers = {};

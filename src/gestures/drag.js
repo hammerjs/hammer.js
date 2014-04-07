@@ -1,51 +1,98 @@
 /**
- * Drag
- * Move with x fingers (default 1) around on the page. Blocking the scrolling when
- * moving left and right is a good practice. When all the drag events are blocking
- * you disable scrolling on that area.
- * @events  drag, drapleft, dragright, dragup, dragdown
+ * @module gestures
+ */
+/**
+ * Move with x fingers (default 1) around on the page. 
+ * Preventing the default browser behavior is a good way to improve feel and working.
+ * ```` 
+ *  hammertime.on("drag", function(ev) {
+ *    console.log(ev);
+ *    ev.gesture.preventDefault();
+ *  });
+ * ````
+ * 
+ * @class Drag
+ * @static
+ * 
+ * @event drag
+ * @event dragstart
+ * @event dragend
+ * @event drapleft
+ * @event dragright
+ * @event dragup
+ * @event dragdown
  */
 Hammer.gestures.Drag = {
   name     : 'drag',
   index    : 50,
   defaults : {
-    drag_min_distance            : 10,
+    /**
+     * minimal movement that have to be made before the drag event gets triggered
+     * @property drag_min_distance
+     * @type {Number}
+     * @default 10
+     */
+    drag_min_distance: 10,
 
-    // Set correct_for_drag_min_distance to true to make the starting point of the drag
-    // be calculated from where the drag was triggered, not from where the touch started.
-    // Useful to avoid a jerk-starting drag, which can make fine-adjustments
-    // through dragging difficult, and be visually unappealing.
+    /**
+     * Set correct_for_drag_min_distance to true to make the starting point of the drag
+     * be calculated from where the drag was triggered, not from where the touch started.
+     * Useful to avoid a jerk-starting drag, which can make fine-adjustments
+     * through dragging difficult, and be visually unappealing.
+     * @property correct_for_drag_min_distance
+     * @type {Boolean}
+     * @default true
+     */
     correct_for_drag_min_distance: true,
 
-    // set 0 for unlimited, but this can conflict with transform
-    drag_max_touches             : 1,
+    /**
+     * set 0 for unlimited, but this can conflict with transform
+     * @property drag_max_touches
+     * @type {Number}
+     * @default 1
+     */
+    drag_max_touches: 1,
 
-    // prevent default browser behavior when dragging occurs
-    // be careful with it, it makes the element a blocking element
-    // when you are using the drag gesture, it is a good practice to set this true
-    drag_block_horizontal        : false,
-    drag_block_vertical          : false,
+    /**
+     * prevent default browser behavior when dragging occurs
+     * be careful with it, it makes the element a blocking element
+     * when you are using the drag gesture, it is a good practice to set this true
+     * @property drag_block_horizontal
+     * @type {Boolean}
+     * @default false
+     */
+    drag_block_horizontal: false,
 
-    // drag_lock_to_axis keeps the drag gesture on the axis that it started on,
-    // It disallows vertical directions if the initial direction was horizontal, and vice versa.
-    drag_lock_to_axis            : false,
+    /**
+     * same as `drag_block_horizontal`, but for vertical movement
+     * @property drag_block_vertical
+     * @type {Boolean}
+     * @default false
+     */
+    drag_block_vertical: false,
 
-    // drag lock only kicks in when distance > drag_lock_min_distance
-    // This way, locking occurs only when the distance has become large enough to reliably determine the direction
-    drag_lock_min_distance       : 25
+    /**
+     * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+     * It disallows vertical directions if the initial direction was horizontal, and vice versa.
+     * @property drag_lock_to_axis
+     * @type {Boolean}
+     * @default false
+     */
+    drag_lock_to_axis: false,
+
+    /**
+     *  drag lock only kicks in when distance > drag_lock_min_distance
+     * This way, locking occurs only when the distance has become large enough to reliably determine the direction
+     * @property drag_lock_min_distance
+     * @type {Number}
+     * @default 25
+     */
+    drag_lock_min_distance: 25
   },
 
   triggered: false,
   handler  : function dragGesture(ev, inst) {
     var cur = Detection.current;
-
-    // current gesture isnt drag, but dragged is true
-    // this means an other gesture is busy. now call dragend
-    if(cur.name != this.name && this.triggered) {
-      inst.trigger(this.name + 'end', ev);
-      this.triggered = false;
-      return;
-    }
 
     // max touches
     if(inst.options.drag_max_touches > 0 &&
@@ -123,12 +170,14 @@ Hammer.gestures.Drag = {
         }
         break;
 
-      case EVENT_END:
-        // trigger dragend
-        if(this.triggered) {
+      case EVENT_RELEASE:
+        if(this.triggered && ev.changedLength <= inst.options.drag_max_touches) {
           inst.trigger(this.name + 'end', ev);
+          this.triggered = false;
         }
-
+        break;
+      
+      case EVENT_END:
         this.triggered = false;
         break;
     }

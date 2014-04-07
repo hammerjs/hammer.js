@@ -1,3 +1,9 @@
+/**
+ * @module hammer
+ * 
+ * @class Detection
+ * @static
+ */
 var Detection = Hammer.detection = {
   // contains all registred Hammer.gestures in the correct order
   gestures: [],
@@ -15,8 +21,9 @@ var Detection = Hammer.detection = {
 
   /**
    * start Hammer.gesture detection
-   * @param   {Hammer.Instance}   inst
-   * @param   {Object}            eventData
+   * @method startDetect
+   * @param {Hammer.Instance} inst
+   * @param {Object} eventData
    */
   startDetect: function startDetect(inst, eventData) {
     // already busy with a Hammer.gesture detection on an element
@@ -42,7 +49,9 @@ var Detection = Hammer.detection = {
 
   /**
    * Hammer.gesture detection
-   * @param   {Object}    eventData
+   * @method detect
+   * @param {Object} eventData
+   * @return {any}
    */
   detect: function detect(eventData) {
     if(!this.current || this.stopped) {
@@ -86,6 +95,7 @@ var Detection = Hammer.detection = {
    * clear the Hammer.gesture vars
    * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
    * to stop other Hammer.gestures from being fired
+   * @method stopDetect
    */
   stopDetect: function stopDetect() {
     // clone current data to the store as the previous gesture
@@ -102,10 +112,11 @@ var Detection = Hammer.detection = {
 
   /**
    * calculate velocity
-   * @param   {Object}  ev
-   * @param   {Number}  delta_time
-   * @param   {Number}  delta_x
-   * @param   {Number}  delta_y
+   * @method getVelocityData
+   * @param {Object} ev
+   * @param {Number} delta_time
+   * @param {Number} delta_x
+   * @param {Number} delta_y
    */
   getVelocityData: function getVelocityData(ev, delta_time, delta_x, delta_y) {
     var cur = this.current
@@ -113,7 +124,7 @@ var Detection = Hammer.detection = {
       , velocity = cur.velocity;
 
     // calculate velocity every x ms
-    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.UPDATE_VELOCITY_INTERVAL) {
+    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.VELOCITY_INTERVAL) {
       velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
                                    ev.center.clientX - velocityEv.center.clientX,
                                   ev.center.clientY - velocityEv.center.clientY);
@@ -133,7 +144,8 @@ var Detection = Hammer.detection = {
 
   /**
    * calculate interim angle and direction
-   * @param   {Object}  ev
+   * @method getInterimData
+   * @param {Object} ev
    */
   getInterimData: function getInterimData(ev) {
     var lastEvent = this.current.lastEvent
@@ -160,8 +172,9 @@ var Detection = Hammer.detection = {
 
   /**
    * extend eventData for Hammer.gestures
-   * @param   {Object}   evData
-   * @returns {Object}   evData
+   * @method extendEventData
+   * @param {Object} ev
+   * @return {Object} ev
    */
   extendEventData: function extendEventData(ev) {
     var cur = this.current
@@ -207,8 +220,9 @@ var Detection = Hammer.detection = {
 
   /**
    * register new gesture
-   * @param   {Object}    gesture object, see gestures.js for documentation
-   * @returns {Array}     gestures
+   * @method register
+   * @param {Object} gesture object, see `gestures/` for documentation
+   * @return {Array} gestures
    */
   register: function register(gesture) {
     // add an enable gesture options if there is no given

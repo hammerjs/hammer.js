@@ -1,35 +1,66 @@
 /**
- * Transform
+ * @module gestures
+ */
+/**
  * User want to scale or rotate with 2 fingers
- * @events  transform, pinch, pinchin, pinchout, rotate
+ * Preventing the default browser behavior is a good way to improve feel and working. This can be done with the
+ * `transform_always_block` option.
+ * 
+ * @class Transform
+ * @static
+ * 
+ * @event transform
+ * @event transformstart
+ * @event transformend
+ * @event pinchin
+ * @event dragright
+ * @event pinchout
+ * @event rotate
  */
 Hammer.gestures.Transform = {
   name     : 'transform',
   index    : 45,
   defaults : {
-    // factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
+    /**
+     * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
+     * @property transform_min_scale
+     * @type {Number}
+     * @default 0.01
+     */
     transform_min_scale      : 0.01,
-    // rotation in degrees
+    
+    /**
+     * rotation in degrees
+     * @property transform_min_rotation
+     * @type {Number}
+     * @default 1
+     */
     transform_min_rotation   : 1,
-    // prevent default browser behavior when two touches are on the screen
-    // but it makes the element a blocking element
-    // when you are using the transform gesture, it is a good practice to set this true
+    
+      
+    /**
+     * prevent default browser behavior when two touches are on the screen
+     * but it makes the element a blocking element
+     * when you are using the transform gesture, it is a good practice to set this true
+     * @property transform_always_block
+     * @type {Boolean}
+     * @default false
+     */
     transform_always_block   : false,
-    // ensures that all touches occurred within the instance element
+    
+    
+    /**
+     * checks if all touches occurred within the instance element
+     * @property transform_within_instance
+     * @type {Boolean}
+     * @default false
+     */
     transform_within_instance: false
   },
 
   triggered: false,
 
   handler  : function transformGesture(ev, inst) {
-    // current gesture isnt drag, but dragged is true
-    // this means an other gesture is busy. now call dragend
-    if(Detection.current.name != this.name && this.triggered) {
-      inst.trigger(this.name + 'end', ev);
-      this.triggered = false;
-      return;
-    }
-
     // at least multitouch
     if(ev.touches.length < 2) {
       return;
@@ -88,13 +119,11 @@ Hammer.gestures.Transform = {
         }
         break;
 
-      case EVENT_END:
-        // trigger dragend
-        if(this.triggered) {
+      case EVENT_RELEASE:
+        if(this.triggered && ev.changedLength < 2) {
           inst.trigger(this.name + 'end', ev);
+          this.triggered = false;
         }
-
-        this.triggered = false;
         break;
     }
   }

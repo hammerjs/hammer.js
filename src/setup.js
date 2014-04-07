@@ -1,22 +1,54 @@
 /**
- * Hammer
- * use this to create instances
- * @param   {HTMLElement}   element
- * @param   {Object}        options
- * @returns {Hammer.Instance}
- * @constructor
+ * @main
+ * @module hammer
+ * 
+ * @class Hammer 
+ * @static
  */
-var Hammer = function(element, options) {
+
+/**
+ * Hammer, use this to create instances
+ * ````
+ * var hammertime = new Hammer(myElement);
+ * ````
+ * 
+ * @method Hammer
+ * @param {HTMLElement} element
+ * @param {Object} [options={}]
+ * @return {Hammer.Instance}
+ */
+var Hammer = function Hammer(element, options) {
   return new Hammer.Instance(element, options || {});
 };
 
+
+/**
+ * version, as defined in package.json
+ * the value will be set at each build
+ * @property VERSION
+ * @type {String}
+ */
 Hammer.VERSION = '{{PKG_VERSION}}';
 
-// default settings
+
+/**
+ * if the window events are set...
+ * @property READY
+ * @writeOnce
+ * @type {Boolean}
+ */
+Hammer.READY = false;
+
+
+/**
+ * default settings.
+ * more settings are defined per gesture at `/gestures`
+ * @property defaults
+ * @type {Object}
+ */
 Hammer.defaults = {
-  // add styles and attributes to the element to prevent the browser from doing
-  // its native behavior. this doesnt prevent the scrolling, but cancels
-  // the contextmenu, tap highlighting etc
+  // stop_browser_behavior adds styles and attributes to the element to prevent the browser from doing
+  // its native behavior. this doesnt prevent the scrolling, but cancelsthe contextmenu, tap highlighting etc
   // set to false to disable this
   stop_browser_behavior: {
     // this also triggers onselectstart=false for IE
@@ -31,60 +63,128 @@ Hammer.defaults = {
     userDrag         : 'none',
     tapHighlightColor: 'rgba(0,0,0,0)'
   }
-
-  //
-  // more settings are defined per gesture at /gestures
-  //
 };
 
 
-// detect touchevents
-Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
-Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
-
-// dont use mouseevents on mobile devices
-Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
-Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
-
-// eventtypes per touchevent (start, move, end)
-// are filled by Event.determineEventTypes on setup
-Hammer.EVENT_TYPES = {};
-
-// interval in which Hammer recalculates current velocity in ms
-Hammer.UPDATE_VELOCITY_INTERVAL = 16;
-
-// hammer document where the base events are added at
+/**
+ * hammer document where the base events are added at
+ * @property DOCUMENT
+ * @type {HTMLElement}
+ */
 Hammer.DOCUMENT = window.document;
 
-// define these also as vars, for better minification
-// direction defines
+
+/**
+ * support for pointer events
+ * @property HAS_POINTEREVENTS
+ * @type {Boolean}
+ */
+Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
+
+
+/**
+ * support for touch events
+ * @property HAS_TOUCHEVENTS
+ * @type {Boolean}
+ */
+Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
+
+
+/**
+ * simple regex to detect mobile browsers
+ * @property MOBILE_REGEX
+ * @type {RegExp}
+ */
+Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
+
+
+/**
+ * bind to mouseevents. 
+ * default is a condition based on HAS_TOUCHEVENTS and userAgent matches MOBILE_REGEX
+ * @property NO_MOUSEEVENTS
+ * @type {Boolean}
+ */
+Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
+
+
+/**
+ * interval in which Hammer recalculates current velocity in ms
+ * @property VELOCITY_INTERVAL
+ * @type {Number}
+ */
+Hammer.VELOCITY_INTERVAL = 16;
+
+
+/**
+ * eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`
+ * the object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)
+ * @property EVENT_TYPES
+ * @writeOnce
+ * @type {Object}
+ */
+Hammer.EVENT_TYPES = {};
+
+
+/**
+ * direction strings, for safe comparisons
+ * @property DIRECTION_DOWN|LEFT|UP|RIGHT
+ * @final
+ * @type {String}
+ * @default 'down' 'left' 'up' 'right'
+ */
 var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = 'down';
 var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
 var DIRECTION_UP = Hammer.DIRECTION_UP = 'up';
 var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 
-// pointer type
+
+/**
+ * pointertype strings, for safe comparisons
+ * @property POINTER_MOUSE|TOUCH|PEN
+ * @final
+ * @type {String}
+ * @default 'mouse' 'touch' 'pen'
+ */
 var POINTER_MOUSE = Hammer.POINTER_MOUSE = 'mouse';
 var POINTER_TOUCH = Hammer.POINTER_TOUCH = 'touch';
 var POINTER_PEN = Hammer.POINTER_PEN = 'pen';
 
-// touch event defines
+
+/**
+ * eventtypes
+ * @property EVENT_START|MOVE|END|RELEASE|TOUCH
+ * @final
+ * @type {String}
+ * @default 'start' 'change' 'move' 'end' 'release' 'touch'
+ */
 var EVENT_START = Hammer.EVENT_START = 'start';
 var EVENT_MOVE = Hammer.EVENT_MOVE = 'move';
 var EVENT_END = Hammer.EVENT_END = 'end';
+var EVENT_RELEASE = Hammer.EVENT_RELEASE = 'release';
+var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
 
 
-// plugins and gestures namespaces
+/**
+ * plugins namespace
+ * @property plugins
+ * @type {Object}
+ */
 Hammer.plugins = Hammer.plugins || {};
+
+
+/**
+ * gestures namespace
+ * see `/gestures` for the definitions
+ * @property gestures
+ * @type {Object}
+ */
 Hammer.gestures = Hammer.gestures || {};
-
-
-// if the window events are set...
-Hammer.READY = false;
 
 
 /**
  * setup events to detect gestures on the document
+ * this function is called when creating an new instance
+ * @private
  */
 function setup() {
   if(Hammer.READY) {

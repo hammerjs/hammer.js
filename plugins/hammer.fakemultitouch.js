@@ -17,21 +17,30 @@
      * @param   {Event}     ev
      * @param   TOUCHTYPE   type
      * @return  {Array}     Touches
-     */
+     */    
     Hammer.event.getTouchList = function(ev, eventType) {
-      // get the fake pointerEvent touchlist
-      if(Hammer.HAS_POINTEREVENTS) {
-        return Hammer.PointerEvent.getTouchList();
-      }
-      // get the touchlist
-      else if(ev.touches) {
-        return ev.touches;
+      // mobile fallback
+      if(ev.touches) {
+        var identifiers = [];
+        var concat_touches = [].concat(Utils.toArray(ev.touches), Utils.toArray(ev.changedTouches));
+        var touchlist = [];
+        
+        Utils.each(concat_touches, function(touch) {
+          if(!Utils.inArray(identifiers, touch.identifier)) {
+            touchlist.push(touch);
+          }
+          identifiers.push(touch.identifier);
+        });
+        
+        return touchlist;
       }
 
       // reset on start of a new touch
       if(eventType == Hammer.EVENT_START) {
         start_pos = false;
       }
+      
+      var touchList;
 
       // when the shift key is pressed, multitouch is possible on desktop
       // why shift? because ctrl and alt are taken by osx and linux
@@ -50,7 +59,7 @@
         var distance_y = start_pos.pageY - ev.pageY;
 
         // fake second touch in the opposite direction
-        return [
+        touchList = [
           {
             identifier: 1,
             pageX     : start_pos.pageX - distance_x - 50,
@@ -72,7 +81,7 @@
       // normal single touch
       else {
         start_pos = false;
-        return [
+        touchList = [
           {
             identifier: 1,
             pageX     : ev.pageX,
@@ -83,6 +92,10 @@
           }
         ];
       }
+      
+      ev.touches = touchList;
+      ev.changedTouches = touchList;
+      return touchList;
     };
   };
 
