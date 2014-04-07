@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>touch gremlins</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<script src="libs/jquery.js"></script>
+	<script src="libs/qunit.js"></script>
+	<script src="libs/gremlins.js"></script>
+	<script src="../hammer.js"></script>
+	<script src="../plugins/hammer.showtouches.js"></script>
+</head>
+
+<body>
+
+<!--[if !IE]> -->
+<script>
+	Hammer.plugins.showTouches();
+</script>
+<!-- <![endif]-->
+
+<script>
+	var hammerProps,
+		hammerEvents,
+		hammerInst,
+		testLogger;
+
+
+	/**
+	 * receive the element for the logger with some caching to speed things up
+	 */
+	var getLogElement = (function () {
+		var cache = {};
+		return function (type, name) {
+			var el = cache[type + name];
+			if (!el) {
+				return cache[type + name] = document.getElementById('log-' + type + '-' + name);
+			}
+			return el;
+		}
+	})();
+
+
+	/**
+	 * round to 1 digit
+	 * @param float
+	 * @param [digits]
+	 * @returns {number}
+	 */
+	function round(float, digits) {
+		if (digits == null) {
+			return Math.round(float);
+		}
+		var round = 10 * digits;
+		return Math.round(float * round) / round;
+	}
+
+
+	/**
+	 * store last event, that should might match the gremlin
+	 * @param ev
+	 */
+	function logHammerEvent(ev) {
+		if (ev.gesture.eventType == Hammer.EVENT_END) {
+			testLogger.lastEvent = ev;
+		}
+	}
+
+
+	// all properties that are being shown on the page
+	hammerProps = ['gesture', 'center', 'deltaTime', 'angle', 'direction',
+		'distance', 'deltaX', 'deltaY', 'velocityX', 'velocityY', 'pointerType',
+		'interimDirection', 'interimAngle',
+		'scale', 'rotation', 'touches', 'target'];
+
+
+	// get all the we want to listen to events from the list on the page
+	hammerEvents = ['touch', 'release', 'hold', 'tap', 'doubletap', 'dragstart',
+		'drag', 'dragend', 'dragleft', 'dragright', 'dragup', 'dragdown', 'swipe',
+		'swipeleft', 'swiperight', 'swipeup', 'swipedown', 'transformstart',
+		'transform', 'transformend', 'rotate', 'pinch', 'pinchin', 'pinchout'];
+
+
+	// listen to all events for the logger
+	hammerInst = Hammer(document, { prevent_default: true, gesture: true });
+	hammerInst.on('gesture', logHammerEvent);
+
+
+	// test if scale, rotation and directions are calculated correctly
+	testLogger = {
+		lastEvent: {},
+
+		log: function (_, species) {
+			switch (species.trim()) {
+				case 'toucher':
+					var details = arguments[6];
+					var lastEvent = testLogger.lastEvent;
+					if (lastEvent && lastEvent.gesture) {
+						var lastGesture = lastEvent.gesture;
+						console.group();
+						if (details.duration) console.log('duration', round(lastGesture.deltaTime), round(details.duration));
+						if (details.distanceX) console.log('deltax', round(lastGesture.deltaX), round(details.distanceX));
+						if (details.distanceY) console.log('deltay', round(lastGesture.deltaY), round(details.distanceY));
+						if (details.scale) console.log('scale', round(lastGesture.scale), round(details.scale));
+						if (details.rotation) console.log('rotation', round(lastGesture.rotation), round(details.rotation));
+						//console.log(lastGesture, details);
+						console.groupEnd();
+					}
+					break;
+				default:
+					console.log(arguments);
+			}
+		},
+
+		info: function () {
+			console.info(arguments);
+		},
+		warn: function () {
+			console.warn(arguments);
+		},
+		error: function () {
+			console.error(arguments);
+		}
+	};
+
+
+	// start!
+	gremlins.createHorde()
+			.gremlin(gremlins.species.toucher())
+			.logger(testLogger)
+			.mogwai(gremlins.mogwais.gizmo().maxErrors(2))
+			.unleash();
+
+</script>
+</body>
+</html>
