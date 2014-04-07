@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.0.11dev - 2014-04-04
+/*! Hammer.JS - v1.0.11dev - 2014-04-07
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1567,12 +1567,13 @@ if(typeof define == 'function' && define.amd) {
   });
 }
 // commonjs export
-else if(typeof module == 'object' && module.exports) {
+else if(typeof module !== 'undefined' && module.exports) {
   module.exports = Hammer;
 }
 // browser export
 else {
   window.Hammer = Hammer;
 }
+
 
 })(window);
