@@ -5,7 +5,7 @@ if(typeof define == 'function' && define.amd) {
   });
 }
 // commonjs export
-else if(typeof module == 'object' && module.exports) {
+else if(typeof module !== 'undefined' && module.exports) {
   module.exports = Hammer;
 }
 // browser export
