@@ -891,10 +891,7 @@ var Event = Hammer.event = {
    * @method determineEventTypes
    */
   determineEventTypes: function determineEventTypes() {
-    // determine the eventtype we want to set
     var types;
-
-    // pointerEvents magic
     if(Hammer.HAS_POINTEREVENTS) {
       types = PointerEvent.getEvents();
     }
