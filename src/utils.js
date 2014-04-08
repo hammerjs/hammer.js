@@ -30,10 +30,10 @@ var Utils = Hammer.utils = {
    * @method each
    * @param {Object|Array} obj
    * @param {Function} iterator
-   * @param  {any} iterator.item
+   * @param {any} iterator.item
    * @param {Number} iterator.index
    * @param {Object|Array} iterator.obj the source object
-   * @param  {Object} context value to use as `this` in the iterator
+   * @param {Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
     var i, o;
@@ -99,7 +99,7 @@ var Utils = Hammer.utils = {
    * convert an array-like object (`arguments`, `touchlist`) to an array
    * @method toArray
    * @param {Object} obj
-   * @returns {Array}
+   * @return {Array}
    */
   toArray: function toArray(obj) {
     return Array.prototype.slice.call(obj, 0);

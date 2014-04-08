@@ -67,7 +67,7 @@ Hammer.defaults = {
     // this makes the element blocking in IE10>, you could experiment with the value
     // it doesnt block on the y-axis, change this to support vertical touches on IE10>
     // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-    touchAction      : 'pan-x pinch-zoom double-tap-zoom',
+    touchAction      : 'none',
     // properties, mainly for ios/android
     touchCallout     : 'none',
     contentZooming   : 'none',
@@ -205,7 +205,7 @@ function setup() {
 
 /**
  * @module hammer
- * 
+ *
  * @class Utils
  * @static
  */
@@ -217,7 +217,7 @@ var Utils = Hammer.utils = {
    * @param {Object} dest
    * @param {Object} src
    * @param {Boolean} [merge=false]  do a merge
-   * @return {Object} dest 
+   * @return {Object} dest
    */
   extend: function extend(dest, src, merge) {
     for(var key in src) {
@@ -232,13 +232,13 @@ var Utils = Hammer.utils = {
 
   /**
    * forEach over arrays and objects
-	 * @method each
-   * @param {Object|Array} obj 
-   * @param {Function} iterator 
-   * @param	{any} iterator.item 
-   * @param {Number} iterator.index 
+   * @method each
+   * @param {Object|Array} obj
+   * @param {Function} iterator
+   * @param {any} iterator.item
+   * @param {Number} iterator.index
    * @param {Object|Array} iterator.obj the source object
-	 * @param	{Object} context value to use as `this` in the iterator
+   * @param {Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
     var i, o;
@@ -268,7 +268,7 @@ var Utils = Hammer.utils = {
 
   /**
    * find if a string contains the string using indexOf
-	 * @method inStr
+   * @method inStr
    * @param {String} src
    * @param {String} find
    * @return {Boolean} found
@@ -276,11 +276,11 @@ var Utils = Hammer.utils = {
   inStr: function inStr(src, find) {
     return src.indexOf(find) > -1;
   },
-  
-  
+
+
   /**
    * find if a array contains the object using indexOf or a simple polyfill
-	 * @method inArray
+   * @method inArray
    * @param {String} src
    * @param {String} find
    * @return {Boolean} found
@@ -304,7 +304,7 @@ var Utils = Hammer.utils = {
    * convert an array-like object (`arguments`, `touchlist`) to an array
    * @method toArray
    * @param {Object} obj
-   * @returns {Array}
+   * @return {Array}
    */
   toArray: function toArray(obj) {
     return Array.prototype.slice.call(obj, 0);
@@ -313,7 +313,7 @@ var Utils = Hammer.utils = {
 
   /**
    * find if a node is in the given parent
-	 * @method hasParent
+   * @method hasParent
    * @param {HTMLElement} node
    * @param {HTMLElement} parent
    * @return {Boolean} found
@@ -331,7 +331,7 @@ var Utils = Hammer.utils = {
 
   /**
    * get the center of all the touches
-	 * @method getCenter
+   * @method getCenter
    * @param {Array} touches
    * @return {Object} center contains `pageX`, `pageY`, `clientX` and `clientY` properties
    */
@@ -371,7 +371,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the velocity between two points
-	 * @method getVelocity
+   * @method getVelocity
    * @param {Number} delta_time
    * @param {Number} delta_x
    * @param {Number} delta_y
@@ -387,7 +387,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the angle between two coordinates
-	 * @method getAngle
+   * @method getAngle
    * @param {Touch} touch1
    * @param {Touch} touch2
    * @return {Number} angle
@@ -401,7 +401,7 @@ var Utils = Hammer.utils = {
 
   /**
    * do a small comparision to get the direction between two touches.
-	 * @method getDirection
+   * @method getDirection
    * @param {Touch} touch1
    * @param {Touch} touch2
    * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
@@ -418,9 +418,9 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the distance between two touches
-	 * @method getDistance
+   * @method getDistance
    * @param {Touch}touch1
-   * @param {Touch} touch2 
+   * @param {Touch} touch2
    * @return {Number} distance
    */
   getDistance: function getDistance(touch1, touch2) {
@@ -433,7 +433,7 @@ var Utils = Hammer.utils = {
   /**
    * calculate the scale factor between two touchLists
    * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-	 * @method getScale
+   * @method getScale
    * @param {Array} start array of touches
    * @param {Array} end array of touches
    * @return {Number} scale
@@ -449,7 +449,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the rotation degrees between two touchLists
-	 * @method getRotation
+   * @method getRotation
    * @param {Array} start array of touches
    * @param {Array} end array of touches
    * @return {Number} rotation
@@ -464,8 +464,8 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * find out if the direction is vertical	 * 
-	 * @method isVertical
+   * find out if the direction is vertical   *
+   * @method isVertical
    * @param {String} direction matches `DIRECTION_UP|DOWN`
    * @return {Boolean} is_vertical
    */
@@ -476,10 +476,10 @@ var Utils = Hammer.utils = {
 
   /**
    * toggle browser default behavior by setting css properties.
-	 * `userSelect='none'` also sets `element.onselectstart` to false
-	 * `userDrag='none'` also sets `element.ondragstart` to false
-	 * 
-	 * @method toggleDefaultBehavior
+   * `userSelect='none'` also sets `element.onselectstart` to false
+   * `userDrag='none'` also sets `element.ondragstart` to false
+   *
+   * @method toggleDefaultBehavior
    * @param {HtmlElement} element
    * @param {Object} css_props
    * @param {Boolean} [toggle=false]
@@ -524,10 +524,10 @@ var Utils = Hammer.utils = {
 /**
  * create new hammer instance
  * all methods should return the instance itself, so it is chainable.
- * 
+ *
  * @class Instance
  * @constructor
- * @param {HTMLElement} element    
+ * @param {HTMLElement} element
  * @param {Object} [options={}] options are merged with `Hammer.defaults`
  * @return {Hammer.Instance}
  */
@@ -596,28 +596,28 @@ Hammer.Instance = function(element, options) {
 Hammer.Instance.prototype = {
   /**
    * bind events to the instance
-	 * @method on
-	 * @chainable
+   * @method on
+   * @chainable
    * @param {String} gesture multiple gestures by splitting with a space
    * @param {Function} handler
    * @param {Object} handler.ev event object
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    
+
     Utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
-    
+
     return this;
   },
 
 
   /**
    * unbind events to the instance
-   * @method off 
-	 * @chainable
+   * @method off
+   * @chainable
    * @param {String} gesture
    * @param {Function} handler
    */
@@ -1035,7 +1035,7 @@ var Event = Hammer.event = {
 var PointerEvent = Hammer.PointerEvent = {
   /**
    * holds all pointers, by `identifier`
-	 * @property pointers
+   * @property pointers
    * @type {Object}
    */
   pointers: {},
@@ -1043,7 +1043,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * get the pointers as an array
-	 * @method getTouchList
+   * @method getTouchList
    * @return {Array} touchlist
    */
   getTouchList: function getTouchList() {
@@ -1059,10 +1059,10 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * update the position of a pointer
-	 * @method updatePointer
+   * @method updatePointer
    * @param {String} type matches `EVENT_START|MOVE|END`
    * @param {Object} pointerEvent
-	 * @return count {Number} count the pointers
+   * @return count {Number} count the pointers
    */
   updatePointer: function updatePointer(type, pointerEvent) {
     if(type == EVENT_END) {
@@ -1080,7 +1080,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * check if ev matches pointertype
-	 * @method matchType
+   * @method matchType
    * @param {String} pointerType matches `POINTER_MOUSE|TOUCH|PEN`
    * @param {PointerEvent} ev
    */
@@ -1101,7 +1101,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * reset the stored pointers
-	 * @method reset
+   * @method reset
    */
   reset: function resetList() {
     this.pointers = {};
@@ -1972,7 +1972,7 @@ Hammer.gestures.Transform = {
      * @type {Number}
      * @default 0.01
      */
-    transform_min_scale      : 0.01,
+    transform_min_scale: 0.01,
 
     /**
      * rotation in degrees
@@ -1980,8 +1980,7 @@ Hammer.gestures.Transform = {
      * @type {Number}
      * @default 1
      */
-    transform_min_rotation   : 1,
-
+    transform_min_rotation: 1,
 
     /**
      * prevent default browser behavior when two touches are on the screen
@@ -1991,8 +1990,7 @@ Hammer.gestures.Transform = {
      * @type {Boolean}
      * @default false
      */
-    transform_always_block   : false,
-
+    transform_always_block: false,
 
     /**
      * checks if all touches occurred within the instance element
