@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-07
+/*! Hammer.JS - v1.1.0dev - 2014-04-08
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -791,14 +791,14 @@ var Event = Hammer.event = {
         , trigger_change
         , change_length
         , is_mouse = Utils.inStr(src_type, 'mouse');
-        
-      
+
+
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
       if(is_mouse && touch_triggered) {
         return;
       }
-      
+
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
       else if(Utils.inStr(src_type, 'touch') || Utils.inStr(src_type, 'pointerdown')) {
@@ -810,7 +810,7 @@ var Event = Hammer.event = {
       else if(is_mouse && ev.which === 1) {
         should_detect = true;
       }
-      
+
       // update pointerevent
       if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
@@ -821,7 +821,7 @@ var Event = Hammer.event = {
         touchList_length = touchList.length;
         trigger_type = eventType;
         change_length = touchList_length;
-        
+
         // trigger touch changed events
         if(eventType == EVENT_START) {
           trigger_change = EVENT_TOUCH;
@@ -830,34 +830,34 @@ var Event = Hammer.event = {
           trigger_change = EVENT_RELEASE;
           change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
         }
-        
+
         // there are still touches, trigger a move
         if(change_length > 0 && started) {
           trigger_type = EVENT_MOVE;
         }
-        
+
         // detection has been started
         started = true;
 
         var ev_data = self.collectEventData(element, trigger_type, touchList, ev);
-        
+
         // trigger the trigger_type event before the change events
         // but the event_end should be at last
         if(eventType != EVENT_END) {
           handler.call(Detection, ev_data);
         }
-        
+
         // trigger a change event, this means the length of the touches changed
         if(trigger_change) {
           ev_data.changedLength = change_length;
           ev_data.eventType = trigger_change;
-          
+
           handler.call(Detection, ev_data);
-          
+
           ev_data.eventType = trigger_type;
           delete ev_data.changedLength;
         }
-        
+
         if(trigger_type == EVENT_END) {
           handler.call(Detection, ev_data);
         }
@@ -870,8 +870,8 @@ var Event = Hammer.event = {
         started = false;
         PointerEvent.reset();
       }
-      
-      
+
+
       // remove pointerevent from list
       if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
@@ -912,10 +912,10 @@ var Event = Hammer.event = {
    * create touchlist depending on the event
    * @method getTouchList
    * @param {Object} ev
-   * @param {String} [eventType] used by the fakemultitouch plugin
+   * @param {String} eventType
    * @return {Array} touches
    */
-  getTouchList: function getTouchList(ev/*, eventType*/) {
+  getTouchList: function getTouchList(ev, eventType) {
     // get the fake pointerEvent touchlist
     if(Hammer.HAS_POINTEREVENTS) {
       return PointerEvent.getTouchList();
@@ -923,17 +923,21 @@ var Event = Hammer.event = {
 
     // get the touchlist
     if(ev.touches) {
+      if(eventType == EVENT_MOVE) {
+        return ev.touches;
+      }
+
       var identifiers = [];
       var concat_touches = [].concat(Utils.toArray(ev.touches), Utils.toArray(ev.changedTouches));
       var touchlist = [];
-      
+
       Utils.each(concat_touches, function(touch) {
         if(!Utils.inArray(identifiers, touch.identifier)) {
           touchlist.push(touch);
         }
         identifiers.push(touch.identifier);
       });
-      
+
       return touchlist;
     }
 
@@ -950,7 +954,7 @@ var Event = Hammer.event = {
    * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {Array} touches
    * @param {Object} ev
-   * @return {Object} ev 
+   * @return {Object} ev
    */
   collectEventData: function collectEventData(element, eventType, touches, ev) {
     // find out pointerType
