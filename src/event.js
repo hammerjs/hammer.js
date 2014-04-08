@@ -79,6 +79,7 @@ var Event = Hammer.event = {
     var bindDomOnTouch = function bindDomOnTouch(ev) {
       var src_type = ev.type.toLowerCase()
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
+        , trigger_type
         , is_mouse = Utils.inStr(src_type, 'mouse');
 
       // if we are in a mouseevent, but there has been a touchevent triggered in this session
@@ -86,10 +87,8 @@ var Event = Hammer.event = {
       if(is_mouse && self.prevent_mouseevents) {
         return;
       }
-
       // find out if we should detect a gesture.
       // the touch/pointer/mouse must be at the screen or pressed.
-
       // touchevents and pointerdown are always allowed
       // and prevent mouseevents from being fired
       else if(Utils.inStr(src_type, 'touch') || Utils.inStr(src_type, 'pointerdown')) {
@@ -108,11 +107,18 @@ var Event = Hammer.event = {
 
       // we are in a touch/down state, so allowed detection of gestures
       if(self.should_detect) {
-        self.doDetect.call(self, ev, eventType, element, handler);
+        trigger_type = self.doDetect.call(self, ev, eventType, element, handler);
       }
 
+      // ...and we are done with the detection
+      // so reset everything to start each detection totally fresh
+      if(trigger_type == EVENT_END) {
+        self.prevent_mouseevents = false;
+        self.should_detect = false;
+        PointerEvent.reset();
+      }
       // update the pointerevent object after the detection
-      if(has_pointerevents && eventType == EVENT_END) {
+      else if(has_pointerevents && eventType == EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
       }
     };
@@ -131,6 +137,7 @@ var Event = Hammer.event = {
    * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {HTMLElement} element
    * @param {Function} handler
+   * @return {String} triggerType matches `EVENT_START|MOVE|END`
    */
   doDetect: function doDetect(ev, eventType, element, handler) {
     var touchList = this.getTouchList(ev, eventType);
@@ -187,11 +194,10 @@ var Event = Hammer.event = {
 
       // ...and we are done with the detection
       // so reset everything to start each detection totally fresh
-      this.prevent_mouseevents = false;
-      this.should_detect = false;
       this.started = false;
-      PointerEvent.reset();
     }
+
+    return trigger_type;
   },
 
 

@@ -1280,7 +1280,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 126,
+            "line": 132,
             "description": "the core detection method\nthis finds out what hammer-touch-events to trigger",
             "itemtype": "method",
             "name": "doDetect",
@@ -1306,12 +1306,16 @@
                     "type": "Function"
                 }
             ],
+            "return": {
+                "description": "triggerType matches `EVENT_START|MOVE|END`",
+                "type": "String"
+            },
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 198,
+            "line": 204,
             "description": "we have different events for each device/browser\ndetermine what we need and set them in the Hammer.EVENT_TYPES constant",
             "itemtype": "method",
             "name": "determineEventTypes",
@@ -1320,7 +1324,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 225,
+            "line": 231,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
@@ -1345,7 +1349,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 264,
+            "line": 270,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1380,21 +1384,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 289,
+            "line": 295,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 299,
+            "line": 305,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 306,
+            "line": 312,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -2210,15 +2214,15 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:289"
+            "line": " src/event.js:295"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:299"
+            "line": " src/event.js:305"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:306"
+            "line": " src/event.js:312"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
