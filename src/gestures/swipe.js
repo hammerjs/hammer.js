@@ -4,21 +4,35 @@
 /**
  * triggers swipe events when the end velocity is above the threshold
  * for best usage, set `prevent_default` (on the drag gesture) to `true`
- * ```` 
+ * ````
  *  hammertime.on("dragleft swipeleft", function(ev) {
  *    console.log(ev);
  *    ev.gesture.preventDefault();
  *  });
  * ````
- * 
+ *
  * @class Swipe
  * @static
- * 
+ */
+/**
  * @event swipe
+ * @param {Object} ev
+ */
+/**
  * @event swipeleft
+ * @param {Object} ev
+ */
+/**
  * @event swiperight
+ * @param {Object} ev
+ */
+/**
  * @event swipeup
+ * @param {Object} ev
+ */
+/**
  * @event swipedown
+ * @param {Object} ev
  */
 Hammer.gestures.Swipe = {
   name    : 'swipe',
@@ -30,14 +44,14 @@ Hammer.gestures.Swipe = {
      * @default 1
      */
     swipe_min_touches: 1,
-    
+
     /**
      * @property swipe_max_touches
      * @type {Number}
      * @default 1
      */
     swipe_max_touches: 1,
-    
+
     /**
      * @property swipe_velocity
      * @type {Number}

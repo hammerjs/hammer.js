@@ -10,8 +10,8 @@
 /**
  * @main
  * @module hammer
- * 
- * @class Hammer 
+ *
+ * @class Hammer
  * @static
  */
 
@@ -20,7 +20,7 @@
  * ````
  * var hammertime = new Hammer(myElement);
  * ````
- * 
+ *
  * @method Hammer
  * @param {HTMLElement} element
  * @param {Object} [options={}]
@@ -35,6 +35,7 @@ var Hammer = function Hammer(element, options) {
  * version, as defined in package.json
  * the value will be set at each build
  * @property VERSION
+ * @final
  * @type {String}
  */
 Hammer.VERSION = '1.1.0dev';
@@ -45,6 +46,7 @@ Hammer.VERSION = '1.1.0dev';
  * @property READY
  * @writeOnce
  * @type {Boolean}
+ * @default false
  */
 Hammer.READY = false;
 
@@ -79,12 +81,13 @@ Hammer.defaults = {
  * hammer document where the base events are added at
  * @property DOCUMENT
  * @type {HTMLElement}
+ * @default window.document
  */
 Hammer.DOCUMENT = window.document;
 
 
 /**
- * support for pointer events
+ * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
@@ -92,7 +95,7 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
 
 
 /**
- * support for touch events
+ * detect support for touch events
  * @property HAS_TOUCHEVENTS
  * @type {Boolean}
  */
@@ -103,6 +106,7 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * interval in which Hammer recalculates current velocity in ms
  * @property VELOCITY_INTERVAL
  * @type {Number}
+ * @default 16
  */
 Hammer.VELOCITY_INTERVAL = 16;
 
@@ -1356,25 +1360,45 @@ var Detection = Hammer.detection = {
  * @module gestures
  */
 /**
- * Move with x fingers (default 1) around on the page. 
+ * Move with x fingers (default 1) around on the page.
  * Preventing the default browser behavior is a good way to improve feel and working.
- * ```` 
+ * ````
  *  hammertime.on("drag", function(ev) {
  *    console.log(ev);
  *    ev.gesture.preventDefault();
  *  });
  * ````
- * 
+ *
  * @class Drag
  * @static
- * 
+ */
+/**
  * @event drag
+ * @param {Object} ev
+ */
+/**
  * @event dragstart
+ * @param {Object} ev
+ */
+/**
  * @event dragend
+ * @param {Object} ev
+ */
+/**
  * @event drapleft
+ * @param {Object} ev
+ */
+/**
  * @event dragright
+ * @param {Object} ev
+ */
+/**
  * @event dragup
+ * @param {Object} ev
+ */
+/**
  * @event dragdown
+ * @param {Object} ev
  */
 Hammer.gestures.Drag = {
   name     : 'drag',
@@ -1444,7 +1468,9 @@ Hammer.gestures.Drag = {
     drag_lock_min_distance: 25
   },
 
+
   triggered: false,
+
   handler  : function dragGesture(ev, inst) {
     var cur = Detection.current;
 
@@ -1530,7 +1556,7 @@ Hammer.gestures.Drag = {
           this.triggered = false;
         }
         break;
-      
+
       case EVENT_END:
         this.triggered = false;
         break;
@@ -1544,11 +1570,13 @@ Hammer.gestures.Drag = {
 /**
  * trigger a simple gesture event, so you can do anything in your handler.
  * only usable if you know what your doing...
- * 
+ *
  * @class Gesture
  * @static
- * 
+ */
+/**
  * @event gesture
+ * @param {Object} ev
  */
 Hammer.gestures.Gesture = {
   name   : 'gesture',
@@ -1572,11 +1600,13 @@ Hammer.gestures.Gesture = {
  */
 /**
  * Touch stays at the same place for x time
- * 
+ *
  * @class Hold
  * @static
- * 
+ */
+/**
  * @event hold
+ * @param {Object} ev
  */
 Hammer.gestures.Hold = {
   name    : 'hold',
@@ -1588,7 +1618,7 @@ Hammer.gestures.Hold = {
      * @default 500
      */
     hold_timeout  : 500,
-    
+
     /**
      * movement allowed while holding
      * @property hold_threshold
@@ -1636,11 +1666,13 @@ Hammer.gestures.Hold = {
  */
 /**
  * when a touch is being released from the page
- * 
+ *
  * @class Release
  * @static
- * 
+ */
+/**
  * @event release
+ * @param {Object} ev
  */
 Hammer.gestures.Release = {
   name   : 'release',
@@ -1658,21 +1690,35 @@ Hammer.gestures.Release = {
 /**
  * triggers swipe events when the end velocity is above the threshold
  * for best usage, set `prevent_default` (on the drag gesture) to `true`
- * ```` 
+ * ````
  *  hammertime.on("dragleft swipeleft", function(ev) {
  *    console.log(ev);
  *    ev.gesture.preventDefault();
  *  });
  * ````
- * 
+ *
  * @class Swipe
  * @static
- * 
+ */
+/**
  * @event swipe
+ * @param {Object} ev
+ */
+/**
  * @event swipeleft
+ * @param {Object} ev
+ */
+/**
  * @event swiperight
+ * @param {Object} ev
+ */
+/**
  * @event swipeup
+ * @param {Object} ev
+ */
+/**
  * @event swipedown
+ * @param {Object} ev
  */
 Hammer.gestures.Swipe = {
   name    : 'swipe',
@@ -1684,14 +1730,14 @@ Hammer.gestures.Swipe = {
      * @default 1
      */
     swipe_min_touches: 1,
-    
+
     /**
      * @property swipe_max_touches
      * @type {Number}
      * @default 1
      */
     swipe_max_touches: 1,
-    
+
     /**
      * @property swipe_velocity
      * @type {Number}
@@ -1724,12 +1770,17 @@ Hammer.gestures.Swipe = {
  */
 /**
  * Single tap and a double tap on a place
- * 
+ *
  * @class Tap
  * @static
- * 
+ */
+/**
  * @event tap
+ * @param {Object} ev
+ */
+/**
  * @event doubletap
+ * @param {Object} ev
  */
 Hammer.gestures.Tap = {
   name    : 'tap',
@@ -1742,7 +1793,7 @@ Hammer.gestures.Tap = {
      * @default 250
      */
     tap_max_touchtime : 250,
-    
+
     /**
      * max distance of movement of a tap, this is for the slow tappers
      * @property tap_max_distance
@@ -1750,7 +1801,7 @@ Hammer.gestures.Tap = {
      * @default 10
      */
     tap_max_distance  : 10,
-    
+
     /**
      * always trigger the `tap` event, even while double-tapping
      * @property tap_always
@@ -1758,7 +1809,7 @@ Hammer.gestures.Tap = {
      * @default true
      */
     tap_always        : true,
-    
+
     /**
      * max distance between two taps
      * @property doubletap_distance
@@ -1766,7 +1817,7 @@ Hammer.gestures.Tap = {
      * @default 20
      */
     doubletap_distance: 20,
-       
+
     /**
      * max time between two taps
      * @property doubletap_interval
@@ -1822,18 +1873,20 @@ Hammer.gestures.Tap = {
  */
 /**
  * when a touch is being touched at the page
- * 
+ *
  * @class Touch
  * @static
- * 
+ */
+/**
  * @event touch
+ * @param {Object} ev
  */
 Hammer.gestures.Touch = {
   name    : 'touch',
   index   : -Infinity,
   defaults: {
     /**
-     * call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page, 
+     * call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,
      * but it improves gestures like transforming and dragging.
      * be careful with using this, it can be very annoying for users to be stuck on the page
      * @property prevent_default
@@ -1859,7 +1912,7 @@ Hammer.gestures.Touch = {
     if(inst.options.prevent_default) {
       ev.preventDefault();
     }
-    
+
     if(ev.eventType == EVENT_TOUCH) {
       inst.trigger(this.name, ev);
     }
@@ -1874,17 +1927,33 @@ Hammer.gestures.Touch = {
  * User want to scale or rotate with 2 fingers
  * Preventing the default browser behavior is a good way to improve feel and working. This can be done with the
  * `transform_always_block` option.
- * 
+ *
  * @class Transform
  * @static
- * 
+ */
+/**
  * @event transform
+ * @param {Object} ev
+ */
+/**
  * @event transformstart
+ * @param {Object} ev
+ */
+/**
  * @event transformend
+ * @param {Object} ev
+ */
+/**
  * @event pinchin
- * @event dragright
+ * @param {Object} ev
+ */
+/**
  * @event pinchout
+ * @param {Object} ev
+ */
+/**
  * @event rotate
+ * @param {Object} ev
  */
 Hammer.gestures.Transform = {
   name     : 'transform',
@@ -1897,7 +1966,7 @@ Hammer.gestures.Transform = {
      * @default 0.01
      */
     transform_min_scale      : 0.01,
-    
+
     /**
      * rotation in degrees
      * @property transform_min_rotation
@@ -1905,8 +1974,8 @@ Hammer.gestures.Transform = {
      * @default 1
      */
     transform_min_rotation   : 1,
-    
-      
+
+
     /**
      * prevent default browser behavior when two touches are on the screen
      * but it makes the element a blocking element
@@ -1916,8 +1985,8 @@ Hammer.gestures.Transform = {
      * @default false
      */
     transform_always_block   : false,
-    
-    
+
+
     /**
      * checks if all touches occurred within the instance element
      * @property transform_within_instance

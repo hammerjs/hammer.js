@@ -3,12 +3,17 @@
  */
 /**
  * Single tap and a double tap on a place
- * 
+ *
  * @class Tap
  * @static
- * 
+ */
+/**
  * @event tap
+ * @param {Object} ev
+ */
+/**
  * @event doubletap
+ * @param {Object} ev
  */
 Hammer.gestures.Tap = {
   name    : 'tap',
@@ -21,7 +26,7 @@ Hammer.gestures.Tap = {
      * @default 250
      */
     tap_max_touchtime : 250,
-    
+
     /**
      * max distance of movement of a tap, this is for the slow tappers
      * @property tap_max_distance
@@ -29,7 +34,7 @@ Hammer.gestures.Tap = {
      * @default 10
      */
     tap_max_distance  : 10,
-    
+
     /**
      * always trigger the `tap` event, even while double-tapping
      * @property tap_always
@@ -37,7 +42,7 @@ Hammer.gestures.Tap = {
      * @default true
      */
     tap_always        : true,
-    
+
     /**
      * max distance between two taps
      * @property doubletap_distance
@@ -45,7 +50,7 @@ Hammer.gestures.Tap = {
      * @default 20
      */
     doubletap_distance: 20,
-       
+
     /**
      * max time between two taps
      * @property doubletap_interval

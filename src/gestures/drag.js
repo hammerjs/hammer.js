@@ -2,25 +2,45 @@
  * @module gestures
  */
 /**
- * Move with x fingers (default 1) around on the page. 
+ * Move with x fingers (default 1) around on the page.
  * Preventing the default browser behavior is a good way to improve feel and working.
- * ```` 
+ * ````
  *  hammertime.on("drag", function(ev) {
  *    console.log(ev);
  *    ev.gesture.preventDefault();
  *  });
  * ````
- * 
+ *
  * @class Drag
  * @static
- * 
+ */
+/**
  * @event drag
+ * @param {Object} ev
+ */
+/**
  * @event dragstart
+ * @param {Object} ev
+ */
+/**
  * @event dragend
+ * @param {Object} ev
+ */
+/**
  * @event drapleft
+ * @param {Object} ev
+ */
+/**
  * @event dragright
+ * @param {Object} ev
+ */
+/**
  * @event dragup
+ * @param {Object} ev
+ */
+/**
  * @event dragdown
+ * @param {Object} ev
  */
 Hammer.gestures.Drag = {
   name     : 'drag',
@@ -90,7 +110,9 @@ Hammer.gestures.Drag = {
     drag_lock_min_distance: 25
   },
 
+
   triggered: false,
+
   handler  : function dragGesture(ev, inst) {
     var cur = Detection.current;
 
@@ -176,7 +198,7 @@ Hammer.gestures.Drag = {
           this.triggered = false;
         }
         break;
-      
+
       case EVENT_END:
         this.triggered = false;
         break;

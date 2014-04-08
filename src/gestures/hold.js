@@ -3,11 +3,13 @@
  */
 /**
  * Touch stays at the same place for x time
- * 
+ *
  * @class Hold
  * @static
- * 
+ */
+/**
  * @event hold
+ * @param {Object} ev
  */
 Hammer.gestures.Hold = {
   name    : 'hold',
@@ -19,7 +21,7 @@ Hammer.gestures.Hold = {
      * @default 500
      */
     hold_timeout  : 500,
-    
+
     /**
      * movement allowed while holding
      * @property hold_threshold

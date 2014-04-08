@@ -4,9 +4,12 @@
     "main": "hammer.js",
     "ignore": [
         "tests",
+        "Gruntfile.coffee",
         "component.json",
         "package.json",
         "examples",
+        "docs",
+        "misc",
         "src"
     ]
 }

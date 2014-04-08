@@ -69,16 +69,17 @@ module.exports = (grunt) ->
 
     qunit:
       all: ['tests/**/*.html']
-      
+
     yuidoc:
       build:
-        name: '<%= pkg.name %>'
+        name: '<%= pkg.title %>'
         description: '<%= pkg.description %>'
         version: '<%= pkg.version %>'
         url: '<%= pkg.homepage %>'
         options:
           paths: 'src/'
           outdir: 'docs/'
+          themedir: 'misc/docstheme/'
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'

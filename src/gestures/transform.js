@@ -5,17 +5,33 @@
  * User want to scale or rotate with 2 fingers
  * Preventing the default browser behavior is a good way to improve feel and working. This can be done with the
  * `transform_always_block` option.
- * 
+ *
  * @class Transform
  * @static
- * 
+ */
+/**
  * @event transform
+ * @param {Object} ev
+ */
+/**
  * @event transformstart
+ * @param {Object} ev
+ */
+/**
  * @event transformend
+ * @param {Object} ev
+ */
+/**
  * @event pinchin
- * @event dragright
+ * @param {Object} ev
+ */
+/**
  * @event pinchout
+ * @param {Object} ev
+ */
+/**
  * @event rotate
+ * @param {Object} ev
  */
 Hammer.gestures.Transform = {
   name     : 'transform',
@@ -28,7 +44,7 @@ Hammer.gestures.Transform = {
      * @default 0.01
      */
     transform_min_scale      : 0.01,
-    
+
     /**
      * rotation in degrees
      * @property transform_min_rotation
@@ -36,8 +52,8 @@ Hammer.gestures.Transform = {
      * @default 1
      */
     transform_min_rotation   : 1,
-    
-      
+
+
     /**
      * prevent default browser behavior when two touches are on the screen
      * but it makes the element a blocking element
@@ -47,8 +63,8 @@ Hammer.gestures.Transform = {
      * @default false
      */
     transform_always_block   : false,
-    
-    
+
+
     /**
      * checks if all touches occurred within the instance element
      * @property transform_within_instance

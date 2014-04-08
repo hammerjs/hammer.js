@@ -3,11 +3,13 @@
  */
 /**
  * when a touch is being released from the page
- * 
+ *
  * @class Release
  * @static
- * 
+ */
+/**
  * @event release
+ * @param {Object} ev
  */
 Hammer.gestures.Release = {
   name   : 'release',

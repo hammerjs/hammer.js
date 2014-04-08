@@ -1,8 +1,8 @@
 /**
  * @main
  * @module hammer
- * 
- * @class Hammer 
+ *
+ * @class Hammer
  * @static
  */
 
@@ -11,7 +11,7 @@
  * ````
  * var hammertime = new Hammer(myElement);
  * ````
- * 
+ *
  * @method Hammer
  * @param {HTMLElement} element
  * @param {Object} [options={}]
@@ -26,6 +26,7 @@ var Hammer = function Hammer(element, options) {
  * version, as defined in package.json
  * the value will be set at each build
  * @property VERSION
+ * @final
  * @type {String}
  */
 Hammer.VERSION = '{{PKG_VERSION}}';
@@ -36,6 +37,7 @@ Hammer.VERSION = '{{PKG_VERSION}}';
  * @property READY
  * @writeOnce
  * @type {Boolean}
+ * @default false
  */
 Hammer.READY = false;
 
@@ -70,12 +72,13 @@ Hammer.defaults = {
  * hammer document where the base events are added at
  * @property DOCUMENT
  * @type {HTMLElement}
+ * @default window.document
  */
 Hammer.DOCUMENT = window.document;
 
 
 /**
- * support for pointer events
+ * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
@@ -83,7 +86,7 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
 
 
 /**
- * support for touch events
+ * detect support for touch events
  * @property HAS_TOUCHEVENTS
  * @type {Boolean}
  */
@@ -94,6 +97,7 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * interval in which Hammer recalculates current velocity in ms
  * @property VELOCITY_INTERVAL
  * @type {Number}
+ * @default 16
  */
 Hammer.VELOCITY_INTERVAL = 16;
 
