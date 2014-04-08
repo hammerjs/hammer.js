@@ -108,7 +108,7 @@
 <pre class="code prettyprint linenums">
 /**
  * @module hammer
- * 
+ *
  * @class PointerEvent
  * @static
  */
@@ -120,7 +120,7 @@ var PointerEvent = Hammer.PointerEvent = {
    */
   pointers: {},
 
-	
+
   /**
    * get the pointers as an array
 	 * @method getTouchList
@@ -135,7 +135,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
     return touchlist;
   },
-	
+
 
   /**
    * update the position of a pointer
@@ -156,7 +156,7 @@ var PointerEvent = Hammer.PointerEvent = {
     // it&#x27;s save to use Object.keys, since pointerEvents are only in newer browsers
     return Object.keys(this.pointers).length;
   },
-	
+
 
   /**
    * check if ev matches pointertype
@@ -178,20 +178,6 @@ var PointerEvent = Hammer.PointerEvent = {
     return types[pointerType];
   },
 
-
-  /**
-   * get events to bind to
-	 * @method getEvents
-	 * @return {Array} events, in order of start, move and end
-   */
-  getEvents: function getEvents() {
-    return [
-      &#x27;pointerdown MSPointerDown&#x27;,
-      &#x27;pointermove MSPointerMove&#x27;,
-      &#x27;pointerup pointercancel MSPointerUp MSPointerCancel&#x27;
-    ];
-  },
-	
 
   /**
    * reset the stored pointers

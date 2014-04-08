@@ -715,11 +715,11 @@ Hammer.Instance.prototype = {
 /**
  * when touch events have been fired, this is true
  * this is used to stop mouse events
- * @property touch_triggered
+ * @property prevent_mouseevents
  * @private
  * @type {Boolean}
  */
-var touch_triggered = false;
+var prevent_mouseevents = false;
 
 
 /**
@@ -797,61 +797,78 @@ var Event = Hammer.event = {
         , is_mouse = Utils.inStr(src_type, 'mouse');
 
 
-      // onmouseup, but when touchend has been fired we do nothing.
-      // this is for touchdevices which also fire a mouseup on touchend
-      if(is_mouse && touch_triggered) {
+      // if we are in a mouseevent, but there has been a touchevent triggered in this session
+      // we want to do nothing. simply break out of the event.
+      if(is_mouse && prevent_mouseevents) {
         return;
       }
 
-      // we are in a touch event, set the touch triggered bool to true,
-      // this for the conflicts that may occur on ios and android
+
+      // find out if we should detect a gesture.
+      // the touch/pointer/mouse must be at the screen or pressed.
+
+      // touchevents and pointerdown are always allowed
+      // and prevent mouseevents from being fired
       else if(Utils.inStr(src_type, 'touch') || Utils.inStr(src_type, 'pointerdown')) {
-        touch_triggered = true;
+        prevent_mouseevents = true;
         should_detect = true;
       }
-
-      // mousebutton must be down or a touch event
+      // mousebutton must be down
       else if(is_mouse && ev.which === 1) {
         should_detect = true;
       }
 
-      // update pointerevent
+
+      // update the pointer event before entering the detection
       if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
       }
 
+
+      // we are in a touch/down state, so allowed detection of gestures
       if(should_detect) {
+        // get a normalized touchlist
         touchList = self.getTouchList(ev, eventType);
         touchList_length = touchList.length;
         trigger_type = eventType;
         change_length = touchList_length;
 
-        // trigger touch changed events
+
+        // at each touchstart-like event we want also want to trigger a TOUCH event...
         if(eventType == EVENT_START) {
           trigger_change = EVENT_TOUCH;
         }
+        // ...the same for a touchend-like event
         else if(eventType == EVENT_END) {
           trigger_change = EVENT_RELEASE;
+
+          // keep track of how many touches have been removed
           change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
         }
 
-        // there are still touches, trigger a move
+
+        // after there are still touches on the screen,
+        // we just want to trigger a MOVE event. so change the START or END to a MOVE
+        // but only after detection has been started, the first time we actualy want a START
         if(change_length > 0 && started) {
           trigger_type = EVENT_MOVE;
         }
 
-        // detection has been started
+        // detection has been started, we keep track of this, see above
         started = true;
 
+
+        // generate some event data, some basic information
         var ev_data = self.collectEventData(element, trigger_type, touchList, ev);
 
-        // trigger the trigger_type event before the change events
-        // but the event_end should be at last
+
+        // trigger the trigger_type event before the change (TOUCH, RELEASE) events
+        // but the END event should be at last
         if(eventType != EVENT_END) {
           handler.call(Detection, ev_data);
         }
 
-        // trigger a change event, this means the length of the touches changed
+        // trigger a change (TOUCH, RELEASE) event, this means the length of the touches changed
         if(trigger_change) {
           ev_data.changedLength = change_length;
           ev_data.eventType = trigger_change;
@@ -862,29 +879,29 @@ var Event = Hammer.event = {
           delete ev_data.changedLength;
         }
 
+        // trigger the END event
         if(trigger_type == EVENT_END) {
           handler.call(Detection, ev_data);
         }
       }
 
-      // on the end we reset everything
+      // update the pointerevent object after the detection
+      if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
+        PointerEvent.updatePointer(eventType, ev);
+      }
+
+      // we are done with the detection
+      // so reset everything to start each detection totally fresh
       if(trigger_type == EVENT_END){
-        touch_triggered = false;
+        prevent_mouseevents = false;
         should_detect = false;
         started = false;
         PointerEvent.reset();
       }
-
-
-      // remove pointerevent from list
-      if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
-        PointerEvent.updatePointer(eventType, ev);
-      }
     };
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
 
-    // return the bound function to be able to unbind it later
+    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
     return bindDomOnTouch;
   },
 
@@ -897,7 +914,11 @@ var Event = Hammer.event = {
   determineEventTypes: function determineEventTypes() {
     var types;
     if(Hammer.HAS_POINTEREVENTS) {
-      types = PointerEvent.getEvents();
+      types = [
+        'pointerdown MSPointerDown',
+        'pointermove MSPointerMove',
+        'pointerup pointercancel MSPointerUp MSPointerCancel'
+      ];
     }
     else {
       types = [
@@ -1007,7 +1028,7 @@ var Event = Hammer.event = {
 
 /**
  * @module hammer
- * 
+ *
  * @class PointerEvent
  * @static
  */
@@ -1019,7 +1040,7 @@ var PointerEvent = Hammer.PointerEvent = {
    */
   pointers: {},
 
-	
+
   /**
    * get the pointers as an array
 	 * @method getTouchList
@@ -1034,7 +1055,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
     return touchlist;
   },
-	
+
 
   /**
    * update the position of a pointer
@@ -1055,7 +1076,7 @@ var PointerEvent = Hammer.PointerEvent = {
     // it's save to use Object.keys, since pointerEvents are only in newer browsers
     return Object.keys(this.pointers).length;
   },
-	
+
 
   /**
    * check if ev matches pointertype
@@ -1077,20 +1098,6 @@ var PointerEvent = Hammer.PointerEvent = {
     return types[pointerType];
   },
 
-
-  /**
-   * get events to bind to
-	 * @method getEvents
-	 * @return {Array} events, in order of start, move and end
-   */
-  getEvents: function getEvents() {
-    return [
-      'pointerdown MSPointerDown',
-      'pointermove MSPointerMove',
-      'pointerup pointercancel MSPointerUp MSPointerCancel'
-    ];
-  },
-	
 
   /**
    * reset the stored pointers

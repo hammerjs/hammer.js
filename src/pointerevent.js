@@ -1,6 +1,6 @@
 /**
  * @module hammer
- * 
+ *
  * @class PointerEvent
  * @static
  */
@@ -12,7 +12,7 @@ var PointerEvent = Hammer.PointerEvent = {
    */
   pointers: {},
 
-	
+
   /**
    * get the pointers as an array
 	 * @method getTouchList
@@ -27,7 +27,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
     return touchlist;
   },
-	
+
 
   /**
    * update the position of a pointer
@@ -48,7 +48,7 @@ var PointerEvent = Hammer.PointerEvent = {
     // it's save to use Object.keys, since pointerEvents are only in newer browsers
     return Object.keys(this.pointers).length;
   },
-	
+
 
   /**
    * check if ev matches pointertype
@@ -70,20 +70,6 @@ var PointerEvent = Hammer.PointerEvent = {
     return types[pointerType];
   },
 
-
-  /**
-   * get events to bind to
-	 * @method getEvents
-	 * @return {Array} events, in order of start, move and end
-   */
-  getEvents: function getEvents() {
-    return [
-      'pointerdown MSPointerDown',
-      'pointermove MSPointerMove',
-      'pointerup pointercancel MSPointerUp MSPointerCancel'
-    ];
-  },
-	
 
   /**
    * reset the stored pointers
