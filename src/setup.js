@@ -58,7 +58,7 @@ Hammer.defaults = {
     // this makes the element blocking in IE10>, you could experiment with the value
     // it doesnt block on the y-axis, change this to support vertical touches on IE10>
     // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-    touchAction      : 'pan-x pinch-zoom double-tap-zoom',
+    touchAction      : 'none',
     // properties, mainly for ios/android
     touchCallout     : 'none',
     contentZooming   : 'none',

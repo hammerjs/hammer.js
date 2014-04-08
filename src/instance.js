@@ -5,10 +5,10 @@
 /**
  * create new hammer instance
  * all methods should return the instance itself, so it is chainable.
- * 
+ *
  * @class Instance
  * @constructor
- * @param {HTMLElement} element    
+ * @param {HTMLElement} element
  * @param {Object} [options={}] options are merged with `Hammer.defaults`
  * @return {Hammer.Instance}
  */
@@ -77,28 +77,28 @@ Hammer.Instance = function(element, options) {
 Hammer.Instance.prototype = {
   /**
    * bind events to the instance
-	 * @method on
-	 * @chainable
+   * @method on
+   * @chainable
    * @param {String} gesture multiple gestures by splitting with a space
    * @param {Function} handler
    * @param {Object} handler.ev event object
    */
   on: function onEvent(gesture, handler) {
     var gestures = gesture.split(' ');
-    
+
     Utils.each(gestures, function(gesture) {
       this.element.addEventListener(gesture, handler, false);
       this.eventHandlers.push({ gesture: gesture, handler: handler });
     }, this);
-    
+
     return this;
   },
 
 
   /**
    * unbind events to the instance
-   * @method off 
-	 * @chainable
+   * @method off
+   * @chainable
    * @param {String} gesture
    * @param {Function} handler
    */

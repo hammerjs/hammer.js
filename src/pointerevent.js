@@ -7,7 +7,7 @@
 var PointerEvent = Hammer.PointerEvent = {
   /**
    * holds all pointers, by `identifier`
-	 * @property pointers
+   * @property pointers
    * @type {Object}
    */
   pointers: {},
@@ -15,7 +15,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * get the pointers as an array
-	 * @method getTouchList
+   * @method getTouchList
    * @return {Array} touchlist
    */
   getTouchList: function getTouchList() {
@@ -31,10 +31,10 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * update the position of a pointer
-	 * @method updatePointer
+   * @method updatePointer
    * @param {String} type matches `EVENT_START|MOVE|END`
    * @param {Object} pointerEvent
-	 * @return count {Number} count the pointers
+   * @return count {Number} count the pointers
    */
   updatePointer: function updatePointer(type, pointerEvent) {
     if(type == EVENT_END) {
@@ -52,7 +52,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * check if ev matches pointertype
-	 * @method matchType
+   * @method matchType
    * @param {String} pointerType matches `POINTER_MOUSE|TOUCH|PEN`
    * @param {PointerEvent} ev
    */
@@ -73,7 +73,7 @@ var PointerEvent = Hammer.PointerEvent = {
 
   /**
    * reset the stored pointers
-	 * @method reset
+   * @method reset
    */
   reset: function resetList() {
     this.pointers = {};

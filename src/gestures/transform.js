@@ -43,7 +43,7 @@ Hammer.gestures.Transform = {
      * @type {Number}
      * @default 0.01
      */
-    transform_min_scale      : 0.01,
+    transform_min_scale: 0.01,
 
     /**
      * rotation in degrees
@@ -51,8 +51,7 @@ Hammer.gestures.Transform = {
      * @type {Number}
      * @default 1
      */
-    transform_min_rotation   : 1,
-
+    transform_min_rotation: 1,
 
     /**
      * prevent default browser behavior when two touches are on the screen
@@ -62,8 +61,7 @@ Hammer.gestures.Transform = {
      * @type {Boolean}
      * @default false
      */
-    transform_always_block   : false,
-
+    transform_always_block: false,
 
     /**
      * checks if all touches occurred within the instance element

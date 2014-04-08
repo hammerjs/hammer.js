@@ -1,6 +1,6 @@
 /**
  * @module hammer
- * 
+ *
  * @class Utils
  * @static
  */
@@ -12,7 +12,7 @@ var Utils = Hammer.utils = {
    * @param {Object} dest
    * @param {Object} src
    * @param {Boolean} [merge=false]  do a merge
-   * @return {Object} dest 
+   * @return {Object} dest
    */
   extend: function extend(dest, src, merge) {
     for(var key in src) {
@@ -27,13 +27,13 @@ var Utils = Hammer.utils = {
 
   /**
    * forEach over arrays and objects
-	 * @method each
-   * @param {Object|Array} obj 
-   * @param {Function} iterator 
-   * @param	{any} iterator.item 
-   * @param {Number} iterator.index 
+   * @method each
+   * @param {Object|Array} obj
+   * @param {Function} iterator
+   * @param  {any} iterator.item
+   * @param {Number} iterator.index
    * @param {Object|Array} iterator.obj the source object
-	 * @param	{Object} context value to use as `this` in the iterator
+   * @param  {Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
     var i, o;
@@ -63,7 +63,7 @@ var Utils = Hammer.utils = {
 
   /**
    * find if a string contains the string using indexOf
-	 * @method inStr
+   * @method inStr
    * @param {String} src
    * @param {String} find
    * @return {Boolean} found
@@ -71,11 +71,11 @@ var Utils = Hammer.utils = {
   inStr: function inStr(src, find) {
     return src.indexOf(find) > -1;
   },
-  
-  
+
+
   /**
    * find if a array contains the object using indexOf or a simple polyfill
-	 * @method inArray
+   * @method inArray
    * @param {String} src
    * @param {String} find
    * @return {Boolean} found
@@ -108,7 +108,7 @@ var Utils = Hammer.utils = {
 
   /**
    * find if a node is in the given parent
-	 * @method hasParent
+   * @method hasParent
    * @param {HTMLElement} node
    * @param {HTMLElement} parent
    * @return {Boolean} found
@@ -126,7 +126,7 @@ var Utils = Hammer.utils = {
 
   /**
    * get the center of all the touches
-	 * @method getCenter
+   * @method getCenter
    * @param {Array} touches
    * @return {Object} center contains `pageX`, `pageY`, `clientX` and `clientY` properties
    */
@@ -166,7 +166,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the velocity between two points
-	 * @method getVelocity
+   * @method getVelocity
    * @param {Number} delta_time
    * @param {Number} delta_x
    * @param {Number} delta_y
@@ -182,7 +182,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the angle between two coordinates
-	 * @method getAngle
+   * @method getAngle
    * @param {Touch} touch1
    * @param {Touch} touch2
    * @return {Number} angle
@@ -196,7 +196,7 @@ var Utils = Hammer.utils = {
 
   /**
    * do a small comparision to get the direction between two touches.
-	 * @method getDirection
+   * @method getDirection
    * @param {Touch} touch1
    * @param {Touch} touch2
    * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
@@ -213,9 +213,9 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the distance between two touches
-	 * @method getDistance
+   * @method getDistance
    * @param {Touch}touch1
-   * @param {Touch} touch2 
+   * @param {Touch} touch2
    * @return {Number} distance
    */
   getDistance: function getDistance(touch1, touch2) {
@@ -228,7 +228,7 @@ var Utils = Hammer.utils = {
   /**
    * calculate the scale factor between two touchLists
    * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
-	 * @method getScale
+   * @method getScale
    * @param {Array} start array of touches
    * @param {Array} end array of touches
    * @return {Number} scale
@@ -244,7 +244,7 @@ var Utils = Hammer.utils = {
 
   /**
    * calculate the rotation degrees between two touchLists
-	 * @method getRotation
+   * @method getRotation
    * @param {Array} start array of touches
    * @param {Array} end array of touches
    * @return {Number} rotation
@@ -259,8 +259,8 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * find out if the direction is vertical	 * 
-	 * @method isVertical
+   * find out if the direction is vertical   *
+   * @method isVertical
    * @param {String} direction matches `DIRECTION_UP|DOWN`
    * @return {Boolean} is_vertical
    */
@@ -271,10 +271,10 @@ var Utils = Hammer.utils = {
 
   /**
    * toggle browser default behavior by setting css properties.
-	 * `userSelect='none'` also sets `element.onselectstart` to false
-	 * `userDrag='none'` also sets `element.ondragstart` to false
-	 * 
-	 * @method toggleDefaultBehavior
+   * `userSelect='none'` also sets `element.onselectstart` to false
+   * `userDrag='none'` also sets `element.ondragstart` to false
+   *
+   * @method toggleDefaultBehavior
    * @param {HtmlElement} element
    * @param {Object} css_props
    * @param {Boolean} [toggle=false]
