@@ -176,7 +176,7 @@ var Event = Hammer.event = {
 
   /**
    * the core touch event handler.
-   * this finds out what hammer-touch-events to trigger
+   * this finds out if we should to detect gestures
    * @method onTouch
    * @param {HTMLElement} element
    * @param {String} eventType matches &#x60;EVENT_START|MOVE|END&#x60;
@@ -188,11 +188,7 @@ var Event = Hammer.event = {
 
     var bindDomOnTouch = function bindDomOnTouch(ev) {
       var src_type = ev.type.toLowerCase()
-        , touchList_length
-        , trigger_type
-        , touchList
-        , trigger_change
-        , change_length
+        , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , is_mouse = Utils.inStr(src_type, &#x27;mouse&#x27;);
 
 
@@ -219,89 +215,101 @@ var Event = Hammer.event = {
 
 
       // update the pointer event before entering the detection
-      if(Hammer.HAS_POINTEREVENTS &amp;&amp; eventType != EVENT_END) {
+      if(has_pointerevents &amp;&amp; eventType != EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
       }
-
 
       // we are in a touch/down state, so allowed detection of gestures
       if(should_detect) {
-        // get a normalized touchlist
-        touchList = self.getTouchList(ev, eventType);
-        touchList_length = touchList.length;
-        trigger_type = eventType;
-        change_length = touchList_length;
-
-
-        // at each touchstart-like event we want also want to trigger a TOUCH event...
-        if(eventType == EVENT_START) {
-          trigger_change = EVENT_TOUCH;
-        }
-        // ...the same for a touchend-like event
-        else if(eventType == EVENT_END) {
-          trigger_change = EVENT_RELEASE;
-
-          // keep track of how many touches have been removed
-          change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
-        }
-
-
-        // after there are still touches on the screen,
-        // we just want to trigger a MOVE event. so change the START or END to a MOVE
-        // but only after detection has been started, the first time we actualy want a START
-        if(change_length &gt; 0 &amp;&amp; started) {
-          trigger_type = EVENT_MOVE;
-        }
-
-        // detection has been started, we keep track of this, see above
-        started = true;
-
-
-        // generate some event data, some basic information
-        var ev_data = self.collectEventData(element, trigger_type, touchList, ev);
-
-
-        // trigger the trigger_type event before the change (TOUCH, RELEASE) events
-        // but the END event should be at last
-        if(eventType != EVENT_END) {
-          handler.call(Detection, ev_data);
-        }
-
-        // trigger a change (TOUCH, RELEASE) event, this means the length of the touches changed
-        if(trigger_change) {
-          ev_data.changedLength = change_length;
-          ev_data.eventType = trigger_change;
-
-          handler.call(Detection, ev_data);
-
-          ev_data.eventType = trigger_type;
-          delete ev_data.changedLength;
-        }
-
-        // trigger the END event
-        if(trigger_type == EVENT_END) {
-          handler.call(Detection, ev_data);
-        }
+        self.doDetect.call(self, ev, eventType, element, handler);
       }
 
       // update the pointerevent object after the detection
-      if(Hammer.HAS_POINTEREVENTS &amp;&amp; eventType == EVENT_END) {
+      if(has_pointerevents &amp;&amp; eventType == EVENT_END) {
         PointerEvent.updatePointer(eventType, ev);
-      }
-
-      // we are done with the detection
-      // so reset everything to start each detection totally fresh
-      if(trigger_type == EVENT_END){
-        prevent_mouseevents = false;
-        should_detect = false;
-        started = false;
-        PointerEvent.reset();
       }
     };
 
 
     this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
     return bindDomOnTouch;
+  },
+
+
+  /**
+   * the core detection method
+   * this finds out what hammer-touch-events to trigger
+   * @method doDetect
+   * @param {Object} ev
+   * @param {String} eventType matches &#x60;EVENT_START|MOVE|END&#x60;
+   * @param {HTMLElement} element
+   * @param {Function} handler
+   */
+  doDetect: function doDetect(ev, eventType, element, handler) {
+    // get a normalized touchlist
+    var touchList = this.getTouchList(ev, eventType);
+    var touchList_length = touchList.length;
+    var trigger_type = eventType;
+    var trigger_change;
+    var change_length = touchList_length;
+
+
+    // at each touchstart-like event we want also want to trigger a TOUCH event...
+    if(eventType == EVENT_START) {
+      trigger_change = EVENT_TOUCH;
+    }
+    // ...the same for a touchend-like event
+    else if(eventType == EVENT_END) {
+      trigger_change = EVENT_RELEASE;
+
+      // keep track of how many touches have been removed
+      change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
+    }
+
+
+    // after there are still touches on the screen,
+    // we just want to trigger a MOVE event. so change the START or END to a MOVE
+    // but only after detection has been started, the first time we actualy want a START
+    if(change_length &gt; 0 &amp;&amp; started) {
+      trigger_type = EVENT_MOVE;
+    }
+
+    // detection has been started, we keep track of this, see above
+    started = true;
+
+
+    // generate some event data, some basic information
+    var ev_data = this.collectEventData(element, trigger_type, touchList, ev);
+
+
+    // trigger the trigger_type event before the change (TOUCH, RELEASE) events
+    // but the END event should be at last
+    if(eventType != EVENT_END) {
+      handler.call(Detection, ev_data);
+    }
+
+    // trigger a change (TOUCH, RELEASE) event, this means the length of the touches changed
+    if(trigger_change) {
+      ev_data.changedLength = change_length;
+      ev_data.eventType = trigger_change;
+
+      handler.call(Detection, ev_data);
+
+      ev_data.eventType = trigger_type;
+      delete ev_data.changedLength;
+    }
+
+    // trigger the END event
+    if(trigger_type == EVENT_END) {
+      handler.call(Detection, ev_data);
+
+      // ...and we are done with the detection
+      // so reset everything to start each detection totally fresh
+      prevent_mouseevents = false;
+      should_detect = false;
+      started = false;
+      PointerEvent.reset();
+    }
   },
 
 

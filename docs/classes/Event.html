@@ -94,6 +94,8 @@
             
                 <li><a href="#methods_determineEventTypes">determineEventTypes</a></li>
             
+                <li><a href="#methods_doDetect">doDetect</a></li>
+            
                 <li><a href="#methods_getTouchList">getTouchList</a></li>
             
                 <li><a href="#methods_onTouch">onTouch</a></li>
@@ -208,7 +210,7 @@
     
         
     
-        <a href="../files/src_event.js.html#l266"><code>src&#x2F;event.js:266</code></a>
+        <a href="../files/src_event.js.html#l274"><code>src&#x2F;event.js:274</code></a>
     </span><br>
     <p>collect basic event data</p>
 
@@ -273,11 +275,72 @@
     
         
     
-        <a href="../files/src_event.js.html#l200"><code>src&#x2F;event.js:200</code></a>
+        <a href="../files/src_event.js.html#l208"><code>src&#x2F;event.js:208</code></a>
     </span><br>
     <p>we have different events for each device/browser
 determine what we need and set them in the Hammer.EVENT_TYPES constant</p>
 
+    
+    
+    
+</div>
+
+            
+                <a name="methods_doDetect"></a>
+<div class="method item">
+     <strong class="name"><code>doDetect</code></strong>( <code>ev, eventType, element, handler </code> ) 
+    <br>
+    <span class="foundat">
+    
+        
+    
+        <a href="../files/src_event.js.html#l131"><code>src&#x2F;event.js:131</code></a>
+    </span><br>
+    <p>the core detection method
+this finds out what hammer-touch-events to trigger</p>
+
+    
+    <strong>Parameters:</strong>
+    <ul class="params">
+    
+        <li>
+        
+            <code>ev</code> <strong>&lt;Object&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>eventType</code> <strong>&lt;String&gt;</strong>
+        
+        
+        <p>matches <code>EVENT_START|MOVE|END</code></p>
+
+            
+        </li>
+    
+        <li>
+        
+            <code>element</code> <strong>&lt;HTMLElement&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>handler</code> <strong>&lt;Function&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+    </ul>
     
     
     
@@ -292,7 +355,7 @@ determine what we need and set them in the Hammer.EVENT_TYPES constant</p>
     
         
     
-        <a href="../files/src_event.js.html#l227"><code>src&#x2F;event.js:227</code></a>
+        <a href="../files/src_event.js.html#l235"><code>src&#x2F;event.js:235</code></a>
     </span><br>
     <p>create touchlist depending on the event</p>
 
@@ -341,7 +404,7 @@ determine what we need and set them in the Hammer.EVENT_TYPES constant</p>
         <a href="../files/src_event.js.html#l69"><code>src&#x2F;event.js:69</code></a>
     </span><br>
     <p>the core touch event handler.
-this finds out what hammer-touch-events to trigger</p>
+this finds out if we should to detect gestures</p>
 
     
     <strong>Parameters:</strong>
