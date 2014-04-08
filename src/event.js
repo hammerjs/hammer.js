@@ -1,41 +1,39 @@
 /**
  * @module hammer
  */
-
-
-/**
- * when touch events have been fired, this is true
- * this is used to stop mouse events
- * @property prevent_mouseevents
- * @private
- * @type {Boolean}
- */
-var prevent_mouseevents = false;
-
-
-/**
- * if EVENT_START has been fired
- * @property started
- * @private
- * @type {Boolean}
- */
-var started = false;
-
-
-/**
- * when the mouse is hold down, this is true
- * @property should_detect
- * @private
- * @type {Boolean}
- */
-var should_detect = false;
-
-
 /**
  * @class Event
  * @static
  */
 var Event = Hammer.event = {
+  /**
+   * when touch events have been fired, this is true
+   * this is used to stop mouse events
+   * @property prevent_mouseevents
+   * @private
+   * @type {Boolean}
+   */
+  prevent_mouseevents: false,
+
+
+  /**
+   * if EVENT_START has been fired
+   * @property started
+   * @private
+   * @type {Boolean}
+   */
+  started: false,
+
+
+  /**
+   * when the mouse is hold down, this is true
+   * @property should_detect
+   * @private
+   * @type {Boolean}
+   */
+  should_detect: false,
+
+
   /**
    * simple addEventListener
    * @method bindDom
@@ -83,13 +81,11 @@ var Event = Hammer.event = {
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , is_mouse = Utils.inStr(src_type, 'mouse');
 
-
       // if we are in a mouseevent, but there has been a touchevent triggered in this session
       // we want to do nothing. simply break out of the event.
-      if(is_mouse && prevent_mouseevents) {
+      if(is_mouse && self.prevent_mouseevents) {
         return;
       }
-
 
       // find out if we should detect a gesture.
       // the touch/pointer/mouse must be at the screen or pressed.
@@ -97,14 +93,13 @@ var Event = Hammer.event = {
       // touchevents and pointerdown are always allowed
       // and prevent mouseevents from being fired
       else if(Utils.inStr(src_type, 'touch') || Utils.inStr(src_type, 'pointerdown')) {
-        prevent_mouseevents = true;
-        should_detect = true;
+        self.prevent_mouseevents = true;
+        self.should_detect = true;
       }
       // mousebutton must be down
       else if(is_mouse && ev.which === 1) {
-        should_detect = true;
+        self.should_detect = true;
       }
-
 
       // update the pointer event before entering the detection
       if(has_pointerevents && eventType != EVENT_END) {
@@ -112,7 +107,7 @@ var Event = Hammer.event = {
       }
 
       // we are in a touch/down state, so allowed detection of gestures
-      if(should_detect) {
+      if(self.should_detect) {
         self.doDetect.call(self, ev, eventType, element, handler);
       }
 
@@ -138,13 +133,11 @@ var Event = Hammer.event = {
    * @param {Function} handler
    */
   doDetect: function doDetect(ev, eventType, element, handler) {
-    // get a normalized touchlist
     var touchList = this.getTouchList(ev, eventType);
     var touchList_length = touchList.length;
     var trigger_type = eventType;
     var trigger_change;
     var change_length = touchList_length;
-
 
     // at each touchstart-like event we want also want to trigger a TOUCH event...
     if(eventType == EVENT_START) {
@@ -158,21 +151,18 @@ var Event = Hammer.event = {
       change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
     }
 
-
     // after there are still touches on the screen,
     // we just want to trigger a MOVE event. so change the START or END to a MOVE
     // but only after detection has been started, the first time we actualy want a START
-    if(change_length > 0 && started) {
+    if(change_length > 0 && this.started) {
       trigger_type = EVENT_MOVE;
     }
 
     // detection has been started, we keep track of this, see above
-    started = true;
-
+    this.started = true;
 
     // generate some event data, some basic information
     var ev_data = this.collectEventData(element, trigger_type, touchList, ev);
-
 
     // trigger the trigger_type event before the change (TOUCH, RELEASE) events
     // but the END event should be at last
@@ -197,9 +187,9 @@ var Event = Hammer.event = {
 
       // ...and we are done with the detection
       // so reset everything to start each detection totally fresh
-      prevent_mouseevents = false;
-      should_detect = false;
-      started = false;
+      this.prevent_mouseevents = false;
+      this.should_detect = false;
+      this.started = false;
       PointerEvent.reset();
     }
   },
