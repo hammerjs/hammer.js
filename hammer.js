@@ -944,8 +944,7 @@ var Event = Hammer.event = {
   getTouchList: function getTouchList(ev, eventType) {
     // get the fake pointerEvent touchlist
     if(Hammer.HAS_POINTEREVENTS) {
-      var touchlist = PointerEvent.getTouchList();
-      return touchlist;
+      return PointerEvent.getTouchList();
     }
 
     // get the touchlist

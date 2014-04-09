@@ -1333,7 +1333,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 267,
+            "line": 266,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1368,21 +1368,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 292,
+            "line": 291,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 302,
+            "line": 301,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 309,
+            "line": 308,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -2194,15 +2194,15 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:292"
+            "line": " src/event.js:291"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:302"
+            "line": " src/event.js:301"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:309"
+            "line": " src/event.js:308"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
