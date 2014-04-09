@@ -24,7 +24,6 @@ var PointerEvent = Hammer.PointerEvent = {
     Utils.each(this.pointers, function(pointer){
       touchlist.push(pointer);
     });
-
     return touchlist;
   },
 
@@ -32,21 +31,17 @@ var PointerEvent = Hammer.PointerEvent = {
   /**
    * update the position of a pointer
    * @method updatePointer
-   * @param {String} type matches `EVENT_START|MOVE|END`
+   * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {Object} pointerEvent
-   * @return count {Number} count the pointers
    */
-  updatePointer: function updatePointer(type, pointerEvent) {
-    if(type == EVENT_END) {
+  updatePointer: function updatePointer(eventType, pointerEvent) {
+    if(eventType == EVENT_END) {
       delete this.pointers[pointerEvent.pointerId];
     }
     else {
       pointerEvent.identifier = pointerEvent.pointerId;
       this.pointers[pointerEvent.pointerId] = pointerEvent;
     }
-
-    // it's save to use Object.keys, since pointerEvents are only in newer browsers
-    return Object.keys(this.pointers).length;
   },
 
 

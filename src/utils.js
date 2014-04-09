@@ -16,7 +16,7 @@ var Utils = Hammer.utils = {
    */
   extend: function extend(dest, src, merge) {
     for(var key in src) {
-      if(!src.hasOwnProperty(key) || dest[key] !== undefined && merge) {
+      if(dest[key] !== undefined && merge) {
         continue;
       }
       dest[key] = src[key];

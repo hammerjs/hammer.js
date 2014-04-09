@@ -7,8 +7,8 @@
   Hammer.plugins.fakeMultitouch = function() {
     // keeps the start position to keep it centered
     var start_pos = false;
-    
-    if(Hammer.HAS_TOUCHEVENTS) {
+
+    if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
       return;
     }
 
@@ -18,10 +18,10 @@
      * @param {Event} ev
      * @param {String} eventType
      * @return {Array} Touches
-     */    
+     */
     Hammer.event.getTouchList = function(ev, eventType) {
       var touchlist = [];
-      
+
       // reset on start of a new touch
       if(eventType == Hammer.EVENT_START) {
         start_pos = false;
@@ -74,7 +74,7 @@
           }
         ];
       }
-      
+
       ev.touches = touchlist;
       ev.changedTouches = touchlist;
       return touchlist;

@@ -121,6 +121,9 @@
 <div id="hitarea" class="hitarea"></div>
 </div>
 
+
+<textarea id="debug_log" rows="45"></textarea>
+
 <!-- jQuery is just for the demo! Hammer.js works without jQuery :-) -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 
@@ -144,6 +147,13 @@
         return document.getElementById(id);
     }
 
+
+	var debug_log_el = getEl('debug_log');
+	debug_log_el.value = '';
+	function debug() {
+		console.log(arguments)
+		debug_log_el.value = "\n"+ Array.prototype.slice.call(arguments,0).join(", ") + debug_log_el.value;
+	}
 
     var hammertime;
     var log_elements = {};
