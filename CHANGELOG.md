@@ -6,6 +6,6 @@
 - Added `EVENT_TOUCH` and `EVENT_RELEASE` event types. These events are triggered inside Hammer to do actions when the touches change. This makes some gestures more precise.
 - Added CHANGELOG.md!
 - New gesture event: `gesture`. This is a lowlevel gesture which passes all data. Disabled by default.
-- The setting `touchAction` changed from `none` to `pan-x pinch-zoom double-tap-zoom`.
 - Dropped `NO_MOUSEEVENTS` check to be more future friendly. This still could be done by the `prevent_mouseevents` option, defined at the `touch` gesture.
 - The gestures `touch` and `release` are now triggered on every new touch/release instead of start/end.
+- Removed `interimDirection` and `interimAngle`, these are now moved to `direction` and `angle`.

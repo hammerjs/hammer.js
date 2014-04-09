@@ -87,16 +87,13 @@ var Event = Hammer.event = {
       if(is_mouse && self.prevent_mouseevents) {
         return;
       }
-      // find out if we should detect a gesture.
-      // the touch/pointer/mouse must be at the screen or pressed.
-      // touchevents and pointerdown are always allowed
-      // and prevent mouseevents from being fired
-      else if(Utils.inStr(src_type, 'touch') || Utils.inStr(src_type, 'pointerdown')) {
-        self.prevent_mouseevents = true;
-        self.should_detect = true;
-      }
       // mousebutton must be down
       else if(is_mouse && ev.which === 1) {
+        self.should_detect = true;
+      }
+      // just a valid start event, but no mouse
+      else if(eventType == EVENT_START && !is_mouse) {
+        self.prevent_mouseevents = true;
         self.should_detect = true;
       }
 
@@ -122,7 +119,6 @@ var Event = Hammer.event = {
         PointerEvent.updatePointer(eventType, ev);
       }
     };
-
 
     this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
     return bindDomOnTouch;

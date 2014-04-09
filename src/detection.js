@@ -1,6 +1,6 @@
 /**
  * @module hammer
- * 
+ *
  * @class Detection
  * @static
  */
@@ -35,12 +35,12 @@ var Detection = Hammer.detection = {
 
     // holds current session
     this.current = {
-      inst              : inst, // reference to HammerInstance we're working for
-      startEvent        : Utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent         : false, // last eventData
-      lastVelocityEvent : false, // last eventData for velocity.
-      velocity          : false, // current velocity
-      name              : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
+      inst          : inst, // reference to HammerInstance we're working for
+      startEvent    : Utils.extend({}, eventData), // start eventData for distances, timing etc
+      lastEvent     : false, // last eventData
+      lastCalcEvent : false, // last eventData for calculations.
+      lastCalcData  : {}, // last lastCalcData
+      name          : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
     };
 
     this.detect(eventData);
@@ -111,62 +111,40 @@ var Detection = Hammer.detection = {
 
 
   /**
-   * calculate velocity
+   * calculate velocity, angle and direction
    * @method getVelocityData
    * @param {Object} ev
    * @param {Number} delta_time
    * @param {Number} delta_x
    * @param {Number} delta_y
    */
-  getVelocityData: function getVelocityData(ev, delta_time, delta_x, delta_y) {
+  getCalculatedData: function getCalculatedData(ev, center, delta_time, delta_x, delta_y) {
     var cur = this.current
-      , velocityEv = cur.lastVelocityEvent
-      , velocity = cur.velocity;
+      , recalc = false
+      , calcEv = cur.lastCalcEvent
+      , calcData = cur.lastCalcData;
 
     // calculate velocity every x ms
-    if (velocityEv && ev.timeStamp - velocityEv.timeStamp > Hammer.VELOCITY_INTERVAL) {
-      velocity = Utils.getVelocity(ev.timeStamp - velocityEv.timeStamp,
-                                   ev.center.clientX - velocityEv.center.clientX,
-                                  ev.center.clientY - velocityEv.center.clientY);
-      cur.lastVelocityEvent = ev;
-    }
-    else if(!cur.velocity) {
-      velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
-      cur.lastVelocityEvent = ev;
+    if (calcEv && ev.timeStamp - calcEv.timeStamp > Hammer.CALCULATE_INTERVAL) {
+      center = calcEv.center;
+      delta_time = ev.timeStamp - calcEv.timeStamp;
+      delta_x = ev.center.clientX - calcEv.center.clientX;
+      delta_y = ev.center.clientY - calcEv.center.clientY;
+      recalc = true;
     }
 
-    cur.velocity = velocity;
+    if(!cur.lastCalcEvent || recalc) {
+      calcData.velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
+      calcData.angle = Utils.getAngle(center, ev.center);
+      calcData.direction = Utils.getDirection(center, ev.center);
 
-    ev.velocityX = velocity.x;
-    ev.velocityY = velocity.y;
-  },
-
-
-  /**
-   * calculate interim angle and direction
-   * @method getInterimData
-   * @param {Object} ev
-   */
-  getInterimData: function getInterimData(ev) {
-    var lastEvent = this.current.lastEvent
-      , angle
-      , direction;
-
-    // end events (e.g. dragend) don't have useful values for interimDirection & interimAngle
-    // because the previous event has exactly the same coordinates
-    // so for end events, take the previous values of interimDirection & interimAngle
-    // instead of recalculating them and getting a spurious '0'
-    if(ev.eventType == EVENT_END) {
-      angle = lastEvent && lastEvent.interimAngle;
-      direction = lastEvent && lastEvent.interimDirection;
-    }
-    else {
-      angle = lastEvent && Utils.getAngle(lastEvent.center, ev.center);
-      direction = lastEvent && Utils.getDirection(lastEvent.center, ev.center);
+      cur.lastCalcEvent = ev;
     }
 
-    ev.interimAngle = angle;
-    ev.interimDirection = direction;
+    ev.velocityX = calcData.velocity.x;
+    ev.velocityY = calcData.velocity.y;
+    ev.angle = calcData.angle;
+    ev.direction = calcData.direction;
   },
 
 
@@ -178,14 +156,11 @@ var Detection = Hammer.detection = {
    */
   extendEventData: function extendEventData(ev) {
     var cur = this.current
-      , startEv = cur.startEvent;
+      , startEv = cur.startEvent
+      , lastEv = cur.lastEvent || startEv;
 
-    // if the touches change, set the new touches over the startEvent touches
-    // this because touchevents don't have all the touches on touchstart, or the
-    // user must place his fingers at the EXACT same time on the screen, which is not realistic
-    // but, sometimes it happens that both fingers are touching at the EXACT same time
-    if(ev.touches.length != startEv.touches.length || ev.touches === startEv.touches) {
-      // extend 1 level deep to get the touchlist with the touch objects
+    // update the start touchlist to calculate the scale/rotation
+    if(ev.eventType == EVENT_TOUCH || ev.eventType == EVENT_RELEASE) {
       startEv.touches = [];
       Utils.each(ev.touches, function(touch) {
         startEv.touches.push(Utils.extend({}, touch));
@@ -196,8 +171,7 @@ var Detection = Hammer.detection = {
       , delta_x = ev.center.clientX - startEv.center.clientX
       , delta_y = ev.center.clientY - startEv.center.clientY;
 
-    this.getVelocityData(ev, delta_time, delta_x, delta_y);
-    this.getInterimData(ev);
+    this.getCalculatedData(ev, lastEv.center, delta_time, delta_x, delta_y);
 
     Utils.extend(ev, {
       startEvent: startEv,
@@ -207,8 +181,6 @@ var Detection = Hammer.detection = {
       deltaY    : delta_y,
 
       distance  : Utils.getDistance(startEv.center, ev.center),
-      angle     : Utils.getAngle(startEv.center, ev.center),
-      direction : Utils.getDirection(startEv.center, ev.center),
 
       scale     : Utils.getScale(startEv.touches, ev.touches),
       rotation  : Utils.getRotation(startEv.touches, ev.touches)
