@@ -1076,7 +1076,7 @@
         {
             "file": "src/detection.js",
             "line": 113,
-            "description": "calculate velocity",
+            "description": "calculate velocity, angle and direction",
             "itemtype": "method",
             "name": "getVelocityData",
             "params": [
@@ -1106,23 +1106,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 145,
-            "description": "calculate interim angle and direction",
-            "itemtype": "method",
-            "name": "getInterimData",
-            "params": [
-                {
-                    "name": "ev",
-                    "description": "",
-                    "type": "Object"
-                }
-            ],
-            "class": "Detection",
-            "module": "hammer"
-        },
-        {
-            "file": "src/detection.js",
-            "line": 173,
+            "line": 151,
             "description": "extend eventData for Hammer.gestures",
             "itemtype": "method",
             "name": "extendEventData",
@@ -1142,7 +1126,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 221,
+            "line": 193,
             "description": "register new gesture",
             "itemtype": "method",
             "name": "register",
@@ -1280,7 +1264,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 132,
+            "line": 128,
             "description": "the core detection method\nthis finds out what hammer-touch-events to trigger",
             "itemtype": "method",
             "name": "doDetect",
@@ -1315,7 +1299,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 204,
+            "line": 200,
             "description": "we have different events for each device/browser\ndetermine what we need and set them in the Hammer.EVENT_TYPES constant",
             "itemtype": "method",
             "name": "determineEventTypes",
@@ -1324,7 +1308,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 231,
+            "line": 227,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
@@ -1349,7 +1333,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 270,
+            "line": 267,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1384,21 +1368,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 295,
+            "line": 292,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 305,
+            "line": 302,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 312,
+            "line": 309,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -1586,13 +1570,13 @@
         },
         {
             "file": "src/pointerevent.js",
-            "line": 32,
+            "line": 31,
             "description": "update the position of a pointer",
             "itemtype": "method",
             "name": "updatePointer",
             "params": [
                 {
-                    "name": "type",
+                    "name": "eventType",
                     "description": "matches `EVENT_START|MOVE|END`",
                     "type": "String"
                 },
@@ -1602,16 +1586,12 @@
                     "type": "Object"
                 }
             ],
-            "return": {
-                "description": "count  count the pointers",
-                "type": "Number"
-            },
             "class": "PointerEvent",
             "module": "hammer"
         },
         {
             "file": "src/pointerevent.js",
-            "line": 53,
+            "line": 48,
             "description": "check if ev matches pointertype",
             "itemtype": "method",
             "name": "matchType",
@@ -1632,7 +1612,7 @@
         },
         {
             "file": "src/pointerevent.js",
-            "line": 74,
+            "line": 69,
             "description": "reset the stored pointers",
             "itemtype": "method",
             "name": "reset",
@@ -1733,9 +1713,9 @@
         {
             "file": "src/setup.js",
             "line": 96,
-            "description": "interval in which Hammer recalculates current velocity in ms",
+            "description": "interval in which Hammer recalculates current velocity/direction/angle in ms",
             "itemtype": "property",
-            "name": "VELOCITY_INTERVAL",
+            "name": "CALCULATE_INTERVAL",
             "type": "{Number}",
             "default": "16",
             "class": "Hammer",
@@ -2089,7 +2069,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 214,
+            "line": 215,
             "description": "calculate the distance between two touches",
             "itemtype": "method",
             "name": "getDistance",
@@ -2114,7 +2094,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 228,
+            "line": 229,
             "description": "calculate the scale factor between two touchLists\nno scale is 1, and goes down to 0 when pinched together, and bigger when pinched out",
             "itemtype": "method",
             "name": "getScale",
@@ -2139,7 +2119,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 245,
+            "line": 246,
             "description": "calculate the rotation degrees between two touchLists",
             "itemtype": "method",
             "name": "getRotation",
@@ -2164,7 +2144,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 261,
+            "line": 262,
             "description": "find out if the direction is vertical   *",
             "itemtype": "method",
             "name": "isVertical",
@@ -2184,7 +2164,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 272,
+            "line": 273,
             "description": "toggle browser default behavior by setting css properties.\n`userSelect='none'` also sets `element.onselectstart` to false\n`userDrag='none'` also sets `element.ondragstart` to false",
             "itemtype": "method",
             "name": "toggleDefaultBehavior",
@@ -2214,15 +2194,15 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:295"
+            "line": " src/event.js:292"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:305"
+            "line": " src/event.js:302"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:312"
+            "line": " src/event.js:309"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",

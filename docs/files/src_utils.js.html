@@ -124,7 +124,7 @@ var Utils = Hammer.utils = {
    */
   extend: function extend(dest, src, merge) {
     for(var key in src) {
-      if(!src.hasOwnProperty(key) || dest[key] !== undefined &amp;&amp; merge) {
+      if(dest[key] !== undefined &amp;&amp; merge) {
         continue;
       }
       dest[key] = src[key];
@@ -312,6 +312,7 @@ var Utils = Hammer.utils = {
   getDirection: function getDirection(touch1, touch2) {
     var x = Math.abs(touch1.clientX - touch2.clientX)
       , y = Math.abs(touch1.clientY - touch2.clientY);
+
     if(x &gt;= y) {
       return touch1.clientX - touch2.clientX &gt; 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
