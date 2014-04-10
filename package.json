@@ -34,10 +34,10 @@
     "grunt-contrib-jshint": "0.9.x",
     "grunt-contrib-watch": "0.6.x",
     "grunt-contrib-qunit": "0.4.x",
-    "faketouches": "git://github.com/jtangelder/faketouches.js.git",
-    "underscore": "1.6.x",
     "grunt-string-replace": "^0.2.7",
-    "grunt-contrib-yuidoc": "^0.5.2"
+    "grunt-contrib-yuidoc": "^0.5.2",
+    "faketouches": "git://github.com/jtangelder/faketouches.js.git",
+    "underscore": "1.6.x"
   },
   "main": "hammer.js",
   "engines": {

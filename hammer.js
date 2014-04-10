@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-09
+/*! Hammer.JS - v1.1.0dev - 2014-04-10
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -393,8 +393,8 @@ var Utils = Hammer.utils = {
    * @return {Number} angle
    */
   getAngle: function getAngle(touch1, touch2) {
-    var x = touch2.clientX - touch1.clientX
-      , y = touch2.clientY - touch1.clientY;
+    var x = touch2.clientX - touch1.clientX,
+      y = touch2.clientY - touch1.clientY;
     return Math.atan2(y, x) * 180 / Math.PI;
   },
 
@@ -407,8 +407,8 @@ var Utils = Hammer.utils = {
    * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.clientX - touch2.clientX)
-      , y = Math.abs(touch1.clientY - touch2.clientY);
+    var x = Math.abs(touch1.clientX - touch2.clientX),
+      y = Math.abs(touch1.clientY - touch2.clientY);
 
     if(x >= y) {
       return touch1.clientX - touch2.clientX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
@@ -493,14 +493,14 @@ var Utils = Hammer.utils = {
     // with css properties for modern browsers
     Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
       Utils.each(css_props, function(value, prop) {
-          // vender prefix at the property
-          if(vendor) {
-            prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-          }
-          // set the style
-          if(prop in element.style) {
-            element.style[prop] = !toggle && value;
-          }
+        // vender prefix at the property
+        if(vendor) {
+          prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+        }
+        // set the style
+        if(prop in element.style) {
+          element.style[prop] = !toggle && value;
+        }
       });
     });
 
@@ -1972,11 +1972,6 @@ Hammer.gestures.Transform = {
   triggered: false,
 
   handler  : function transformGesture(ev, inst) {
-    // at least multitouch
-    if(ev.touches.length < 2) {
-      return;
-    }
-
     // prevent default when two fingers are on the screen
     if(inst.options.transform_always_block) {
       ev.preventDefault();
@@ -1997,6 +1992,11 @@ Hammer.gestures.Transform = {
         break;
 
       case EVENT_MOVE:
+          // at least multitouch
+        if(ev.touches.length < 2) {
+          return;
+        }
+
         var scale_threshold = Math.abs(1 - ev.scale);
         var rotation_threshold = Math.abs(ev.rotation);
 

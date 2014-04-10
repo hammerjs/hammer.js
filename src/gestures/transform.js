@@ -75,11 +75,6 @@ Hammer.gestures.Transform = {
   triggered: false,
 
   handler  : function transformGesture(ev, inst) {
-    // at least multitouch
-    if(ev.touches.length < 2) {
-      return;
-    }
-
     // prevent default when two fingers are on the screen
     if(inst.options.transform_always_block) {
       ev.preventDefault();
@@ -100,6 +95,11 @@ Hammer.gestures.Transform = {
         break;
 
       case EVENT_MOVE:
+          // at least multitouch
+        if(ev.touches.length < 2) {
+          return;
+        }
+
         var scale_threshold = Math.abs(1 - ev.scale);
         var rotation_threshold = Math.abs(ev.rotation);
 

@@ -68,7 +68,7 @@ module.exports = (grunt) ->
           port: 8000
 
     qunit:
-      all: ['tests/**/*.html']
+      all: ['tests/unit/**/*.html']
 
     yuidoc:
       build:
@@ -89,6 +89,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-yuidoc'
+  grunt.loadNpmTasks 'grunt-jscs-checker'
   grunt.loadNpmTasks 'grunt-string-replace'
 
   # Default task(s).
