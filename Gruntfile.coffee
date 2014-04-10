@@ -77,6 +77,7 @@ module.exports = (grunt) ->
         version: '<%= pkg.version %>'
         url: '<%= pkg.homepage %>'
         options:
+          linkNatives: true
           paths: 'src/'
           outdir: 'docs/'
           themedir: 'misc/docstheme/'
