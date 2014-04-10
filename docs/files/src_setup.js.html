@@ -142,25 +142,82 @@ Hammer.VERSION = &#x27;{{PKG_VERSION}}&#x27;;
 
 /**
  * default settings.
- * more settings are defined per gesture at &#x60;/gestures&#x60;
+ * more settings are defined per gesture at &#x60;/gestures&#x60;. Each gesture can be disabled/enabled
+ * by setting it&#x27;s name (like &#x60;swipe&#x60;) to false.
+ * You can set the defaults for all instances by changing this object before creating an instance.
+ * @example
+ * &#x60;&#x60;&#x60;&#x60;
+ *  Hammer.defaults.drag = false;
+ *  Hammer.defaults.stop_browser_behavior.touchAction = &#x27;pan-y&#x27;;
+ *  delete Hammer.defaults.stop_browser_behavior.userSelect;
+ * &#x60;&#x60;&#x60;&#x60;
  * @property defaults
  * @type {Object}
  */
 Hammer.defaults = {
-  // stop_browser_behavior adds styles and attributes to the element to prevent the browser from doing
-  // its native behavior. this doesnt prevent the scrolling, but cancelsthe contextmenu, tap highlighting etc
-  // set to false to disable this
+  /**
+   * this setting object adds styles and attributes to the element to prevent the browser from doing
+   * its native behavior. The css properties are auto prefixed for the browsers when needed.
+   * @property defaults.stop_browser_behavior
+   * @type {Object}
+   */
   stop_browser_behavior: {
-    // this also triggers onselectstart=false for IE
-    userSelect       : &#x27;none&#x27;,
-    // this makes the element blocking in IE10&gt;, you could experiment with the value
-    // it doesnt block on the y-axis, change this to support vertical touches on IE10&gt;
-    // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-    touchAction      : &#x27;none&#x27;,
-    // properties, mainly for ios/android
-    touchCallout     : &#x27;none&#x27;,
-    contentZooming   : &#x27;none&#x27;,
-    userDrag         : &#x27;none&#x27;,
+    /**
+     * Disables text selection to improve the dragging gesture. When the value is &#x60;none&#x60; it also sets
+     * &#x60;onselectstart=false&#x60; for IE on the element. Mainly for desktop browsers.
+     * @property defaults.stop_browser_behavior.userSelect
+     * @type {String}
+     * @default &#x27;none&#x27;
+     */
+    userSelect: &#x27;none&#x27;,
+
+    /**
+     * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
+     * Used by IE10&gt;. By default this makes the element blocking any touch event.
+     * @property defaults.stop_browser_behavior.touchAction
+     * @type {String}
+     * @default: &#x27;none&#x27;
+     */
+    touchAction: &#x27;none&#x27;,
+
+    /**
+     * Disables the default callout shown when you touch and hold a touch target.
+     * On iOS, when you touch and hold a touch target such as a link, Safari displays
+     * a callout containing information about the link. This property allows you to disable that callout.
+     * @property defaults.stop_browser_behavior.touchCallout
+     * @type {String}
+     * @default &#x27;none&#x27;
+     */
+    touchCallout: &#x27;none&#x27;,
+
+    /**
+     * Specifies whether zooming is enabled. Used by IE10&gt;
+     * @property defaults.stop_browser_behavior.contentZooming
+     * @type {String}
+     * @default &#x27;none&#x27;
+     */
+    contentZooming: &#x27;none&#x27;,
+
+    /**
+     * Specifies that an entire element should be draggable instead of its contents.
+     * Mainly for desktop browsers.
+     * @property defaults.stop_browser_behavior.userDrag
+     * @type {String}
+     * @default &#x27;none&#x27;
+     */
+    userDrag: &#x27;none&#x27;,
+
+    /**
+     * Overrides the highlight color shown when the user taps a link or a JavaScript
+     * clickable element in Safari on iPhone. This property obeys the alpha value, if specified.
+     *
+     * If you don’t specify an alpha value, Safari on iPhone applies a default alpha value
+     * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
+     * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
+     * @property defaults.stop_browser_behavior.tapHighlightColor
+     * @type {String}
+     * @default &#x27;rgba(0,0,0,0)&#x27;
+     */
     tapHighlightColor: &#x27;rgba(0,0,0,0)&#x27;
   }
 };
@@ -214,43 +271,40 @@ var EVENT_TYPES = {};
 /**
  * direction strings, for safe comparisons
  * @property DIRECTION_DOWN|LEFT|UP|RIGHT
- * @private
  * @final
  * @type {String}
  * @default &#x27;down&#x27; &#x27;left&#x27; &#x27;up&#x27; &#x27;right&#x27;
  */
-var DIRECTION_DOWN = &#x27;down&#x27;;
-var DIRECTION_LEFT = &#x27;left&#x27;;
-var DIRECTION_UP = &#x27;up&#x27;;
-var DIRECTION_RIGHT = &#x27;right&#x27;;
+var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = &#x27;down&#x27;;
+var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = &#x27;left&#x27;;
+var DIRECTION_UP = Hammer.DIRECTION_UP = &#x27;up&#x27;;
+var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = &#x27;right&#x27;;
 
 
 /**
  * pointertype strings, for safe comparisons
  * @property POINTER_MOUSE|TOUCH|PEN
- * @private
  * @final
  * @type {String}
  * @default &#x27;mouse&#x27; &#x27;touch&#x27; &#x27;pen&#x27;
  */
-var POINTER_MOUSE = &#x27;mouse&#x27;;
-var POINTER_TOUCH = &#x27;touch&#x27;;
-var POINTER_PEN = &#x27;pen&#x27;;
+var POINTER_MOUSE = Hammer.POINTER_MOUSE = &#x27;mouse&#x27;;
+var POINTER_TOUCH = Hammer.POINTER_TOUCH = &#x27;touch&#x27;;
+var POINTER_PEN = Hammer.POINTER_PEN = &#x27;pen&#x27;;
 
 
 /**
  * eventtypes
  * @property EVENT_START|MOVE|END|RELEASE|TOUCH
- * @private
  * @final
  * @type {String}
  * @default &#x27;start&#x27; &#x27;change&#x27; &#x27;move&#x27; &#x27;end&#x27; &#x27;release&#x27; &#x27;touch&#x27;
  */
-var EVENT_START = &#x27;start&#x27;;
-var EVENT_MOVE = &#x27;move&#x27;;
-var EVENT_END = &#x27;end&#x27;;
-var EVENT_RELEASE = &#x27;release&#x27;;
-var EVENT_TOUCH = &#x27;touch&#x27;;
+var EVENT_START = Hammer.EVENT_START = &#x27;start&#x27;;
+var EVENT_MOVE = Hammer.EVENT_MOVE = &#x27;move&#x27;;
+var EVENT_END = Hammer.EVENT_END = &#x27;end&#x27;;
+var EVENT_RELEASE = Hammer.EVENT_RELEASE = &#x27;release&#x27;;
+var EVENT_TOUCH = Hammer.EVENT_TOUCH = &#x27;touch&#x27;;
 
 
 /**
@@ -260,7 +314,7 @@ var EVENT_TOUCH = &#x27;touch&#x27;;
  * @type {Boolean}
  * @default false
  */
-var READY = false;
+Hammer.READY = false;
 
 
 /**
@@ -286,7 +340,7 @@ Hammer.gestures = Hammer.gestures || {};
  * @private
  */
 function setup() {
-  if(READY) {
+  if(Hammer.READY) {
     return;
   }
 
@@ -303,7 +357,7 @@ function setup() {
   Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
 
   // Hammer is ready...!
-  READY = true;
+  Hammer.READY = true;
 }
 </pre>
 

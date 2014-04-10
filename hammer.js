@@ -43,25 +43,82 @@ Hammer.VERSION = '1.1.0dev';
 
 /**
  * default settings.
- * more settings are defined per gesture at `/gestures`
+ * more settings are defined per gesture at `/gestures`. Each gesture can be disabled/enabled
+ * by setting it's name (like `swipe`) to false.
+ * You can set the defaults for all instances by changing this object before creating an instance.
+ * @example
+ * ````
+ *  Hammer.defaults.drag = false;
+ *  Hammer.defaults.stop_browser_behavior.touchAction = 'pan-y';
+ *  delete Hammer.defaults.stop_browser_behavior.userSelect;
+ * ````
  * @property defaults
  * @type {Object}
  */
 Hammer.defaults = {
-  // stop_browser_behavior adds styles and attributes to the element to prevent the browser from doing
-  // its native behavior. this doesnt prevent the scrolling, but cancelsthe contextmenu, tap highlighting etc
-  // set to false to disable this
+  /**
+   * this setting object adds styles and attributes to the element to prevent the browser from doing
+   * its native behavior. The css properties are auto prefixed for the browsers when needed.
+   * @property defaults.stop_browser_behavior
+   * @type {Object}
+   */
   stop_browser_behavior: {
-    // this also triggers onselectstart=false for IE
-    userSelect       : 'none',
-    // this makes the element blocking in IE10>, you could experiment with the value
-    // it doesnt block on the y-axis, change this to support vertical touches on IE10>
-    // see for more options this issue; https://github.com/EightMedia/hammer.js/issues/241
-    touchAction      : 'none',
-    // properties, mainly for ios/android
-    touchCallout     : 'none',
-    contentZooming   : 'none',
-    userDrag         : 'none',
+    /**
+     * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+     * `onselectstart=false` for IE on the element. Mainly for desktop browsers.
+     * @property defaults.stop_browser_behavior.userSelect
+     * @type {String}
+     * @default 'none'
+     */
+    userSelect: 'none',
+
+    /**
+     * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
+     * Used by IE10>. By default this makes the element blocking any touch event.
+     * @property defaults.stop_browser_behavior.touchAction
+     * @type {String}
+     * @default: 'none'
+     */
+    touchAction: 'none',
+
+    /**
+     * Disables the default callout shown when you touch and hold a touch target.
+     * On iOS, when you touch and hold a touch target such as a link, Safari displays
+     * a callout containing information about the link. This property allows you to disable that callout.
+     * @property defaults.stop_browser_behavior.touchCallout
+     * @type {String}
+     * @default 'none'
+     */
+    touchCallout: 'none',
+
+    /**
+     * Specifies whether zooming is enabled. Used by IE10>
+     * @property defaults.stop_browser_behavior.contentZooming
+     * @type {String}
+     * @default 'none'
+     */
+    contentZooming: 'none',
+
+    /**
+     * Specifies that an entire element should be draggable instead of its contents.
+     * Mainly for desktop browsers.
+     * @property defaults.stop_browser_behavior.userDrag
+     * @type {String}
+     * @default 'none'
+     */
+    userDrag: 'none',
+
+    /**
+     * Overrides the highlight color shown when the user taps a link or a JavaScript
+     * clickable element in Safari on iPhone. This property obeys the alpha value, if specified.
+     *
+     * If you don’t specify an alpha value, Safari on iPhone applies a default alpha value
+     * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
+     * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
+     * @property defaults.stop_browser_behavior.tapHighlightColor
+     * @type {String}
+     * @default 'rgba(0,0,0,0)'
+     */
     tapHighlightColor: 'rgba(0,0,0,0)'
   }
 };

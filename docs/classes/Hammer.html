@@ -197,7 +197,7 @@
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l86"><code>src&#x2F;setup.js:86</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l143"><code>src&#x2F;setup.js:143</code></a></span>
     <p>interval in which Hammer recalculates current velocity/direction/angle in ms</p>
 
     <strong>Default:</strong> 16
@@ -213,9 +213,125 @@
     <br>
     <span class="foundat"><a href="../files/src_setup.js.html#l35"><code>src&#x2F;setup.js:35</code></a></span>
     <p>default settings.
-more settings are defined per gesture at <code>/gestures</code></p>
+more settings are defined per gesture at <code>/gestures</code>. Each gesture can be disabled/enabled
+by setting it&#39;s name (like <code>swipe</code>) to false.
+You can set the defaults for all instances by changing this object before creating an instance.</p>
 
     
+    
+        <h5>Example</h5>
+        <pre class="code prettyprint"><code> Hammer.defaults.drag = false;
+ Hammer.defaults.stop_browser_behavior.touchAction = &#39;pan-y&#39;;
+ delete Hammer.defaults.stop_browser_behavior.userSelect;</code></pre>
+
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior</code> &lt;<strong>Object</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l50"><code>src&#x2F;setup.js:50</code></a></span>
+    <p>this setting object adds styles and attributes to the element to prevent the browser from doing
+its native behavior. The css properties are auto prefixed for the browsers when needed.</p>
+
+    
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.contentZooming"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.contentZooming</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l85"><code>src&#x2F;setup.js:85</code></a></span>
+    <p>Specifies whether zooming is enabled. Used by IE10&gt;</p>
+
+    <strong>Default:</strong> &#x27;none&#x27;
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.tapHighlightColor"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.tapHighlightColor</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l102"><code>src&#x2F;setup.js:102</code></a></span>
+    <p>Overrides the highlight color shown when the user taps a link or a JavaScript
+clickable element in Safari on iPhone. This property obeys the alpha value, if specified.</p>
+<p>If you don’t specify an alpha value, Safari on iPhone applies a default alpha value
+to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
+If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.</p>
+
+    <strong>Default:</strong> &#x27;rgba(0,0,0,0)&#x27;
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.touchAction"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.touchAction</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l66"><code>src&#x2F;setup.js:66</code></a></span>
+    <p>Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
+Used by IE10&gt;. By default this makes the element blocking any touch event.</p>
+
+    <strong>Default:</strong> : &#x27;none&#x27;
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.touchCallout"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.touchCallout</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l75"><code>src&#x2F;setup.js:75</code></a></span>
+    <p>Disables the default callout shown when you touch and hold a touch target.
+On iOS, when you touch and hold a touch target such as a link, Safari displays
+a callout containing information about the link. This property allows you to disable that callout.</p>
+
+    <strong>Default:</strong> &#x27;none&#x27;
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.userDrag"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.userDrag</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l93"><code>src&#x2F;setup.js:93</code></a></span>
+    <p>Specifies that an entire element should be draggable instead of its contents.
+Mainly for desktop browsers.</p>
+
+    <strong>Default:</strong> &#x27;none&#x27;
+    
+</div>
+
+            
+                <a name="props_defaults.stop_browser_behavior.userSelect"></a>
+<div class="props item">
+    <code>defaults.stop_browser_behavior.userSelect</code> &lt;<strong>String</strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l57"><code>src&#x2F;setup.js:57</code></a></span>
+    <p>Disables text selection to improve the dragging gesture. When the value is <code>none</code> it also sets
+<code>onselectstart=false</code> for IE on the element. Mainly for desktop browsers.</p>
+
+    <strong>Default:</strong> &#x27;none&#x27;
     
 </div>
 
@@ -226,7 +342,7 @@ more settings are defined per gesture at <code>/gestures</code></p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l106"><code>src&#x2F;setup.js:106</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l163"><code>src&#x2F;setup.js:163</code></a></span>
     <p>direction strings, for safe comparisons</p>
 
     <strong>Default:</strong> &#x27;down&#x27; &#x27;left&#x27; &#x27;up&#x27; &#x27;right&#x27;
@@ -240,7 +356,7 @@ more settings are defined per gesture at <code>/gestures</code></p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l61"><code>src&#x2F;setup.js:61</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l118"><code>src&#x2F;setup.js:118</code></a></span>
     <p>hammer document where the base events are added at</p>
 
     <strong>Default:</strong> window.document
@@ -254,7 +370,7 @@ more settings are defined per gesture at <code>/gestures</code></p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l133"><code>src&#x2F;setup.js:133</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l188"><code>src&#x2F;setup.js:188</code></a></span>
     <p>eventtypes</p>
 
     <strong>Default:</strong> &#x27;start&#x27; &#x27;change&#x27; &#x27;move&#x27; &#x27;end&#x27; &#x27;release&#x27; &#x27;touch&#x27;
@@ -268,7 +384,7 @@ more settings are defined per gesture at <code>/gestures</code></p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l95"><code>src&#x2F;setup.js:95</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l152"><code>src&#x2F;setup.js:152</code></a></span>
     <p>eventtypes per touchevent (start, move, end) are filled by <code>Event.determineEventTypes</code> on <code>setup</code>
 the object contains the DOM event names per type (<code>EVENT_START</code>, <code>EVENT_MOVE</code>, <code>EVENT_END</code>)</p>
 
@@ -283,7 +399,7 @@ the object contains the DOM event names per type (<code>EVENT_START</code>, <cod
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l166"><code>src&#x2F;setup.js:166</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l220"><code>src&#x2F;setup.js:220</code></a></span>
     <p>gestures namespace
 see <code>/gestures</code> for the definitions</p>
 
@@ -298,7 +414,7 @@ see <code>/gestures</code> for the definitions</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l70"><code>src&#x2F;setup.js:70</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l127"><code>src&#x2F;setup.js:127</code></a></span>
     <p>detect support for pointer events</p>
 
     
@@ -312,7 +428,7 @@ see <code>/gestures</code> for the definitions</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l78"><code>src&#x2F;setup.js:78</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l135"><code>src&#x2F;setup.js:135</code></a></span>
     <p>detect support for touch events</p>
 
     
@@ -326,7 +442,7 @@ see <code>/gestures</code> for the definitions</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l158"><code>src&#x2F;setup.js:158</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l212"><code>src&#x2F;setup.js:212</code></a></span>
     <p>plugins namespace</p>
 
     
@@ -340,7 +456,7 @@ see <code>/gestures</code> for the definitions</p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l120"><code>src&#x2F;setup.js:120</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l176"><code>src&#x2F;setup.js:176</code></a></span>
     <p>pointertype strings, for safe comparisons</p>
 
     <strong>Default:</strong> &#x27;mouse&#x27; &#x27;touch&#x27; &#x27;pen&#x27;
@@ -354,7 +470,7 @@ see <code>/gestures</code> for the definitions</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l148"><code>src&#x2F;setup.js:148</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l202"><code>src&#x2F;setup.js:202</code></a></span>
     <p>if the window events are set...</p>
 
     <strong>Default:</strong> false

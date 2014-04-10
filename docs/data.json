@@ -1639,7 +1639,10 @@
         {
             "file": "src/setup.js",
             "line": 35,
-            "description": "default settings.\nmore settings are defined per gesture at `/gestures`",
+            "description": "default settings.\nmore settings are defined per gesture at `/gestures`. Each gesture can be disabled/enabled\nby setting it's name (like `swipe`) to false.\nYou can set the defaults for all instances by changing this object before creating an instance.",
+            "example": [
+                "\n````\n Hammer.defaults.drag = false;\n Hammer.defaults.stop_browser_behavior.touchAction = 'pan-y';\n delete Hammer.defaults.stop_browser_behavior.userSelect;\n````"
+            ],
             "itemtype": "property",
             "name": "defaults",
             "type": "{Object}",
@@ -1648,7 +1651,83 @@
         },
         {
             "file": "src/setup.js",
-            "line": 61,
+            "line": 50,
+            "description": "this setting object adds styles and attributes to the element to prevent the browser from doing\nits native behavior. The css properties are auto prefixed for the browsers when needed.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior",
+            "type": "{Object}",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 57,
+            "description": "Disables text selection to improve the dragging gesture. When the value is `none` it also sets\n`onselectstart=false` for IE on the element. Mainly for desktop browsers.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.userSelect",
+            "type": "{String}",
+            "default": "'none'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 66,
+            "description": "Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).\nUsed by IE10>. By default this makes the element blocking any touch event.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.touchAction",
+            "type": "{String}",
+            "default": ": 'none'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 75,
+            "description": "Disables the default callout shown when you touch and hold a touch target.\nOn iOS, when you touch and hold a touch target such as a link, Safari displays\na callout containing information about the link. This property allows you to disable that callout.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.touchCallout",
+            "type": "{String}",
+            "default": "'none'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 85,
+            "description": "Specifies whether zooming is enabled. Used by IE10>",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.contentZooming",
+            "type": "{String}",
+            "default": "'none'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 93,
+            "description": "Specifies that an entire element should be draggable instead of its contents.\nMainly for desktop browsers.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.userDrag",
+            "type": "{String}",
+            "default": "'none'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 102,
+            "description": "Overrides the highlight color shown when the user taps a link or a JavaScript\nclickable element in Safari on iPhone. This property obeys the alpha value, if specified.\n\nIf you don’t specify an alpha value, Safari on iPhone applies a default alpha value\nto the color. To disable tap highlighting, set the alpha value to 0 (invisible).\nIf you set the alpha value to 1.0 (opaque), the element is not visible when tapped.",
+            "itemtype": "property",
+            "name": "defaults.stop_browser_behavior.tapHighlightColor",
+            "type": "{String}",
+            "default": "'rgba(0,0,0,0)'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 118,
             "description": "hammer document where the base events are added at",
             "itemtype": "property",
             "name": "DOCUMENT",
@@ -1659,7 +1738,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 70,
+            "line": 127,
             "description": "detect support for pointer events",
             "itemtype": "property",
             "name": "HAS_POINTEREVENTS",
@@ -1669,7 +1748,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 78,
+            "line": 135,
             "description": "detect support for touch events",
             "itemtype": "property",
             "name": "HAS_TOUCHEVENTS",
@@ -1679,7 +1758,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 86,
+            "line": 143,
             "description": "interval in which Hammer recalculates current velocity/direction/angle in ms",
             "itemtype": "property",
             "name": "CALCULATE_INTERVAL",
@@ -1690,7 +1769,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 95,
+            "line": 152,
             "description": "eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`\nthe object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)",
             "itemtype": "property",
             "name": "EVENT_TYPES",
@@ -1703,12 +1782,10 @@
         },
         {
             "file": "src/setup.js",
-            "line": 106,
+            "line": 163,
             "description": "direction strings, for safe comparisons",
             "itemtype": "property",
             "name": "DIRECTION_DOWN|LEFT|UP|RIGHT",
-            "access": "private",
-            "tagname": "",
             "final": 1,
             "type": "{String}",
             "default": "'down' 'left' 'up' 'right'",
@@ -1717,12 +1794,10 @@
         },
         {
             "file": "src/setup.js",
-            "line": 120,
+            "line": 176,
             "description": "pointertype strings, for safe comparisons",
             "itemtype": "property",
             "name": "POINTER_MOUSE|TOUCH|PEN",
-            "access": "private",
-            "tagname": "",
             "final": 1,
             "type": "{String}",
             "default": "'mouse' 'touch' 'pen'",
@@ -1731,12 +1806,10 @@
         },
         {
             "file": "src/setup.js",
-            "line": 133,
+            "line": 188,
             "description": "eventtypes",
             "itemtype": "property",
             "name": "EVENT_START|MOVE|END|RELEASE|TOUCH",
-            "access": "private",
-            "tagname": "",
             "final": 1,
             "type": "{String}",
             "default": "'start' 'change' 'move' 'end' 'release' 'touch'",
@@ -1745,7 +1818,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 148,
+            "line": 202,
             "description": "if the window events are set...",
             "itemtype": "property",
             "name": "READY",
@@ -1757,7 +1830,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 158,
+            "line": 212,
             "description": "plugins namespace",
             "itemtype": "property",
             "name": "plugins",
@@ -1767,7 +1840,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 166,
+            "line": 220,
             "description": "gestures namespace\nsee `/gestures` for the definitions",
             "itemtype": "property",
             "name": "gestures",
@@ -1777,7 +1850,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 175,
+            "line": 229,
             "description": "setup events to detect gestures on the document\nthis function is called when creating an new instance",
             "access": "private",
             "tagname": "",
@@ -2193,7 +2266,7 @@
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
-            "line": " src/setup.js:175"
+            "line": " src/setup.js:229"
         }
     ]
 }
