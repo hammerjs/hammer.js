@@ -98,6 +98,13 @@
             "fors": {},
             "namespaces": {}
         },
+        "src/export.js": {
+            "name": "src/export.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "src/instance.js": {
             "name": "src/instance.js",
             "modules": {},

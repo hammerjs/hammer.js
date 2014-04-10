@@ -2085,6 +2085,9 @@ Hammer.gestures.Touch = {
   };
 })('transform');
 
+/**
+ * @module hammer
+ */
 // AMD export
 if(typeof define == 'function' && define.amd) {
   define(function(){
