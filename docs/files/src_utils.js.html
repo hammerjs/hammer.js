@@ -296,8 +296,8 @@ var Utils = Hammer.utils = {
    * @return {Number} angle
    */
   getAngle: function getAngle(touch1, touch2) {
-    var x = touch2.clientX - touch1.clientX
-      , y = touch2.clientY - touch1.clientY;
+    var x = touch2.clientX - touch1.clientX,
+      y = touch2.clientY - touch1.clientY;
     return Math.atan2(y, x) * 180 / Math.PI;
   },
 
@@ -310,8 +310,8 @@ var Utils = Hammer.utils = {
    * @return {String} direction matches &#x60;DIRECTION_LEFT|RIGHT|UP|DOWN&#x60;
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.clientX - touch2.clientX)
-      , y = Math.abs(touch1.clientY - touch2.clientY);
+    var x = Math.abs(touch1.clientX - touch2.clientX),
+      y = Math.abs(touch1.clientY - touch2.clientY);
 
     if(x &gt;= y) {
       return touch1.clientX - touch2.clientX &gt; 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
@@ -396,14 +396,14 @@ var Utils = Hammer.utils = {
     // with css properties for modern browsers
     Utils.each([&#x27;webkit&#x27;, &#x27;moz&#x27;, &#x27;Moz&#x27;, &#x27;ms&#x27;, &#x27;o&#x27;, &#x27;&#x27;], function setStyle(vendor) {
       Utils.each(css_props, function(value, prop) {
-          // vender prefix at the property
-          if(vendor) {
-            prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-          }
-          // set the style
-          if(prop in element.style) {
-            element.style[prop] = !toggle &amp;&amp; value;
-          }
+        // vender prefix at the property
+        if(vendor) {
+          prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
+        }
+        // set the style
+        if(prop in element.style) {
+          element.style[prop] = !toggle &amp;&amp; value;
+        }
       });
     });
 

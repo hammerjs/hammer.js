@@ -11,55 +11,60 @@
  * @event hold
  * @param {Object} ev
  */
-Hammer.gestures.Hold = {
-  name    : 'hold',
-  index   : 10,
-  defaults: {
-    /**
-     * @property hold_timeout
-     * @type {Number}
-     * @default 500
-     */
-    hold_timeout  : 500,
+(function(name) {
+  var timer;
 
-    /**
-     * movement allowed while holding
-     * @property hold_threshold
-     * @type {Number}
-     * @default 2
-     */
-    hold_threshold: 2
-  },
-  timer   : null,
+  function holdGesture(ev, inst) {
+    var options = inst.options
+      , current = Detection.current;
 
-  handler : function holdGesture(ev, inst) {
     switch(ev.eventType) {
       case EVENT_START:
-        // clear any running timers
-        clearTimeout(this.timer);
+        clearTimeout(timer);
 
         // set the gesture so we can check in the timeout if it still is
-        Detection.current.name = this.name;
+        current.name = name;
 
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
-        this.timer = setTimeout(function() {
-          if(Detection.current && Detection.current.name == 'hold') {
-            inst.trigger('hold', ev);
+        timer = setTimeout(function() {
+          if(current && current.name == name) {
+            inst.trigger(name, ev);
           }
-        }, inst.options.hold_timeout);
+        }, options.hold_timeout);
         break;
 
-      // when you move or end we clear the timer
       case EVENT_MOVE:
-        if(ev.distance > inst.options.hold_threshold) {
-          clearTimeout(this.timer);
+        if(ev.distance > options.hold_threshold) {
+          clearTimeout(timer);
         }
         break;
 
       case EVENT_RELEASE:
-        clearTimeout(this.timer);
+        clearTimeout(timer);
         break;
     }
   }
-};
+
+  Hammer.gestures.Hold = {
+    name: name,
+    index: 10,
+    defaults: {
+      /**
+       * @property hold_timeout
+       * @type {Number}
+       * @default 500
+       */
+      hold_timeout: 500,
+
+      /**
+       * movement allowed while holding
+       * @property hold_threshold
+       * @type {Number}
+       * @default 2
+       */
+      hold_threshold: 2
+    },
+    handler: holdGesture
+  };
+})('hold');

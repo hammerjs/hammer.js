@@ -120,7 +120,7 @@ var Event = Hammer.event = {
       }
     };
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
+    this.bindDom(element, EVENT_TYPES[eventType], bindDomOnTouch);
     return bindDomOnTouch;
   },
 
@@ -199,7 +199,7 @@ var Event = Hammer.event = {
 
   /**
    * we have different events for each device/browser
-   * determine what we need and set them in the Hammer.EVENT_TYPES constant
+   * determine what we need and set them in the EVENT_TYPES constant
    * @method determineEventTypes
    */
   determineEventTypes: function determineEventTypes() {
@@ -218,9 +218,9 @@ var Event = Hammer.event = {
         'touchend touchcancel mouseup'];
     }
 
-    Hammer.EVENT_TYPES[EVENT_START] = types[0];
-    Hammer.EVENT_TYPES[EVENT_MOVE] = types[1];
-    Hammer.EVENT_TYPES[EVENT_END] = types[2];
+    EVENT_TYPES[EVENT_START] = types[0];
+    EVENT_TYPES[EVENT_MOVE] = types[1];
+    EVENT_TYPES[EVENT_END] = types[2];
   },
 
 

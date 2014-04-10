@@ -42,16 +42,6 @@ Hammer.VERSION = '1.1.0dev';
 
 
 /**
- * if the window events are set...
- * @property READY
- * @writeOnce
- * @type {Boolean}
- * @default false
- */
-Hammer.READY = false;
-
-
-/**
  * default settings.
  * more settings are defined per gesture at `/gestures`
  * @property defaults
@@ -115,49 +105,63 @@ Hammer.CALCULATE_INTERVAL = 16;
  * eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`
  * the object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)
  * @property EVENT_TYPES
+ * @private
  * @writeOnce
  * @type {Object}
  */
-Hammer.EVENT_TYPES = {};
+var EVENT_TYPES = {};
 
 
 /**
  * direction strings, for safe comparisons
  * @property DIRECTION_DOWN|LEFT|UP|RIGHT
+ * @private
  * @final
  * @type {String}
  * @default 'down' 'left' 'up' 'right'
  */
-var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = 'down';
-var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
-var DIRECTION_UP = Hammer.DIRECTION_UP = 'up';
-var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
+var DIRECTION_DOWN = 'down';
+var DIRECTION_LEFT = 'left';
+var DIRECTION_UP = 'up';
+var DIRECTION_RIGHT = 'right';
 
 
 /**
  * pointertype strings, for safe comparisons
  * @property POINTER_MOUSE|TOUCH|PEN
+ * @private
  * @final
  * @type {String}
  * @default 'mouse' 'touch' 'pen'
  */
-var POINTER_MOUSE = Hammer.POINTER_MOUSE = 'mouse';
-var POINTER_TOUCH = Hammer.POINTER_TOUCH = 'touch';
-var POINTER_PEN = Hammer.POINTER_PEN = 'pen';
+var POINTER_MOUSE = 'mouse';
+var POINTER_TOUCH = 'touch';
+var POINTER_PEN = 'pen';
 
 
 /**
  * eventtypes
  * @property EVENT_START|MOVE|END|RELEASE|TOUCH
+ * @private
  * @final
  * @type {String}
  * @default 'start' 'change' 'move' 'end' 'release' 'touch'
  */
-var EVENT_START = Hammer.EVENT_START = 'start';
-var EVENT_MOVE = Hammer.EVENT_MOVE = 'move';
-var EVENT_END = Hammer.EVENT_END = 'end';
-var EVENT_RELEASE = Hammer.EVENT_RELEASE = 'release';
-var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
+var EVENT_START = 'start';
+var EVENT_MOVE = 'move';
+var EVENT_END = 'end';
+var EVENT_RELEASE = 'release';
+var EVENT_TOUCH = 'touch';
+
+
+/**
+ * if the window events are set...
+ * @property READY
+ * @writeOnce
+ * @type {Boolean}
+ * @default false
+ */
+var READY = false;
 
 
 /**
@@ -183,7 +187,7 @@ Hammer.gestures = Hammer.gestures || {};
  * @private
  */
 function setup() {
-  if(Hammer.READY) {
+  if(READY) {
     return;
   }
 
@@ -200,7 +204,7 @@ function setup() {
   Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
 
   // Hammer is ready...!
-  Hammer.READY = true;
+  READY = true;
 }
 
 /**
@@ -701,7 +705,7 @@ Hammer.Instance.prototype = {
     this.eventHandlers = [];
 
     // unbind the start event listener
-    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.unbindDom(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
   }
@@ -830,7 +834,7 @@ var Event = Hammer.event = {
       }
     };
 
-    this.bindDom(element, Hammer.EVENT_TYPES[eventType], bindDomOnTouch);
+    this.bindDom(element, EVENT_TYPES[eventType], bindDomOnTouch);
     return bindDomOnTouch;
   },
 
@@ -909,7 +913,7 @@ var Event = Hammer.event = {
 
   /**
    * we have different events for each device/browser
-   * determine what we need and set them in the Hammer.EVENT_TYPES constant
+   * determine what we need and set them in the EVENT_TYPES constant
    * @method determineEventTypes
    */
   determineEventTypes: function determineEventTypes() {
@@ -928,9 +932,9 @@ var Event = Hammer.event = {
         'touchend touchcancel mouseup'];
     }
 
-    Hammer.EVENT_TYPES[EVENT_START] = types[0];
-    Hammer.EVENT_TYPES[EVENT_MOVE] = types[1];
-    Hammer.EVENT_TYPES[EVENT_END] = types[2];
+    EVENT_TYPES[EVENT_START] = types[0];
+    EVENT_TYPES[EVENT_MOVE] = types[1];
+    EVENT_TYPES[EVENT_END] = types[2];
   },
 
 
@@ -1375,78 +1379,10 @@ var Detection = Hammer.detection = {
  * @event dragdown
  * @param {Object} ev
  */
-Hammer.gestures.Drag = {
-  name     : 'drag',
-  index    : 50,
-  defaults : {
-    /**
-     * minimal movement that have to be made before the drag event gets triggered
-     * @property drag_min_distance
-     * @type {Number}
-     * @default 10
-     */
-    drag_min_distance: 10,
+(function(name) {
+  var triggered = false;
 
-    /**
-     * Set correct_for_drag_min_distance to true to make the starting point of the drag
-     * be calculated from where the drag was triggered, not from where the touch started.
-     * Useful to avoid a jerk-starting drag, which can make fine-adjustments
-     * through dragging difficult, and be visually unappealing.
-     * @property correct_for_drag_min_distance
-     * @type {Boolean}
-     * @default true
-     */
-    correct_for_drag_min_distance: true,
-
-    /**
-     * set 0 for unlimited, but this can conflict with transform
-     * @property drag_max_touches
-     * @type {Number}
-     * @default 1
-     */
-    drag_max_touches: 1,
-
-    /**
-     * prevent default browser behavior when dragging occurs
-     * be careful with it, it makes the element a blocking element
-     * when you are using the drag gesture, it is a good practice to set this true
-     * @property drag_block_horizontal
-     * @type {Boolean}
-     * @default false
-     */
-    drag_block_horizontal: false,
-
-    /**
-     * same as `drag_block_horizontal`, but for vertical movement
-     * @property drag_block_vertical
-     * @type {Boolean}
-     * @default false
-     */
-    drag_block_vertical: false,
-
-    /**
-     * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
-     * It disallows vertical directions if the initial direction was horizontal, and vice versa.
-     * @property drag_lock_to_axis
-     * @type {Boolean}
-     * @default false
-     */
-    drag_lock_to_axis: false,
-
-    /**
-     *  drag lock only kicks in when distance > drag_lock_min_distance
-     * This way, locking occurs only when the distance has become large enough to reliably determine the direction
-     * @property drag_lock_min_distance
-     * @type {Number}
-     * @default 25
-     */
-    drag_lock_min_distance: 25
-  },
-
-
-  triggered: false,
-
-  handler  : function dragGesture(ev, inst) {
+  function dragGesture(ev, inst) {
     var cur = Detection.current;
 
     // max touches
@@ -1457,22 +1393,22 @@ Hammer.gestures.Drag = {
 
     switch(ev.eventType) {
       case EVENT_START:
-        this.triggered = false;
+        triggered = false;
         break;
 
       case EVENT_MOVE:
         // when the distance we moved is too small we skip this gesture
         // or we can be already in dragging
         if(ev.distance < inst.options.drag_min_distance &&
-          cur.name != this.name) {
+          cur.name != name) {
           return;
         }
 
         var startCenter = cur.startEvent.center;
 
         // we are dragging!
-        if(cur.name != this.name) {
-          cur.name = this.name;
+        if(cur.name != name) {
+          cur.name = name;
           if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
             // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
             // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
@@ -1507,14 +1443,14 @@ Hammer.gestures.Drag = {
         }
 
         // first time, trigger dragstart event
-        if(!this.triggered) {
-          inst.trigger(this.name + 'start', ev);
-          this.triggered = true;
+        if(!triggered) {
+          inst.trigger(name + 'start', ev);
+          triggered = true;
         }
 
         // trigger events
-        inst.trigger(this.name, ev);
-        inst.trigger(this.name + ev.direction, ev);
+        inst.trigger(name, ev);
+        inst.trigger(name + ev.direction, ev);
 
         var is_vertical = Utils.isVertical(ev.direction);
 
@@ -1526,18 +1462,89 @@ Hammer.gestures.Drag = {
         break;
 
       case EVENT_RELEASE:
-        if(this.triggered && ev.changedLength <= inst.options.drag_max_touches) {
-          inst.trigger(this.name + 'end', ev);
-          this.triggered = false;
+        if(triggered && ev.changedLength <= inst.options.drag_max_touches) {
+          inst.trigger(name + 'end', ev);
+          triggered = false;
         }
         break;
 
       case EVENT_END:
-        this.triggered = false;
+        triggered = false;
         break;
     }
   }
-};
+
+
+  Hammer.gestures.Drag = {
+    name: name,
+    index: 50,
+    handler: dragGesture,
+    defaults: {
+      /**
+       * minimal movement that have to be made before the drag event gets triggered
+       * @property drag_min_distance
+       * @type {Number}
+       * @default 10
+       */
+      drag_min_distance: 10,
+
+      /**
+       * Set correct_for_drag_min_distance to true to make the starting point of the drag
+       * be calculated from where the drag was triggered, not from where the touch started.
+       * Useful to avoid a jerk-starting drag, which can make fine-adjustments
+       * through dragging difficult, and be visually unappealing.
+       * @property correct_for_drag_min_distance
+       * @type {Boolean}
+       * @default true
+       */
+      correct_for_drag_min_distance: true,
+
+      /**
+       * set 0 for unlimited, but this can conflict with transform
+       * @property drag_max_touches
+       * @type {Number}
+       * @default 1
+       */
+      drag_max_touches: 1,
+
+      /**
+       * prevent default browser behavior when dragging occurs
+       * be careful with it, it makes the element a blocking element
+       * when you are using the drag gesture, it is a good practice to set this true
+       * @property drag_block_horizontal
+       * @type {Boolean}
+       * @default false
+       */
+      drag_block_horizontal: false,
+
+      /**
+       * same as `drag_block_horizontal`, but for vertical movement
+       * @property drag_block_vertical
+       * @type {Boolean}
+       * @default false
+       */
+      drag_block_vertical: false,
+
+      /**
+       * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+       * It disallows vertical directions if the initial direction was horizontal, and vice versa.
+       * @property drag_lock_to_axis
+       * @type {Boolean}
+       * @default false
+       */
+      drag_lock_to_axis: false,
+
+      /**
+       *  drag lock only kicks in when distance > drag_lock_min_distance
+       * This way, locking occurs only when the distance has become large enough to reliably determine the direction
+       * @property drag_lock_min_distance
+       * @type {Number}
+       * @default 25
+       */
+      drag_lock_min_distance: 25
+    }
+  };
+})('drag');
 
 /**
  * @module gestures
@@ -1556,15 +1563,6 @@ Hammer.gestures.Drag = {
 Hammer.gestures.Gesture = {
   name   : 'gesture',
   index  : 1337,
-  defaults: {
-    /**
-     * trigger the event
-     * @property gesture
-     * @type {Boolean}
-     * @default false
-     */
-    gesture: false
-  },
   handler: function releaseGesture(ev, inst) {
     inst.trigger(this.name, ev);
   }
@@ -1583,58 +1581,63 @@ Hammer.gestures.Gesture = {
  * @event hold
  * @param {Object} ev
  */
-Hammer.gestures.Hold = {
-  name    : 'hold',
-  index   : 10,
-  defaults: {
-    /**
-     * @property hold_timeout
-     * @type {Number}
-     * @default 500
-     */
-    hold_timeout  : 500,
+(function(name) {
+  var timer;
 
-    /**
-     * movement allowed while holding
-     * @property hold_threshold
-     * @type {Number}
-     * @default 2
-     */
-    hold_threshold: 2
-  },
-  timer   : null,
+  function holdGesture(ev, inst) {
+    var options = inst.options
+      , current = Detection.current;
 
-  handler : function holdGesture(ev, inst) {
     switch(ev.eventType) {
       case EVENT_START:
-        // clear any running timers
-        clearTimeout(this.timer);
+        clearTimeout(timer);
 
         // set the gesture so we can check in the timeout if it still is
-        Detection.current.name = this.name;
+        current.name = name;
 
         // set timer and if after the timeout it still is hold,
         // we trigger the hold event
-        this.timer = setTimeout(function() {
-          if(Detection.current && Detection.current.name == 'hold') {
-            inst.trigger('hold', ev);
+        timer = setTimeout(function() {
+          if(current && current.name == name) {
+            inst.trigger(name, ev);
           }
-        }, inst.options.hold_timeout);
+        }, options.hold_timeout);
         break;
 
-      // when you move or end we clear the timer
       case EVENT_MOVE:
-        if(ev.distance > inst.options.hold_threshold) {
-          clearTimeout(this.timer);
+        if(ev.distance > options.hold_threshold) {
+          clearTimeout(timer);
         }
         break;
 
       case EVENT_RELEASE:
-        clearTimeout(this.timer);
+        clearTimeout(timer);
         break;
     }
   }
-};
+
+  Hammer.gestures.Hold = {
+    name: name,
+    index: 10,
+    defaults: {
+      /**
+       * @property hold_timeout
+       * @type {Number}
+       * @default 500
+       */
+      hold_timeout: 500,
+
+      /**
+       * movement allowed while holding
+       * @property hold_threshold
+       * @type {Number}
+       * @default 2
+       */
+      hold_threshold: 2
+    },
+    handler: holdGesture
+  };
+})('hold');
 
 /**
  * @module gestures
@@ -1696,8 +1699,8 @@ Hammer.gestures.Release = {
  * @param {Object} ev
  */
 Hammer.gestures.Swipe = {
-  name    : 'swipe',
-  index   : 40,
+  name: 'swipe',
+  index: 40,
   defaults: {
     /**
      * @property swipe_min_touches
@@ -1714,24 +1717,37 @@ Hammer.gestures.Swipe = {
     swipe_max_touches: 1,
 
     /**
-     * @property swipe_velocity
+     * horizontal swipe velocity
+     * @property swipe_velocity_x
      * @type {Number}
      * @default 0.7
      */
-    swipe_velocity: 0.7
+    swipe_velocity_x: 0.7,
+
+    /**
+     * vertical swipe velocity
+     * @property swipe_velocity_y
+     * @type {Number}
+     * @default 0.6
+     */
+    swipe_velocity_y: 0.6
   },
-  handler : function swipeGesture(ev, inst) {
+
+  handler: function swipeGesture(ev, inst) {
     if(ev.eventType == EVENT_RELEASE) {
+      var touches = ev.touches.length
+        , options = inst.options;
+
       // max touches
-      if(ev.touches.length < inst.options.swipe_min_touches ||
-        ev.touches.length > inst.options.swipe_max_touches) {
+      if(touches < options.swipe_min_touches ||
+        touches > options.swipe_max_touches) {
         return;
       }
 
       // when the distance we moved is too small we skip this gesture
       // or we can be already in dragging
-      if(ev.velocityX > inst.options.swipe_velocity ||
-        ev.velocityY > inst.options.swipe_velocity) {
+      if(ev.velocityX > options.swipe_velocity_x ||
+        ev.velocityY > options.swipe_velocity_y) {
         // trigger swipe events
         inst.trigger(this.name, ev);
         inst.trigger(this.name + ev.direction, ev);
@@ -1757,91 +1773,95 @@ Hammer.gestures.Swipe = {
  * @event doubletap
  * @param {Object} ev
  */
-Hammer.gestures.Tap = {
-  name    : 'tap',
-  index   : 100,
-  defaults: {
-    /**
-     * max time of a tap, this is for the slow tappers
-     * @property tap_max_touchtime
-     * @type {Number}
-     * @default 250
-     */
-    tap_max_touchtime : 250,
+(function(name) {
+  var has_moved = false;
 
-    /**
-     * max distance of movement of a tap, this is for the slow tappers
-     * @property tap_max_distance
-     * @type {Number}
-     * @default 10
-     */
-    tap_max_distance  : 10,
+  function tapGesture(ev, inst) {
+    var options = inst.options
+      , current = Detection.current
+      , prev = Detection.previous
+      , since_prev
+      , did_doubletap;
 
-    /**
-     * always trigger the `tap` event, even while double-tapping
-     * @property tap_always
-     * @type {Boolean}
-     * @default true
-     */
-    tap_always        : true,
+    switch(ev.eventType) {
+      case EVENT_START:
+        has_moved = false;
+        break;
 
-    /**
-     * max distance between two taps
-     * @property doubletap_distance
-     * @type {Number}
-     * @default 20
-     */
-    doubletap_distance: 20,
+      case EVENT_MOVE:
+        has_moved = has_moved || (ev.distance > options.tap_max_distance);
+        break;
 
-    /**
-     * max time between two taps
-     * @property doubletap_interval
-     * @type {Number}
-     * @default 300
-     */
-    doubletap_interval: 300
-  },
+      case EVENT_END:
+        if(ev.srcEvent.type != 'touchcancel' && ev.deltaTime < options.tap_max_touchtime && !has_moved) {
+          // previous gesture, for the double tap since these are two different gesture detections
+          since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
+          did_doubletap = false;
 
-  has_moved: false,
+          // check if double tap
+          if(prev && prev.name == name &&
+              (since_prev && since_prev < options.doubletap_interval) &&
+              ev.distance < options.doubletap_distance) {
+            inst.trigger('doubletap', ev);
+            did_doubletap = true;
+          }
 
-  handler : function tapGesture(ev, inst) {
-    var prev, since_prev, did_doubletap;
-
-    // reset moved state
-    if(ev.eventType == EVENT_START) {
-      this.has_moved = false;
-    }
-
-    // Track the distance we've moved. If it's above the max ONCE, remember that (fixes #406).
-    else if(ev.eventType == EVENT_MOVE && !this.moved) {
-      this.has_moved = (ev.distance > inst.options.tap_max_distance);
-    }
-
-    else if(ev.eventType == EVENT_END &&
-        ev.srcEvent.type != 'touchcancel' &&
-        ev.deltaTime < inst.options.tap_max_touchtime && !this.has_moved) {
-
-      // previous gesture, for the double tap since these are two different gesture detections
-      prev = Detection.previous;
-      since_prev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
-      did_doubletap = false;
-
-      // check if double tap
-      if(prev && prev.name == 'tap' &&
-          (since_prev && since_prev < inst.options.doubletap_interval) &&
-          ev.distance < inst.options.doubletap_distance) {
-        inst.trigger('doubletap', ev);
-        did_doubletap = true;
-      }
-
-      // do a single tap
-      if(!did_doubletap || inst.options.tap_always) {
-        Detection.current.name = 'tap';
-        inst.trigger(Detection.current.name, ev);
-      }
+          // do a single tap
+          if(!did_doubletap || options.tap_always) {
+            current.name = name;
+            inst.trigger(current.name, ev);
+          }
+        }
     }
   }
-};
+
+  Hammer.gestures.Tap = {
+    name: name,
+    index: 100,
+    handler: tapGesture,
+    defaults: {
+      /**
+       * max time of a tap, this is for the slow tappers
+       * @property tap_max_touchtime
+       * @type {Number}
+       * @default 250
+       */
+      tap_max_touchtime: 250,
+
+      /**
+       * max distance of movement of a tap, this is for the slow tappers
+       * @property tap_max_distance
+       * @type {Number}
+       * @default 10
+       */
+      tap_max_distance: 10,
+
+      /**
+       * always trigger the `tap` event, even while double-tapping
+       * @property tap_always
+       * @type {Boolean}
+       * @default true
+       */
+      tap_always: true,
+
+      /**
+       * max distance between two taps
+       * @property doubletap_distance
+       * @type {Number}
+       * @default 20
+       */
+      doubletap_distance: 20,
+
+      /**
+       * max time between two taps
+       * @property doubletap_interval
+       * @type {Number}
+       * @default 300
+       */
+      doubletap_interval: 300
+    }
+  };
+})('tap');
 
 /**
  * @module gestures
@@ -1857,8 +1877,8 @@ Hammer.gestures.Tap = {
  * @param {Object} ev
  */
 Hammer.gestures.Touch = {
-  name    : 'touch',
-  index   : -Infinity,
+  name: 'touch',
+  index: -Infinity,
   defaults: {
     /**
      * call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,
@@ -1868,7 +1888,7 @@ Hammer.gestures.Touch = {
      * @type {Boolean}
      * @default false
      */
-    prevent_default    : false,
+    prevent_default: false,
 
     /**
      * disable mouse events, so only touch (or pen!) input triggers events
@@ -1878,7 +1898,7 @@ Hammer.gestures.Touch = {
      */
     prevent_mouseevents: false
   },
-  handler : function touchGesture(ev, inst) {
+  handler: function touchGesture(ev, inst) {
     if(inst.options.prevent_mouseevents && ev.pointerType == POINTER_MOUSE) {
       ev.stopDetect();
       return;
@@ -1889,11 +1909,10 @@ Hammer.gestures.Touch = {
     }
 
     if(ev.eventType == EVENT_TOUCH) {
-      inst.trigger(this.name, ev);
+      inst.trigger('touch', ev);
     }
   }
 };
-
 
 /**
  * @module gestures
@@ -1930,65 +1949,13 @@ Hammer.gestures.Touch = {
  * @event rotate
  * @param {Object} ev
  */
-Hammer.gestures.Transform = {
-  name     : 'transform',
-  index    : 45,
-  defaults : {
-    /**
-     * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-     * @property transform_min_scale
-     * @type {Number}
-     * @default 0.01
-     */
-    transform_min_scale: 0.01,
+(function(name) {
+  var triggered = false;
 
-    /**
-     * rotation in degrees
-     * @property transform_min_rotation
-     * @type {Number}
-     * @default 1
-     */
-    transform_min_rotation: 1,
-
-    /**
-     * prevent default browser behavior when two touches are on the screen
-     * but it makes the element a blocking element
-     * when you are using the transform gesture, it is a good practice to set this true
-     * @property transform_always_block
-     * @type {Boolean}
-     * @default false
-     */
-    transform_always_block: false,
-
-    /**
-     * checks if all touches occurred within the instance element
-     * @property transform_within_instance
-     * @type {Boolean}
-     * @default false
-     */
-    transform_within_instance: false
-  },
-
-  triggered: false,
-
-  handler  : function transformGesture(ev, inst) {
-    // prevent default when two fingers are on the screen
-    if(inst.options.transform_always_block) {
-      ev.preventDefault();
-    }
-
-    // check if all touches occurred within the instance element
-    if(inst.options.transform_within_instance) {
-      for(var i=-1; ev.touches[++i];) {
-        if(!Utils.hasParent(ev.touches[i].target, inst.element)) {
-          return;
-        }
-      }
-    }
-
+  function transformGesture(ev, inst) {
     switch(ev.eventType) {
       case EVENT_START:
-        this.triggered = false;
+        triggered = false;
         break;
 
       case EVENT_MOVE:
@@ -2008,15 +1975,15 @@ Hammer.gestures.Transform = {
         }
 
         // we are transforming!
-        Detection.current.name = this.name;
+        Detection.current.name = name;
 
         // first time, trigger dragstart event
-        if(!this.triggered) {
-          inst.trigger(this.name + 'start', ev);
-          this.triggered = true;
+        if(!triggered) {
+          inst.trigger(name + 'start', ev);
+          triggered = true;
         }
 
-        inst.trigger(this.name, ev); // basic transform event
+        inst.trigger(name, ev); // basic transform event
 
         // trigger rotate event
         if(rotation_threshold > inst.options.transform_min_rotation) {
@@ -2031,14 +1998,38 @@ Hammer.gestures.Transform = {
         break;
 
       case EVENT_RELEASE:
-        if(this.triggered && ev.changedLength < 2) {
-          inst.trigger(this.name + 'end', ev);
-          this.triggered = false;
+        if(triggered && ev.changedLength < 2) {
+          inst.trigger(name + 'end', ev);
+          triggered = false;
         }
         break;
     }
   }
-};
+
+  Hammer.gestures.Transform = {
+    name     : name,
+    index    : 45,
+    defaults : {
+      /**
+       * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
+       * @property transform_min_scale
+       * @type {Number}
+       * @default 0.01
+       */
+      transform_min_scale: 0.01,
+
+      /**
+       * rotation in degrees
+       * @property transform_min_rotation
+       * @type {Number}
+       * @default 1
+       */
+      transform_min_rotation: 1
+    },
+
+    handler: transformGesture
+  };
+})('transform');
 
 // AMD export
 if(typeof define == 'function' && define.amd) {

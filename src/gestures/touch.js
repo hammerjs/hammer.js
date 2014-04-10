@@ -12,8 +12,8 @@
  * @param {Object} ev
  */
 Hammer.gestures.Touch = {
-  name    : 'touch',
-  index   : -Infinity,
+  name: 'touch',
+  index: -Infinity,
   defaults: {
     /**
      * call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,
@@ -23,7 +23,7 @@ Hammer.gestures.Touch = {
      * @type {Boolean}
      * @default false
      */
-    prevent_default    : false,
+    prevent_default: false,
 
     /**
      * disable mouse events, so only touch (or pen!) input triggers events
@@ -33,7 +33,7 @@ Hammer.gestures.Touch = {
      */
     prevent_mouseevents: false
   },
-  handler : function touchGesture(ev, inst) {
+  handler: function touchGesture(ev, inst) {
     if(inst.options.prevent_mouseevents && ev.pointerType == POINTER_MOUSE) {
       ev.stopDetect();
       return;
@@ -44,7 +44,7 @@ Hammer.gestures.Touch = {
     }
 
     if(ev.eventType == EVENT_TOUCH) {
-      inst.trigger(this.name, ev);
+      inst.trigger('touch', ev);
     }
   }
 };

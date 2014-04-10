@@ -33,65 +33,13 @@
  * @event rotate
  * @param {Object} ev
  */
-Hammer.gestures.Transform = {
-  name     : 'transform',
-  index    : 45,
-  defaults : {
-    /**
-     * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-     * @property transform_min_scale
-     * @type {Number}
-     * @default 0.01
-     */
-    transform_min_scale: 0.01,
+(function(name) {
+  var triggered = false;
 
-    /**
-     * rotation in degrees
-     * @property transform_min_rotation
-     * @type {Number}
-     * @default 1
-     */
-    transform_min_rotation: 1,
-
-    /**
-     * prevent default browser behavior when two touches are on the screen
-     * but it makes the element a blocking element
-     * when you are using the transform gesture, it is a good practice to set this true
-     * @property transform_always_block
-     * @type {Boolean}
-     * @default false
-     */
-    transform_always_block: false,
-
-    /**
-     * checks if all touches occurred within the instance element
-     * @property transform_within_instance
-     * @type {Boolean}
-     * @default false
-     */
-    transform_within_instance: false
-  },
-
-  triggered: false,
-
-  handler  : function transformGesture(ev, inst) {
-    // prevent default when two fingers are on the screen
-    if(inst.options.transform_always_block) {
-      ev.preventDefault();
-    }
-
-    // check if all touches occurred within the instance element
-    if(inst.options.transform_within_instance) {
-      for(var i=-1; ev.touches[++i];) {
-        if(!Utils.hasParent(ev.touches[i].target, inst.element)) {
-          return;
-        }
-      }
-    }
-
+  function transformGesture(ev, inst) {
     switch(ev.eventType) {
       case EVENT_START:
-        this.triggered = false;
+        triggered = false;
         break;
 
       case EVENT_MOVE:
@@ -111,15 +59,15 @@ Hammer.gestures.Transform = {
         }
 
         // we are transforming!
-        Detection.current.name = this.name;
+        Detection.current.name = name;
 
         // first time, trigger dragstart event
-        if(!this.triggered) {
-          inst.trigger(this.name + 'start', ev);
-          this.triggered = true;
+        if(!triggered) {
+          inst.trigger(name + 'start', ev);
+          triggered = true;
         }
 
-        inst.trigger(this.name, ev); // basic transform event
+        inst.trigger(name, ev); // basic transform event
 
         // trigger rotate event
         if(rotation_threshold > inst.options.transform_min_rotation) {
@@ -134,11 +82,35 @@ Hammer.gestures.Transform = {
         break;
 
       case EVENT_RELEASE:
-        if(this.triggered && ev.changedLength < 2) {
-          inst.trigger(this.name + 'end', ev);
-          this.triggered = false;
+        if(triggered && ev.changedLength < 2) {
+          inst.trigger(name + 'end', ev);
+          triggered = false;
         }
         break;
     }
   }
-};
+
+  Hammer.gestures.Transform = {
+    name     : name,
+    index    : 45,
+    defaults : {
+      /**
+       * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
+       * @property transform_min_scale
+       * @type {Number}
+       * @default 0.01
+       */
+      transform_min_scale: 0.01,
+
+      /**
+       * rotation in degrees
+       * @property transform_min_rotation
+       * @type {Number}
+       * @default 1
+       */
+      transform_min_rotation: 1
+    },
+
+    handler: transformGesture
+  };
+})('transform');

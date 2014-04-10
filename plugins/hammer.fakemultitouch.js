@@ -12,6 +12,7 @@
       return;
     }
 
+
     /**
      * overwrites Hammer.event.getTouchList.
      * @method getTouchList

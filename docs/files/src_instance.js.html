@@ -289,7 +289,7 @@ Hammer.Instance.prototype = {
     this.eventHandlers = [];
 
     // unbind the start event listener
-    Event.unbindDom(this.element, Hammer.EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.unbindDom(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
   }

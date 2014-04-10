@@ -15,15 +15,6 @@
 Hammer.gestures.Gesture = {
   name   : 'gesture',
   index  : 1337,
-  defaults: {
-    /**
-     * trigger the event
-     * @property gesture
-     * @type {Boolean}
-     * @default false
-     */
-    gesture: false
-  },
   handler: function releaseGesture(ev, inst) {
     inst.trigger(this.name, ev);
   }

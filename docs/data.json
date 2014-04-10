@@ -510,7 +510,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 49,
+            "line": 146,
             "description": "minimal movement that have to be made before the drag event gets triggered",
             "itemtype": "property",
             "name": "drag_min_distance",
@@ -521,7 +521,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 57,
+            "line": 154,
             "description": "Set correct_for_drag_min_distance to true to make the starting point of the drag\nbe calculated from where the drag was triggered, not from where the touch started.\nUseful to avoid a jerk-starting drag, which can make fine-adjustments\nthrough dragging difficult, and be visually unappealing.",
             "itemtype": "property",
             "name": "correct_for_drag_min_distance",
@@ -532,7 +532,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 68,
+            "line": 165,
             "description": "set 0 for unlimited, but this can conflict with transform",
             "itemtype": "property",
             "name": "drag_max_touches",
@@ -543,7 +543,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 76,
+            "line": 173,
             "description": "prevent default browser behavior when dragging occurs\nbe careful with it, it makes the element a blocking element\nwhen you are using the drag gesture, it is a good practice to set this true",
             "itemtype": "property",
             "name": "drag_block_horizontal",
@@ -554,7 +554,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 86,
+            "line": 183,
             "description": "same as `drag_block_horizontal`, but for vertical movement",
             "itemtype": "property",
             "name": "drag_block_vertical",
@@ -565,7 +565,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 94,
+            "line": 191,
             "description": "drag_lock_to_axis keeps the drag gesture on the axis that it started on,\nIt disallows vertical directions if the initial direction was horizontal, and vice versa.",
             "itemtype": "property",
             "name": "drag_lock_to_axis",
@@ -576,7 +576,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 103,
+            "line": 200,
             "description": "drag lock only kicks in when distance > drag_lock_min_distance\n This way, locking occurs only when the distance has become large enough to reliably determine the direction",
             "itemtype": "property",
             "name": "drag_lock_min_distance",
@@ -601,17 +601,6 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/gesture.js",
-            "line": 19,
-            "description": "trigger the event",
-            "itemtype": "property",
-            "name": "gesture",
-            "type": "{Boolean}",
-            "default": "false",
-            "class": "Gesture",
-            "module": "gestures"
-        },
-        {
             "file": "src/gestures/hold.js",
             "line": 10,
             "itemtype": "event",
@@ -628,7 +617,7 @@
         },
         {
             "file": "src/gestures/hold.js",
-            "line": 18,
+            "line": 53,
             "itemtype": "property",
             "name": "hold_timeout",
             "type": "{Number}",
@@ -638,7 +627,7 @@
         },
         {
             "file": "src/gestures/hold.js",
-            "line": 25,
+            "line": 60,
             "description": "movement allowed while holding",
             "itemtype": "property",
             "name": "hold_threshold",
@@ -760,10 +749,22 @@
         {
             "file": "src/gestures/swipe.js",
             "line": 55,
+            "description": "horizontal swipe velocity",
             "itemtype": "property",
-            "name": "swipe_velocity",
+            "name": "swipe_velocity_x",
             "type": "{Number}",
             "default": "0.7",
+            "class": "Swipe",
+            "module": "gestures"
+        },
+        {
+            "file": "src/gestures/swipe.js",
+            "line": 63,
+            "description": "vertical swipe velocity",
+            "itemtype": "property",
+            "name": "swipe_velocity_y",
+            "type": "{Number}",
+            "default": "0.6",
             "class": "Swipe",
             "module": "gestures"
         },
@@ -799,7 +800,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 22,
+            "line": 65,
             "description": "max time of a tap, this is for the slow tappers",
             "itemtype": "property",
             "name": "tap_max_touchtime",
@@ -810,7 +811,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 30,
+            "line": 73,
             "description": "max distance of movement of a tap, this is for the slow tappers",
             "itemtype": "property",
             "name": "tap_max_distance",
@@ -821,7 +822,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 38,
+            "line": 81,
             "description": "always trigger the `tap` event, even while double-tapping",
             "itemtype": "property",
             "name": "tap_always",
@@ -832,7 +833,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 46,
+            "line": 89,
             "description": "max distance between two taps",
             "itemtype": "property",
             "name": "doubletap_distance",
@@ -843,7 +844,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 54,
+            "line": 97,
             "description": "max time between two taps",
             "itemtype": "property",
             "name": "doubletap_interval",
@@ -981,7 +982,7 @@
         },
         {
             "file": "src/gestures/transform.js",
-            "line": 40,
+            "line": 97,
             "description": "minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1",
             "itemtype": "property",
             "name": "transform_min_scale",
@@ -992,34 +993,12 @@
         },
         {
             "file": "src/gestures/transform.js",
-            "line": 48,
+            "line": 105,
             "description": "rotation in degrees",
             "itemtype": "property",
             "name": "transform_min_rotation",
             "type": "{Number}",
             "default": "1",
-            "class": "Transform",
-            "module": "gestures"
-        },
-        {
-            "file": "src/gestures/transform.js",
-            "line": 56,
-            "description": "prevent default browser behavior when two touches are on the screen\nbut it makes the element a blocking element\nwhen you are using the transform gesture, it is a good practice to set this true",
-            "itemtype": "property",
-            "name": "transform_always_block",
-            "type": "{Boolean}",
-            "default": "false",
-            "class": "Transform",
-            "module": "gestures"
-        },
-        {
-            "file": "src/gestures/transform.js",
-            "line": 66,
-            "description": "checks if all touches occurred within the instance element",
-            "itemtype": "property",
-            "name": "transform_within_instance",
-            "type": "{Boolean}",
-            "default": "false",
             "class": "Transform",
             "module": "gestures"
         },
@@ -1300,7 +1279,7 @@
         {
             "file": "src/event.js",
             "line": 200,
-            "description": "we have different events for each device/browser\ndetermine what we need and set them in the Hammer.EVENT_TYPES constant",
+            "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant",
             "itemtype": "method",
             "name": "determineEventTypes",
             "class": "Event",
@@ -1660,6 +1639,113 @@
         {
             "file": "src/setup.js",
             "line": 35,
+            "description": "default settings.\nmore settings are defined per gesture at `/gestures`",
+            "itemtype": "property",
+            "name": "defaults",
+            "type": "{Object}",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 61,
+            "description": "hammer document where the base events are added at",
+            "itemtype": "property",
+            "name": "DOCUMENT",
+            "type": "{HTMLElement}",
+            "default": "window.document",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 70,
+            "description": "detect support for pointer events",
+            "itemtype": "property",
+            "name": "HAS_POINTEREVENTS",
+            "type": "{Boolean}",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 78,
+            "description": "detect support for touch events",
+            "itemtype": "property",
+            "name": "HAS_TOUCHEVENTS",
+            "type": "{Boolean}",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 86,
+            "description": "interval in which Hammer recalculates current velocity/direction/angle in ms",
+            "itemtype": "property",
+            "name": "CALCULATE_INTERVAL",
+            "type": "{Number}",
+            "default": "16",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 95,
+            "description": "eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`\nthe object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)",
+            "itemtype": "property",
+            "name": "EVENT_TYPES",
+            "access": "private",
+            "tagname": "",
+            "writeonce": "",
+            "type": "{Object}",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 106,
+            "description": "direction strings, for safe comparisons",
+            "itemtype": "property",
+            "name": "DIRECTION_DOWN|LEFT|UP|RIGHT",
+            "access": "private",
+            "tagname": "",
+            "final": 1,
+            "type": "{String}",
+            "default": "'down' 'left' 'up' 'right'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 120,
+            "description": "pointertype strings, for safe comparisons",
+            "itemtype": "property",
+            "name": "POINTER_MOUSE|TOUCH|PEN",
+            "access": "private",
+            "tagname": "",
+            "final": 1,
+            "type": "{String}",
+            "default": "'mouse' 'touch' 'pen'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 133,
+            "description": "eventtypes",
+            "itemtype": "property",
+            "name": "EVENT_START|MOVE|END|RELEASE|TOUCH",
+            "access": "private",
+            "tagname": "",
+            "final": 1,
+            "type": "{String}",
+            "default": "'start' 'change' 'move' 'end' 'release' 'touch'",
+            "class": "Hammer",
+            "module": "hammer"
+        },
+        {
+            "file": "src/setup.js",
+            "line": 148,
             "description": "if the window events are set...",
             "itemtype": "property",
             "name": "READY",
@@ -1671,106 +1757,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 45,
-            "description": "default settings.\nmore settings are defined per gesture at `/gestures`",
-            "itemtype": "property",
-            "name": "defaults",
-            "type": "{Object}",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 71,
-            "description": "hammer document where the base events are added at",
-            "itemtype": "property",
-            "name": "DOCUMENT",
-            "type": "{HTMLElement}",
-            "default": "window.document",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 80,
-            "description": "detect support for pointer events",
-            "itemtype": "property",
-            "name": "HAS_POINTEREVENTS",
-            "type": "{Boolean}",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 88,
-            "description": "detect support for touch events",
-            "itemtype": "property",
-            "name": "HAS_TOUCHEVENTS",
-            "type": "{Boolean}",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 96,
-            "description": "interval in which Hammer recalculates current velocity/direction/angle in ms",
-            "itemtype": "property",
-            "name": "CALCULATE_INTERVAL",
-            "type": "{Number}",
-            "default": "16",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 105,
-            "description": "eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`\nthe object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)",
-            "itemtype": "property",
-            "name": "EVENT_TYPES",
-            "writeonce": "",
-            "type": "{Object}",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 115,
-            "description": "direction strings, for safe comparisons",
-            "itemtype": "property",
-            "name": "DIRECTION_DOWN|LEFT|UP|RIGHT",
-            "final": 1,
-            "type": "{String}",
-            "default": "'down' 'left' 'up' 'right'",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 128,
-            "description": "pointertype strings, for safe comparisons",
-            "itemtype": "property",
-            "name": "POINTER_MOUSE|TOUCH|PEN",
-            "final": 1,
-            "type": "{String}",
-            "default": "'mouse' 'touch' 'pen'",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 140,
-            "description": "eventtypes",
-            "itemtype": "property",
-            "name": "EVENT_START|MOVE|END|RELEASE|TOUCH",
-            "final": 1,
-            "type": "{String}",
-            "default": "'start' 'change' 'move' 'end' 'release' 'touch'",
-            "class": "Hammer",
-            "module": "hammer"
-        },
-        {
-            "file": "src/setup.js",
-            "line": 154,
+            "line": 158,
             "description": "plugins namespace",
             "itemtype": "property",
             "name": "plugins",
@@ -1780,7 +1767,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 162,
+            "line": 166,
             "description": "gestures namespace\nsee `/gestures` for the definitions",
             "itemtype": "property",
             "name": "gestures",
@@ -1790,7 +1777,7 @@
         },
         {
             "file": "src/setup.js",
-            "line": 171,
+            "line": 175,
             "description": "setup events to detect gestures on the document\nthis function is called when creating an new instance",
             "access": "private",
             "tagname": "",
@@ -2206,7 +2193,7 @@
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
-            "line": " src/setup.js:171"
+            "line": " src/setup.js:175"
         }
     ]
 }

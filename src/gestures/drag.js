@@ -42,78 +42,10 @@
  * @event dragdown
  * @param {Object} ev
  */
-Hammer.gestures.Drag = {
-  name     : 'drag',
-  index    : 50,
-  defaults : {
-    /**
-     * minimal movement that have to be made before the drag event gets triggered
-     * @property drag_min_distance
-     * @type {Number}
-     * @default 10
-     */
-    drag_min_distance: 10,
+(function(name) {
+  var triggered = false;
 
-    /**
-     * Set correct_for_drag_min_distance to true to make the starting point of the drag
-     * be calculated from where the drag was triggered, not from where the touch started.
-     * Useful to avoid a jerk-starting drag, which can make fine-adjustments
-     * through dragging difficult, and be visually unappealing.
-     * @property correct_for_drag_min_distance
-     * @type {Boolean}
-     * @default true
-     */
-    correct_for_drag_min_distance: true,
-
-    /**
-     * set 0 for unlimited, but this can conflict with transform
-     * @property drag_max_touches
-     * @type {Number}
-     * @default 1
-     */
-    drag_max_touches: 1,
-
-    /**
-     * prevent default browser behavior when dragging occurs
-     * be careful with it, it makes the element a blocking element
-     * when you are using the drag gesture, it is a good practice to set this true
-     * @property drag_block_horizontal
-     * @type {Boolean}
-     * @default false
-     */
-    drag_block_horizontal: false,
-
-    /**
-     * same as `drag_block_horizontal`, but for vertical movement
-     * @property drag_block_vertical
-     * @type {Boolean}
-     * @default false
-     */
-    drag_block_vertical: false,
-
-    /**
-     * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
-     * It disallows vertical directions if the initial direction was horizontal, and vice versa.
-     * @property drag_lock_to_axis
-     * @type {Boolean}
-     * @default false
-     */
-    drag_lock_to_axis: false,
-
-    /**
-     *  drag lock only kicks in when distance > drag_lock_min_distance
-     * This way, locking occurs only when the distance has become large enough to reliably determine the direction
-     * @property drag_lock_min_distance
-     * @type {Number}
-     * @default 25
-     */
-    drag_lock_min_distance: 25
-  },
-
-
-  triggered: false,
-
-  handler  : function dragGesture(ev, inst) {
+  function dragGesture(ev, inst) {
     var cur = Detection.current;
 
     // max touches
@@ -124,22 +56,22 @@ Hammer.gestures.Drag = {
 
     switch(ev.eventType) {
       case EVENT_START:
-        this.triggered = false;
+        triggered = false;
         break;
 
       case EVENT_MOVE:
         // when the distance we moved is too small we skip this gesture
         // or we can be already in dragging
         if(ev.distance < inst.options.drag_min_distance &&
-          cur.name != this.name) {
+          cur.name != name) {
           return;
         }
 
         var startCenter = cur.startEvent.center;
 
         // we are dragging!
-        if(cur.name != this.name) {
-          cur.name = this.name;
+        if(cur.name != name) {
+          cur.name = name;
           if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
             // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
             // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
@@ -174,14 +106,14 @@ Hammer.gestures.Drag = {
         }
 
         // first time, trigger dragstart event
-        if(!this.triggered) {
-          inst.trigger(this.name + 'start', ev);
-          this.triggered = true;
+        if(!triggered) {
+          inst.trigger(name + 'start', ev);
+          triggered = true;
         }
 
         // trigger events
-        inst.trigger(this.name, ev);
-        inst.trigger(this.name + ev.direction, ev);
+        inst.trigger(name, ev);
+        inst.trigger(name + ev.direction, ev);
 
         var is_vertical = Utils.isVertical(ev.direction);
 
@@ -193,15 +125,86 @@ Hammer.gestures.Drag = {
         break;
 
       case EVENT_RELEASE:
-        if(this.triggered && ev.changedLength <= inst.options.drag_max_touches) {
-          inst.trigger(this.name + 'end', ev);
-          this.triggered = false;
+        if(triggered && ev.changedLength <= inst.options.drag_max_touches) {
+          inst.trigger(name + 'end', ev);
+          triggered = false;
         }
         break;
 
       case EVENT_END:
-        this.triggered = false;
+        triggered = false;
         break;
     }
   }
-};
+
+
+  Hammer.gestures.Drag = {
+    name: name,
+    index: 50,
+    handler: dragGesture,
+    defaults: {
+      /**
+       * minimal movement that have to be made before the drag event gets triggered
+       * @property drag_min_distance
+       * @type {Number}
+       * @default 10
+       */
+      drag_min_distance: 10,
+
+      /**
+       * Set correct_for_drag_min_distance to true to make the starting point of the drag
+       * be calculated from where the drag was triggered, not from where the touch started.
+       * Useful to avoid a jerk-starting drag, which can make fine-adjustments
+       * through dragging difficult, and be visually unappealing.
+       * @property correct_for_drag_min_distance
+       * @type {Boolean}
+       * @default true
+       */
+      correct_for_drag_min_distance: true,
+
+      /**
+       * set 0 for unlimited, but this can conflict with transform
+       * @property drag_max_touches
+       * @type {Number}
+       * @default 1
+       */
+      drag_max_touches: 1,
+
+      /**
+       * prevent default browser behavior when dragging occurs
+       * be careful with it, it makes the element a blocking element
+       * when you are using the drag gesture, it is a good practice to set this true
+       * @property drag_block_horizontal
+       * @type {Boolean}
+       * @default false
+       */
+      drag_block_horizontal: false,
+
+      /**
+       * same as `drag_block_horizontal`, but for vertical movement
+       * @property drag_block_vertical
+       * @type {Boolean}
+       * @default false
+       */
+      drag_block_vertical: false,
+
+      /**
+       * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+       * It disallows vertical directions if the initial direction was horizontal, and vice versa.
+       * @property drag_lock_to_axis
+       * @type {Boolean}
+       * @default false
+       */
+      drag_lock_to_axis: false,
+
+      /**
+       *  drag lock only kicks in when distance > drag_lock_min_distance
+       * This way, locking occurs only when the distance has become large enough to reliably determine the direction
+       * @property drag_lock_min_distance
+       * @type {Number}
+       * @default 25
+       */
+      drag_lock_min_distance: 25
+    }
+  };
+})('drag');

@@ -125,15 +125,15 @@ function testEventData(name, ev) {
     ok(ev.gesture.direction, 'ev.gesture.direction');
     var dir = ev.type.match(/up|down|left|right/);
     if(dir) {
-        ok(ev.gesture.direction === Hammer['DIRECTION_'+ dir[0].toUpperCase()]);
+        ok(ev.gesture.direction === dir[0]);
     }
 
     // pointerType
     ok(ev.gesture.pointerType, 'ev.gesture.pointerType');
-    var pointer_type = Hammer.POINTER_TOUCH;
+    var pointer_type = 'touch';
     if( faker.touch_type == FakeTouches.POINTER_MOUSE_EVENTS ||
         faker.touch_type == FakeTouches.MOUSE_EVENTS) {
-        pointer_type = Hammer.POINTER_MOUSE;
+        pointer_type = 'mouse';
     }
     ok(ev.gesture.pointerType == pointer_type, 'not matching pointertype: '+ ev.gesture.eventType +':'+ ev.gesture.pointerType +':'+ pointer_type);
 
