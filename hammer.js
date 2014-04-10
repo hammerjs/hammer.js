@@ -115,43 +115,40 @@ var EVENT_TYPES = {};
 /**
  * direction strings, for safe comparisons
  * @property DIRECTION_DOWN|LEFT|UP|RIGHT
- * @private
  * @final
  * @type {String}
  * @default 'down' 'left' 'up' 'right'
  */
-var DIRECTION_DOWN = 'down';
-var DIRECTION_LEFT = 'left';
-var DIRECTION_UP = 'up';
-var DIRECTION_RIGHT = 'right';
+var DIRECTION_DOWN = Hammer.DIRECTION_DOWN = 'down';
+var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
+var DIRECTION_UP = Hammer.DIRECTION_UP = 'up';
+var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 
 
 /**
  * pointertype strings, for safe comparisons
  * @property POINTER_MOUSE|TOUCH|PEN
- * @private
  * @final
  * @type {String}
  * @default 'mouse' 'touch' 'pen'
  */
-var POINTER_MOUSE = 'mouse';
-var POINTER_TOUCH = 'touch';
-var POINTER_PEN = 'pen';
+var POINTER_MOUSE = Hammer.POINTER_MOUSE = 'mouse';
+var POINTER_TOUCH = Hammer.POINTER_TOUCH = 'touch';
+var POINTER_PEN = Hammer.POINTER_PEN = 'pen';
 
 
 /**
  * eventtypes
  * @property EVENT_START|MOVE|END|RELEASE|TOUCH
- * @private
  * @final
  * @type {String}
  * @default 'start' 'change' 'move' 'end' 'release' 'touch'
  */
-var EVENT_START = 'start';
-var EVENT_MOVE = 'move';
-var EVENT_END = 'end';
-var EVENT_RELEASE = 'release';
-var EVENT_TOUCH = 'touch';
+var EVENT_START = Hammer.EVENT_START = 'start';
+var EVENT_MOVE = Hammer.EVENT_MOVE = 'move';
+var EVENT_END = Hammer.EVENT_END = 'end';
+var EVENT_RELEASE = Hammer.EVENT_RELEASE = 'release';
+var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
 
 
 /**
@@ -161,7 +158,7 @@ var EVENT_TOUCH = 'touch';
  * @type {Boolean}
  * @default false
  */
-var READY = false;
+Hammer.READY = false;
 
 
 /**
@@ -187,7 +184,7 @@ Hammer.gestures = Hammer.gestures || {};
  * @private
  */
 function setup() {
-  if(READY) {
+  if(Hammer.READY) {
     return;
   }
 
@@ -204,7 +201,7 @@ function setup() {
   Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
 
   // Hammer is ready...!
-  READY = true;
+  Hammer.READY = true;
 }
 
 /**
