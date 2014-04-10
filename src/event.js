@@ -200,7 +200,9 @@ var Event = Hammer.event = {
   /**
    * we have different events for each device/browser
    * determine what we need and set them in the EVENT_TYPES constant
+   * the `onTouch` method is bind to these properties.
    * @method determineEventTypes
+   * @return {Object} events
    */
   determineEventTypes: function determineEventTypes() {
     var types;

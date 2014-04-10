@@ -1286,15 +1286,19 @@
         {
             "file": "src/event.js",
             "line": 200,
-            "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant",
+            "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant\nthe `onTouch` method is bind to these properties.",
             "itemtype": "method",
             "name": "determineEventTypes",
+            "return": {
+                "description": "events",
+                "type": "Object"
+            },
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 227,
+            "line": 230,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
@@ -1319,7 +1323,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 266,
+            "line": 269,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1354,21 +1358,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 291,
+            "line": 294,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 301,
+            "line": 304,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 308,
+            "line": 311,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -1724,7 +1728,7 @@
         {
             "file": "src/setup.js",
             "line": 102,
-            "description": "Overrides the highlight color shown when the user taps a link or a JavaScript\nclickable element in Safari on iPhone. This property obeys the alpha value, if specified.\n\nIf you don’t specify an alpha value, Safari on iPhone applies a default alpha value\nto the color. To disable tap highlighting, set the alpha value to 0 (invisible).\nIf you set the alpha value to 1.0 (opaque), the element is not visible when tapped.",
+            "description": "Overrides the highlight color shown when the user taps a link or a JavaScript\nclickable element in Safari on iPhone. This property obeys the alpha value, if specified.\n\nIf you don't specify an alpha value, Safari on iPhone applies a default alpha value\nto the color. To disable tap highlighting, set the alpha value to 0 (invisible).\nIf you set the alpha value to 1.0 (opaque), the element is not visible when tapped.",
             "itemtype": "property",
             "name": "defaults.stop_browser_behavior.tapHighlightColor",
             "type": "{String}",
@@ -2261,15 +2265,15 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:291"
+            "line": " src/event.js:294"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:301"
+            "line": " src/event.js:304"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:308"
+            "line": " src/event.js:311"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
