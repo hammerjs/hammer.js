@@ -221,6 +221,7 @@ var Event = Hammer.event = {
     EVENT_TYPES[EVENT_START] = types[0];
     EVENT_TYPES[EVENT_MOVE] = types[1];
     EVENT_TYPES[EVENT_END] = types[2];
+    return EVENT_TYPES;
   },
 
 

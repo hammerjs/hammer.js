@@ -112,7 +112,7 @@ Hammer.defaults = {
      * Overrides the highlight color shown when the user taps a link or a JavaScript
      * clickable element in Safari on iPhone. This property obeys the alpha value, if specified.
      *
-     * If you don’t specify an alpha value, Safari on iPhone applies a default alpha value
+     * If you don't specify an alpha value, Safari on iPhone applies a default alpha value
      * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
      * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
      * @property defaults.stop_browser_behavior.tapHighlightColor
@@ -989,6 +989,7 @@ var Event = Hammer.event = {
     EVENT_TYPES[EVENT_START] = types[0];
     EVENT_TYPES[EVENT_MOVE] = types[1];
     EVENT_TYPES[EVENT_END] = types[2];
+    return EVENT_TYPES;
   },
 
 
