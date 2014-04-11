@@ -1270,8 +1270,7 @@ var Detection = Hammer.detection = {
       this.current.lastEvent = eventData;
     }
 
-    // end event, but not the last touch, so dont stop
-    if(eventData.eventType == EVENT_END && !eventData.touches.length - 1) {
+    if(eventData.eventType == EVENT_END) {
       this.stopDetect();
     }
 

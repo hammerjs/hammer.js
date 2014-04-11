@@ -1052,7 +1052,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 95,
+            "line": 94,
             "description": "clear the Hammer.gesture vars\nthis is called on endDetect, but can also be used when a final Hammer.gesture has been detected\nto stop other Hammer.gestures from being fired",
             "itemtype": "method",
             "name": "stopDetect",
@@ -1061,7 +1061,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 114,
+            "line": 113,
             "description": "calculate velocity, angle and direction",
             "itemtype": "method",
             "name": "getVelocityData",
@@ -1092,7 +1092,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 156,
+            "line": 155,
             "description": "extend eventData for Hammer.gestures",
             "itemtype": "method",
             "name": "extendEventData",
@@ -1112,7 +1112,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 198,
+            "line": 197,
             "description": "register new gesture",
             "itemtype": "method",
             "name": "register",
