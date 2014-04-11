@@ -289,6 +289,30 @@ var Utils = Hammer.utils = {
 
 
   /**
+   * simple addEventListener wrapper
+   * @method on
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  on: function on(element, type, handler) {
+    element.addEventListener(type, handler, false);
+  },
+
+
+  /**
+   * simple removeEventListener wrapper
+   * @method off
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  off: function off(element, type, handler) {
+    element.removeEventListener(type, handler, false);
+  },
+
+
+  /**
    * forEach over arrays and objects
    * @method each
    * @param {Object|Array} obj
@@ -341,16 +365,17 @@ var Utils = Hammer.utils = {
    * @method inArray
    * @param {String} src
    * @param {String} find
-   * @return {Boolean} found
+   * @return {Boolean|Number} false when not found, or the index
    */
   inArray: function inArray(src, find) {
     if(src.indexOf) {
-      return src.indexOf(find) > -1;
+      var index = src.indexOf(find);
+      return (index === -1) ? false : index;
     }
     else {
       for(var i= 0,len=src.length;i<len; i++) {
         if(src[i] === find) {
-          return true;
+          return i;
         }
       }
       return false;
@@ -597,13 +622,11 @@ Hammer.Instance = function(element, options) {
   // this also sets up the default options
   setup();
 
-
   /**
    * @property element
    * @type {HTMLElement}
    */
   this.element = element;
-
 
   /**
    * @property enabled
@@ -611,7 +634,6 @@ Hammer.Instance = function(element, options) {
    * @protected
    */
   this.enabled = true;
-
 
   /**
    * options, merged with the defaults
@@ -627,7 +649,6 @@ Hammer.Instance = function(element, options) {
     Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
-
   /**
    * event start handler on the element to start the detection
    * @property eventStartHandler
@@ -641,7 +662,6 @@ Hammer.Instance = function(element, options) {
       Detection.detect(ev);
     }
   });
-
 
   /**
    * keep a list of user event handlers which needs to be removed when calling 'dispose'
@@ -657,19 +677,16 @@ Hammer.Instance.prototype = {
    * bind events to the instance
    * @method on
    * @chainable
-   * @param {String} gesture multiple gestures by splitting with a space
+   * @param {String} gestures multiple gestures by splitting with a space
    * @param {Function} handler
    * @param {Object} handler.ev event object
    */
-  on: function onEvent(gesture, handler) {
-    var gestures = gesture.split(' ');
-
-    Utils.each(gestures, function(gesture) {
-      this.element.addEventListener(gesture, handler, false);
-      this.eventHandlers.push({ gesture: gesture, handler: handler });
-    }, this);
-
-    return this;
+  on: function onEvent(gestures, handler) {
+    var self = this;
+    Event.on(self.element, gestures, handler, function(type) {
+      self.eventHandlers.push({ gesture: type, handler: handler });
+    });
+    return self;
   },
 
 
@@ -677,23 +694,19 @@ Hammer.Instance.prototype = {
    * unbind events to the instance
    * @method off
    * @chainable
-   * @param {String} gesture
+   * @param {String} gestures
    * @param {Function} handler
    */
-  off: function offEvent(gesture, handler) {
-    var gestures = gesture.split(' ')
-      , i, eh;
-    Utils.each(gestures, function(gesture) {
-      this.element.removeEventListener(gesture, handler, false);
+  off: function offEvent(gestures, handler) {
+    var self = this;
 
-      // remove the event handler from the internal list
-      for(i=-1; (eh=this.eventHandlers[++i]);) {
-        if(eh.gesture === gesture && eh.handler === handler) {
-          this.eventHandlers.splice(i, 1);
-        }
+    Event.off(self.element, gestures, handler, function(type) {
+      var index = Utils.inArray({ gesture: type, handler: handler });
+      if(index !== false) {
+        self.eventHandlers.splice(index, 1);
       }
-    }, this);
-    return this;
+    });
+    return self;
   },
 
 
@@ -754,12 +767,12 @@ Hammer.Instance.prototype = {
 
     // unbind all custom event handlers
     for(i=-1; (eh=this.eventHandlers[++i]);) {
-      this.element.removeEventListener(eh.gesture, eh.handler, false);
+      Utils.off(this.element, eh.gesture, eh.handler);
     }
     this.eventHandlers = [];
 
     // unbind the start event listener
-    Event.unbindDom(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.off(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
   }
@@ -803,31 +816,37 @@ var Event = Hammer.event = {
 
 
   /**
-   * simple addEventListener
-   * @method bindDom
+   * simple event binder with a hook and support for multiple types
+   * @method on
    * @param {HTMLElement} element
    * @param {String} type
    * @param {Function} handler
+   * @param {Function} [hook]
+   * @param {Object} hook.type
    */
-  bindDom: function bindDom(element, type, handler) {
+  on: function on(element, type, handler, hook) {
     var types = type.split(' ');
     Utils.each(types, function(type){
-      element.addEventListener(type, handler, false);
+      Utils.on(element, type, handler);
+      hook && hook(type);
     });
   },
 
 
   /**
-   * simple removeEventListener
-   * @method unbindDom
+   * simple event unbinder with a hook and support for multiple types
+   * @method off
    * @param {HTMLElement} element
    * @param {String} type
    * @param {Function} handler
+   * @param {Function} [hook]
+   * @param {Object} hook.type
    */
-  unbindDom: function unbindDom(element, type, handler) {
+  off: function off(element, type, handler, hook) {
     var types = type.split(' ');
     Utils.each(types, function(type){
-      element.removeEventListener(type, handler, false);
+      Utils.off(element, type, handler);
+      hook && hook(type);
     });
   },
 
@@ -839,12 +858,12 @@ var Event = Hammer.event = {
    * @param {HTMLElement} element
    * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {Function} handler
-   * @return bindDomOnTouch {Function} the core event handler
+   * @return onOnTouch {Function} the core event handler
    */
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    var bindDomOnTouch = function bindDomOnTouch(ev) {
+    var onOnTouch = function onOnTouch(ev) {
       var src_type = ev.type.toLowerCase()
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , trigger_type
@@ -888,8 +907,8 @@ var Event = Hammer.event = {
       }
     };
 
-    this.bindDom(element, EVENT_TYPES[eventType], bindDomOnTouch);
-    return bindDomOnTouch;
+    this.on(element, EVENT_TYPES[eventType], onOnTouch);
+    return onOnTouch;
   },
 
 
@@ -1019,7 +1038,7 @@ var Event = Hammer.event = {
       var touchlist = [];
 
       Utils.each(concat_touches, function(touch) {
-        if(!Utils.inArray(identifiers, touch.identifier)) {
+        if(Utils.inArray(identifiers, touch.identifier) === false) {
           touchlist.push(touch);
         }
         identifiers.push(touch.identifier);

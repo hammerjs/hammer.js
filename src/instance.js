@@ -19,13 +19,11 @@ Hammer.Instance = function(element, options) {
   // this also sets up the default options
   setup();
 
-
   /**
    * @property element
    * @type {HTMLElement}
    */
   this.element = element;
-
 
   /**
    * @property enabled
@@ -33,7 +31,6 @@ Hammer.Instance = function(element, options) {
    * @protected
    */
   this.enabled = true;
-
 
   /**
    * options, merged with the defaults
@@ -49,7 +46,6 @@ Hammer.Instance = function(element, options) {
     Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
   }
 
-
   /**
    * event start handler on the element to start the detection
    * @property eventStartHandler
@@ -63,7 +59,6 @@ Hammer.Instance = function(element, options) {
       Detection.detect(ev);
     }
   });
-
 
   /**
    * keep a list of user event handlers which needs to be removed when calling 'dispose'
@@ -79,19 +74,16 @@ Hammer.Instance.prototype = {
    * bind events to the instance
    * @method on
    * @chainable
-   * @param {String} gesture multiple gestures by splitting with a space
+   * @param {String} gestures multiple gestures by splitting with a space
    * @param {Function} handler
    * @param {Object} handler.ev event object
    */
-  on: function onEvent(gesture, handler) {
-    var gestures = gesture.split(' ');
-
-    Utils.each(gestures, function(gesture) {
-      this.element.addEventListener(gesture, handler, false);
-      this.eventHandlers.push({ gesture: gesture, handler: handler });
-    }, this);
-
-    return this;
+  on: function onEvent(gestures, handler) {
+    var self = this;
+    Event.on(self.element, gestures, handler, function(type) {
+      self.eventHandlers.push({ gesture: type, handler: handler });
+    });
+    return self;
   },
 
 
@@ -99,23 +91,19 @@ Hammer.Instance.prototype = {
    * unbind events to the instance
    * @method off
    * @chainable
-   * @param {String} gesture
+   * @param {String} gestures
    * @param {Function} handler
    */
-  off: function offEvent(gesture, handler) {
-    var gestures = gesture.split(' ')
-      , i, eh;
-    Utils.each(gestures, function(gesture) {
-      this.element.removeEventListener(gesture, handler, false);
+  off: function offEvent(gestures, handler) {
+    var self = this;
 
-      // remove the event handler from the internal list
-      for(i=-1; (eh=this.eventHandlers[++i]);) {
-        if(eh.gesture === gesture && eh.handler === handler) {
-          this.eventHandlers.splice(i, 1);
-        }
+    Event.off(self.element, gestures, handler, function(type) {
+      var index = Utils.inArray({ gesture: type, handler: handler });
+      if(index !== false) {
+        self.eventHandlers.splice(index, 1);
       }
-    }, this);
-    return this;
+    });
+    return self;
   },
 
 
@@ -176,12 +164,12 @@ Hammer.Instance.prototype = {
 
     // unbind all custom event handlers
     for(i=-1; (eh=this.eventHandlers[++i]);) {
-      this.element.removeEventListener(eh.gesture, eh.handler, false);
+      Utils.off(this.element, eh.gesture, eh.handler);
     }
     this.eventHandlers = [];
 
     // unbind the start event listener
-    Event.unbindDom(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
+    Event.off(this.element, EVENT_TYPES[EVENT_START], this.eventStartHandler);
 
     return null;
   }

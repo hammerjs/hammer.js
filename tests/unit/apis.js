@@ -86,11 +86,11 @@ module("Utils");
     expect(5);
     var array = [1, 2, 3, 4, 'aa', 'bb'];
 
-    ok(Hammer.utils.inArray(array, "aa"), 'in array');
-    ok(Hammer.utils.inArray(array, 4), 'in array');
-    ok(!Hammer.utils.inArray(array, "4"), 'not in array');
-    ok(!Hammer.utils.inArray(array, 123), 'not in array');
-    ok(!Hammer.utils.inArray(array, "a"), 'not in array');
+    ok(Hammer.utils.inArray(array, "aa") === 4, 'in array');
+    ok(Hammer.utils.inArray(array, 4) === 3, 'in array');
+    ok(Hammer.utils.inArray(array, "4") === false, 'not in array');
+    ok(Hammer.utils.inArray(array, 123) === false, 'not in array');
+    ok(Hammer.utils.inArray(array, "a") === false, 'not in array');
   });
 
   test('getCenter', function() {
@@ -189,14 +189,14 @@ module("Events");
     expect(1);
     var el = document.body;
 
-    Hammer.event.bindDom(el, "domevent0", domBindClickHandler);
+    Hammer.event.on(el, "domevent0", domBindClickHandler);
     triggerEvent('domevent0', el);
   });
 
   asyncTest('dom unbind', function() {
     expect(1);
     var el = document.body;
-    Hammer.event.unbindDom(el, "domevent0", domBindClickHandler);
+    Hammer.event.off(el, "domevent0", domBindClickHandler);
     triggerEvent('domevent0', el);
 
     setTimeout(function() {
@@ -215,7 +215,7 @@ module("Events");
       count == 2 && start();
     }
 
-    Hammer.event.bindDom(el, "domevent1 domevent2", handler);
+    Hammer.event.on(el, "domevent1 domevent2", handler);
     triggerEvent('domevent1', el);
     triggerEvent('domevent2', el);
   });

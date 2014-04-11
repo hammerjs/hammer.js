@@ -26,6 +26,30 @@ var Utils = Hammer.utils = {
 
 
   /**
+   * simple addEventListener wrapper
+   * @method on
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  on: function on(element, type, handler) {
+    element.addEventListener(type, handler, false);
+  },
+
+
+  /**
+   * simple removeEventListener wrapper
+   * @method off
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  off: function off(element, type, handler) {
+    element.removeEventListener(type, handler, false);
+  },
+
+
+  /**
    * forEach over arrays and objects
    * @method each
    * @param {Object|Array} obj
@@ -78,16 +102,17 @@ var Utils = Hammer.utils = {
    * @method inArray
    * @param {String} src
    * @param {String} find
-   * @return {Boolean} found
+   * @return {Boolean|Number} false when not found, or the index
    */
   inArray: function inArray(src, find) {
     if(src.indexOf) {
-      return src.indexOf(find) > -1;
+      var index = src.indexOf(find);
+      return (index === -1) ? false : index;
     }
     else {
       for(var i= 0,len=src.length;i<len; i++) {
         if(src[i] === find) {
-          return true;
+          return i;
         }
       }
       return false;

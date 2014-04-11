@@ -90,7 +90,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-yuidoc'
-  grunt.loadNpmTasks 'grunt-jscs-checker'
   grunt.loadNpmTasks 'grunt-string-replace'
 
   # Default task(s).

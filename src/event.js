@@ -35,31 +35,37 @@ var Event = Hammer.event = {
 
 
   /**
-   * simple addEventListener
-   * @method bindDom
+   * simple event binder with a hook and support for multiple types
+   * @method on
    * @param {HTMLElement} element
    * @param {String} type
    * @param {Function} handler
+   * @param {Function} [hook]
+   * @param {Object} hook.type
    */
-  bindDom: function bindDom(element, type, handler) {
+  on: function on(element, type, handler, hook) {
     var types = type.split(' ');
     Utils.each(types, function(type){
-      element.addEventListener(type, handler, false);
+      Utils.on(element, type, handler);
+      hook && hook(type);
     });
   },
 
 
   /**
-   * simple removeEventListener
-   * @method unbindDom
+   * simple event unbinder with a hook and support for multiple types
+   * @method off
    * @param {HTMLElement} element
    * @param {String} type
    * @param {Function} handler
+   * @param {Function} [hook]
+   * @param {Object} hook.type
    */
-  unbindDom: function unbindDom(element, type, handler) {
+  off: function off(element, type, handler, hook) {
     var types = type.split(' ');
     Utils.each(types, function(type){
-      element.removeEventListener(type, handler, false);
+      Utils.off(element, type, handler);
+      hook && hook(type);
     });
   },
 
@@ -71,12 +77,12 @@ var Event = Hammer.event = {
    * @param {HTMLElement} element
    * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {Function} handler
-   * @return bindDomOnTouch {Function} the core event handler
+   * @return onOnTouch {Function} the core event handler
    */
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    var bindDomOnTouch = function bindDomOnTouch(ev) {
+    var onOnTouch = function onOnTouch(ev) {
       var src_type = ev.type.toLowerCase()
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , trigger_type
@@ -120,8 +126,8 @@ var Event = Hammer.event = {
       }
     };
 
-    this.bindDom(element, EVENT_TYPES[eventType], bindDomOnTouch);
-    return bindDomOnTouch;
+    this.on(element, EVENT_TYPES[eventType], onOnTouch);
+    return onOnTouch;
   },
 
 
@@ -251,7 +257,7 @@ var Event = Hammer.event = {
       var touchlist = [];
 
       Utils.each(concat_touches, function(touch) {
-        if(!Utils.inArray(identifiers, touch.identifier)) {
+        if(Utils.inArray(identifiers, touch.identifier) === false) {
           touchlist.push(touch);
         }
         identifiers.push(touch.identifier);
