@@ -133,6 +133,10 @@ var Detection = Hammer.detection = {
       recalc = true;
     }
 
+    if(ev.eventType == EVENT_TOUCH || ev.eventType == EVENT_RELEASE) {
+      cur.futureCalcEvent = ev;
+    }
+
     if(!cur.lastCalcEvent || recalc) {
       calcData.velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
       calcData.angle = Utils.getAngle(center, ev.center);

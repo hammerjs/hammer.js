@@ -1092,7 +1092,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 152,
+            "line": 156,
             "description": "extend eventData for Hammer.gestures",
             "itemtype": "method",
             "name": "extendEventData",
@@ -1112,7 +1112,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 194,
+            "line": 198,
             "description": "register new gesture",
             "itemtype": "method",
             "name": "register",

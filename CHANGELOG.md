@@ -9,3 +9,4 @@
 - Dropped `NO_MOUSEEVENTS` check to be more future friendly. This still could be done by the `prevent_mouseevents` option, defined at the `touch` gesture.
 - The gestures `touch` and `release` are now triggered on every new touch/release instead of start/end.
 - Removed `interimDirection` and `interimAngle`, these are now moved to `direction` and `angle`.
+- Changed the name of the option `stop_browser_behavior` to `behavior`.
