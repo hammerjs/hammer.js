@@ -49,8 +49,8 @@ Hammer.VERSION = '1.1.0dev';
  * @example
  * ````
  *  Hammer.defaults.drag = false;
- *  Hammer.defaults.stop_browser_behavior.touchAction = 'pan-y';
- *  delete Hammer.defaults.stop_browser_behavior.userSelect;
+ *  Hammer.defaults.behavior.touchAction = 'pan-y';
+ *  delete Hammer.defaults.behavior.userSelect;
  * ````
  * @property defaults
  * @type {Object}
@@ -59,14 +59,14 @@ Hammer.defaults = {
   /**
    * this setting object adds styles and attributes to the element to prevent the browser from doing
    * its native behavior. The css properties are auto prefixed for the browsers when needed.
-   * @property defaults.stop_browser_behavior
+   * @property defaults.behavior
    * @type {Object}
    */
-  stop_browser_behavior: {
+  behavior: {
     /**
      * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
      * `onselectstart=false` for IE on the element. Mainly for desktop browsers.
-     * @property defaults.stop_browser_behavior.userSelect
+     * @property defaults.behavior.userSelect
      * @type {String}
      * @default 'none'
      */
@@ -75,7 +75,7 @@ Hammer.defaults = {
     /**
      * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
      * Used by IE10>. By default this makes the element blocking any touch event.
-     * @property defaults.stop_browser_behavior.touchAction
+     * @property defaults.behavior.touchAction
      * @type {String}
      * @default: 'none'
      */
@@ -85,7 +85,7 @@ Hammer.defaults = {
      * Disables the default callout shown when you touch and hold a touch target.
      * On iOS, when you touch and hold a touch target such as a link, Safari displays
      * a callout containing information about the link. This property allows you to disable that callout.
-     * @property defaults.stop_browser_behavior.touchCallout
+     * @property defaults.behavior.touchCallout
      * @type {String}
      * @default 'none'
      */
@@ -93,7 +93,7 @@ Hammer.defaults = {
 
     /**
      * Specifies whether zooming is enabled. Used by IE10>
-     * @property defaults.stop_browser_behavior.contentZooming
+     * @property defaults.behavior.contentZooming
      * @type {String}
      * @default 'none'
      */
@@ -102,7 +102,7 @@ Hammer.defaults = {
     /**
      * Specifies that an entire element should be draggable instead of its contents.
      * Mainly for desktop browsers.
-     * @property defaults.stop_browser_behavior.userDrag
+     * @property defaults.behavior.userDrag
      * @type {String}
      * @default 'none'
      */
@@ -115,7 +115,7 @@ Hammer.defaults = {
      * If you don't specify an alpha value, Safari on iPhone applies a default alpha value
      * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
      * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
-     * @property defaults.stop_browser_behavior.tapHighlightColor
+     * @property defaults.behavior.tapHighlightColor
      * @type {String}
      * @default 'rgba(0,0,0,0)'
      */
@@ -563,12 +563,12 @@ var Utils = Hammer.utils = {
    * `userSelect='none'` also sets `element.onselectstart` to false
    * `userDrag='none'` also sets `element.ondragstart` to false
    *
-   * @method toggleDefaultBehavior
+   * @method toggleBehavior
    * @param {HtmlElement} element
    * @param {Object} css_props
    * @param {Boolean} [toggle=false]
    */
-  toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
+  toggleBehavior: function toggleBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }
@@ -645,8 +645,8 @@ Hammer.Instance = function(element, options) {
     options || {});
 
   // add some css to the element to prevent the browser from doing its native behavoir
-  if(this.options.stop_browser_behavior) {
-    Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
+  if(this.options.behavior) {
+    Utils.toggleBehavior(this.element, this.options.behavior, false);
   }
 
   /**
@@ -761,8 +761,8 @@ Hammer.Instance.prototype = {
     var i, eh;
 
     // undo all changes made by stop_browser_behavior
-    if(this.options.stop_browser_behavior) {
-      Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
+    if(this.options.behavior) {
+      Utils.toggleBehavior(this.element, this.options.behavior, true);
     }
 
     // unbind all custom event handlers

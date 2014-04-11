@@ -143,12 +143,13 @@ var Detection = Hammer.detection = {
 
     // holds current session
     this.current = {
-      inst          : inst, // reference to HammerInstance we&#x27;re working for
-      startEvent    : Utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent     : false, // last eventData
-      lastCalcEvent : false, // last eventData for calculations.
-      lastCalcData  : {}, // last lastCalcData
-      name          : &#x27;&#x27; // current gesture we&#x27;re in/detected, can be &#x27;tap&#x27;, &#x27;hold&#x27; etc
+      inst: inst, // reference to HammerInstance we&#x27;re working for
+      startEvent: Utils.extend({}, eventData), // start eventData for distances, timing etc
+      lastEvent: false, // last eventData
+      lastCalcEvent: false, // last eventData for calculations.
+      futureCalcEvent: false, // last eventData for calculations.
+      lastCalcData: {}, // last lastCalcData
+      name: &#x27;&#x27; // current gesture we&#x27;re in/detected, can be &#x27;tap&#x27;, &#x27;hold&#x27; etc
     };
 
     this.detect(eventData);
@@ -232,8 +233,7 @@ var Detection = Hammer.detection = {
       , calcEv = cur.lastCalcEvent
       , calcData = cur.lastCalcData;
 
-    // calculate velocity every x ms
-    if (calcEv &amp;&amp; ev.timeStamp - calcEv.timeStamp &gt; Hammer.CALCULATE_INTERVAL) {
+    if(calcEv &amp;&amp; ev.timeStamp - calcEv.timeStamp &gt; Hammer.CALCULATE_INTERVAL) {
       center = calcEv.center;
       delta_time = ev.timeStamp - calcEv.timeStamp;
       delta_x = ev.center.clientX - calcEv.center.clientX;
@@ -246,7 +246,8 @@ var Detection = Hammer.detection = {
       calcData.angle = Utils.getAngle(center, ev.center);
       calcData.direction = Utils.getDirection(center, ev.center);
 
-      cur.lastCalcEvent = ev;
+      cur.lastCalcEvent = cur.futureCalcEvent || ev;
+      cur.futureCalcEvent = ev;
     }
 
     ev.velocityX = calcData.velocity.x;

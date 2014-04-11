@@ -88,8 +88,6 @@
     <div class="bd">
         <ul>
             
-                <li><a href="#methods_bindDom">bindDom</a></li>
-            
                 <li><a href="#methods_collectEventData">collectEventData</a></li>
             
                 <li><a href="#methods_determineEventTypes">determineEventTypes</a></li>
@@ -98,9 +96,11 @@
             
                 <li><a href="#methods_getTouchList">getTouchList</a></li>
             
-                <li><a href="#methods_onTouch">onTouch</a></li>
+                <li><a href="#methods_off">off</a></li>
             
-                <li><a href="#methods_unbindDom">unbindDom</a></li>
+                <li><a href="#methods_on">on</a></li>
+            
+                <li><a href="#methods_onTouch">onTouch</a></li>
             
         </ul>
     </div>
@@ -152,56 +152,6 @@
         
             <div id="methods">
             
-                <a name="methods_bindDom"></a>
-<div class="method item">
-     <strong class="name"><code>bindDom</code></strong>( <code>element, type, handler </code> ) 
-    <br>
-    <span class="foundat">
-    
-        
-    
-        <a href="../files/src_event.js.html#l37"><code>src&#x2F;event.js:37</code></a>
-    </span><br>
-    <p>simple addEventListener</p>
-
-    
-    <strong>Parameters:</strong>
-    <ul class="params">
-    
-        <li>
-        
-            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-        <li>
-        
-            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-        <li>
-        
-            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-    </ul>
-    
-    
-    
-</div>
-
-            
                 <a name="methods_collectEventData"></a>
 <div class="method item">
     <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object" class="crosslink external" target="_blank">Object</a> <strong class="name"><code>collectEventData</code></strong>( <code>element, eventType, touches, ev </code> ) 
@@ -210,7 +160,7 @@
     
         
     
-        <a href="../files/src_event.js.html#l269"><code>src&#x2F;event.js:269</code></a>
+        <a href="../files/src_event.js.html#l275"><code>src&#x2F;event.js:275</code></a>
     </span><br>
     <p>collect basic event data</p>
 
@@ -275,7 +225,7 @@
     
         
     
-        <a href="../files/src_event.js.html#l200"><code>src&#x2F;event.js:200</code></a>
+        <a href="../files/src_event.js.html#l206"><code>src&#x2F;event.js:206</code></a>
     </span><br>
     <p>we have different events for each device/browser
 determine what we need and set them in the EVENT_TYPES constant
@@ -300,7 +250,7 @@ the <code>onTouch</code> method is bind to these properties.</p>
     
         
     
-        <a href="../files/src_event.js.html#l128"><code>src&#x2F;event.js:128</code></a>
+        <a href="../files/src_event.js.html#l134"><code>src&#x2F;event.js:134</code></a>
     </span><br>
     <p>the core detection method
 this finds out what hammer-touch-events to trigger</p>
@@ -366,7 +316,7 @@ this finds out what hammer-touch-events to trigger</p>
     
         
     
-        <a href="../files/src_event.js.html#l230"><code>src&#x2F;event.js:230</code></a>
+        <a href="../files/src_event.js.html#l236"><code>src&#x2F;event.js:236</code></a>
     </span><br>
     <p>create touchlist depending on the event</p>
 
@@ -404,6 +354,140 @@ this finds out what hammer-touch-events to trigger</p>
 </div>
 
             
+                <a name="methods_off"></a>
+<div class="method item">
+     <strong class="name"><code>off</code></strong>( <code>element, type, handler, [hook] </code> ) 
+    <br>
+    <span class="foundat">
+    
+        
+    
+        <a href="../files/src_event.js.html#l55"><code>src&#x2F;event.js:55</code></a>
+    </span><br>
+    <p>simple event unbinder with a hook and support for multiple types</p>
+
+    
+    <strong>Parameters:</strong>
+    <ul class="params">
+    
+        <li>
+        
+            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>[hook]</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+            <ul>
+            
+                <li><code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object" class="crosslink external" target="_blank">Object</a>&gt;</strong> 
+                
+                </li>
+            
+            </ul>
+            
+        </li>
+    
+    </ul>
+    
+    
+    
+</div>
+
+            
+                <a name="methods_on"></a>
+<div class="method item">
+     <strong class="name"><code>on</code></strong>( <code>element, type, handler, [hook] </code> ) 
+    <br>
+    <span class="foundat">
+    
+        
+    
+        <a href="../files/src_event.js.html#l37"><code>src&#x2F;event.js:37</code></a>
+    </span><br>
+    <p>simple event binder with a hook and support for multiple types</p>
+
+    
+    <strong>Parameters:</strong>
+    <ul class="params">
+    
+        <li>
+        
+            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>[hook]</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+            <ul>
+            
+                <li><code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object" class="crosslink external" target="_blank">Object</a>&gt;</strong> 
+                
+                </li>
+            
+            </ul>
+            
+        </li>
+    
+    </ul>
+    
+    
+    
+</div>
+
+            
                 <a name="methods_onTouch"></a>
 <div class="method item">
     <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a> <strong class="name"><code>onTouch</code></strong>( <code>element, eventType, handler </code> ) 
@@ -412,7 +496,7 @@ this finds out what hammer-touch-events to trigger</p>
     
         
     
-        <a href="../files/src_event.js.html#l67"><code>src&#x2F;event.js:67</code></a>
+        <a href="../files/src_event.js.html#l73"><code>src&#x2F;event.js:73</code></a>
     </span><br>
     <p>the core touch event handler.
 this finds out if we should to detect gestures</p>
@@ -453,58 +537,8 @@ this finds out if we should to detect gestures</p>
     
     
     
-    <br><div class="returns"><strong>Returns:</strong> &lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt; <p>bindDomOnTouch  the core event handler</p>
+    <br><div class="returns"><strong>Returns:</strong> &lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt; <p>onOnTouch  the core event handler</p>
 </div>
-    
-    
-    
-</div>
-
-            
-                <a name="methods_unbindDom"></a>
-<div class="method item">
-     <strong class="name"><code>unbindDom</code></strong>( <code>element, type, handler </code> ) 
-    <br>
-    <span class="foundat">
-    
-        
-    
-        <a href="../files/src_event.js.html#l52"><code>src&#x2F;event.js:52</code></a>
-    </span><br>
-    <p>simple removeEventListener</p>
-
-    
-    <strong>Parameters:</strong>
-    <ul class="params">
-    
-        <li>
-        
-            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-        <li>
-        
-            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-        <li>
-        
-            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
-        
-        
-         
-            
-        </li>
-    
-    </ul>
     
     
     

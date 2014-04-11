@@ -134,6 +134,30 @@ var Utils = Hammer.utils = {
 
 
   /**
+   * simple addEventListener wrapper
+   * @method on
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  on: function on(element, type, handler) {
+    element.addEventListener(type, handler, false);
+  },
+
+
+  /**
+   * simple removeEventListener wrapper
+   * @method off
+   * @param {HTMLElement} element
+   * @param {String} type
+   * @param {Function} handler
+   */
+  off: function off(element, type, handler) {
+    element.removeEventListener(type, handler, false);
+  },
+
+
+  /**
    * forEach over arrays and objects
    * @method each
    * @param {Object|Array} obj
@@ -186,16 +210,17 @@ var Utils = Hammer.utils = {
    * @method inArray
    * @param {String} src
    * @param {String} find
-   * @return {Boolean} found
+   * @return {Boolean|Number} false when not found, or the index
    */
   inArray: function inArray(src, find) {
     if(src.indexOf) {
-      return src.indexOf(find) &gt; -1;
+      var index = src.indexOf(find);
+      return (index === -1) ? false : index;
     }
     else {
       for(var i= 0,len=src.length;i&lt;len; i++) {
         if(src[i] === find) {
-          return true;
+          return i;
         }
       }
       return false;
@@ -383,12 +408,12 @@ var Utils = Hammer.utils = {
    * &#x60;userSelect=&#x27;none&#x27;&#x60; also sets &#x60;element.onselectstart&#x60; to false
    * &#x60;userDrag=&#x27;none&#x27;&#x60; also sets &#x60;element.ondragstart&#x60; to false
    *
-   * @method toggleDefaultBehavior
+   * @method toggleBehavior
    * @param {HtmlElement} element
    * @param {Object} css_props
    * @param {Boolean} [toggle=false]
    */
-  toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
+  toggleBehavior: function toggleBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }

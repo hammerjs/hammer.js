@@ -42,8 +42,8 @@ Hammer.Instance = function(element, options) {
     options || {});
 
   // add some css to the element to prevent the browser from doing its native behavoir
-  if(this.options.stop_browser_behavior) {
-    Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, false);
+  if(this.options.behavior) {
+    Utils.toggleBehavior(this.element, this.options.behavior, false);
   }
 
   /**
@@ -158,8 +158,8 @@ Hammer.Instance.prototype = {
     var i, eh;
 
     // undo all changes made by stop_browser_behavior
-    if(this.options.stop_browser_behavior) {
-      Utils.toggleDefaultBehavior(this.element, this.options.stop_browser_behavior, true);
+    if(this.options.behavior) {
+      Utils.toggleBehavior(this.element, this.options.behavior, true);
     }
 
     // unbind all custom event handlers

@@ -300,12 +300,12 @@ var Utils = Hammer.utils = {
    * `userSelect='none'` also sets `element.onselectstart` to false
    * `userDrag='none'` also sets `element.ondragstart` to false
    *
-   * @method toggleDefaultBehavior
+   * @method toggleBehavior
    * @param {HtmlElement} element
    * @param {Object} css_props
    * @param {Boolean} [toggle=false]
    */
-  toggleDefaultBehavior: function toggleDefaultBehavior(element, css_props, toggle) {
+  toggleBehavior: function toggleBehavior(element, css_props, toggle) {
     if(!css_props || !element || !element.style) {
       return;
     }

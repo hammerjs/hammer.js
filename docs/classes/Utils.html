@@ -114,9 +114,13 @@
             
                 <li><a href="#methods_isVertical">isVertical</a></li>
             
+                <li><a href="#methods_off">off</a></li>
+            
+                <li><a href="#methods_on">on</a></li>
+            
                 <li><a href="#methods_toArray">toArray</a></li>
             
-                <li><a href="#methods_toggleDefaultBehavior">toggleDefaultBehavior</a></li>
+                <li><a href="#methods_toggleBehavior">toggleBehavior</a></li>
             
         </ul>
     </div>
@@ -174,7 +178,7 @@
     
         
     
-        <a href="../files/src_utils.js.html#l28"><code>src&#x2F;utils.js:28</code></a>
+        <a href="../files/src_utils.js.html#l52"><code>src&#x2F;utils.js:52</code></a>
     </span><br>
     <p>forEach over arrays and objects</p>
 
@@ -299,7 +303,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l183"><code>src&#x2F;utils.js:183</code></a>
+        <a href="../files/src_utils.js.html#l208"><code>src&#x2F;utils.js:208</code></a>
     </span><br>
     <p>calculate the angle between two coordinates</p>
 
@@ -345,7 +349,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l127"><code>src&#x2F;utils.js:127</code></a>
+        <a href="../files/src_utils.js.html#l152"><code>src&#x2F;utils.js:152</code></a>
     </span><br>
     <p>get the center of all the touches</p>
 
@@ -382,7 +386,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l197"><code>src&#x2F;utils.js:197</code></a>
+        <a href="../files/src_utils.js.html#l222"><code>src&#x2F;utils.js:222</code></a>
     </span><br>
     <p>do a small comparision to get the direction between two touches.</p>
 
@@ -428,7 +432,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l215"><code>src&#x2F;utils.js:215</code></a>
+        <a href="../files/src_utils.js.html#l240"><code>src&#x2F;utils.js:240</code></a>
     </span><br>
     <p>calculate the distance between two touches</p>
 
@@ -474,7 +478,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l246"><code>src&#x2F;utils.js:246</code></a>
+        <a href="../files/src_utils.js.html#l271"><code>src&#x2F;utils.js:271</code></a>
     </span><br>
     <p>calculate the rotation degrees between two touchLists</p>
 
@@ -522,7 +526,7 @@ changes the dest object</p>
     
         
     
-        <a href="../files/src_utils.js.html#l229"><code>src&#x2F;utils.js:229</code></a>
+        <a href="../files/src_utils.js.html#l254"><code>src&#x2F;utils.js:254</code></a>
     </span><br>
     <p>calculate the scale factor between two touchLists
 no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out</p>
@@ -571,7 +575,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
         
     
-        <a href="../files/src_utils.js.html#l167"><code>src&#x2F;utils.js:167</code></a>
+        <a href="../files/src_utils.js.html#l192"><code>src&#x2F;utils.js:192</code></a>
     </span><br>
     <p>calculate the velocity between two points</p>
 
@@ -626,7 +630,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
         
     
-        <a href="../files/src_utils.js.html#l109"><code>src&#x2F;utils.js:109</code></a>
+        <a href="../files/src_utils.js.html#l134"><code>src&#x2F;utils.js:134</code></a>
     </span><br>
     <p>find if a node is in the given parent</p>
 
@@ -666,13 +670,13 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
             
                 <a name="methods_inArray"></a>
 <div class="method item">
-    <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a> <strong class="name"><code>inArray</code></strong>( <code>src, find </code> ) 
+    <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a> | <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a> <strong class="name"><code>inArray</code></strong>( <code>src, find </code> ) 
     <br>
     <span class="foundat">
     
         
     
-        <a href="../files/src_utils.js.html#l76"><code>src&#x2F;utils.js:76</code></a>
+        <a href="../files/src_utils.js.html#l100"><code>src&#x2F;utils.js:100</code></a>
     </span><br>
     <p>find if a array contains the object using indexOf or a simple polyfill</p>
 
@@ -702,7 +706,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
     
     
-    <br><div class="returns"><strong>Returns:</strong> &lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a>&gt; <p>found</p>
+    <br><div class="returns"><strong>Returns:</strong> &lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a> | <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a>&gt; <p>false when not found, or the index</p>
 </div>
     
     
@@ -718,7 +722,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
         
     
-        <a href="../files/src_utils.js.html#l64"><code>src&#x2F;utils.js:64</code></a>
+        <a href="../files/src_utils.js.html#l88"><code>src&#x2F;utils.js:88</code></a>
     </span><br>
     <p>find if a string contains the string using indexOf</p>
 
@@ -764,7 +768,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
         
     
-        <a href="../files/src_utils.js.html#l262"><code>src&#x2F;utils.js:262</code></a>
+        <a href="../files/src_utils.js.html#l287"><code>src&#x2F;utils.js:287</code></a>
     </span><br>
     <p>find out if the direction is vertical   *</p>
 
@@ -794,6 +798,106 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
 </div>
 
             
+                <a name="methods_off"></a>
+<div class="method item">
+     <strong class="name"><code>off</code></strong>( <code>element, type, handler </code> ) 
+    <br>
+    <span class="foundat">
+    
+        
+    
+        <a href="../files/src_utils.js.html#l40"><code>src&#x2F;utils.js:40</code></a>
+    </span><br>
+    <p>simple removeEventListener wrapper</p>
+
+    
+    <strong>Parameters:</strong>
+    <ul class="params">
+    
+        <li>
+        
+            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+    </ul>
+    
+    
+    
+</div>
+
+            
+                <a name="methods_on"></a>
+<div class="method item">
+     <strong class="name"><code>on</code></strong>( <code>element, type, handler </code> ) 
+    <br>
+    <span class="foundat">
+    
+        
+    
+        <a href="../files/src_utils.js.html#l28"><code>src&#x2F;utils.js:28</code></a>
+    </span><br>
+    <p>simple addEventListener wrapper</p>
+
+    
+    <strong>Parameters:</strong>
+    <ul class="params">
+    
+        <li>
+        
+            <code>element</code> <strong>&lt;<a href="https://developer.mozilla.org/en/Document_Object_Model_(DOM)/HTMLElement" class="crosslink external" target="_blank">HTMLElement</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>type</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String" class="crosslink external" target="_blank">String</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+        <li>
+        
+            <code>handler</code> <strong>&lt;<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function" class="crosslink external" target="_blank">Function</a>&gt;</strong>
+        
+        
+         
+            
+        </li>
+    
+    </ul>
+    
+    
+    
+</div>
+
+            
                 <a name="methods_toArray"></a>
 <div class="method item">
     <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array" class="crosslink external" target="_blank">Array</a> <strong class="name"><code>toArray</code></strong>( <code>obj </code> ) 
@@ -802,7 +906,7 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
     
         
     
-        <a href="../files/src_utils.js.html#l98"><code>src&#x2F;utils.js:98</code></a>
+        <a href="../files/src_utils.js.html#l123"><code>src&#x2F;utils.js:123</code></a>
     </span><br>
     <p>convert an array-like object (<code>arguments</code>, <code>touchlist</code>) to an array</p>
 
@@ -830,15 +934,15 @@ no scale is 1, and goes down to 0 when pinched together, and bigger when pinched
 </div>
 
             
-                <a name="methods_toggleDefaultBehavior"></a>
+                <a name="methods_toggleBehavior"></a>
 <div class="method item">
-     <strong class="name"><code>toggleDefaultBehavior</code></strong>( <code>element, css_props, [toggle=false] </code> ) 
+     <strong class="name"><code>toggleBehavior</code></strong>( <code>element, css_props, [toggle=false] </code> ) 
     <br>
     <span class="foundat">
     
         
     
-        <a href="../files/src_utils.js.html#l273"><code>src&#x2F;utils.js:273</code></a>
+        <a href="../files/src_utils.js.html#l298"><code>src&#x2F;utils.js:298</code></a>
     </span><br>
     <p>toggle browser default behavior by setting css properties.
 <code>userSelect=&#39;none&#39;</code> also sets <code>element.onselectstart</code> to false

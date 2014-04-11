@@ -148,8 +148,8 @@ Hammer.VERSION = &#x27;{{PKG_VERSION}}&#x27;;
  * @example
  * &#x60;&#x60;&#x60;&#x60;
  *  Hammer.defaults.drag = false;
- *  Hammer.defaults.stop_browser_behavior.touchAction = &#x27;pan-y&#x27;;
- *  delete Hammer.defaults.stop_browser_behavior.userSelect;
+ *  Hammer.defaults.behavior.touchAction = &#x27;pan-y&#x27;;
+ *  delete Hammer.defaults.behavior.userSelect;
  * &#x60;&#x60;&#x60;&#x60;
  * @property defaults
  * @type {Object}
@@ -158,14 +158,14 @@ Hammer.defaults = {
   /**
    * this setting object adds styles and attributes to the element to prevent the browser from doing
    * its native behavior. The css properties are auto prefixed for the browsers when needed.
-   * @property defaults.stop_browser_behavior
+   * @property defaults.behavior
    * @type {Object}
    */
-  stop_browser_behavior: {
+  behavior: {
     /**
      * Disables text selection to improve the dragging gesture. When the value is &#x60;none&#x60; it also sets
      * &#x60;onselectstart=false&#x60; for IE on the element. Mainly for desktop browsers.
-     * @property defaults.stop_browser_behavior.userSelect
+     * @property defaults.behavior.userSelect
      * @type {String}
      * @default &#x27;none&#x27;
      */
@@ -174,7 +174,7 @@ Hammer.defaults = {
     /**
      * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
      * Used by IE10&gt;. By default this makes the element blocking any touch event.
-     * @property defaults.stop_browser_behavior.touchAction
+     * @property defaults.behavior.touchAction
      * @type {String}
      * @default: &#x27;none&#x27;
      */
@@ -184,7 +184,7 @@ Hammer.defaults = {
      * Disables the default callout shown when you touch and hold a touch target.
      * On iOS, when you touch and hold a touch target such as a link, Safari displays
      * a callout containing information about the link. This property allows you to disable that callout.
-     * @property defaults.stop_browser_behavior.touchCallout
+     * @property defaults.behavior.touchCallout
      * @type {String}
      * @default &#x27;none&#x27;
      */
@@ -192,7 +192,7 @@ Hammer.defaults = {
 
     /**
      * Specifies whether zooming is enabled. Used by IE10&gt;
-     * @property defaults.stop_browser_behavior.contentZooming
+     * @property defaults.behavior.contentZooming
      * @type {String}
      * @default &#x27;none&#x27;
      */
@@ -201,7 +201,7 @@ Hammer.defaults = {
     /**
      * Specifies that an entire element should be draggable instead of its contents.
      * Mainly for desktop browsers.
-     * @property defaults.stop_browser_behavior.userDrag
+     * @property defaults.behavior.userDrag
      * @type {String}
      * @default &#x27;none&#x27;
      */
@@ -214,7 +214,7 @@ Hammer.defaults = {
      * If you don&#x27;t specify an alpha value, Safari on iPhone applies a default alpha value
      * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
      * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
-     * @property defaults.stop_browser_behavior.tapHighlightColor
+     * @property defaults.behavior.tapHighlightColor
      * @type {String}
      * @default &#x27;rgba(0,0,0,0)&#x27;
      */
@@ -252,9 +252,9 @@ Hammer.HAS_TOUCHEVENTS = (&#x27;ontouchstart&#x27; in window);
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
  * @type {Number}
- * @default 16
+ * @default 50
  */
-Hammer.CALCULATE_INTERVAL = 16;
+Hammer.CALCULATE_INTERVAL = 50;
 
 
 /**
