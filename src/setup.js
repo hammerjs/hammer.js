@@ -144,9 +144,9 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
  * @type {Number}
- * @default 16
+ * @default 50
  */
-Hammer.CALCULATE_INTERVAL = 16;
+Hammer.CALCULATE_INTERVAL = 50;
 
 
 /**

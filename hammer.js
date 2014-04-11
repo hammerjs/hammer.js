@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-10
+/*! Hammer.JS - v1.1.0dev - 2014-04-11
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -153,9 +153,9 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
  * @type {Number}
- * @default 16
+ * @default 50
  */
-Hammer.CALCULATE_INTERVAL = 16;
+Hammer.CALCULATE_INTERVAL = 50;
 
 
 /**
@@ -1203,12 +1203,13 @@ var Detection = Hammer.detection = {
 
     // holds current session
     this.current = {
-      inst          : inst, // reference to HammerInstance we're working for
-      startEvent    : Utils.extend({}, eventData), // start eventData for distances, timing etc
-      lastEvent     : false, // last eventData
-      lastCalcEvent : false, // last eventData for calculations.
-      lastCalcData  : {}, // last lastCalcData
-      name          : '' // current gesture we're in/detected, can be 'tap', 'hold' etc
+      inst: inst, // reference to HammerInstance we're working for
+      startEvent: Utils.extend({}, eventData), // start eventData for distances, timing etc
+      lastEvent: false, // last eventData
+      lastCalcEvent: false, // last eventData for calculations.
+      futureCalcEvent: false, // last eventData for calculations.
+      lastCalcData: {}, // last lastCalcData
+      name: '' // current gesture we're in/detected, can be 'tap', 'hold' etc
     };
 
     this.detect(eventData);
@@ -1292,8 +1293,7 @@ var Detection = Hammer.detection = {
       , calcEv = cur.lastCalcEvent
       , calcData = cur.lastCalcData;
 
-    // calculate velocity every x ms
-    if (calcEv && ev.timeStamp - calcEv.timeStamp > Hammer.CALCULATE_INTERVAL) {
+    if(calcEv && ev.timeStamp - calcEv.timeStamp > Hammer.CALCULATE_INTERVAL) {
       center = calcEv.center;
       delta_time = ev.timeStamp - calcEv.timeStamp;
       delta_x = ev.center.clientX - calcEv.center.clientX;
@@ -1306,7 +1306,8 @@ var Detection = Hammer.detection = {
       calcData.angle = Utils.getAngle(center, ev.center);
       calcData.direction = Utils.getDirection(center, ev.center);
 
-      cur.lastCalcEvent = ev;
+      cur.lastCalcEvent = cur.futureCalcEvent || ev;
+      cur.futureCalcEvent = ev;
     }
 
     ev.velocityX = calcData.velocity.x;
