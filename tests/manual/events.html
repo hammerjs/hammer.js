@@ -14,16 +14,19 @@
         .container { position: relative; }
 
         .hitarea {
-            position: absolute;
+          position: absolute;
           left: 0;
           top: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0,0,0,.05);
+          background: rgba(0,255,0,.05);
           text-align: center;
-          border: dashed 3px red;
+          border: dotted 1px green;
         }
 
+		.log {
+			margin: 0;
+		}
 
         .log li {
             display: inline-block;
@@ -57,9 +60,18 @@
 <p class="alert"><strong>Press shift on your desktop for multitouch.</strong></p>
 
 <p>
-    <label class="checkbox">
-        <input type="checkbox" checked id="prevent-default"> block browser behavior (preventDefault)
-    </label>
+	<ul class="inline">
+		<li>
+			<label class="checkbox">
+				<input type="checkbox" checked id="prevent-default"> block browser behavior (preventDefault)
+			</label>
+		</li>
+		<li>
+			<label class="checkbox">
+				<input type="checkbox" id="console-log"> console.log all events
+			</label>
+		</li>
+	</ul>
 </p>
 <div class="container">
 <div class="log well well-small">
@@ -160,10 +172,15 @@
     var hammertime;
     var log_elements = {};
     var prevent_scroll_drag = true;
+	var console_log = false;
 
 
     $("#prevent-default").click(function() {
         hammertime.options.prevent_default = this.checked;
+    });
+
+	$("#console-log").click(function() {
+        console_log = this.checked;
     });
 
 
@@ -184,6 +201,10 @@
         if(!ev.gesture) {
             return;
         }
+
+		if(console_log) {
+			console.log(ev.type, ev.gesture.eventType, ev);
+		}
 
         // highlight gesture
         var event_el = getLogElement('gesture', ev.type);
