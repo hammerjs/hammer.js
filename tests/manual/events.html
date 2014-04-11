@@ -38,6 +38,10 @@
           .log li { width: 30%; }
         }
 
+		@media (max-width: 900px) {
+			.visible-desktop { display: none; }
+		}
+
         .properties li { white-space: nowrap; }
         .properties span { margin-left: 5px; }
 
@@ -57,22 +61,24 @@
 <body>
 
 
-<p class="alert"><strong>Press shift on your desktop for multitouch.</strong></p>
+<p class="pull-right visible-desktop"><strong>Press shift on your desktop for multitouch.</strong></p>
 
-<p>
 	<ul class="inline">
 		<li>
-			<label class="checkbox">
-				<input type="checkbox" checked id="prevent-default"> block browser behavior (preventDefault)
+			<label>
+				<input type="checkbox" checked id="prevent-default" style="margin:0;"> block browser behavior (preventDefault)
 			</label>
 		</li>
 		<li>
-			<label class="checkbox">
-				<input type="checkbox" id="console-log"> console.log all events
+			<label>
+				<input type="checkbox" id="console-log" style="margin:0;"> console.log all events
 			</label>
 		</li>
+		<li>
+			<input type="button" class="btn btn-small" id="reset" value="reset">
+		</li>
 	</ul>
-</p>
+
 <div class="container">
 <div class="log well well-small">
     <h4>Events</h4>
@@ -181,6 +187,11 @@
 
 	$("#console-log").click(function() {
         console_log = this.checked;
+    });
+
+	$("#reset").click(function() {
+        $("#events-list li").removeClass("active");
+        $("ul.properties li span").text("");
     });
 
 
