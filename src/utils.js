@@ -60,7 +60,7 @@ var Utils = Hammer.utils = {
    * @param {Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
-    var i, len, o;
+    var i, len;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);

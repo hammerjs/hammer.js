@@ -6,8 +6,8 @@
         "url": "http://eightmedia.github.io/hammer.js"
     },
     "files": {
-        "src/gestures/drag.js": {
-            "name": "src/gestures/drag.js",
+        "src\\gestures\\drag.js": {
+            "name": "src\\gestures\\drag.js",
             "modules": {
                 "gestures": 1
             },
@@ -17,8 +17,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/gesture.js": {
-            "name": "src/gestures/gesture.js",
+        "src\\gestures\\gesture.js": {
+            "name": "src\\gestures\\gesture.js",
             "modules": {},
             "classes": {
                 "Gesture": 1
@@ -26,8 +26,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/hold.js": {
-            "name": "src/gestures/hold.js",
+        "src\\gestures\\hold.js": {
+            "name": "src\\gestures\\hold.js",
             "modules": {},
             "classes": {
                 "Hold": 1
@@ -35,8 +35,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/release.js": {
-            "name": "src/gestures/release.js",
+        "src\\gestures\\release.js": {
+            "name": "src\\gestures\\release.js",
             "modules": {},
             "classes": {
                 "Release": 1
@@ -44,8 +44,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/swipe.js": {
-            "name": "src/gestures/swipe.js",
+        "src\\gestures\\swipe.js": {
+            "name": "src\\gestures\\swipe.js",
             "modules": {},
             "classes": {
                 "Swipe": 1
@@ -53,8 +53,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/tap.js": {
-            "name": "src/gestures/tap.js",
+        "src\\gestures\\tap.js": {
+            "name": "src\\gestures\\tap.js",
             "modules": {},
             "classes": {
                 "Tap": 1
@@ -62,8 +62,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/touch.js": {
-            "name": "src/gestures/touch.js",
+        "src\\gestures\\touch.js": {
+            "name": "src\\gestures\\touch.js",
             "modules": {},
             "classes": {
                 "Touch": 1
@@ -71,8 +71,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/gestures/transform.js": {
-            "name": "src/gestures/transform.js",
+        "src\\gestures\\transform.js": {
+            "name": "src\\gestures\\transform.js",
             "modules": {},
             "classes": {
                 "Transform": 1
@@ -80,8 +80,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/detection.js": {
-            "name": "src/detection.js",
+        "src\\detection.js": {
+            "name": "src\\detection.js",
             "modules": {},
             "classes": {
                 "Detection": 1
@@ -89,8 +89,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/event.js": {
-            "name": "src/event.js",
+        "src\\event.js": {
+            "name": "src\\event.js",
             "modules": {},
             "classes": {
                 "Event": 1
@@ -98,15 +98,15 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/export.js": {
-            "name": "src/export.js",
+        "src\\export.js": {
+            "name": "src\\export.js",
             "modules": {},
             "classes": {},
             "fors": {},
             "namespaces": {}
         },
-        "src/instance.js": {
-            "name": "src/instance.js",
+        "src\\instance.js": {
+            "name": "src\\instance.js",
             "modules": {},
             "classes": {
                 "Instance": 1
@@ -114,8 +114,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/pointerevent.js": {
-            "name": "src/pointerevent.js",
+        "src\\pointerevent.js": {
+            "name": "src\\pointerevent.js",
             "modules": {},
             "classes": {
                 "PointerEvent": 1
@@ -123,8 +123,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/setup.js": {
-            "name": "src/setup.js",
+        "src\\setup.js": {
+            "name": "src\\setup.js",
             "modules": {
                 "hammer": 1
             },
@@ -134,8 +134,8 @@
             "fors": {},
             "namespaces": {}
         },
-        "src/utils.js": {
-            "name": "src/utils.js",
+        "src\\utils.js": {
+            "name": "src\\utils.js",
             "modules": {},
             "classes": {
                 "Utils": 1
@@ -161,7 +161,7 @@
             "fors": {},
             "namespaces": {},
             "tag": "module",
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 4
         },
         "hammer": {
@@ -178,7 +178,7 @@
             "fors": {},
             "namespaces": {},
             "tag": "module",
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 1,
             "static": 1,
             "itemtype": "main"
@@ -195,7 +195,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 4,
             "description": "Move with x fingers (default 1) around on the page.\nPreventing the default browser behavior is a good way to improve feel and working.\n````\n hammertime.on(\"drag\", function(ev) {\n   console.log(ev);\n   ev.gesture.preventDefault();\n });\n````",
             "static": 1
@@ -210,7 +210,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/gesture.js",
+            "file": "src\\gestures\\gesture.js",
             "line": 4,
             "description": "trigger a simple gesture event, so you can do anything in your handler.\nonly usable if you know what your doing...",
             "static": 1
@@ -225,7 +225,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/hold.js",
+            "file": "src\\gestures\\hold.js",
             "line": 4,
             "description": "Touch stays at the same place for x time",
             "static": 1
@@ -240,7 +240,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/release.js",
+            "file": "src\\gestures\\release.js",
             "line": 4,
             "description": "when a touch is being released from the page",
             "static": 1
@@ -255,7 +255,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 4,
             "description": "triggers swipe events when the end velocity is above the threshold\nfor best usage, set `prevent_default` (on the drag gesture) to `true`\n````\n hammertime.on(\"dragleft swipeleft\", function(ev) {\n   console.log(ev);\n   ev.gesture.preventDefault();\n });\n````",
             "static": 1
@@ -270,7 +270,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 4,
             "description": "Single tap and a double tap on a place",
             "static": 1
@@ -285,7 +285,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/touch.js",
+            "file": "src\\gestures\\touch.js",
             "line": 4,
             "description": "when a touch is being touched at the page",
             "static": 1
@@ -300,7 +300,7 @@
             "extension_for": [],
             "module": "gestures",
             "namespace": "",
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 4,
             "description": "User want to scale or rotate with 2 fingers\nPreventing the default browser behavior is a good way to improve feel and working. This can be done with the\n`transform_always_block` option.",
             "static": 1
@@ -315,7 +315,7 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 1
         },
         "Event": {
@@ -328,7 +328,7 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 4,
             "static": 1
         },
@@ -342,7 +342,7 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 5,
             "description": "create new hammer instance\nall methods should return the instance itself, so it is chainable.",
             "is_constructor": 1,
@@ -375,7 +375,7 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 1
         },
         "Hammer": {
@@ -388,7 +388,7 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 1,
             "mainName": "",
             "tag": "main",
@@ -405,13 +405,13 @@
             "extension_for": [],
             "module": "hammer",
             "namespace": "",
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 1
         }
     },
     "classitems": [
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 17,
             "itemtype": "event",
             "name": "drag",
@@ -426,7 +426,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 21,
             "itemtype": "event",
             "name": "dragstart",
@@ -441,7 +441,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 25,
             "itemtype": "event",
             "name": "dragend",
@@ -456,7 +456,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 29,
             "itemtype": "event",
             "name": "drapleft",
@@ -471,7 +471,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 33,
             "itemtype": "event",
             "name": "dragright",
@@ -486,7 +486,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 37,
             "itemtype": "event",
             "name": "dragup",
@@ -501,7 +501,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 41,
             "itemtype": "event",
             "name": "dragdown",
@@ -516,7 +516,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 146,
             "description": "minimal movement that have to be made before the drag event gets triggered",
             "itemtype": "property",
@@ -527,7 +527,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 154,
             "description": "Set correct_for_drag_min_distance to true to make the starting point of the drag\nbe calculated from where the drag was triggered, not from where the touch started.\nUseful to avoid a jerk-starting drag, which can make fine-adjustments\nthrough dragging difficult, and be visually unappealing.",
             "itemtype": "property",
@@ -538,7 +538,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 165,
             "description": "set 0 for unlimited, but this can conflict with transform",
             "itemtype": "property",
@@ -549,7 +549,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 173,
             "description": "prevent default browser behavior when dragging occurs\nbe careful with it, it makes the element a blocking element\nwhen you are using the drag gesture, it is a good practice to set this true",
             "itemtype": "property",
@@ -560,7 +560,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 183,
             "description": "same as `drag_block_horizontal`, but for vertical movement",
             "itemtype": "property",
@@ -571,7 +571,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 191,
             "description": "drag_lock_to_axis keeps the drag gesture on the axis that it started on,\nIt disallows vertical directions if the initial direction was horizontal, and vice versa.",
             "itemtype": "property",
@@ -582,7 +582,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/drag.js",
+            "file": "src\\gestures\\drag.js",
             "line": 200,
             "description": "drag lock only kicks in when distance > drag_lock_min_distance\n This way, locking occurs only when the distance has become large enough to reliably determine the direction",
             "itemtype": "property",
@@ -593,7 +593,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/gesture.js",
+            "file": "src\\gestures\\gesture.js",
             "line": 11,
             "itemtype": "event",
             "name": "gesture",
@@ -608,7 +608,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/hold.js",
+            "file": "src\\gestures\\hold.js",
             "line": 10,
             "itemtype": "event",
             "name": "hold",
@@ -623,7 +623,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/hold.js",
+            "file": "src\\gestures\\hold.js",
             "line": 53,
             "itemtype": "property",
             "name": "hold_timeout",
@@ -633,7 +633,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/hold.js",
+            "file": "src\\gestures\\hold.js",
             "line": 60,
             "description": "movement allowed while holding",
             "itemtype": "property",
@@ -644,7 +644,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/release.js",
+            "file": "src\\gestures\\release.js",
             "line": 10,
             "itemtype": "event",
             "name": "release",
@@ -659,7 +659,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 17,
             "itemtype": "event",
             "name": "swipe",
@@ -674,7 +674,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 21,
             "itemtype": "event",
             "name": "swipeleft",
@@ -689,7 +689,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 25,
             "itemtype": "event",
             "name": "swiperight",
@@ -704,7 +704,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 29,
             "itemtype": "event",
             "name": "swipeup",
@@ -719,7 +719,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 33,
             "itemtype": "event",
             "name": "swipedown",
@@ -734,7 +734,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 41,
             "itemtype": "property",
             "name": "swipe_min_touches",
@@ -744,7 +744,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 48,
             "itemtype": "property",
             "name": "swipe_max_touches",
@@ -754,7 +754,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 55,
             "description": "horizontal swipe velocity",
             "itemtype": "property",
@@ -765,7 +765,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/swipe.js",
+            "file": "src\\gestures\\swipe.js",
             "line": 63,
             "description": "vertical swipe velocity",
             "itemtype": "property",
@@ -776,7 +776,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 10,
             "itemtype": "event",
             "name": "tap",
@@ -791,7 +791,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 14,
             "itemtype": "event",
             "name": "doubletap",
@@ -806,7 +806,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 65,
             "description": "max time of a tap, this is for the slow tappers",
             "itemtype": "property",
@@ -817,7 +817,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 73,
             "description": "max distance of movement of a tap, this is for the slow tappers",
             "itemtype": "property",
@@ -828,7 +828,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 81,
             "description": "always trigger the `tap` event, even while double-tapping",
             "itemtype": "property",
@@ -839,7 +839,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 89,
             "description": "max distance between two taps",
             "itemtype": "property",
@@ -850,7 +850,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/tap.js",
+            "file": "src\\gestures\\tap.js",
             "line": 97,
             "description": "max time between two taps",
             "itemtype": "property",
@@ -861,7 +861,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/touch.js",
+            "file": "src\\gestures\\touch.js",
             "line": 10,
             "itemtype": "event",
             "name": "touch",
@@ -876,7 +876,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/touch.js",
+            "file": "src\\gestures\\touch.js",
             "line": 18,
             "description": "call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,\nbut it improves gestures like transforming and dragging.\nbe careful with using this, it can be very annoying for users to be stuck on the page",
             "itemtype": "property",
@@ -887,7 +887,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/touch.js",
+            "file": "src\\gestures\\touch.js",
             "line": 28,
             "description": "disable mouse events, so only touch (or pen!) input triggers events",
             "itemtype": "property",
@@ -898,7 +898,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 12,
             "itemtype": "event",
             "name": "transform",
@@ -913,7 +913,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 16,
             "itemtype": "event",
             "name": "transformstart",
@@ -928,7 +928,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 20,
             "itemtype": "event",
             "name": "transformend",
@@ -943,7 +943,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 24,
             "itemtype": "event",
             "name": "pinchin",
@@ -958,7 +958,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 28,
             "itemtype": "event",
             "name": "pinchout",
@@ -973,7 +973,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 32,
             "itemtype": "event",
             "name": "rotate",
@@ -988,7 +988,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 97,
             "description": "minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1",
             "itemtype": "property",
@@ -999,7 +999,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/gestures/transform.js",
+            "file": "src\\gestures\\transform.js",
             "line": 105,
             "description": "rotation in degrees",
             "itemtype": "property",
@@ -1010,7 +1010,7 @@
             "module": "gestures"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 22,
             "description": "start Hammer.gesture detection",
             "itemtype": "method",
@@ -1031,7 +1031,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 51,
             "description": "Hammer.gesture detection",
             "itemtype": "method",
@@ -1051,7 +1051,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 94,
             "description": "clear the Hammer.gesture vars\nthis is called on endDetect, but can also be used when a final Hammer.gesture has been detected\nto stop other Hammer.gestures from being fired",
             "itemtype": "method",
@@ -1060,7 +1060,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 113,
             "description": "calculate velocity, angle and direction",
             "itemtype": "method",
@@ -1091,7 +1091,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 155,
             "description": "extend eventData for Hammer.gestures",
             "itemtype": "method",
@@ -1111,7 +1111,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/detection.js",
+            "file": "src\\detection.js",
             "line": 197,
             "description": "register new gesture",
             "itemtype": "method",
@@ -1131,7 +1131,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 9,
             "description": "when touch events have been fired, this is true\nthis is used to stop mouse events",
             "itemtype": "property",
@@ -1143,7 +1143,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 19,
             "description": "if EVENT_START has been fired",
             "itemtype": "property",
@@ -1155,7 +1155,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 28,
             "description": "when the mouse is hold down, this is true",
             "itemtype": "property",
@@ -1167,7 +1167,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 37,
             "description": "simple event binder with a hook and support for multiple types",
             "itemtype": "method",
@@ -1206,7 +1206,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 55,
             "description": "simple event unbinder with a hook and support for multiple types",
             "itemtype": "method",
@@ -1245,7 +1245,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 73,
             "description": "the core touch event handler.\nthis finds out if we should to detect gestures",
             "itemtype": "method",
@@ -1275,7 +1275,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 134,
             "description": "the core detection method\nthis finds out what hammer-touch-events to trigger",
             "itemtype": "method",
@@ -1310,7 +1310,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 206,
             "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant\nthe `onTouch` method is bind to these properties.",
             "itemtype": "method",
@@ -1323,7 +1323,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 236,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
@@ -1348,7 +1348,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 275,
             "description": "collect basic event data",
             "itemtype": "method",
@@ -1383,21 +1383,21 @@
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 300,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 310,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
-            "file": "src/event.js",
+            "file": "src\\event.js",
             "line": 317,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
@@ -1408,7 +1408,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 22,
             "itemtype": "property",
             "name": "element",
@@ -1417,7 +1417,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 28,
             "itemtype": "property",
             "name": "enabled",
@@ -1428,7 +1428,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 35,
             "description": "options, merged with the defaults",
             "itemtype": "property",
@@ -1438,7 +1438,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 49,
             "description": "event start handler on the element to start the detection",
             "itemtype": "property",
@@ -1448,7 +1448,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 63,
             "description": "keep a list of user event handlers which needs to be removed when calling 'dispose'",
             "itemtype": "property",
@@ -1458,7 +1458,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 73,
             "description": "bind events to the instance",
             "itemtype": "method",
@@ -1487,7 +1487,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 90,
             "description": "unbind events to the instance",
             "itemtype": "method",
@@ -1509,7 +1509,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 110,
             "description": "trigger gesture event",
             "itemtype": "method",
@@ -1532,7 +1532,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 140,
             "description": "enable of disable hammer.js detection",
             "itemtype": "method",
@@ -1549,7 +1549,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/instance.js",
+            "file": "src\\instance.js",
             "line": 152,
             "description": "dispose this hammer instance",
             "itemtype": "method",
@@ -1562,7 +1562,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 8,
             "description": "holds all pointers, by `identifier`",
             "itemtype": "property",
@@ -1572,7 +1572,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 16,
             "description": "get the pointers as an array",
             "itemtype": "method",
@@ -1585,7 +1585,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 31,
             "description": "update the position of a pointer",
             "itemtype": "method",
@@ -1606,7 +1606,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 48,
             "description": "check if ev matches pointertype",
             "itemtype": "method",
@@ -1627,7 +1627,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/pointerevent.js",
+            "file": "src\\pointerevent.js",
             "line": 69,
             "description": "reset the stored pointers",
             "itemtype": "method",
@@ -1636,7 +1636,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 9,
             "description": "Hammer, use this to create instances\n````\nvar hammertime = new Hammer(myElement);\n````",
             "itemtype": "method",
@@ -1663,7 +1663,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 25,
             "description": "version, as defined in package.json\nthe value will be set at each build",
             "itemtype": "property",
@@ -1674,7 +1674,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 35,
             "description": "default settings.\nmore settings are defined per gesture at `/gestures`. Each gesture can be disabled/enabled\nby setting it's name (like `swipe`) to false.\nYou can set the defaults for all instances by changing this object before creating an instance.",
             "example": [
@@ -1687,7 +1687,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 50,
             "description": "this setting object adds styles and attributes to the element to prevent the browser from doing\nits native behavior. The css properties are auto prefixed for the browsers when needed.",
             "itemtype": "property",
@@ -1697,7 +1697,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 57,
             "description": "Disables text selection to improve the dragging gesture. When the value is `none` it also sets\n`onselectstart=false` for IE on the element. Mainly for desktop browsers.",
             "itemtype": "property",
@@ -1708,7 +1708,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 66,
             "description": "Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).\nUsed by IE10>. By default this makes the element blocking any touch event.",
             "itemtype": "property",
@@ -1719,7 +1719,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 75,
             "description": "Disables the default callout shown when you touch and hold a touch target.\nOn iOS, when you touch and hold a touch target such as a link, Safari displays\na callout containing information about the link. This property allows you to disable that callout.",
             "itemtype": "property",
@@ -1730,7 +1730,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 85,
             "description": "Specifies whether zooming is enabled. Used by IE10>",
             "itemtype": "property",
@@ -1741,7 +1741,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 93,
             "description": "Specifies that an entire element should be draggable instead of its contents.\nMainly for desktop browsers.",
             "itemtype": "property",
@@ -1752,7 +1752,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 102,
             "description": "Overrides the highlight color shown when the user taps a link or a JavaScript\nclickable element in Safari on iPhone. This property obeys the alpha value, if specified.\n\nIf you don't specify an alpha value, Safari on iPhone applies a default alpha value\nto the color. To disable tap highlighting, set the alpha value to 0 (invisible).\nIf you set the alpha value to 1.0 (opaque), the element is not visible when tapped.",
             "itemtype": "property",
@@ -1763,7 +1763,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 118,
             "description": "hammer document where the base events are added at",
             "itemtype": "property",
@@ -1774,7 +1774,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 127,
             "description": "detect support for pointer events",
             "itemtype": "property",
@@ -1784,7 +1784,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 135,
             "description": "detect support for touch events",
             "itemtype": "property",
@@ -1794,7 +1794,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 143,
             "description": "interval in which Hammer recalculates current velocity/direction/angle in ms",
             "itemtype": "property",
@@ -1805,7 +1805,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 152,
             "description": "eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`\nthe object contains the DOM event names per type (`EVENT_START`, `EVENT_MOVE`, `EVENT_END`)",
             "itemtype": "property",
@@ -1818,7 +1818,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 163,
             "description": "direction strings, for safe comparisons",
             "itemtype": "property",
@@ -1830,7 +1830,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 176,
             "description": "pointertype strings, for safe comparisons",
             "itemtype": "property",
@@ -1842,7 +1842,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 188,
             "description": "eventtypes",
             "itemtype": "property",
@@ -1854,7 +1854,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 202,
             "description": "if the window events are set...",
             "itemtype": "property",
@@ -1866,7 +1866,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 212,
             "description": "plugins namespace",
             "itemtype": "property",
@@ -1876,7 +1876,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 220,
             "description": "gestures namespace\nsee `/gestures` for the definitions",
             "itemtype": "property",
@@ -1886,7 +1886,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/setup.js",
+            "file": "src\\setup.js",
             "line": 229,
             "description": "setup events to detect gestures on the document\nthis function is called when creating an new instance",
             "access": "private",
@@ -1895,7 +1895,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 8,
             "description": "extend method, could also be used for cloning when `dest` is an empty object.\nchanges the dest object",
             "itemtype": "method",
@@ -1927,7 +1927,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 28,
             "description": "simple addEventListener wrapper",
             "itemtype": "method",
@@ -1953,7 +1953,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 40,
             "description": "simple removeEventListener wrapper",
             "itemtype": "method",
@@ -1979,7 +1979,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 52,
             "description": "forEach over arrays and objects",
             "itemtype": "method",
@@ -2022,7 +2022,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 88,
             "description": "find if a string contains the string using indexOf",
             "itemtype": "method",
@@ -2047,7 +2047,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 100,
             "description": "find if a array contains the object using indexOf or a simple polyfill",
             "itemtype": "method",
@@ -2072,7 +2072,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 123,
             "description": "convert an array-like object (`arguments`, `touchlist`) to an array",
             "itemtype": "method",
@@ -2092,7 +2092,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 134,
             "description": "find if a node is in the given parent",
             "itemtype": "method",
@@ -2117,7 +2117,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 152,
             "description": "get the center of all the touches",
             "itemtype": "method",
@@ -2137,7 +2137,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 192,
             "description": "calculate the velocity between two points",
             "itemtype": "method",
@@ -2167,7 +2167,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 208,
             "description": "calculate the angle between two coordinates",
             "itemtype": "method",
@@ -2192,7 +2192,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 222,
             "description": "do a small comparision to get the direction between two touches.",
             "itemtype": "method",
@@ -2217,7 +2217,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 240,
             "description": "calculate the distance between two touches",
             "itemtype": "method",
@@ -2242,7 +2242,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 254,
             "description": "calculate the scale factor between two touchLists\nno scale is 1, and goes down to 0 when pinched together, and bigger when pinched out",
             "itemtype": "method",
@@ -2267,7 +2267,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 271,
             "description": "calculate the rotation degrees between two touchLists",
             "itemtype": "method",
@@ -2292,7 +2292,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 287,
             "description": "find out if the direction is vertical   *",
             "itemtype": "method",
@@ -2312,7 +2312,7 @@
             "module": "hammer"
         },
         {
-            "file": "src/utils.js",
+            "file": "src\\utils.js",
             "line": 298,
             "description": "toggle browser default behavior by setting css properties.\n`userSelect='none'` also sets `element.onselectstart` to false\n`userDrag='none'` also sets `element.ondragstart` to false",
             "itemtype": "method",
@@ -2343,19 +2343,19 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:300"
+            "line": " src\\event.js:300"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:310"
+            "line": " src\\event.js:310"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:317"
+            "line": " src\\event.js:317"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
-            "line": " src/setup.js:229"
+            "line": " src\\setup.js:229"
         }
     ]
 }
