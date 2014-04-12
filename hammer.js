@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-11
+/*! Hammer.JS - v1.1.0dev - 2014-04-12
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -323,15 +323,15 @@ var Utils = Hammer.utils = {
    * @param {Object} context value to use as `this` in the iterator
    */
   each: function each(obj, iterator, context) {
-    var i, o;
+    var i, len, o;
     // native forEach on arrays
     if ('forEach' in obj) {
       obj.forEach(iterator, context);
     }
     // arrays
     else if(obj.length !== undefined) {
-      for(i=-1; (o=obj[++i]);) {
-        if (iterator.call(context, o, i, obj) === false) {
+      for(i=0,len=obj.length; i<len; i++) {
+        if (iterator.call(context, obj[i], i, obj) === false) {
           return;
         }
       }
@@ -1256,7 +1256,7 @@ var Detection = Hammer.detection = {
     // call Hammer.gesture handlers
     Utils.each(this.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
+      if(!this.stopped && inst.enabled && inst_options[gesture.name]) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();

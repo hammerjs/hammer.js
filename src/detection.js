@@ -69,7 +69,7 @@ var Detection = Hammer.detection = {
     // call Hammer.gesture handlers
     Utils.each(this.gestures, function triggerGesture(gesture) {
       // only when the instance options have enabled this gesture
-      if(!this.stopped && inst_options[gesture.name] !== false && inst.enabled !== false ) {
+      if(!this.stopped && inst.enabled && inst_options[gesture.name]) {
         // if a handler returns false, we stop with the detection
         if(gesture.handler.call(gesture, eventData, inst) === false) {
           this.stopDetect();
