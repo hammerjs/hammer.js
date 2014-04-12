@@ -1,4 +1,13 @@
-(function(Hammer) {
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['hammer'], factory);
+    } else {
+        // Browser globals
+        factory(root.Hammer);
+    }
+}(this, function (Hammer) {
+
   /**
    * ShowTouches gesture
    * show all touch on the screen by placing elements at there pageX and pageY
@@ -72,4 +81,4 @@
       }
     });
   };
-})(window.Hammer);
+}));
