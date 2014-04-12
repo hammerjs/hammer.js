@@ -5,6 +5,11 @@
    * @param   {Boolean}   [force]
    */
   Hammer.plugins.showTouches = function(force) {
+    // only possible with the pointerEvents css property supported
+    if(!("pointerEvents" in document.body.style)) {
+      return;
+    }
+    
     // the circles under your fingers
     var template_style = 'position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
       'background:rgba(255,255,255,.7);border-radius:20px;pointer-events:none;' +

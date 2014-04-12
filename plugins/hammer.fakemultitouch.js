@@ -8,7 +8,9 @@
     // keeps the start position to keep it centered
     var start_pos = false;
 
-    if(Hammer.HAS_TOUCHEVENTS || Hammer.HAS_POINTEREVENTS) {
+    // no need to fake it if it already is possible!
+    var maxTouchPoints = navigator.maxTouchPoints || navigator.msMaxTouchPoints;
+    if(Hammer.HAS_TOUCHEVENTS || (Hammer.HAS_POINTEREVENTS && maxTouchPoints > 1)) {
       return;
     }
 
