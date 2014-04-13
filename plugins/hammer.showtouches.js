@@ -1,4 +1,16 @@
 (function(Hammer) {
+
+  /**
+   * check if a style property exists
+   * @param prop
+   * @param el
+   * @returns {boolean|HTMLElement}
+   */
+  function testStyle(prop, el) {
+    return (prop in (el || document.body).style);
+  }
+  
+  
   /**
    * ShowTouches gesture
    * show all touch on the screen by placing elements at there pageX and pageY
@@ -6,7 +18,7 @@
    */
   Hammer.plugins.showTouches = function(force) {
     // only possible with the pointerEvents css property supported
-    if(!("pointerEvents" in document.body.style)) {
+    if(!testStyle('pointerEvents')) {
       return;
     }
     
@@ -24,17 +36,18 @@
           'border-radius: 20px;',
           'margin-top: -9px;',
           'margin-left: -9px;'
-      ].join("");
+      ].join('');
     
     // define position property
     var position_style_prop = 'lefttop';
-    if("transform" in document.body.style) { position_style_prop = 'transform'; }
-    if("webkitTransform" in document.body.style) { position_style_prop = 'webkitTransform'; }
+    if(testStyle('transform')) { position_style_prop = 'transform'; }
+    if(testStyle('webkitTransform')) { position_style_prop = 'webkitTransform'; }
 
     // elements by identifier
     var touch_elements = {};
     var touches_index = {};
-
+    
+    
     /**
      * remove unused touch elements
      */
@@ -47,9 +60,10 @@
         }
       }
     }
-
+  
+  
     /**
-     * set position of the element with top/left or css transform
+     * set position of an element with top/left or css transform
      * @param el
      * @param x
      * @param y
@@ -60,9 +74,10 @@
         el.style.top = y + 'px';
       }
       else {
-        el.style[position_style_prop] = "translate("+ x +"px, "+ y +"px)";
+        el.style[position_style_prop] = 'translate('+ x +'px, '+ y +'px)';
       }
     }
+    
 
     Hammer.detection.register({
       name    : 'show_touches',
@@ -79,25 +94,19 @@
         // place touches by index
         for(var t = 0, len = ev.touches.length; t < len; t++) {
           var touch = ev.touches[t];
-
           var id = touch.identifier;
           touches_index[id] = touch;
 
           // new touch element
           if(!touch_elements[id]) {
-            // create new element and attach base styles
             var template = document.createElement('div');
             template.setAttribute('style', template_style);
-
-            // append element to body
             document.body.appendChild(template);
 
             touch_elements[id] = template;
           }
-
           setPosition(touch_elements[id], touch.pageX, touch.pageY);
         }
-
         removeUnusedElements();
       }
     });
