@@ -35,7 +35,7 @@
     Hammer.detection.register({
       name    : 'show_touches',
       priority: 0,
-      handler : function(ev, inst) {
+      handler : function(ev) {
         touches_index = {};
 
         // clear old elements when not using a mouse
