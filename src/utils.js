@@ -190,7 +190,7 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * calculate the velocity between two points
+   * calculate the velocity between two points. unit is in px per ms.
    * @method getVelocity
    * @param {Number} delta_time
    * @param {Number} delta_x
