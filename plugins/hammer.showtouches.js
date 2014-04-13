@@ -11,9 +11,25 @@
     }
     
     // the circles under your fingers
-    var template_style = 'position:absolute;z-index:9999;left:0;top:0;height:14px;width:14px;border:solid 2px #777;' +
-      'background:rgba(255,255,255,.7);border-radius:20px;pointer-events:none;' +
-      'margin-top:-9px;margin-left:-9px;';
+    var template_style = [
+          'position: absolute;',
+          'z-index: 9999;',
+          'height: 14px;',
+          'width: 14px;',
+          'top: 0;',
+          'left: 0;',      
+          'pointer-events: none;', // makes the element click-thru
+          'border: solid 2px #777;',
+          'background: rgba(255,255,255,.7);',
+          'border-radius: 20px;',
+          'margin-top: -9px;',
+          'margin-left: -9px;'
+      ].join("");
+    
+    // define position property
+    var position_style_prop = 'lefttop';
+    if("transform" in document.body.style) { position_style_prop = 'transform'; }
+    if("webkitTransform" in document.body.style) { position_style_prop = 'webkitTransform'; }
 
     // elements by identifier
     var touch_elements = {};
@@ -29,6 +45,22 @@
           document.body.removeChild(touch_elements[key]);
           delete touch_elements[key];
         }
+      }
+    }
+
+    /**
+     * set position of the element with top/left or css transform
+     * @param el
+     * @param x
+     * @param y
+     */
+    function setPosition(el, x, y) {
+      if(position_style_prop == 'lefttop') {
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+      }
+      else {
+        el.style[position_style_prop] = "translate("+ x +"px, "+ y +"px)";
       }
     }
 
@@ -63,9 +95,7 @@
             touch_elements[id] = template;
           }
 
-          // Paul Irish says that translate is faster then left/top
-          touch_elements[id].style.left = touch.pageX + 'px';
-          touch_elements[id].style.top = touch.pageY + 'px';
+          setPosition(touch_elements[id], touch.pageX, touch.pageY);
         }
 
         removeUnusedElements();
