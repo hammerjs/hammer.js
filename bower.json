@@ -7,7 +7,6 @@
         "Gruntfile.coffee",
         "component.json",
         "package.json",
-        "examples",
         "docs",
         "misc",
         "src"
