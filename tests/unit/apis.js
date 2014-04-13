@@ -233,11 +233,12 @@ module("Events");
     expect(3);
 
     Hammer.HAS_POINTEREVENTS = true;
+    window.PointerEvent = true; // fake native
 
     var types = Hammer.event.determineEventTypes();
-    equal(types.start, 'pointerdown MSPointerDown', 'event type start');
-    equal(types.move, 'pointermove MSPointerMove', 'event type move');
-    equal(types.end, 'pointerup pointercancel MSPointerUp MSPointerCancel', 'event type end');
+    equal(types.start, 'pointerdown', 'event type start');
+    equal(types.move, 'pointermove', 'event type move');
+    equal(types.end, 'pointerup pointercancel', 'event type end');
   });
 
   test('getTouchList', function() {

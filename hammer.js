@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-12
+/*! Hammer.JS - v1.1.0dev - 2014-04-13
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -858,12 +858,12 @@ var Event = Hammer.event = {
    * @param {HTMLElement} element
    * @param {String} eventType matches `EVENT_START|MOVE|END`
    * @param {Function} handler
-   * @return onOnTouch {Function} the core event handler
+   * @return onTouchHandler {Function} the core event handler
    */
   onTouch: function onTouch(element, eventType, handler) {
     var self = this;
 
-    var onOnTouch = function onOnTouch(ev) {
+    var onTouchHandler = function onTouchHandler(ev) {
       var src_type = ev.type.toLowerCase()
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , trigger_type
@@ -907,8 +907,8 @@ var Event = Hammer.event = {
       }
     };
 
-    this.on(element, EVENT_TYPES[eventType], onOnTouch);
-    return onOnTouch;
+    this.on(element, EVENT_TYPES[eventType], onTouchHandler);
+    return onTouchHandler;
   },
 
 
@@ -926,7 +926,7 @@ var Event = Hammer.event = {
     var touchList = this.getTouchList(ev, eventType);
     var touchList_length = touchList.length;
     var trigger_type = eventType;
-    var trigger_change;
+    var trigger_change = touchList.trigger; // used by fakeMultitouch plugin
     var change_length = touchList_length;
 
     // at each touchstart-like event we want also want to trigger a TOUCH event...
@@ -994,11 +994,22 @@ var Event = Hammer.event = {
   determineEventTypes: function determineEventTypes() {
     var types;
     if(Hammer.HAS_POINTEREVENTS) {
-      types = [
-        'pointerdown MSPointerDown',
-        'pointermove MSPointerMove',
-        'pointerup pointercancel MSPointerUp MSPointerCancel'
-      ];
+      // prefixed or full support?
+      if(window.PointerEvent) {
+        types = [
+          'pointerdown',
+          'pointermove',
+          'pointerup pointercancel'
+        ];
+      }
+      // only IE has prefixed
+      else {
+        types = [
+          'MSPointerDown',
+          'MSPointerMove',
+          'MSPointerUp MSPointerCancel'
+        ];
+      }
     }
     else {
       types = [
