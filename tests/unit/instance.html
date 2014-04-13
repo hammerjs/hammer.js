@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Instance Test</title>
+	<link rel="stylesheet" href="assets/qunit.css" media="screen">
+	<script src="assets/jquery.js"></script>
+	<script src="assets/qunit.js"></script>
+	<script src="assets/underscore.js"></script>
+	<script src="../../node_modules/faketouches/faketouches.js"></script>
+	<script src="../../hammer.js"></script>
+	<script src="../../plugins/hammer.showtouches.js"></script>
+</head>
+<body>
+
+<script>
+	Hammer.HAS_POINTEREVENTS = false;
+	Hammer.HAS_TOUCHEVENTS = true;
+</script>
+
+<div id="toucharea" style="width:100px;height:100px;"></div>
+<div id="qunit"></div>
+<script src="instance.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Gesture - PointerEvents - Mouse</title>
+	<link rel="stylesheet" href="assets/qunit.css" media="screen">
+	<script src="assets/jquery.js"></script>
+	<script src="assets/qunit.js"></script>
+	<script src="assets/underscore.js"></script>
+	<script src="../../node_modules/faketouches/faketouches.js"></script>
+	<script src="../../hammer.js"></script>
+	<script src="../../plugins/hammer.showtouches.js"></script>
+</head>
+<body>
+
+<script>
+	Hammer.HAS_POINTEREVENTS = true;
+	Hammer.HAS_TOUCHEVENTS = false;
+
+	var simulator_type = FakeTouches.POINTER_MOUSE_EVENTS;
+</script>
+
+<div id="toucharea" style="width:500px;height:500px;"></div>
+<div id="qunit"></div>
+
+<script src="gestures.js"></script>
+
+</body>
+</html>
