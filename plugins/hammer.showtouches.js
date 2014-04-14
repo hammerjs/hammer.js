@@ -41,6 +41,7 @@
     // define position property
     var position_style_prop = 'lefttop';
     if(testStyle('transform')) { position_style_prop = 'transform'; }
+    if(testStyle('MozTransform')) { position_style_prop = 'MozTransform'; }
     if(testStyle('webkitTransform')) { position_style_prop = 'webkitTransform'; }
 
     // elements by identifier
