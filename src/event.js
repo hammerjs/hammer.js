@@ -87,14 +87,15 @@ var Event = Hammer.event = {
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , trigger_type
         , is_mouse = Utils.inStr(src_type, 'mouse');
-
+      
       // if we are in a mouseevent, but there has been a touchevent triggered in this session
       // we want to do nothing. simply break out of the event.
       if(is_mouse && self.prevent_mouseevents) {
         return;
       }
       // mousebutton must be down
-      else if(is_mouse && ev.which === 1) {
+      else if(is_mouse && eventType == EVENT_START) {
+        self.prevent_mouseevents = false;
         self.should_detect = true;
       }
       // just a valid start event, but no mouse

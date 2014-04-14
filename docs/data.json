@@ -1276,7 +1276,7 @@
         },
         {
             "file": "src\\event.js",
-            "line": 134,
+            "line": 135,
             "description": "the core detection method\nthis finds out what hammer-touch-events to trigger",
             "itemtype": "method",
             "name": "doDetect",
@@ -1311,7 +1311,7 @@
         },
         {
             "file": "src\\event.js",
-            "line": 206,
+            "line": 207,
             "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant\nthe `onTouch` method is bind to these properties.",
             "itemtype": "method",
             "name": "determineEventTypes",
@@ -1324,7 +1324,7 @@
         },
         {
             "file": "src\\event.js",
-            "line": 247,
+            "line": 248,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
@@ -1349,7 +1349,7 @@
         },
         {
             "file": "src\\event.js",
-            "line": 286,
+            "line": 287,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1384,21 +1384,21 @@
         },
         {
             "file": "src\\event.js",
-            "line": 311,
+            "line": 312,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src\\event.js",
-            "line": 321,
+            "line": 322,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src\\event.js",
-            "line": 328,
+            "line": 329,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -2139,7 +2139,7 @@
         {
             "file": "src\\utils.js",
             "line": 192,
-            "description": "calculate the velocity between two points",
+            "description": "calculate the velocity between two points. unit is in px per ms.",
             "itemtype": "method",
             "name": "getVelocity",
             "params": [
@@ -2343,15 +2343,15 @@
     "warnings": [
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src\\event.js:311"
+            "line": " src\\event.js:312"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src\\event.js:321"
+            "line": " src\\event.js:322"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src\\event.js:328"
+            "line": " src\\event.js:329"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",

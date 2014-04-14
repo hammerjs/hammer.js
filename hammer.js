@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-13
+/*! Hammer.JS - v1.1.0dev - 2014-04-14
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -453,7 +453,7 @@ var Utils = Hammer.utils = {
 
 
   /**
-   * calculate the velocity between two points
+   * calculate the velocity between two points. unit is in px per ms.
    * @method getVelocity
    * @param {Number} delta_time
    * @param {Number} delta_x
@@ -868,14 +868,15 @@ var Event = Hammer.event = {
         , has_pointerevents = Hammer.HAS_POINTEREVENTS
         , trigger_type
         , is_mouse = Utils.inStr(src_type, 'mouse');
-
+      
       // if we are in a mouseevent, but there has been a touchevent triggered in this session
       // we want to do nothing. simply break out of the event.
       if(is_mouse && self.prevent_mouseevents) {
         return;
       }
       // mousebutton must be down
-      else if(is_mouse && ev.which === 1) {
+      else if(is_mouse && eventType == EVENT_START) {
+        self.prevent_mouseevents = false;
         self.should_detect = true;
       }
       // just a valid start event, but no mouse
