@@ -1,23 +1,16 @@
 (function(Hammer) {
   'use strict';
   
-  /**
-   * check if a style property exists
-   * @param prop
-   * @param el
-   * @returns {boolean|HTMLElement}
-   */
-  function testStyle(prop, el) {
-    return (prop in (el || document.body).style);
-  }
-  
   
   /**
-   * ShowTouches gesture
    * show all touch on the screen by placing elements at there pageX and pageY
-   * @param   {Boolean}   [force]
+   * 
+   * @usage
+   * call `Hammer.plugins.showTouches()` before creating an instance to enable the plugin for all
+   * instances. You can also do this later, but then you'll have to enable this per instance by setting
+   * the option `show_touches` to `true`
    */
-  Hammer.plugins.showTouches = function(force) {
+  Hammer.plugins.showTouches = function() {
     // only possible with the pointerEvents css property supported
     if(!testStyle('pointerEvents')) {
       return;
@@ -48,6 +41,17 @@
     // elements by identifier
     var touch_elements = {};
     var touches_index = {};
+    
+    
+    /**
+     * check if a style property exists
+     * @param prop
+     * @param el
+     * @returns {boolean|HTMLElement}
+     */
+    function testStyle(prop, el) {
+      return (prop in (el || document.body).style);
+    }
     
     
     /**
@@ -88,7 +92,7 @@
         touches_index = {};
 
         // clear old elements when not using a mouse
-        if(ev.pointerType != Hammer.POINTER_MOUSE && !force) {
+        if(ev.pointerType != Hammer.POINTER_MOUSE) {
           removeUnusedElements();
           return;
         }

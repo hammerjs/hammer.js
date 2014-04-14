@@ -5,6 +5,9 @@
    * enable multitouch on the desktop by pressing the shiftkey
    * the other touch goes in the opposite direction so the center keeps at its place
    * it's recommended to enable Hammer.debug.showTouches for this one
+   * 
+   * @usage
+   * just call `Hammer.plugins.fakeMultitouch()` and you're done.
    */
   Hammer.plugins.fakeMultitouch = function() {
     // no need to fake it if it already is possible!
