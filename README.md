@@ -11,7 +11,7 @@
 
 ### Features
 - Under 3kb minified and gzipped!
-- [Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures](http://rawgithub.com/EightMedia/hammer.js/master/examples/events.html)
+- [Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures](http://rawgithub.com/EightMedia/hammer.js/master/tests/manual/events.html)
 - Triggers DOM Events, so works with almost every event-listener.
 - [Debug plugins](/plugins) to emulate multitouch on desktop and make them visible.
 - Easy to build your own [custom gestures](/src/gestures/README.md).
