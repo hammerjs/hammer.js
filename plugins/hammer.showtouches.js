@@ -1,5 +1,6 @@
 (function(Hammer) {
-
+  'use strict';
+  
   /**
    * check if a style property exists
    * @param prop
@@ -29,7 +30,7 @@
           'height: 14px;',
           'width: 14px;',
           'top: 0;',
-          'left: 0;',      
+          'left: 0;',
           'pointer-events: none;', // makes the element click-thru
           'border: solid 2px #777;',
           'background: rgba(255,255,255,.7);',

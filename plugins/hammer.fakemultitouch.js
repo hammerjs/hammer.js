@@ -1,4 +1,6 @@
 (function(Hammer) {
+  'use strict';
+  
   /**
    * enable multitouch on the desktop by pressing the shiftkey
    * the other touch goes in the opposite direction so the center keeps at its place
@@ -70,7 +72,7 @@
       // normal single touch
       else {
         // we came from multitouch, trigger a release event
-        if(start_pos) {          
+        if(start_pos) {
           touchlist.trigger = Hammer.EVENT_RELEASE;
         }
         

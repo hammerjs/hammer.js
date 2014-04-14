@@ -52,7 +52,7 @@ module.exports = (grunt) ->
       options:
         jshintrc: true
       build:
-        src: ['hammer.js']
+        src: ['hammer.js', 'plugins/*.js']
 
     watch:
       scripts:
