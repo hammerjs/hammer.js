@@ -1,6 +1,6 @@
 # Hammer.js [![Build Status](https://travis-ci.org/EightMedia/hammer.js.png)](https://travis-ci.org/EightMedia/hammer.js/)
 
-<img align="right" width="260" src="https://raw.githubusercontent.com/EightMedia/hammer.js/gh-pages/img/hammer-figure.png">
+<img align="right" width="240" src="http://rawgithub.com/EightMedia/hammer.js/gh-pages/img/mchammer.svg">
 
 #### A javascript library for multi-touch gestures
 
