@@ -20,10 +20,10 @@ module.exports = (grunt) ->
           'src/hammer.prefix'
           'src/setup.js'
           'src/utils.js'
-          'src/instance.js'
           'src/event.js'
           'src/pointerevent.js'
           'src/detection.js'
+          'src/instance.js'
           'src/gestures/*.js'
           'src/export.js'
           'src/hammer.suffix']
