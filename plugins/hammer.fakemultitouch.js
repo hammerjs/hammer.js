@@ -1,11 +1,11 @@
 (function(Hammer) {
   'use strict';
-  
+
   /**
    * enable multitouch on the desktop by pressing the shiftkey
    * the other touch goes in the opposite direction so the center keeps at its place
    * it's recommended to enable Hammer.debug.showTouches for this one
-   * 
+   *
    * @usage
    * just call `Hammer.plugins.fakeMultitouch()` and you're done.
    */
@@ -17,10 +17,9 @@
     }
 
 
-    
     // keeps the start position to keep it centered
     var start_pos = false;
-    
+
     /**
      * overwrites Hammer.event.getTouchList.
      * @method getTouchList
@@ -29,7 +28,8 @@
      * @return {Array} Touches
      */
     Hammer.event.getTouchList = function(ev, eventType) {
-      var touchlist = [];
+      var touches = [];
+      var changedTouches = [];
 
       // reset on start of a new touch
       if(eventType == Hammer.EVENT_START) {
@@ -47,16 +47,16 @@
             clientX: ev.clientX,
             clientY: ev.clientY
           };
-          
+
           // new touch came up
-          touchlist.trigger = Hammer.EVENT_TOUCH;
+          touches.trigger = Hammer.EVENT_TOUCH;
         }
 
         var distance_x = start_pos.pageX - ev.pageX;
         var distance_y = start_pos.pageY - ev.pageY;
 
         // fake second touch in the opposite direction
-        touchlist.push({
+        touches.push({
             identifier: 1,
             pageX     : start_pos.pageX - distance_x - 50,
             pageY     : start_pos.pageY - distance_y + 50,
@@ -71,16 +71,12 @@
             clientY   : start_pos.clientY + distance_y - 50,
             target    : ev.target
           });
+
+        changedTouches = touches;
       }
       // normal single touch
       else {
-        // we came from multitouch, trigger a release event
-        if(start_pos) {
-          touchlist.trigger = Hammer.EVENT_RELEASE;
-        }
-        
-        start_pos = false;
-        touchlist.push({
+        touches.push({
             identifier: 1,
             pageX     : ev.pageX,
             pageY     : ev.pageY,
@@ -88,11 +84,22 @@
             clientY   : ev.clientY,
             target    : ev.target
           });
+
+        // we came from multitouch, trigger a release event
+        // and use the changed touches from the multitouch
+        if(start_pos) {
+          touches.trigger = Hammer.EVENT_RELEASE;
+        }
+        // use the touches as changedTouches, because we are in a move
+        else {
+          changedTouches = touches;
+        }
+        start_pos = false;
       }
 
-      ev.touches = touchlist;
-      ev.changedTouches = touchlist;
-      return touchlist;
+      ev.touches = touches;
+      ev.changedTouches = changedTouches;
+      return touches;
     };
   };
 
