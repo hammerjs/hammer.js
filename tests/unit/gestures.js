@@ -111,6 +111,7 @@ function testEventData(name, ev) {
   ok(ev.gesture.eventType, 'ev.gesture.eventType');
 
   ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
+  ok(_.isNumber(ev.gesture.interimAngle), 'ev.gesture.interimAngle');
   
   if(ev.gesture.eventType == Hammer.EVENT_TOUCH || ev.gesture.eventType == Hammer.EVENT_RELEASE) {
     ok(_.isNumber(ev.gesture.changedLength), 'ev.gesture.changedLength');
@@ -124,9 +125,11 @@ function testEventData(name, ev) {
 
   // direction
   ok(ev.gesture.direction, 'ev.gesture.direction');
+  ok(ev.gesture.interimDirection, 'ev.gesture.interimDirection');
   var dir = ev.type.match(/up|down|left|right/);
   if (dir) {
     ok(ev.gesture.direction === dir[0]);
+    ok(ev.gesture.interimDirection === dir[0]);
   }
 
   // pointerType
@@ -142,6 +145,7 @@ function testEventData(name, ev) {
   ok(_.isNumber(ev.gesture.rotation), 'ev.gesture.rotation');
   ok(_.isNumber(ev.gesture.scale), 'ev.gesture.scale');
   ok(_.isObject(ev.gesture.srcEvent), 'ev.gesture.srcEvent');
+  ok(_.isElement(ev.gesture.srcEvent.target), 'ev.gesture.srcEvent.target');
   ok(_.isObject(ev.gesture.startEvent), 'ev.gesture.startEvent');
   ok(_.isFunction(ev.gesture.stopDetect), 'ev.gesture.stopDetect');
   ok(_.isFunction(ev.gesture.stopPropagation), 'ev.gesture.stopPropagation');

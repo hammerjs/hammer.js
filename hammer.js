@@ -476,8 +476,9 @@ var Utils = Hammer.utils = {
    * @return {Number} angle
    */
   getAngle: function getAngle(touch1, touch2) {
-    var x = touch2.clientX - touch1.clientX,
-      y = touch2.clientY - touch1.clientY;
+    var x = touch2.clientX - touch1.clientX
+      , y = touch2.clientY - touch1.clientY;
+    
     return Math.atan2(y, x) * 180 / Math.PI;
   },
 
@@ -510,6 +511,7 @@ var Utils = Hammer.utils = {
   getDistance: function getDistance(touch1, touch2) {
     var x = touch2.clientX - touch1.clientX
       , y = touch2.clientY - touch1.clientY;
+    
     return Math.sqrt((x * x) + (y * y));
   },
 
@@ -565,17 +567,17 @@ var Utils = Hammer.utils = {
    *
    * @method toggleBehavior
    * @param {HtmlElement} element
-   * @param {Object} css_props
+   * @param {Object} props
    * @param {Boolean} [toggle=false]
    */
-  toggleBehavior: function toggleBehavior(element, css_props, toggle) {
-    if(!css_props || !element || !element.style) {
+  toggleBehavior: function toggleBehavior(element, props, toggle) {
+    if(!props || !element || !element.style) {
       return;
     }
 
     // with css properties for modern browsers
     Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
-      Utils.each(css_props, function(value, prop) {
+      Utils.each(props, function(value, prop) {
         // vender prefix at the property
         if(vendor) {
           prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
@@ -590,11 +592,11 @@ var Utils = Hammer.utils = {
     var false_fn = function(){ return false; };
 
     // also the disable onselectstart
-    if(css_props.userSelect == 'none') {
+    if(props.userSelect == 'none') {
       element.onselectstart = !toggle && false_fn;
     }
     // and disable ondragstart
-    if(css_props.userDrag == 'none') {
+    if(props.userDrag == 'none') {
       element.ondragstart = !toggle && false_fn;
     }
   }
@@ -1125,8 +1127,6 @@ var Detection = Hammer.detection = {
 
     // reset the current
     this.current = null;
-
-    // stopped!
     this.stopped = true;
   },
 
@@ -1199,15 +1199,17 @@ var Detection = Hammer.detection = {
     this.getCalculatedData(ev, lastEv.center, delta_time, delta_x, delta_y);
 
     Utils.extend(ev, {
-      startEvent: startEv,      
-      deltaTime : delta_time,
-      deltaX    : delta_x,
-      deltaY    : delta_y,
-      distance  : Utils.getDistance(startEv.center, ev.center),      
-      angle     : Utils.getAngle(startEv.center, ev.center),
-      direction : Utils.getDirection(startEv.center, ev.center),
-      scale     : Utils.getScale(startEv.touches, ev.touches),
-      rotation  : Utils.getRotation(startEv.touches, ev.touches)
+      startEvent: startEv,
+      
+      deltaTime: delta_time,
+      deltaX: delta_x,
+      deltaY: delta_y,
+      
+      distance: Utils.getDistance(startEv.center, ev.center),
+      angle: Utils.getAngle(startEv.center, ev.center),
+      direction: Utils.getDirection(startEv.center, ev.center),
+      scale: Utils.getScale(startEv.touches, ev.touches),
+      rotation: Utils.getRotation(startEv.touches, ev.touches)
     });
 
     return ev;
