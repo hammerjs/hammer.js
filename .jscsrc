@@ -12,6 +12,8 @@
     "disallowKeywordsOnNewLine": ["else"],
     "disallowMixedSpacesAndTabs": true,
     "disallowTrailingWhitespace": true,
+    "disallowQuotedKeysInObjects": "allButReserved",
+    "requireCamelCaseOrUpperCaseIdentifiers": true,
     "requireSpacesInFunctionExpression": {
         "beforeOpeningCurlyBrace": true
     },

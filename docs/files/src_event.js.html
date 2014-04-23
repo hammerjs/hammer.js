@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/event.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.0</em>
+            <em>API Docs for: 1.1.1</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -121,7 +121,7 @@ var Event = Hammer.event = {
      * @private
      * @type {Boolean}
      */
-    prevent_mouseevents: false,
+    preventMouseEvents: false,
 
     /**
      * if EVENT_START has been fired
@@ -137,7 +137,7 @@ var Event = Hammer.event = {
      * @private
      * @type {Boolean}
      */
-    should_detect: false,
+    shouldDetect: false,
 
     /**
      * simple event binder with a hook and support for multiple types
@@ -186,43 +186,43 @@ var Event = Hammer.event = {
         var self = this;
 
         var onTouchHandler = function onTouchHandler(ev) {
-            var src_type = ev.type.toLowerCase(),
-                has_pointerevents = Hammer.HAS_POINTEREVENTS,
-                trigger_type,
-                is_mouse = Utils.inStr(src_type, &#x27;mouse&#x27;);
+            var srcType = ev.type.toLowerCase(),
+                hasPointerEvents = Hammer.HAS_POINTEREVENTS,
+                triggerType,
+                isMouse = Utils.inStr(srcType, &#x27;mouse&#x27;);
 
             // if we are in a mouseevent, but there has been a touchevent triggered in this session
             // we want to do nothing. simply break out of the event.
-            if(is_mouse &amp;&amp; self.prevent_mouseevents) {
+            if(isMouse &amp;&amp; self.preventMouseEvents) {
                 return;
             // mousebutton must be down
-            } else if(is_mouse &amp;&amp; eventType == EVENT_START) {
-                self.prevent_mouseevents = false;
-                self.should_detect = true;
+            } else if(isMouse &amp;&amp; eventType == EVENT_START) {
+                self.preventMouseEvents = false;
+                self.shouldDetect = true;
             // just a valid start event, but no mouse
-            } else if(eventType == EVENT_START &amp;&amp; !is_mouse) {
-                self.prevent_mouseevents = true;
-                self.should_detect = true;
+            } else if(eventType == EVENT_START &amp;&amp; !isMouse) {
+                self.preventMouseEvents = true;
+                self.shouldDetect = true;
             }
 
             // update the pointer event before entering the detection
-            if(has_pointerevents &amp;&amp; eventType != EVENT_END) {
+            if(hasPointerEvents &amp;&amp; eventType != EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
 
             // we are in a touch/down state, so allowed detection of gestures
-            if(self.should_detect) {
-                trigger_type = self.doDetect.call(self, ev, eventType, element, handler);
+            if(self.shouldDetect) {
+                triggerType = self.doDetect.call(self, ev, eventType, element, handler);
             }
 
             // ...and we are done with the detection
             // so reset everything to start each detection totally fresh
-            if(trigger_type == EVENT_END) {
-                self.prevent_mouseevents = false;
-                self.should_detect = false;
+            if(triggerType == EVENT_END) {
+                self.preventMouseEvents = false;
+                self.shouldDetect = false;
                 PointerEvent.reset();
             // update the pointerevent object after the detection
-            } else if(has_pointerevents &amp;&amp; eventType == EVENT_END) {
+            } else if(hasPointerEvents &amp;&amp; eventType == EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
         };
@@ -243,62 +243,62 @@ var Event = Hammer.event = {
      */
     doDetect: function doDetect(ev, eventType, element, handler) {
         var touchList = this.getTouchList(ev, eventType);
-        var touchList_length = touchList.length;
-        var trigger_type = eventType;
-        var trigger_change = touchList.trigger; // used by fakeMultitouch plugin
-        var change_length = touchList_length;
+        var touchListLength = touchList.length;
+        var triggerType = eventType;
+        var triggerChange = touchList.trigger; // used by fakeMultitouch plugin
+        var changedLength = touchListLength;
 
         // at each touchstart-like event we want also want to trigger a TOUCH event...
         if(eventType == EVENT_START) {
-            trigger_change = EVENT_TOUCH;
+            triggerChange = EVENT_TOUCH;
         // ...the same for a touchend-like event
         } else if(eventType == EVENT_END) {
-            trigger_change = EVENT_RELEASE;
+            triggerChange = EVENT_RELEASE;
 
             // keep track of how many touches have been removed
-            change_length = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
+            changedLength = touchList.length - ((ev.changedTouches) ? ev.changedTouches.length : 1);
         }
 
         // after there are still touches on the screen,
         // we just want to trigger a MOVE event. so change the START or END to a MOVE
         // but only after detection has been started, the first time we actualy want a START
-        if(change_length &gt; 0 &amp;&amp; this.started) {
-            trigger_type = EVENT_MOVE;
+        if(changedLength &gt; 0 &amp;&amp; this.started) {
+            triggerType = EVENT_MOVE;
         }
 
         // detection has been started, we keep track of this, see above
         this.started = true;
 
         // generate some event data, some basic information
-        var ev_data = this.collectEventData(element, trigger_type, touchList, ev);
+        var evData = this.collectEventData(element, triggerType, touchList, ev);
 
-        // trigger the trigger_type event before the change (TOUCH, RELEASE) events
+        // trigger the triggerType event before the change (TOUCH, RELEASE) events
         // but the END event should be at last
         if(eventType != EVENT_END) {
-            handler.call(Detection, ev_data);
+            handler.call(Detection, evData);
         }
 
         // trigger a change (TOUCH, RELEASE) event, this means the length of the touches changed
-        if(trigger_change) {
-            ev_data.changedLength = change_length;
-            ev_data.eventType = trigger_change;
+        if(triggerChange) {
+            evData.changedLength = changedLength;
+            evData.eventType = triggerChange;
 
-            handler.call(Detection, ev_data);
+            handler.call(Detection, evData);
 
-            ev_data.eventType = trigger_type;
-            delete ev_data.changedLength;
+            evData.eventType = triggerType;
+            delete evData.changedLength;
         }
 
         // trigger the END event
-        if(trigger_type == EVENT_END) {
-            handler.call(Detection, ev_data);
+        if(triggerType == EVENT_END) {
+            handler.call(Detection, evData);
 
             // ...and we are done with the detection
             // so reset everything to start each detection totally fresh
             this.started = false;
         }
 
-        return trigger_type;
+        return triggerType;
     },
 
     /**
@@ -341,7 +341,7 @@ var Event = Hammer.event = {
     },
 
     /**
-     * create touchlist depending on the event
+     * create touchList depending on the event
      * @method getTouchList
      * @param {Object} ev
      * @param {String} eventType
@@ -360,20 +360,20 @@ var Event = Hammer.event = {
             }
 
             var identifiers = [];
-            var concat_touches = [].concat(Utils.toArray(ev.touches), Utils.toArray(ev.changedTouches));
-            var touchlist = [];
+            var concat = [].concat(Utils.toArray(ev.touches), Utils.toArray(ev.changedTouches));
+            var touchList = [];
 
-            Utils.each(concat_touches, function(touch) {
+            Utils.each(concat, function(touch) {
                 if(Utils.inArray(identifiers, touch.identifier) === false) {
-                    touchlist.push(touch);
+                    touchList.push(touch);
                 }
                 identifiers.push(touch.identifier);
             });
 
-            return touchlist;
+            return touchList;
         }
 
-        // make fake touchlist from mouse position
+        // make fake touchList from mouse position
         ev.identifier = 1;
         return [ev];
     },

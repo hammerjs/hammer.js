@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/gestures/hold.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.0</em>
+            <em>API Docs for: 1.1.1</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -143,11 +143,11 @@
                     if(current &amp;&amp; current.name == name) {
                         inst.trigger(name, ev);
                     }
-                }, options.hold_timeout);
+                }, options.holdTimeout);
                 break;
 
             case EVENT_MOVE:
-                if(ev.distance &gt; options.hold_threshold) {
+                if(ev.distance &gt; options.holdThreshold) {
                     clearTimeout(timer);
                 }
                 break;
@@ -163,19 +163,19 @@
         index: 10,
         defaults: {
             /**
-             * @property hold_timeout
+             * @property holdTimeout
              * @type {Number}
              * @default 500
              */
-            hold_timeout: 500,
+            holdTimeout: 500,
 
             /**
              * movement allowed while holding
-             * @property hold_threshold
+             * @property holdThreshold
              * @type {Number}
              * @default 2
              */
-            hold_threshold: 2
+            holdThreshold: 2
         },
         handler: holdGesture
     };

@@ -19,27 +19,27 @@ Hammer.gestures.Touch = {
          * call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,
          * but it improves gestures like transforming and dragging.
          * be careful with using this, it can be very annoying for users to be stuck on the page
-         * @property prevent_default
+         * @property preventDefault
          * @type {Boolean}
          * @default false
          */
-        prevent_default: false,
+        preventDefault: false,
 
         /**
          * disable mouse events, so only touch (or pen!) input triggers events
-         * @property prevent_mouseevents
+         * @property preventMouse
          * @type {Boolean}
          * @default false
          */
-        prevent_mouseevents: false
+        preventMouse: false
     },
     handler: function touchGesture(ev, inst) {
-        if(inst.options.prevent_mouseevents && ev.pointerType == POINTER_MOUSE) {
+        if(inst.options.preventMouse && ev.pointerType == POINTER_MOUSE) {
             ev.stopDetect();
             return;
         }
 
-        if(inst.options.prevent_default) {
+        if(inst.options.preventDefault) {
             ev.preventDefault();
         }
 

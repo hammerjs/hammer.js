@@ -16,7 +16,7 @@
         }
 
         // the circles under your fingers
-        var template_style = [
+        var templateStyle = [
             'position: absolute;',
             'z-index: 9999;',
             'height: 14px;',
@@ -32,14 +32,14 @@
         ].join('');
 
         // define position property
-        var position_style_prop = 'lefttop';
-        if(testStyle('transform')) { position_style_prop = 'transform'; }
-        if(testStyle('MozTransform')) { position_style_prop = 'MozTransform'; }
-        if(testStyle('webkitTransform')) { position_style_prop = 'webkitTransform'; }
+        var positionStyleProp = 'lefttop';
+        if(testStyle('transform')) { positionStyleProp = 'transform'; }
+        if(testStyle('MozTransform')) { positionStyleProp = 'MozTransform'; }
+        if(testStyle('webkitTransform')) { positionStyleProp = 'webkitTransform'; }
 
         // elements by identifier
-        var touch_elements = {};
-        var touches_index = {};
+        var touchElements = {};
+        var touchesIndex = {};
 
         /**
          * check if a style property exists
@@ -56,10 +56,10 @@
          */
         function removeUnusedElements() {
             // remove unused touch elements
-            for(var key in touch_elements) {
-                if(touch_elements.hasOwnProperty(key) && !touches_index[key]) {
-                    document.body.removeChild(touch_elements[key]);
-                    delete touch_elements[key];
+            for(var key in touchElements) {
+                if(touchElements.hasOwnProperty(key) && !touchesIndex[key]) {
+                    document.body.removeChild(touchElements[key]);
+                    delete touchElements[key];
                 }
             }
         }
@@ -71,19 +71,19 @@
          * @param {Number} y
          */
         function setPosition(el, x, y) {
-            if(position_style_prop == 'lefttop') {
+            if(positionStyleProp == 'lefttop') {
                 el.style.left = x + 'px';
                 el.style.top = y + 'px';
             } else {
-                el.style[position_style_prop] = 'translate(' + x + 'px, ' + y + 'px)';
+                el.style[positionStyleProp] = 'translate(' + x + 'px, ' + y + 'px)';
             }
         }
 
         Hammer.detection.register({
-            name: 'show_touches',
+            name: 'showTouches',
             priority: 0,
             handler: function(ev) {
-                touches_index = {};
+                touchesIndex = {};
 
                 // clear old elements when not using a mouse
                 if(ev.pointerType != Hammer.POINTER_MOUSE) {
@@ -95,17 +95,17 @@
                 for(var t = 0, len = ev.touches.length; t < len; t++) {
                     var touch = ev.touches[t];
                     var id = touch.identifier;
-                    touches_index[id] = touch;
+                    touchesIndex[id] = touch;
 
                     // new touch element
-                    if(!touch_elements[id]) {
+                    if(!touchElements[id]) {
                         var template = document.createElement('div');
-                        template.setAttribute('style', template_style);
+                        template.setAttribute('style', templateStyle);
                         document.body.appendChild(template);
 
-                        touch_elements[id] = template;
+                        touchElements[id] = template;
                     }
-                    setPosition(touch_elements[id], touch.pageX, touch.pageY);
+                    setPosition(touchElements[id], touch.pageX, touch.pageY);
                 }
                 removeUnusedElements();
             }

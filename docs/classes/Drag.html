@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: Drag</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.0</em>
+            <em>API Docs for: 1.1.1</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -159,30 +159,13 @@ Preventing the default browser behavior is a good way to improve feel and workin
         
             <div id="props">
             
-                <a name="props_correct_for_drag_min_distance"></a>
+                <a name="props_dragBlockHorizontal"></a>
 <div class="props item">
-    <code>correct_for_drag_min_distance</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
+    <code>dragBlockHorizontal</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l156"><code>src&#x2F;gestures&#x2F;drag.js:156</code></a></span>
-    <p>Set correct_for_drag_min_distance to true to make the starting point of the drag
-be calculated from where the drag was triggered, not from where the touch started.
-Useful to avoid a jerk-starting drag, which can make fine-adjustments
-through dragging difficult, and be visually unappealing.</p>
-
-    <strong>Default:</strong> true
-    
-</div>
-
-            
-                <a name="props_drag_block_horizontal"></a>
-<div class="props item">
-    <code>drag_block_horizontal</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
-    
-    
-    <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l175"><code>src&#x2F;gestures&#x2F;drag.js:175</code></a></span>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l176"><code>src&#x2F;gestures&#x2F;drag.js:176</code></a></span>
     <p>prevent default browser behavior when dragging occurs
 be careful with it, it makes the element a blocking element
 when you are using the drag gesture, it is a good practice to set this true</p>
@@ -192,43 +175,60 @@ when you are using the drag gesture, it is a good practice to set this true</p>
 </div>
 
             
-                <a name="props_drag_block_vertical"></a>
+                <a name="props_dragBlockVertical"></a>
 <div class="props item">
-    <code>drag_block_vertical</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
+    <code>dragBlockVertical</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l185"><code>src&#x2F;gestures&#x2F;drag.js:185</code></a></span>
-    <p>same as <code>drag_block_horizontal</code>, but for vertical movement</p>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l186"><code>src&#x2F;gestures&#x2F;drag.js:186</code></a></span>
+    <p>same as <code>dragBlockHorizontal</code>, but for vertical movement</p>
 
     <strong>Default:</strong> false
     
 </div>
 
             
-                <a name="props_drag_lock_min_distance"></a>
+                <a name="props_dragDistanceCorrection"></a>
 <div class="props item">
-    <code>drag_lock_min_distance</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
+    <code>dragDistanceCorrection</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l202"><code>src&#x2F;gestures&#x2F;drag.js:202</code></a></span>
-    <p>drag lock only kicks in when distance &gt; drag_lock_min_distance
- This way, locking occurs only when the distance has become large enough to reliably determine the direction</p>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l157"><code>src&#x2F;gestures&#x2F;drag.js:157</code></a></span>
+    <p>Set dragDistanceCorrection to true to make the starting point of the drag
+be calculated from where the drag was triggered, not from where the touch started.
+Useful to avoid a jerk-starting drag, which can make fine-adjustments
+through dragging difficult, and be visually unappealing.</p>
+
+    <strong>Default:</strong> true
+    
+</div>
+
+            
+                <a name="props_dragLockMinDistance"></a>
+<div class="props item">
+    <code>dragLockMinDistance</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l203"><code>src&#x2F;gestures&#x2F;drag.js:203</code></a></span>
+    <p>drag lock only kicks in when distance &gt; dragLockMinDistance
+This way, locking occurs only when the distance has become large enough to reliably determine the direction</p>
 
     <strong>Default:</strong> 25
     
 </div>
 
             
-                <a name="props_drag_lock_to_axis"></a>
+                <a name="props_dragLockToAxis"></a>
 <div class="props item">
-    <code>drag_lock_to_axis</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
+    <code>dragLockToAxis</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l193"><code>src&#x2F;gestures&#x2F;drag.js:193</code></a></span>
-    <p>drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l194"><code>src&#x2F;gestures&#x2F;drag.js:194</code></a></span>
+    <p>dragLockToAxis keeps the drag gesture on the axis that it started on,
 It disallows vertical directions if the initial direction was horizontal, and vice versa.</p>
 
     <strong>Default:</strong> false
@@ -236,13 +236,13 @@ It disallows vertical directions if the initial direction was horizontal, and vi
 </div>
 
             
-                <a name="props_drag_max_touches"></a>
+                <a name="props_dragMaxTouches"></a>
 <div class="props item">
-    <code>drag_max_touches</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
+    <code>dragMaxTouches</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l167"><code>src&#x2F;gestures&#x2F;drag.js:167</code></a></span>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l168"><code>src&#x2F;gestures&#x2F;drag.js:168</code></a></span>
     <p>set 0 for unlimited, but this can conflict with transform</p>
 
     <strong>Default:</strong> 1
@@ -250,13 +250,13 @@ It disallows vertical directions if the initial direction was horizontal, and vi
 </div>
 
             
-                <a name="props_drag_min_distance"></a>
+                <a name="props_dragMinDistance"></a>
 <div class="props item">
-    <code>drag_min_distance</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
+    <code>dragMinDistance</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number" class="crosslink external" target="_blank">Number</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l148"><code>src&#x2F;gestures&#x2F;drag.js:148</code></a></span>
+    <span class="foundat"><a href="../files/src_gestures_drag.js.html#l149"><code>src&#x2F;gestures&#x2F;drag.js:149</code></a></span>
     <p>minimal movement that have to be made before the drag event gets triggered</p>
 
     <strong>Default:</strong> 10

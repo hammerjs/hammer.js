@@ -52,13 +52,13 @@
                     return;
                 }
 
-                var scale_threshold = Math.abs(1 - ev.scale);
-                var rotation_threshold = Math.abs(ev.rotation);
+                var scaleThreshold = Math.abs(1 - ev.scale);
+                var rotationThreshold = Math.abs(ev.rotation);
 
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
-                if(scale_threshold < inst.options.transform_min_scale &&
-                    rotation_threshold < inst.options.transform_min_rotation) {
+                if(scaleThreshold < inst.options.transformMinScale &&
+                    rotationThreshold < inst.options.transformMinRotation) {
                     return;
                 }
 
@@ -74,12 +74,12 @@
                 inst.trigger(name, ev); // basic transform event
 
                 // trigger rotate event
-                if(rotation_threshold > inst.options.transform_min_rotation) {
+                if(rotationThreshold > inst.options.transformMinRotation) {
                     inst.trigger('rotate', ev);
                 }
 
                 // trigger pinch event
-                if(scale_threshold > inst.options.transform_min_scale) {
+                if(scaleThreshold > inst.options.transformMinScale) {
                     inst.trigger('pinch', ev);
                     inst.trigger('pinch' + (ev.scale < 1 ? 'in' : 'out'), ev);
                 }
@@ -100,19 +100,19 @@
         defaults: {
             /**
              * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-             * @property transform_min_scale
+             * @property transformMinScale
              * @type {Number}
              * @default 0.01
              */
-            transform_min_scale: 0.01,
+            transformMinScale: 0.01,
 
             /**
              * rotation in degrees
-             * @property transform_min_rotation
+             * @property transformMinRotation
              * @type {Number}
              * @default 1
              */
-            transform_min_rotation: 1
+            transformMinRotation: 1
         },
 
         handler: transformGesture

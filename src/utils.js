@@ -181,15 +181,15 @@ var Utils = Hammer.utils = {
     /**
      * calculate the velocity between two points. unit is in px per ms.
      * @method getVelocity
-     * @param {Number} delta_time
-     * @param {Number} delta_x
-     * @param {Number} delta_y
+     * @param {Number} deltaTime
+     * @param {Number} deltaX
+     * @param {Number} deltaY
      * @return {Object} velocity `x` and `y`
      */
-    getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
+    getVelocity: function getVelocity(deltaTime, deltaX, deltaY) {
         return {
-            x: Math.abs(delta_x / delta_time) || 0,
-            y: Math.abs(delta_y / delta_time) || 0
+            x: Math.abs(deltaX / deltaTime) || 0,
+            y: Math.abs(deltaY / deltaTime) || 0
         };
     },
 
@@ -308,17 +308,29 @@ var Utils = Hammer.utils = {
             });
         });
 
-        var false_fn = function() {
+        var falseFn = function() {
             return false;
         };
 
         // also the disable onselectstart
         if(props.userSelect == 'none') {
-            element.onselectstart = !toggle && false_fn;
+            element.onselectstart = !toggle && falseFn;
         }
         // and disable ondragstart
         if(props.userDrag == 'none') {
-            element.ondragstart = !toggle && false_fn;
+            element.ondragstart = !toggle && falseFn;
         }
+    },
+
+    /**
+     * convert a string with underscores to camelCase
+     * so prevent_default becomes preventDefault
+     * @param {String} str
+     * @return {String} camelCaseStr
+     */
+    toCamelCase: function toCamelCase(str) {
+        return str.replace(/[_-]([a-z])/g, function(s) {
+            return s[1].toUpperCase();
+        });
     }
 };

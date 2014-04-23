@@ -2,7 +2,7 @@
     "project": {
         "name": "Hammer.JS",
         "description": "A javascript library for multi-touch gestures",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "url": "http://eightmedia.github.io/hammer.js"
     },
     "files": {
@@ -530,10 +530,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 148,
+            "line": 149,
             "description": "minimal movement that have to be made before the drag event gets triggered",
             "itemtype": "property",
-            "name": "drag_min_distance",
+            "name": "dragMinDistance",
             "type": "{Number}",
             "default": "10",
             "class": "Drag",
@@ -541,10 +541,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 156,
-            "description": "Set correct_for_drag_min_distance to true to make the starting point of the drag\nbe calculated from where the drag was triggered, not from where the touch started.\nUseful to avoid a jerk-starting drag, which can make fine-adjustments\nthrough dragging difficult, and be visually unappealing.",
+            "line": 157,
+            "description": "Set dragDistanceCorrection to true to make the starting point of the drag\nbe calculated from where the drag was triggered, not from where the touch started.\nUseful to avoid a jerk-starting drag, which can make fine-adjustments\nthrough dragging difficult, and be visually unappealing.",
             "itemtype": "property",
-            "name": "correct_for_drag_min_distance",
+            "name": "dragDistanceCorrection",
             "type": "{Boolean}",
             "default": "true",
             "class": "Drag",
@@ -552,10 +552,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 167,
+            "line": 168,
             "description": "set 0 for unlimited, but this can conflict with transform",
             "itemtype": "property",
-            "name": "drag_max_touches",
+            "name": "dragMaxTouches",
             "type": "{Number}",
             "default": "1",
             "class": "Drag",
@@ -563,10 +563,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 175,
+            "line": 176,
             "description": "prevent default browser behavior when dragging occurs\nbe careful with it, it makes the element a blocking element\nwhen you are using the drag gesture, it is a good practice to set this true",
             "itemtype": "property",
-            "name": "drag_block_horizontal",
+            "name": "dragBlockHorizontal",
             "type": "{Boolean}",
             "default": "false",
             "class": "Drag",
@@ -574,10 +574,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 185,
-            "description": "same as `drag_block_horizontal`, but for vertical movement",
+            "line": 186,
+            "description": "same as `dragBlockHorizontal`, but for vertical movement",
             "itemtype": "property",
-            "name": "drag_block_vertical",
+            "name": "dragBlockVertical",
             "type": "{Boolean}",
             "default": "false",
             "class": "Drag",
@@ -585,10 +585,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 193,
-            "description": "drag_lock_to_axis keeps the drag gesture on the axis that it started on,\nIt disallows vertical directions if the initial direction was horizontal, and vice versa.",
+            "line": 194,
+            "description": "dragLockToAxis keeps the drag gesture on the axis that it started on,\nIt disallows vertical directions if the initial direction was horizontal, and vice versa.",
             "itemtype": "property",
-            "name": "drag_lock_to_axis",
+            "name": "dragLockToAxis",
             "type": "{Boolean}",
             "default": "false",
             "class": "Drag",
@@ -596,10 +596,10 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 202,
-            "description": "drag lock only kicks in when distance > drag_lock_min_distance\n This way, locking occurs only when the distance has become large enough to reliably determine the direction",
+            "line": 203,
+            "description": "drag lock only kicks in when distance > dragLockMinDistance\nThis way, locking occurs only when the distance has become large enough to reliably determine the direction",
             "itemtype": "property",
-            "name": "drag_lock_min_distance",
+            "name": "dragLockMinDistance",
             "type": "{Number}",
             "default": "25",
             "class": "Drag",
@@ -652,7 +652,7 @@
             "file": "src/gestures/hold.js",
             "line": 57,
             "itemtype": "property",
-            "name": "hold_timeout",
+            "name": "holdTimeout",
             "type": "{Number}",
             "default": "500",
             "class": "Hold",
@@ -663,7 +663,7 @@
             "line": 64,
             "description": "movement allowed while holding",
             "itemtype": "property",
-            "name": "hold_threshold",
+            "name": "holdThreshold",
             "type": "{Number}",
             "default": "2",
             "class": "Hold",
@@ -763,7 +763,7 @@
             "file": "src/gestures/swipe.js",
             "line": 41,
             "itemtype": "property",
-            "name": "swipe_min_touches",
+            "name": "swipeMinTouches",
             "type": "{Number}",
             "default": "1",
             "class": "Swipe",
@@ -773,7 +773,7 @@
             "file": "src/gestures/swipe.js",
             "line": 48,
             "itemtype": "property",
-            "name": "swipe_max_touches",
+            "name": "swipeMaxTouches",
             "type": "{Number}",
             "default": "1",
             "class": "Swipe",
@@ -784,7 +784,7 @@
             "line": 55,
             "description": "horizontal swipe velocity",
             "itemtype": "property",
-            "name": "swipe_velocity_x",
+            "name": "swipeVelocityX",
             "type": "{Number}",
             "default": "0.7",
             "class": "Swipe",
@@ -795,7 +795,7 @@
             "line": 63,
             "description": "vertical swipe velocity",
             "itemtype": "property",
-            "name": "swipe_velocity_y",
+            "name": "swipeVelocityY",
             "type": "{Number}",
             "default": "0.6",
             "class": "Swipe",
@@ -849,7 +849,7 @@
             "line": 69,
             "description": "max time of a tap, this is for the slow tappers",
             "itemtype": "property",
-            "name": "tap_max_touchtime",
+            "name": "tapMaxTime",
             "type": "{Number}",
             "default": "250",
             "class": "Tap",
@@ -860,7 +860,7 @@
             "line": 77,
             "description": "max distance of movement of a tap, this is for the slow tappers",
             "itemtype": "property",
-            "name": "tap_max_distance",
+            "name": "tapMaxDistance",
             "type": "{Number}",
             "default": "10",
             "class": "Tap",
@@ -871,7 +871,7 @@
             "line": 85,
             "description": "always trigger the `tap` event, even while double-tapping",
             "itemtype": "property",
-            "name": "tap_always",
+            "name": "tapAlways",
             "type": "{Boolean}",
             "default": "true",
             "class": "Tap",
@@ -882,7 +882,7 @@
             "line": 93,
             "description": "max distance between two taps",
             "itemtype": "property",
-            "name": "doubletap_distance",
+            "name": "doubleTapDistance",
             "type": "{Number}",
             "default": "20",
             "class": "Tap",
@@ -893,7 +893,7 @@
             "line": 101,
             "description": "max time between two taps",
             "itemtype": "property",
-            "name": "doubletap_interval",
+            "name": "doubleTapInterval",
             "type": "{Number}",
             "default": "300",
             "class": "Tap",
@@ -919,7 +919,7 @@
             "line": 18,
             "description": "call preventDefault at touchstart, and makes the element blocking by disabling the scrolling of the page,\nbut it improves gestures like transforming and dragging.\nbe careful with using this, it can be very annoying for users to be stuck on the page",
             "itemtype": "property",
-            "name": "prevent_default",
+            "name": "preventDefault",
             "type": "{Boolean}",
             "default": "false",
             "class": "Touch",
@@ -930,7 +930,7 @@
             "line": 28,
             "description": "disable mouse events, so only touch (or pen!) input triggers events",
             "itemtype": "property",
-            "name": "prevent_mouseevents",
+            "name": "preventMouse",
             "type": "{Boolean}",
             "default": "false",
             "class": "Touch",
@@ -1044,7 +1044,7 @@
             "line": 101,
             "description": "minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1",
             "itemtype": "property",
-            "name": "transform_min_scale",
+            "name": "transformMinScale",
             "type": "{Number}",
             "default": "0.01",
             "class": "Transform",
@@ -1055,7 +1055,7 @@
             "line": 109,
             "description": "rotation in degrees",
             "itemtype": "property",
-            "name": "transform_min_rotation",
+            "name": "transformMinRotation",
             "type": "{Number}",
             "default": "1",
             "class": "Transform",
@@ -1129,17 +1129,17 @@
                     "type": "Object"
                 },
                 {
-                    "name": "delta_time",
+                    "name": "deltaTime",
                     "description": "",
                     "type": "Number"
                 },
                 {
-                    "name": "delta_x",
+                    "name": "deltaX",
                     "description": "",
                     "type": "Number"
                 },
                 {
-                    "name": "delta_y",
+                    "name": "deltaY",
                     "description": "",
                     "type": "Number"
                 }
@@ -1382,7 +1382,7 @@
         {
             "file": "src/event.js",
             "line": 235,
-            "description": "create touchlist depending on the event",
+            "description": "create touchList depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
             "params": [
@@ -1487,7 +1487,7 @@
         {
             "file": "src/instance.js",
             "line": 35,
-            "description": "options, merged with the defaults",
+            "description": "options, merged with the defaults\noptions with an _ are converted to camelCase",
             "itemtype": "property",
             "name": "options",
             "type": "{Object}",
@@ -1496,7 +1496,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 47,
+            "line": 53,
             "description": "event start handler on the element to start the detection",
             "itemtype": "property",
             "name": "eventStartHandler",
@@ -1506,7 +1506,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 60,
+            "line": 66,
             "description": "keep a list of user event handlers which needs to be removed when calling 'dispose'",
             "itemtype": "property",
             "name": "eventHandlers",
@@ -1516,7 +1516,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 69,
+            "line": 75,
             "description": "bind events to the instance",
             "itemtype": "method",
             "name": "on",
@@ -1545,7 +1545,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 85,
+            "line": 91,
             "description": "unbind events to the instance",
             "itemtype": "method",
             "name": "off",
@@ -1567,7 +1567,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 104,
+            "line": 110,
             "description": "trigger gesture event",
             "itemtype": "method",
             "name": "trigger",
@@ -1590,7 +1590,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 133,
+            "line": 139,
             "description": "enable of disable hammer.js detection",
             "itemtype": "method",
             "name": "enable",
@@ -1607,7 +1607,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 144,
+            "line": 150,
             "description": "dispose this hammer instance",
             "itemtype": "method",
             "name": "dispose",
@@ -2201,17 +2201,17 @@
             "name": "getVelocity",
             "params": [
                 {
-                    "name": "delta_time",
+                    "name": "deltaTime",
                     "description": "",
                     "type": "Number"
                 },
                 {
-                    "name": "delta_x",
+                    "name": "deltaX",
                     "description": "",
                     "type": "Number"
                 },
                 {
-                    "name": "delta_y",
+                    "name": "deltaY",
                     "description": "",
                     "type": "Number"
                 }
@@ -2395,6 +2395,24 @@
             ],
             "class": "Utils",
             "module": "hammer"
+        },
+        {
+            "file": "src/utils.js",
+            "line": 325,
+            "description": "convert a string with underscores to camelCase\nso prevent_default becomes preventDefault",
+            "params": [
+                {
+                    "name": "str",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "camelCaseStr",
+                "type": "String"
+            },
+            "class": "Utils",
+            "module": "hammer"
         }
     ],
     "warnings": [
@@ -2429,6 +2447,10 @@
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",
             "line": " src/setup.js:215"
+        },
+        {
+            "message": "Missing item type\nconvert a string with underscores to camelCase\nso prevent_default becomes preventDefault",
+            "line": " src/utils.js:325"
         }
     ]
 }

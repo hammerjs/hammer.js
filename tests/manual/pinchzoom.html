@@ -55,11 +55,11 @@
   }
 
   var hammertime = Hammer(document.getElementById('pinchzoom'), {
-    transform_always_block: true,
-    transform_min_scale   : 1,
-    drag_block_horizontal : true,
-    drag_block_vertical   : true,
-    drag_min_distance     : 0
+    preventDefault		: true,
+    transformMinScale   : 1,
+    dragBlockHorizontal : true,
+    dragBlockVertical   : true,
+    dragMinDistance     : 0
   });
 
   var rect = document.getElementById('rect');

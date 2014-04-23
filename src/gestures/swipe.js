@@ -39,34 +39,34 @@ Hammer.gestures.Swipe = {
     index: 40,
     defaults: {
         /**
-         * @property swipe_min_touches
+         * @property swipeMinTouches
          * @type {Number}
          * @default 1
          */
-        swipe_min_touches: 1,
+        swipeMinTouches: 1,
 
         /**
-         * @property swipe_max_touches
+         * @property swipeMaxTouches
          * @type {Number}
          * @default 1
          */
-        swipe_max_touches: 1,
+        swipeMaxTouches: 1,
 
         /**
          * horizontal swipe velocity
-         * @property swipe_velocity_x
+         * @property swipeVelocityX
          * @type {Number}
          * @default 0.7
          */
-        swipe_velocity_x: 0.7,
+        swipeVelocityX: 0.7,
 
         /**
          * vertical swipe velocity
-         * @property swipe_velocity_y
+         * @property swipeVelocityY
          * @type {Number}
          * @default 0.6
          */
-        swipe_velocity_y: 0.6
+        swipeVelocityY: 0.6
     },
 
     handler: function swipeGesture(ev, inst) {
@@ -75,15 +75,15 @@ Hammer.gestures.Swipe = {
                 options = inst.options;
 
             // max touches
-            if(touches < options.swipe_min_touches ||
-                touches > options.swipe_max_touches) {
+            if(touches < options.swipeMinTouches ||
+                touches > options.swipeMaxTouches) {
                 return;
             }
 
             // when the distance we moved is too small we skip this gesture
             // or we can be already in dragging
-            if(ev.velocityX > options.swipe_velocity_x ||
-                ev.velocityY > options.swipe_velocity_y) {
+            if(ev.velocityX > options.swipeVelocityX ||
+                ev.velocityY > options.swipeVelocityY) {
                 // trigger swipe events
                 inst.trigger(this.name, ev);
                 inst.trigger(this.name + ev.direction, ev);

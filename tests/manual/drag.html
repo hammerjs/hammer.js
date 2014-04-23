@@ -52,7 +52,7 @@
   var container = document.getElementById("container");
   var fragment = document.createDocumentFragment();
 
-  var hammertime = new Hammer(container, { drag_max_touches: 0, prevent_default: true });
+  var hammertime = new Hammer(container, { dragMaxTouches: 0, preventDefault: true });
   var last_touches = [];
 
   function updatePositions() {

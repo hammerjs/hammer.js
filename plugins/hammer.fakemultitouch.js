@@ -17,7 +17,7 @@
         }
 
         // keeps the start position to keep it centered
-        var start_pos = false;
+        var startPos = false;
 
         /**
          * overwrites Hammer.event.getTouchList.
@@ -32,15 +32,15 @@
 
             // reset on start of a new touch
             if(eventType == Hammer.EVENT_START) {
-                start_pos = false;
+                startPos = false;
             }
 
             // when the shift key is pressed, multitouch is possible on desktop
             // why shift? because ctrl and alt are taken by osx and linux
             if(ev.shiftKey) {
                 // on touchstart we store the position of the mouse for multitouch
-                if(!start_pos) {
-                    start_pos = {
+                if(!startPos) {
+                    startPos = {
                         pageX: ev.pageX,
                         pageY: ev.pageY,
                         clientX: ev.clientX,
@@ -51,23 +51,23 @@
                     touches.trigger = Hammer.EVENT_TOUCH;
                 }
 
-                var distance_x = start_pos.pageX - ev.pageX;
-                var distance_y = start_pos.pageY - ev.pageY;
+                var distanceX = startPos.pageX - ev.pageX;
+                var distanceY = startPos.pageY - ev.pageY;
 
                 // fake second touch in the opposite direction
                 touches.push({
                     identifier: 1,
-                    pageX: start_pos.pageX - distance_x - 50,
-                    pageY: start_pos.pageY - distance_y + 50,
-                    clientX: start_pos.clientX - distance_x - 50,
-                    clientY: start_pos.clientY - distance_y + 50,
+                    pageX: startPos.pageX - distanceX - 50,
+                    pageY: startPos.pageY - distanceY + 50,
+                    clientX: startPos.clientX - distanceX - 50,
+                    clientY: startPos.clientY - distanceY + 50,
                     target: ev.target
                 }, {
                     identifier: 2,
-                    pageX: start_pos.pageX + distance_x + 50,
-                    pageY: start_pos.pageY + distance_y - 50,
-                    clientX: start_pos.clientX + distance_x + 50,
-                    clientY: start_pos.clientY + distance_y - 50,
+                    pageX: startPos.pageX + distanceX + 50,
+                    pageY: startPos.pageY + distanceY - 50,
+                    clientX: startPos.clientX + distanceX + 50,
+                    clientY: startPos.clientY + distanceY - 50,
                     target: ev.target
                 });
 
@@ -84,13 +84,13 @@
 
                 // we came from multitouch, trigger a release event
                 // and use the changed touches from the multitouch
-                if(start_pos) {
+                if(startPos) {
                     touches.trigger = Hammer.EVENT_RELEASE;
                 // use the touches as changedTouches, because we are in a move
                 }  else {
                     changedTouches = touches;
                 }
-                start_pos = false;
+                startPos = false;
             }
 
             ev.touches = touches;

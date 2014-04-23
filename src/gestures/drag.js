@@ -53,8 +53,8 @@
         var cur = Detection.current;
 
         // max touches
-        if(inst.options.drag_max_touches > 0 &&
-            ev.touches.length > inst.options.drag_max_touches) {
+        if(inst.options.dragMaxTouches > 0 &&
+            ev.touches.length > inst.options.dragMaxTouches) {
             return;
         }
 
@@ -66,7 +66,7 @@
             case EVENT_MOVE:
                 // when the distance we moved is too small we skip this gesture
                 // or we can be already in dragging
-                if(ev.distance < inst.options.drag_min_distance &&
+                if(ev.distance < inst.options.dragMinDistance &&
                     cur.name != name) {
                     return;
                 }
@@ -76,11 +76,11 @@
                 // we are dragging!
                 if(cur.name != name) {
                     cur.name = name;
-                    if(inst.options.correct_for_drag_min_distance && ev.distance > 0) {
-                        // When a drag is triggered, set the event center to drag_min_distance pixels from the original event center.
-                        // Without this correction, the dragged distance would jumpstart at drag_min_distance pixels instead of at 0.
+                    if(inst.options.dragDistanceCorrection && ev.distance > 0) {
+                        // When a drag is triggered, set the event center to dragMinDistance pixels from the original event center.
+                        // Without this correction, the dragged distance would jumpstart at dragMinDistance pixels instead of at 0.
                         // It might be useful to save the original start point somewhere
-                        var factor = Math.abs(inst.options.drag_min_distance / ev.distance);
+                        var factor = Math.abs(inst.options.dragMinDistance / ev.distance);
                         startCenter.pageX += ev.deltaX * factor;
                         startCenter.pageY += ev.deltaY * factor;
                         startCenter.clientX += ev.deltaX * factor;
@@ -92,16 +92,17 @@
                 }
 
                 // lock drag to axis?
-                if(cur.lastEvent.drag_locked_to_axis ||
-                    ( inst.options.drag_lock_to_axis &&
-                        inst.options.drag_lock_min_distance <= ev.distance
+                if(cur.lastEvent.dragLockToAxis ||
+                    ( inst.options.dragLockToAxis &&
+                        inst.options.dragLockMinDistance <= ev.distance
                         )) {
-                    ev.drag_locked_to_axis = true;
+                    ev.dragLockToAxis = true;
                 }
-                var last_direction = cur.lastEvent.direction;
-                if(ev.drag_locked_to_axis && last_direction !== ev.direction) {
-                    // keep direction on the axis that the drag gesture started on
-                    if(Utils.isVertical(last_direction)) {
+
+                // keep direction on the axis that the drag gesture started on
+                var lastDirection = cur.lastEvent.direction;
+                if(ev.dragLockToAxis && lastDirection !== ev.direction) {
+                    if(Utils.isVertical(lastDirection)) {
                         ev.direction = (ev.deltaY < 0) ? DIRECTION_UP : DIRECTION_DOWN;
                     } else {
                         ev.direction = (ev.deltaX < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
@@ -118,17 +119,17 @@
                 inst.trigger(name, ev);
                 inst.trigger(name + ev.direction, ev);
 
-                var is_vertical = Utils.isVertical(ev.direction);
+                var isVertical = Utils.isVertical(ev.direction);
 
                 // block the browser events
-                if((inst.options.drag_block_vertical && is_vertical) ||
-                    (inst.options.drag_block_horizontal && !is_vertical)) {
+                if((inst.options.dragBlockVertical && isVertical) ||
+                    (inst.options.dragBlockHorizontal && !isVertical)) {
                     ev.preventDefault();
                 }
                 break;
 
             case EVENT_RELEASE:
-                if(triggered && ev.changedLength <= inst.options.drag_max_touches) {
+                if(triggered && ev.changedLength <= inst.options.dragMaxTouches) {
                     inst.trigger(name + 'end', ev);
                     triggered = false;
                 }
@@ -147,66 +148,66 @@
         defaults: {
             /**
              * minimal movement that have to be made before the drag event gets triggered
-             * @property drag_min_distance
+             * @property dragMinDistance
              * @type {Number}
              * @default 10
              */
-            drag_min_distance: 10,
+            dragMinDistance: 10,
 
             /**
-             * Set correct_for_drag_min_distance to true to make the starting point of the drag
+             * Set dragDistanceCorrection to true to make the starting point of the drag
              * be calculated from where the drag was triggered, not from where the touch started.
              * Useful to avoid a jerk-starting drag, which can make fine-adjustments
              * through dragging difficult, and be visually unappealing.
-             * @property correct_for_drag_min_distance
+             * @property dragDistanceCorrection
              * @type {Boolean}
              * @default true
              */
-            correct_for_drag_min_distance: true,
+            dragDistanceCorrection: true,
 
             /**
              * set 0 for unlimited, but this can conflict with transform
-             * @property drag_max_touches
+             * @property dragMaxTouches
              * @type {Number}
              * @default 1
              */
-            drag_max_touches: 1,
+            dragMaxTouches: 1,
 
             /**
              * prevent default browser behavior when dragging occurs
              * be careful with it, it makes the element a blocking element
              * when you are using the drag gesture, it is a good practice to set this true
-             * @property drag_block_horizontal
+             * @property dragBlockHorizontal
              * @type {Boolean}
              * @default false
              */
-            drag_block_horizontal: false,
+            dragBlockHorizontal: false,
 
             /**
-             * same as `drag_block_horizontal`, but for vertical movement
-             * @property drag_block_vertical
+             * same as `dragBlockHorizontal`, but for vertical movement
+             * @property dragBlockVertical
              * @type {Boolean}
              * @default false
              */
-            drag_block_vertical: false,
+            dragBlockVertical: false,
 
             /**
-             * drag_lock_to_axis keeps the drag gesture on the axis that it started on,
+             * dragLockToAxis keeps the drag gesture on the axis that it started on,
              * It disallows vertical directions if the initial direction was horizontal, and vice versa.
-             * @property drag_lock_to_axis
+             * @property dragLockToAxis
              * @type {Boolean}
              * @default false
              */
-            drag_lock_to_axis: false,
+            dragLockToAxis: false,
 
             /**
-             *  drag lock only kicks in when distance > drag_lock_min_distance
+             * drag lock only kicks in when distance > dragLockMinDistance
              * This way, locking occurs only when the distance has become large enough to reliably determine the direction
-             * @property drag_lock_min_distance
+             * @property dragLockMinDistance
              * @type {Number}
              * @default 25
              */
-            drag_lock_min_distance: 25
+            dragLockMinDistance: 25
         }
     };
 })('drag');

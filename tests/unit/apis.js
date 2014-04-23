@@ -82,6 +82,14 @@ module("Utils");
     ok(!Hammer.utils.inStr("lorum ipsum", "not here"), 'not in string');
   });
 
+  test('toCamelCase', function() {
+    expect(4);
+    equal(Hammer.utils.toCamelCase("camel-case"), 'camelCase');
+    equal(Hammer.utils.toCamelCase("camel_case"), 'camelCase');
+    equal(Hammer.utils.toCamelCase("camelCase"), 'camelCase');
+    equal(Hammer.utils.toCamelCase("KeepCamelCASE"), 'KeepCamelCASE');
+  });
+
   test('inArray', function() {
     expect(5);
     var array = [1, 2, 3, 4, 'aa', 'bb'];

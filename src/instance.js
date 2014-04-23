@@ -34,9 +34,15 @@ Hammer.Instance = function(element, options) {
 
     /**
      * options, merged with the defaults
+     * options with an _ are converted to camelCase
      * @property options
      * @type {Object}
      */
+    Utils.each(options, function(value, name) {
+        delete options[name];
+        options[Utils.toCamelCase(name)] = value;
+    });
+
     this.options = Utils.extend(Utils.extend({}, Hammer.defaults), options || {});
 
     // add some css to the element to prevent the browser from doing its native behavoir

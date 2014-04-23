@@ -35,11 +35,11 @@
                     if(current && current.name == name) {
                         inst.trigger(name, ev);
                     }
-                }, options.hold_timeout);
+                }, options.holdTimeout);
                 break;
 
             case EVENT_MOVE:
-                if(ev.distance > options.hold_threshold) {
+                if(ev.distance > options.holdThreshold) {
                     clearTimeout(timer);
                 }
                 break;
@@ -55,19 +55,19 @@
         index: 10,
         defaults: {
             /**
-             * @property hold_timeout
+             * @property holdTimeout
              * @type {Number}
              * @default 500
              */
-            hold_timeout: 500,
+            holdTimeout: 500,
 
             /**
              * movement allowed while holding
-             * @property hold_threshold
+             * @property holdThreshold
              * @type {Number}
              * @default 2
              */
-            hold_threshold: 2
+            holdThreshold: 2
         },
         handler: holdGesture
     };

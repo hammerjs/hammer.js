@@ -1,5 +1,8 @@
 # Changelog
 
+### 1.1.1, 2014-04-23
+- All vars and options renamed to be camelCased for more consistency in the code. Options are still allowed to be set with underscores when creating an instance.
+
 ### 1.1.0, 2014-04-23
 - Rewritten event core event handler. Fixes some issues with the last event data, and more triggers.
 - Added `EVENT_TOUCH` and `EVENT_RELEASE` event types. These events are triggered inside Hammer when the touches change. This makes some gestures more precise and gives you more control.

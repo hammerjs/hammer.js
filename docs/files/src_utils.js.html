@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/utils.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.0</em>
+            <em>API Docs for: 1.1.1</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -289,15 +289,15 @@ var Utils = Hammer.utils = {
     /**
      * calculate the velocity between two points. unit is in px per ms.
      * @method getVelocity
-     * @param {Number} delta_time
-     * @param {Number} delta_x
-     * @param {Number} delta_y
+     * @param {Number} deltaTime
+     * @param {Number} deltaX
+     * @param {Number} deltaY
      * @return {Object} velocity &#x60;x&#x60; and &#x60;y&#x60;
      */
-    getVelocity: function getVelocity(delta_time, delta_x, delta_y) {
+    getVelocity: function getVelocity(deltaTime, deltaX, deltaY) {
         return {
-            x: Math.abs(delta_x / delta_time) || 0,
-            y: Math.abs(delta_y / delta_time) || 0
+            x: Math.abs(deltaX / deltaTime) || 0,
+            y: Math.abs(deltaY / deltaTime) || 0
         };
     },
 
@@ -416,18 +416,30 @@ var Utils = Hammer.utils = {
             });
         });
 
-        var false_fn = function() {
+        var falseFn = function() {
             return false;
         };
 
         // also the disable onselectstart
         if(props.userSelect == &#x27;none&#x27;) {
-            element.onselectstart = !toggle &amp;&amp; false_fn;
+            element.onselectstart = !toggle &amp;&amp; falseFn;
         }
         // and disable ondragstart
         if(props.userDrag == &#x27;none&#x27;) {
-            element.ondragstart = !toggle &amp;&amp; false_fn;
+            element.ondragstart = !toggle &amp;&amp; falseFn;
         }
+    },
+
+    /**
+     * convert a string with underscores to camelCase
+     * so prevent_default becomes preventDefault
+     * @param {String} str
+     * @return {String} camelCaseStr
+     */
+    toCamelCase: function toCamelCase(str) {
+        return str.replace(/[_-]([a-z])/g, function(s) {
+            return s[1].toUpperCase();
+        });
     }
 };
 

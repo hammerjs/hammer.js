@@ -62,12 +62,12 @@ var Detection = Hammer.detection = {
 
         // hammer instance and instance options
         var inst = this.current.inst,
-            inst_options = inst.options;
+            instOptions = inst.options;
 
         // call Hammer.gesture handlers
         Utils.each(this.gestures, function triggerGesture(gesture) {
             // only when the instance options have enabled this gesture
-            if(!this.stopped && inst.enabled && inst_options[gesture.name]) {
+            if(!this.stopped && inst.enabled && instOptions[gesture.name]) {
                 // if a handler returns false, we stop with the detection
                 if(gesture.handler.call(gesture, eventData, inst) === false) {
                     this.stopDetect();
@@ -109,11 +109,11 @@ var Detection = Hammer.detection = {
      * @method getVelocityData
      * @param {Object} ev
      * @param {Object} center
-     * @param {Number} delta_time
-     * @param {Number} delta_x
-     * @param {Number} delta_y
+     * @param {Number} deltaTime
+     * @param {Number} deltaX
+     * @param {Number} deltaY
      */
-    getCalculatedData: function getCalculatedData(ev, center, delta_time, delta_x, delta_y) {
+    getCalculatedData: function getCalculatedData(ev, center, deltaTime, deltaX, deltaY) {
         var cur = this.current,
             recalc = false,
             calcEv = cur.lastCalcEvent,
@@ -121,9 +121,9 @@ var Detection = Hammer.detection = {
 
         if(calcEv && ev.timeStamp - calcEv.timeStamp > Hammer.CALCULATE_INTERVAL) {
             center = calcEv.center;
-            delta_time = ev.timeStamp - calcEv.timeStamp;
-            delta_x = ev.center.clientX - calcEv.center.clientX;
-            delta_y = ev.center.clientY - calcEv.center.clientY;
+            deltaTime = ev.timeStamp - calcEv.timeStamp;
+            deltaX = ev.center.clientX - calcEv.center.clientX;
+            deltaY = ev.center.clientY - calcEv.center.clientY;
             recalc = true;
         }
 
@@ -132,7 +132,7 @@ var Detection = Hammer.detection = {
         }
 
         if(!cur.lastCalcEvent || recalc) {
-            calcData.velocity = Utils.getVelocity(delta_time, delta_x, delta_y);
+            calcData.velocity = Utils.getVelocity(deltaTime, deltaX, deltaY);
             calcData.angle = Utils.getAngle(center, ev.center);
             calcData.direction = Utils.getDirection(center, ev.center);
 
@@ -165,18 +165,18 @@ var Detection = Hammer.detection = {
             });
         }
 
-        var delta_time = ev.timeStamp - startEv.timeStamp,
-            delta_x = ev.center.clientX - startEv.center.clientX,
-            delta_y = ev.center.clientY - startEv.center.clientY;
+        var deltaTime = ev.timeStamp - startEv.timeStamp,
+            deltaX = ev.center.clientX - startEv.center.clientX,
+            deltaY = ev.center.clientY - startEv.center.clientY;
 
-        this.getCalculatedData(ev, lastEv.center, delta_time, delta_x, delta_y);
+        this.getCalculatedData(ev, lastEv.center, deltaTime, deltaX, deltaY);
 
         Utils.extend(ev, {
             startEvent: startEv,
 
-            deltaTime: delta_time,
-            deltaX: delta_x,
-            deltaY: delta_y,
+            deltaTime: deltaTime,
+            deltaX: deltaX,
+            deltaY: deltaY,
 
             distance: Utils.getDistance(startEv.center, ev.center),
             angle: Utils.getAngle(startEv.center, ev.center),
