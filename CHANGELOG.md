@@ -2,6 +2,7 @@
 
 ### 1.1.1, 2014-04-23
 - All vars and options renamed to be camelCased for more consistency in the code. Options are still allowed to be set with underscores when creating an instance.
+- Codestyle changes, and a grunt task that keeps everything the same CS.
 
 ### 1.1.0, 2014-04-23
 - Rewritten event core event handler. Fixes some issues with the last event data, and more triggers.
