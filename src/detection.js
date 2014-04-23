@@ -147,8 +147,8 @@ var Detection = Hammer.detection = {
 
     ev.velocityX = calcData.velocity.x;
     ev.velocityY = calcData.velocity.y;
-    ev.angle = calcData.angle;
-    ev.direction = calcData.direction;
+    ev.interimAngle = calcData.angle;
+    ev.interimDirection = calcData.direction;
   },
 
 
@@ -178,14 +178,13 @@ var Detection = Hammer.detection = {
     this.getCalculatedData(ev, lastEv.center, delta_time, delta_x, delta_y);
 
     Utils.extend(ev, {
-      startEvent: startEv,
-
+      startEvent: startEv,      
       deltaTime : delta_time,
       deltaX    : delta_x,
       deltaY    : delta_y,
-
-      distance  : Utils.getDistance(startEv.center, ev.center),
-
+      distance  : Utils.getDistance(startEv.center, ev.center),      
+      angle     : Utils.getAngle(startEv.center, ev.center),
+      direction : Utils.getDirection(startEv.center, ev.center),
       scale     : Utils.getScale(startEv.touches, ev.touches),
       rotation  : Utils.getRotation(startEv.touches, ev.touches)
     });

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.0dev - 2014-04-14
+/*! Hammer.JS - v1.1.0dev - 2014-04-23
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -490,8 +490,8 @@ var Utils = Hammer.utils = {
    * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.clientX - touch2.clientX),
-      y = Math.abs(touch1.clientY - touch2.clientY);
+    var x = Math.abs(touch1.clientX - touch2.clientX)
+      , y = Math.abs(touch1.clientY - touch2.clientY);
 
     if(x >= y) {
       return touch1.clientX - touch2.clientX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
@@ -1168,8 +1168,8 @@ var Detection = Hammer.detection = {
 
     ev.velocityX = calcData.velocity.x;
     ev.velocityY = calcData.velocity.y;
-    ev.angle = calcData.angle;
-    ev.direction = calcData.direction;
+    ev.interimAngle = calcData.angle;
+    ev.interimDirection = calcData.direction;
   },
 
 
@@ -1199,14 +1199,13 @@ var Detection = Hammer.detection = {
     this.getCalculatedData(ev, lastEv.center, delta_time, delta_x, delta_y);
 
     Utils.extend(ev, {
-      startEvent: startEv,
-
+      startEvent: startEv,      
       deltaTime : delta_time,
       deltaX    : delta_x,
       deltaY    : delta_y,
-
-      distance  : Utils.getDistance(startEv.center, ev.center),
-
+      distance  : Utils.getDistance(startEv.center, ev.center),      
+      angle     : Utils.getAngle(startEv.center, ev.center),
+      direction : Utils.getDirection(startEv.center, ev.center),
       scale     : Utils.getScale(startEv.touches, ev.touches),
       rotation  : Utils.getRotation(startEv.touches, ev.touches)
     });

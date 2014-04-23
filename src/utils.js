@@ -227,8 +227,8 @@ var Utils = Hammer.utils = {
    * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
    */
   getDirection: function getDirection(touch1, touch2) {
-    var x = Math.abs(touch1.clientX - touch2.clientX),
-      y = Math.abs(touch1.clientY - touch2.clientY);
+    var x = Math.abs(touch1.clientX - touch2.clientX)
+      , y = Math.abs(touch1.clientY - touch2.clientY);
 
     if(x >= y) {
       return touch1.clientX - touch2.clientX > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
