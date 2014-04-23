@@ -18,7 +18,6 @@ var Detection = Hammer.detection = {
     // when this becomes true, no gestures are fired
     stopped: false,
 
-
     /**
      * start Hammer.gesture detection
      * @method startDetect
@@ -46,7 +45,6 @@ var Detection = Hammer.detection = {
 
         this.detect(eventData);
     },
-
 
     /**
      * Hammer.gesture detection
@@ -90,7 +88,6 @@ var Detection = Hammer.detection = {
         return eventData;
     },
 
-
     /**
      * clear the Hammer.gesture vars
      * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
@@ -106,7 +103,6 @@ var Detection = Hammer.detection = {
         this.current = null;
         this.stopped = true;
     },
-
 
     /**
      * calculate velocity, angle and direction
@@ -150,7 +146,6 @@ var Detection = Hammer.detection = {
         ev.interimDirection = calcData.direction;
     },
 
-
     /**
      * extend eventData for Hammer.gestures
      * @method extendEventData
@@ -192,7 +187,6 @@ var Detection = Hammer.detection = {
 
         return ev;
     },
-
 
     /**
      * register new gesture

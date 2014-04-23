@@ -1,7 +1,6 @@
 (function(Hammer) {
     'use strict';
 
-
     /**
      * show all touch on the screen by placing elements at there pageX and pageY
      *
@@ -42,7 +41,6 @@
         var touch_elements = {};
         var touches_index = {};
 
-
         /**
          * check if a style property exists
          * @param {String} prop
@@ -52,7 +50,6 @@
         function testStyle(prop, el) {
             return (prop in (el || document.body).style);
         }
-
 
         /**
          * remove unused touch elements
@@ -66,7 +63,6 @@
                 }
             }
         }
-
 
         /**
          * set position of an element with top/left or css transform
@@ -82,7 +78,6 @@
                 el.style[position_style_prop] = 'translate(' + x + 'px, ' + y + 'px)';
             }
         }
-
 
         Hammer.detection.register({
             name: 'show_touches',

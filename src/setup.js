@@ -21,7 +21,6 @@ var Hammer = function Hammer(element, options) {
     return new Hammer.Instance(element, options || {});
 };
 
-
 /**
  * version, as defined in package.json
  * the value will be set at each build
@@ -30,7 +29,6 @@ var Hammer = function Hammer(element, options) {
  * @type {String}
  */
 Hammer.VERSION = '{{PKG_VERSION}}';
-
 
 /**
  * default settings.
@@ -114,7 +112,6 @@ Hammer.defaults = {
     }
 };
 
-
 /**
  * hammer document where the base events are added at
  * @property DOCUMENT
@@ -123,14 +120,12 @@ Hammer.defaults = {
  */
 Hammer.DOCUMENT = window.document;
 
-
 /**
  * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
 Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
-
 
 /**
  * detect support for touch events
@@ -139,7 +134,6 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
  */
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
-
 /**
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
@@ -147,7 +141,6 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * @default 50
  */
 Hammer.CALCULATE_INTERVAL = 50;
-
 
 /**
  * eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`
@@ -158,7 +151,6 @@ Hammer.CALCULATE_INTERVAL = 50;
  * @type {Object}
  */
 var EVENT_TYPES = {};
-
 
 /**
  * direction strings, for safe comparisons
@@ -172,7 +164,6 @@ var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
 var DIRECTION_UP = Hammer.DIRECTION_UP = 'up';
 var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 
-
 /**
  * pointertype strings, for safe comparisons
  * @property POINTER_MOUSE|TOUCH|PEN
@@ -183,7 +174,6 @@ var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 var POINTER_MOUSE = Hammer.POINTER_MOUSE = 'mouse';
 var POINTER_TOUCH = Hammer.POINTER_TOUCH = 'touch';
 var POINTER_PEN = Hammer.POINTER_PEN = 'pen';
-
 
 /**
  * eventtypes
@@ -198,7 +188,6 @@ var EVENT_END = Hammer.EVENT_END = 'end';
 var EVENT_RELEASE = Hammer.EVENT_RELEASE = 'release';
 var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
 
-
 /**
  * if the window events are set...
  * @property READY
@@ -208,14 +197,12 @@ var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
  */
 Hammer.READY = false;
 
-
 /**
  * plugins namespace
  * @property plugins
  * @type {Object}
  */
 Hammer.plugins = Hammer.plugins || {};
-
 
 /**
  * gestures namespace
@@ -224,7 +211,6 @@ Hammer.plugins = Hammer.plugins || {};
  * @type {Object}
  */
 Hammer.gestures = Hammer.gestures || {};
-
 
 /**
  * setup events to detect gestures on the document

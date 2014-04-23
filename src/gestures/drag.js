@@ -140,7 +140,6 @@
         }
     }
 
-
     Hammer.gestures.Drag = {
         name: name,
         index: 50,

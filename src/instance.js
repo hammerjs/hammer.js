@@ -65,7 +65,6 @@ Hammer.Instance = function(element, options) {
     this.eventHandlers = [];
 };
 
-
 Hammer.Instance.prototype = {
     /**
      * bind events to the instance
@@ -82,7 +81,6 @@ Hammer.Instance.prototype = {
         });
         return self;
     },
-
 
     /**
      * unbind events to the instance
@@ -102,7 +100,6 @@ Hammer.Instance.prototype = {
         });
         return self;
     },
-
 
     /**
      * trigger gesture event
@@ -133,7 +130,6 @@ Hammer.Instance.prototype = {
         return this;
     },
 
-
     /**
      * enable of disable hammer.js detection
      * @method enable
@@ -144,7 +140,6 @@ Hammer.Instance.prototype = {
         this.enabled = state;
         return this;
     },
-
 
     /**
      * dispose this hammer instance

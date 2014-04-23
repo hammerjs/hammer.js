@@ -30,7 +30,6 @@ var Hammer = function Hammer(element, options) {
     return new Hammer.Instance(element, options || {});
 };
 
-
 /**
  * version, as defined in package.json
  * the value will be set at each build
@@ -39,7 +38,6 @@ var Hammer = function Hammer(element, options) {
  * @type {String}
  */
 Hammer.VERSION = '1.1.0';
-
 
 /**
  * default settings.
@@ -123,7 +121,6 @@ Hammer.defaults = {
     }
 };
 
-
 /**
  * hammer document where the base events are added at
  * @property DOCUMENT
@@ -132,14 +129,12 @@ Hammer.defaults = {
  */
 Hammer.DOCUMENT = window.document;
 
-
 /**
  * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
 Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
-
 
 /**
  * detect support for touch events
@@ -148,7 +143,6 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
  */
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
-
 /**
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
@@ -156,7 +150,6 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * @default 50
  */
 Hammer.CALCULATE_INTERVAL = 50;
-
 
 /**
  * eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`
@@ -167,7 +160,6 @@ Hammer.CALCULATE_INTERVAL = 50;
  * @type {Object}
  */
 var EVENT_TYPES = {};
-
 
 /**
  * direction strings, for safe comparisons
@@ -181,7 +173,6 @@ var DIRECTION_LEFT = Hammer.DIRECTION_LEFT = 'left';
 var DIRECTION_UP = Hammer.DIRECTION_UP = 'up';
 var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 
-
 /**
  * pointertype strings, for safe comparisons
  * @property POINTER_MOUSE|TOUCH|PEN
@@ -192,7 +183,6 @@ var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT = 'right';
 var POINTER_MOUSE = Hammer.POINTER_MOUSE = 'mouse';
 var POINTER_TOUCH = Hammer.POINTER_TOUCH = 'touch';
 var POINTER_PEN = Hammer.POINTER_PEN = 'pen';
-
 
 /**
  * eventtypes
@@ -207,7 +197,6 @@ var EVENT_END = Hammer.EVENT_END = 'end';
 var EVENT_RELEASE = Hammer.EVENT_RELEASE = 'release';
 var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
 
-
 /**
  * if the window events are set...
  * @property READY
@@ -217,14 +206,12 @@ var EVENT_TOUCH = Hammer.EVENT_TOUCH = 'touch';
  */
 Hammer.READY = false;
 
-
 /**
  * plugins namespace
  * @property plugins
  * @type {Object}
  */
 Hammer.plugins = Hammer.plugins || {};
-
 
 /**
  * gestures namespace
@@ -233,7 +220,6 @@ Hammer.plugins = Hammer.plugins || {};
  * @type {Object}
  */
 Hammer.gestures = Hammer.gestures || {};
-
 
 /**
  * setup events to detect gestures on the document
@@ -287,7 +273,6 @@ var Utils = Hammer.utils = {
         return dest;
     },
 
-
     /**
      * simple addEventListener wrapper
      * @method on
@@ -299,7 +284,6 @@ var Utils = Hammer.utils = {
         element.addEventListener(type, handler, false);
     },
 
-
     /**
      * simple removeEventListener wrapper
      * @method off
@@ -310,7 +294,6 @@ var Utils = Hammer.utils = {
     off: function off(element, type, handler) {
         element.removeEventListener(type, handler, false);
     },
-
 
     /**
      * forEach over arrays and objects
@@ -346,7 +329,6 @@ var Utils = Hammer.utils = {
         }
     },
 
-
     /**
      * find if a string contains the string using indexOf
      * @method inStr
@@ -357,7 +339,6 @@ var Utils = Hammer.utils = {
     inStr: function inStr(src, find) {
         return src.indexOf(find) > -1;
     },
-
 
     /**
      * find if a array contains the object using indexOf or a simple polyfill
@@ -380,7 +361,6 @@ var Utils = Hammer.utils = {
         }
     },
 
-
     /**
      * convert an array-like object (`arguments`, `touchlist`) to an array
      * @method toArray
@@ -390,7 +370,6 @@ var Utils = Hammer.utils = {
     toArray: function toArray(obj) {
         return Array.prototype.slice.call(obj, 0);
     },
-
 
     /**
      * find if a node is in the given parent
@@ -408,7 +387,6 @@ var Utils = Hammer.utils = {
         }
         return false;
     },
-
 
     /**
      * get the center of all the touches
@@ -449,7 +427,6 @@ var Utils = Hammer.utils = {
         };
     },
 
-
     /**
      * calculate the velocity between two points. unit is in px per ms.
      * @method getVelocity
@@ -465,7 +442,6 @@ var Utils = Hammer.utils = {
         };
     },
 
-
     /**
      * calculate the angle between two coordinates
      * @method getAngle
@@ -479,7 +455,6 @@ var Utils = Hammer.utils = {
 
         return Math.atan2(y, x) * 180 / Math.PI;
     },
-
 
     /**
      * do a small comparision to get the direction between two touches.
@@ -498,7 +473,6 @@ var Utils = Hammer.utils = {
         return touch1.clientY - touch2.clientY > 0 ? DIRECTION_UP : DIRECTION_DOWN;
     },
 
-
     /**
      * calculate the distance between two touches
      * @method getDistance
@@ -512,7 +486,6 @@ var Utils = Hammer.utils = {
 
         return Math.sqrt((x * x) + (y * y));
     },
-
 
     /**
      * calculate the scale factor between two touchLists
@@ -530,7 +503,6 @@ var Utils = Hammer.utils = {
         return 1;
     },
 
-
     /**
      * calculate the rotation degrees between two touchLists
      * @method getRotation
@@ -546,7 +518,6 @@ var Utils = Hammer.utils = {
         return 0;
     },
 
-
     /**
      * find out if the direction is vertical   *
      * @method isVertical
@@ -556,7 +527,6 @@ var Utils = Hammer.utils = {
     isVertical: function isVertical(direction) {
         return direction == DIRECTION_UP || direction == DIRECTION_DOWN;
     },
-
 
     /**
      * toggle browser default behavior by setting css properties.
@@ -620,7 +590,6 @@ var Event = Hammer.event = {
      */
     prevent_mouseevents: false,
 
-
     /**
      * if EVENT_START has been fired
      * @property started
@@ -629,7 +598,6 @@ var Event = Hammer.event = {
      */
     started: false,
 
-
     /**
      * when the mouse is hold down, this is true
      * @property should_detect
@@ -637,7 +605,6 @@ var Event = Hammer.event = {
      * @type {Boolean}
      */
     should_detect: false,
-
 
     /**
      * simple event binder with a hook and support for multiple types
@@ -656,7 +623,6 @@ var Event = Hammer.event = {
         });
     },
 
-
     /**
      * simple event unbinder with a hook and support for multiple types
      * @method off
@@ -673,7 +639,6 @@ var Event = Hammer.event = {
             hook && hook(type);
         });
     },
-
 
     /**
      * the core touch event handler.
@@ -732,7 +697,6 @@ var Event = Hammer.event = {
         this.on(element, EVENT_TYPES[eventType], onTouchHandler);
         return onTouchHandler;
     },
-
 
     /**
      * the core detection method
@@ -804,7 +768,6 @@ var Event = Hammer.event = {
         return trigger_type;
     },
 
-
     /**
      * we have different events for each device/browser
      * determine what we need and set them in the EVENT_TYPES constant
@@ -844,7 +807,6 @@ var Event = Hammer.event = {
         return EVENT_TYPES;
     },
 
-
     /**
      * create touchlist depending on the event
      * @method getTouchList
@@ -882,7 +844,6 @@ var Event = Hammer.event = {
         ev.identifier = 1;
         return [ev];
     },
-
 
     /**
      * collect basic event data
@@ -952,7 +913,6 @@ var PointerEvent = Hammer.PointerEvent = {
      */
     pointers: {},
 
-
     /**
      * get the pointers as an array
      * @method getTouchList
@@ -966,7 +926,6 @@ var PointerEvent = Hammer.PointerEvent = {
         });
         return touchlist;
     },
-
 
     /**
      * update the position of a pointer
@@ -982,7 +941,6 @@ var PointerEvent = Hammer.PointerEvent = {
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
     },
-
 
     /**
      * check if ev matches pointertype
@@ -1003,7 +961,6 @@ var PointerEvent = Hammer.PointerEvent = {
         types[POINTER_PEN] = (pt === (ev.MSPOINTER_TYPE_PEN || POINTER_PEN));
         return types[pointerType];
     },
-
 
     /**
      * reset the stored pointers
@@ -1035,7 +992,6 @@ var Detection = Hammer.detection = {
     // when this becomes true, no gestures are fired
     stopped: false,
 
-
     /**
      * start Hammer.gesture detection
      * @method startDetect
@@ -1063,7 +1019,6 @@ var Detection = Hammer.detection = {
 
         this.detect(eventData);
     },
-
 
     /**
      * Hammer.gesture detection
@@ -1107,7 +1062,6 @@ var Detection = Hammer.detection = {
         return eventData;
     },
 
-
     /**
      * clear the Hammer.gesture vars
      * this is called on endDetect, but can also be used when a final Hammer.gesture has been detected
@@ -1123,7 +1077,6 @@ var Detection = Hammer.detection = {
         this.current = null;
         this.stopped = true;
     },
-
 
     /**
      * calculate velocity, angle and direction
@@ -1167,7 +1120,6 @@ var Detection = Hammer.detection = {
         ev.interimDirection = calcData.direction;
     },
 
-
     /**
      * extend eventData for Hammer.gestures
      * @method extendEventData
@@ -1209,7 +1161,6 @@ var Detection = Hammer.detection = {
 
         return ev;
     },
-
 
     /**
      * register new gesture
@@ -1316,7 +1267,6 @@ Hammer.Instance = function(element, options) {
     this.eventHandlers = [];
 };
 
-
 Hammer.Instance.prototype = {
     /**
      * bind events to the instance
@@ -1333,7 +1283,6 @@ Hammer.Instance.prototype = {
         });
         return self;
     },
-
 
     /**
      * unbind events to the instance
@@ -1353,7 +1302,6 @@ Hammer.Instance.prototype = {
         });
         return self;
     },
-
 
     /**
      * trigger gesture event
@@ -1384,7 +1332,6 @@ Hammer.Instance.prototype = {
         return this;
     },
 
-
     /**
      * enable of disable hammer.js detection
      * @method enable
@@ -1395,7 +1342,6 @@ Hammer.Instance.prototype = {
         this.enabled = state;
         return this;
     },
-
 
     /**
      * dispose this hammer instance
@@ -1566,7 +1512,6 @@ Hammer.Instance.prototype = {
                 break;
         }
     }
-
 
     Hammer.gestures.Drag = {
         name: name,

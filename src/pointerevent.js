@@ -12,7 +12,6 @@ var PointerEvent = Hammer.PointerEvent = {
      */
     pointers: {},
 
-
     /**
      * get the pointers as an array
      * @method getTouchList
@@ -26,7 +25,6 @@ var PointerEvent = Hammer.PointerEvent = {
         });
         return touchlist;
     },
-
 
     /**
      * update the position of a pointer
@@ -42,7 +40,6 @@ var PointerEvent = Hammer.PointerEvent = {
             this.pointers[pointerEvent.pointerId] = pointerEvent;
         }
     },
-
 
     /**
      * check if ev matches pointertype
@@ -63,7 +60,6 @@ var PointerEvent = Hammer.PointerEvent = {
         types[POINTER_PEN] = (pt === (ev.MSPOINTER_TYPE_PEN || POINTER_PEN));
         return types[pointerType];
     },
-
 
     /**
      * reset the stored pointers

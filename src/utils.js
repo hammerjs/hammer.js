@@ -24,7 +24,6 @@ var Utils = Hammer.utils = {
         return dest;
     },
 
-
     /**
      * simple addEventListener wrapper
      * @method on
@@ -36,7 +35,6 @@ var Utils = Hammer.utils = {
         element.addEventListener(type, handler, false);
     },
 
-
     /**
      * simple removeEventListener wrapper
      * @method off
@@ -47,7 +45,6 @@ var Utils = Hammer.utils = {
     off: function off(element, type, handler) {
         element.removeEventListener(type, handler, false);
     },
-
 
     /**
      * forEach over arrays and objects
@@ -83,7 +80,6 @@ var Utils = Hammer.utils = {
         }
     },
 
-
     /**
      * find if a string contains the string using indexOf
      * @method inStr
@@ -94,7 +90,6 @@ var Utils = Hammer.utils = {
     inStr: function inStr(src, find) {
         return src.indexOf(find) > -1;
     },
-
 
     /**
      * find if a array contains the object using indexOf or a simple polyfill
@@ -117,7 +112,6 @@ var Utils = Hammer.utils = {
         }
     },
 
-
     /**
      * convert an array-like object (`arguments`, `touchlist`) to an array
      * @method toArray
@@ -127,7 +121,6 @@ var Utils = Hammer.utils = {
     toArray: function toArray(obj) {
         return Array.prototype.slice.call(obj, 0);
     },
-
 
     /**
      * find if a node is in the given parent
@@ -145,7 +138,6 @@ var Utils = Hammer.utils = {
         }
         return false;
     },
-
 
     /**
      * get the center of all the touches
@@ -186,7 +178,6 @@ var Utils = Hammer.utils = {
         };
     },
 
-
     /**
      * calculate the velocity between two points. unit is in px per ms.
      * @method getVelocity
@@ -202,7 +193,6 @@ var Utils = Hammer.utils = {
         };
     },
 
-
     /**
      * calculate the angle between two coordinates
      * @method getAngle
@@ -216,7 +206,6 @@ var Utils = Hammer.utils = {
 
         return Math.atan2(y, x) * 180 / Math.PI;
     },
-
 
     /**
      * do a small comparision to get the direction between two touches.
@@ -235,7 +224,6 @@ var Utils = Hammer.utils = {
         return touch1.clientY - touch2.clientY > 0 ? DIRECTION_UP : DIRECTION_DOWN;
     },
 
-
     /**
      * calculate the distance between two touches
      * @method getDistance
@@ -249,7 +237,6 @@ var Utils = Hammer.utils = {
 
         return Math.sqrt((x * x) + (y * y));
     },
-
 
     /**
      * calculate the scale factor between two touchLists
@@ -267,7 +254,6 @@ var Utils = Hammer.utils = {
         return 1;
     },
 
-
     /**
      * calculate the rotation degrees between two touchLists
      * @method getRotation
@@ -283,7 +269,6 @@ var Utils = Hammer.utils = {
         return 0;
     },
 
-
     /**
      * find out if the direction is vertical   *
      * @method isVertical
@@ -293,7 +278,6 @@ var Utils = Hammer.utils = {
     isVertical: function isVertical(direction) {
         return direction == DIRECTION_UP || direction == DIRECTION_DOWN;
     },
-
 
     /**
      * toggle browser default behavior by setting css properties.

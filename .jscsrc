@@ -8,6 +8,7 @@
     "requireLeftStickedOperators": [","],
     "disallowImplicitTypeConversion": ["string"],
     "disallowKeywords": ["with"],
+    "disallowMultipleLineBreaks": true,
     "disallowKeywordsOnNewLine": ["else"],
     "disallowMixedSpacesAndTabs": true,
     "disallowTrailingWhitespace": true,

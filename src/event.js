@@ -15,7 +15,6 @@ var Event = Hammer.event = {
      */
     prevent_mouseevents: false,
 
-
     /**
      * if EVENT_START has been fired
      * @property started
@@ -24,7 +23,6 @@ var Event = Hammer.event = {
      */
     started: false,
 
-
     /**
      * when the mouse is hold down, this is true
      * @property should_detect
@@ -32,7 +30,6 @@ var Event = Hammer.event = {
      * @type {Boolean}
      */
     should_detect: false,
-
 
     /**
      * simple event binder with a hook and support for multiple types
@@ -51,7 +48,6 @@ var Event = Hammer.event = {
         });
     },
 
-
     /**
      * simple event unbinder with a hook and support for multiple types
      * @method off
@@ -68,7 +64,6 @@ var Event = Hammer.event = {
             hook && hook(type);
         });
     },
-
 
     /**
      * the core touch event handler.
@@ -127,7 +122,6 @@ var Event = Hammer.event = {
         this.on(element, EVENT_TYPES[eventType], onTouchHandler);
         return onTouchHandler;
     },
-
 
     /**
      * the core detection method
@@ -199,7 +193,6 @@ var Event = Hammer.event = {
         return trigger_type;
     },
 
-
     /**
      * we have different events for each device/browser
      * determine what we need and set them in the EVENT_TYPES constant
@@ -239,7 +232,6 @@ var Event = Hammer.event = {
         return EVENT_TYPES;
     },
 
-
     /**
      * create touchlist depending on the event
      * @method getTouchList
@@ -277,7 +269,6 @@ var Event = Hammer.event = {
         ev.identifier = 1;
         return [ev];
     },
-
 
     /**
      * collect basic event data

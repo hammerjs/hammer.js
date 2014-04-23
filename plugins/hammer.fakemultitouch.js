@@ -16,7 +16,6 @@
             return;
         }
 
-
         // keeps the start position to keep it centered
         var start_pos = false;
 
@@ -99,5 +98,4 @@
             return touches;
         };
     };
-
 })(window.Hammer);
