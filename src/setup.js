@@ -18,7 +18,7 @@
  * @return {Hammer.Instance}
  */
 var Hammer = function Hammer(element, options) {
-  return new Hammer.Instance(element, options || {});
+    return new Hammer.Instance(element, options || {});
 };
 
 
@@ -47,71 +47,71 @@ Hammer.VERSION = '{{PKG_VERSION}}';
  * @type {Object}
  */
 Hammer.defaults = {
-  /**
-   * this setting object adds styles and attributes to the element to prevent the browser from doing
-   * its native behavior. The css properties are auto prefixed for the browsers when needed.
-   * @property defaults.behavior
-   * @type {Object}
-   */
-  behavior: {
     /**
-     * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
-     * `onselectstart=false` for IE on the element. Mainly for desktop browsers.
-     * @property defaults.behavior.userSelect
-     * @type {String}
-     * @default 'none'
+     * this setting object adds styles and attributes to the element to prevent the browser from doing
+     * its native behavior. The css properties are auto prefixed for the browsers when needed.
+     * @property defaults.behavior
+     * @type {Object}
      */
-    userSelect: 'none',
+    behavior: {
+        /**
+         * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+         * `onselectstart=false` for IE on the element. Mainly for desktop browsers.
+         * @property defaults.behavior.userSelect
+         * @type {String}
+         * @default 'none'
+         */
+        userSelect: 'none',
 
-    /**
-     * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
-     * Used by IE10>. By default this makes the element blocking any touch event.
-     * @property defaults.behavior.touchAction
-     * @type {String}
-     * @default: 'none'
-     */
-    touchAction: 'none',
+        /**
+         * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
+         * Used by IE10>. By default this makes the element blocking any touch event.
+         * @property defaults.behavior.touchAction
+         * @type {String}
+         * @default: 'none'
+         */
+        touchAction: 'none',
 
-    /**
-     * Disables the default callout shown when you touch and hold a touch target.
-     * On iOS, when you touch and hold a touch target such as a link, Safari displays
-     * a callout containing information about the link. This property allows you to disable that callout.
-     * @property defaults.behavior.touchCallout
-     * @type {String}
-     * @default 'none'
-     */
-    touchCallout: 'none',
+        /**
+         * Disables the default callout shown when you touch and hold a touch target.
+         * On iOS, when you touch and hold a touch target such as a link, Safari displays
+         * a callout containing information about the link. This property allows you to disable that callout.
+         * @property defaults.behavior.touchCallout
+         * @type {String}
+         * @default 'none'
+         */
+        touchCallout: 'none',
 
-    /**
-     * Specifies whether zooming is enabled. Used by IE10>
-     * @property defaults.behavior.contentZooming
-     * @type {String}
-     * @default 'none'
-     */
-    contentZooming: 'none',
+        /**
+         * Specifies whether zooming is enabled. Used by IE10>
+         * @property defaults.behavior.contentZooming
+         * @type {String}
+         * @default 'none'
+         */
+        contentZooming: 'none',
 
-    /**
-     * Specifies that an entire element should be draggable instead of its contents.
-     * Mainly for desktop browsers.
-     * @property defaults.behavior.userDrag
-     * @type {String}
-     * @default 'none'
-     */
-    userDrag: 'none',
+        /**
+         * Specifies that an entire element should be draggable instead of its contents.
+         * Mainly for desktop browsers.
+         * @property defaults.behavior.userDrag
+         * @type {String}
+         * @default 'none'
+         */
+        userDrag: 'none',
 
-    /**
-     * Overrides the highlight color shown when the user taps a link or a JavaScript
-     * clickable element in Safari on iPhone. This property obeys the alpha value, if specified.
-     *
-     * If you don't specify an alpha value, Safari on iPhone applies a default alpha value
-     * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
-     * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
-     * @property defaults.behavior.tapHighlightColor
-     * @type {String}
-     * @default 'rgba(0,0,0,0)'
-     */
-    tapHighlightColor: 'rgba(0,0,0,0)'
-  }
+        /**
+         * Overrides the highlight color shown when the user taps a link or a JavaScript
+         * clickable element in Safari on iPhone. This property obeys the alpha value, if specified.
+         *
+         * If you don't specify an alpha value, Safari on iPhone applies a default alpha value
+         * to the color. To disable tap highlighting, set the alpha value to 0 (invisible).
+         * If you set the alpha value to 1.0 (opaque), the element is not visible when tapped.
+         * @property defaults.behavior.tapHighlightColor
+         * @type {String}
+         * @default 'rgba(0,0,0,0)'
+         */
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
 };
 
 
@@ -232,22 +232,22 @@ Hammer.gestures = Hammer.gestures || {};
  * @private
  */
 function setup() {
-  if(Hammer.READY) {
-    return;
-  }
+    if(Hammer.READY) {
+        return;
+    }
 
-  // find what eventtypes we add listeners to
-  Event.determineEventTypes();
+    // find what eventtypes we add listeners to
+    Event.determineEventTypes();
 
-  // Register all gestures inside Hammer.gestures
-  Utils.each(Hammer.gestures, function(gesture){
-    Detection.register(gesture);
-  });
+    // Register all gestures inside Hammer.gestures
+    Utils.each(Hammer.gestures, function(gesture) {
+        Detection.register(gesture);
+    });
 
-  // Add touch events on the document
-  Event.onTouch(Hammer.DOCUMENT, EVENT_MOVE, Detection.detect);
-  Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
+    // Add touch events on the document
+    Event.onTouch(Hammer.DOCUMENT, EVENT_MOVE, Detection.detect);
+    Event.onTouch(Hammer.DOCUMENT, EVENT_END, Detection.detect);
 
-  // Hammer is ready...!
-  Hammer.READY = true;
+    // Hammer is ready...!
+    Hammer.READY = true;
 }

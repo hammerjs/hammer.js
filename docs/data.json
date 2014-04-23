@@ -517,7 +517,20 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 146,
+            "line": 46,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Drag",
+            "module": "gestures"
+        },
+        {
+            "file": "src/gestures/drag.js",
+            "line": 149,
             "description": "minimal movement that have to be made before the drag event gets triggered",
             "itemtype": "property",
             "name": "drag_min_distance",
@@ -528,7 +541,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 154,
+            "line": 157,
             "description": "Set correct_for_drag_min_distance to true to make the starting point of the drag\nbe calculated from where the drag was triggered, not from where the touch started.\nUseful to avoid a jerk-starting drag, which can make fine-adjustments\nthrough dragging difficult, and be visually unappealing.",
             "itemtype": "property",
             "name": "correct_for_drag_min_distance",
@@ -539,7 +552,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 165,
+            "line": 168,
             "description": "set 0 for unlimited, but this can conflict with transform",
             "itemtype": "property",
             "name": "drag_max_touches",
@@ -550,7 +563,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 173,
+            "line": 176,
             "description": "prevent default browser behavior when dragging occurs\nbe careful with it, it makes the element a blocking element\nwhen you are using the drag gesture, it is a good practice to set this true",
             "itemtype": "property",
             "name": "drag_block_horizontal",
@@ -561,7 +574,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 183,
+            "line": 186,
             "description": "same as `drag_block_horizontal`, but for vertical movement",
             "itemtype": "property",
             "name": "drag_block_vertical",
@@ -572,7 +585,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 191,
+            "line": 194,
             "description": "drag_lock_to_axis keeps the drag gesture on the axis that it started on,\nIt disallows vertical directions if the initial direction was horizontal, and vice versa.",
             "itemtype": "property",
             "name": "drag_lock_to_axis",
@@ -583,7 +596,7 @@
         },
         {
             "file": "src/gestures/drag.js",
-            "line": 200,
+            "line": 203,
             "description": "drag lock only kicks in when distance > drag_lock_min_distance\n This way, locking occurs only when the distance has become large enough to reliably determine the direction",
             "itemtype": "property",
             "name": "drag_lock_min_distance",
@@ -624,7 +637,20 @@
         },
         {
             "file": "src/gestures/hold.js",
-            "line": 53,
+            "line": 15,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Hold",
+            "module": "gestures"
+        },
+        {
+            "file": "src/gestures/hold.js",
+            "line": 57,
             "itemtype": "property",
             "name": "hold_timeout",
             "type": "{Number}",
@@ -634,7 +660,7 @@
         },
         {
             "file": "src/gestures/hold.js",
-            "line": 60,
+            "line": 64,
             "description": "movement allowed while holding",
             "itemtype": "property",
             "name": "hold_threshold",
@@ -807,7 +833,20 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 65,
+            "line": 19,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Tap",
+            "module": "gestures"
+        },
+        {
+            "file": "src/gestures/tap.js",
+            "line": 69,
             "description": "max time of a tap, this is for the slow tappers",
             "itemtype": "property",
             "name": "tap_max_touchtime",
@@ -818,7 +857,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 73,
+            "line": 77,
             "description": "max distance of movement of a tap, this is for the slow tappers",
             "itemtype": "property",
             "name": "tap_max_distance",
@@ -829,7 +868,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 81,
+            "line": 85,
             "description": "always trigger the `tap` event, even while double-tapping",
             "itemtype": "property",
             "name": "tap_always",
@@ -840,7 +879,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 89,
+            "line": 93,
             "description": "max distance between two taps",
             "itemtype": "property",
             "name": "doubletap_distance",
@@ -851,7 +890,7 @@
         },
         {
             "file": "src/gestures/tap.js",
-            "line": 97,
+            "line": 101,
             "description": "max time between two taps",
             "itemtype": "property",
             "name": "doubletap_interval",
@@ -989,7 +1028,20 @@
         },
         {
             "file": "src/gestures/transform.js",
-            "line": 97,
+            "line": 37,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Transform",
+            "module": "gestures"
+        },
+        {
+            "file": "src/gestures/transform.js",
+            "line": 101,
             "description": "minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1",
             "itemtype": "property",
             "name": "transform_min_scale",
@@ -1000,7 +1052,7 @@
         },
         {
             "file": "src/gestures/transform.js",
-            "line": 105,
+            "line": 109,
             "description": "rotation in degrees",
             "itemtype": "property",
             "name": "transform_min_rotation",
@@ -1072,6 +1124,11 @@
                     "type": "Object"
                 },
                 {
+                    "name": "center",
+                    "description": "",
+                    "type": "Object"
+                },
+                {
                     "name": "delta_time",
                     "description": "",
                     "type": "Number"
@@ -1092,7 +1149,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 153,
+            "line": 154,
             "description": "extend eventData for Hammer.gestures",
             "itemtype": "method",
             "name": "extendEventData",
@@ -1112,7 +1169,7 @@
         },
         {
             "file": "src/detection.js",
-            "line": 196,
+            "line": 197,
             "description": "register new gesture",
             "itemtype": "method",
             "name": "register",
@@ -1276,7 +1333,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 135,
+            "line": 132,
             "description": "the core detection method\nthis finds out what hammer-touch-events to trigger",
             "itemtype": "method",
             "name": "doDetect",
@@ -1311,7 +1368,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 207,
+            "line": 203,
             "description": "we have different events for each device/browser\ndetermine what we need and set them in the EVENT_TYPES constant\nthe `onTouch` method is bind to these properties.",
             "itemtype": "method",
             "name": "determineEventTypes",
@@ -1324,7 +1381,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 248,
+            "line": 243,
             "description": "create touchlist depending on the event",
             "itemtype": "method",
             "name": "getTouchList",
@@ -1349,7 +1406,7 @@
         },
         {
             "file": "src/event.js",
-            "line": 287,
+            "line": 282,
             "description": "collect basic event data",
             "itemtype": "method",
             "name": "collectEventData",
@@ -1384,21 +1441,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 312,
+            "line": 307,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 322,
+            "line": 317,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 329,
+            "line": 324,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -1439,7 +1496,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 49,
+            "line": 47,
             "description": "event start handler on the element to start the detection",
             "itemtype": "property",
             "name": "eventStartHandler",
@@ -1449,7 +1506,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 63,
+            "line": 60,
             "description": "keep a list of user event handlers which needs to be removed when calling 'dispose'",
             "itemtype": "property",
             "name": "eventHandlers",
@@ -1459,7 +1516,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 73,
+            "line": 70,
             "description": "bind events to the instance",
             "itemtype": "method",
             "name": "on",
@@ -1488,7 +1545,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 90,
+            "line": 87,
             "description": "unbind events to the instance",
             "itemtype": "method",
             "name": "off",
@@ -1510,7 +1567,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 110,
+            "line": 107,
             "description": "trigger gesture event",
             "itemtype": "method",
             "name": "trigger",
@@ -1533,7 +1590,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 140,
+            "line": 137,
             "description": "enable of disable hammer.js detection",
             "itemtype": "method",
             "name": "enable",
@@ -1550,7 +1607,7 @@
         },
         {
             "file": "src/instance.js",
-            "line": 152,
+            "line": 149,
             "description": "dispose this hammer instance",
             "itemtype": "method",
             "name": "dispose",
@@ -1607,7 +1664,7 @@
         },
         {
             "file": "src/pointerevent.js",
-            "line": 48,
+            "line": 47,
             "description": "check if ev matches pointertype",
             "itemtype": "method",
             "name": "matchType",
@@ -1628,7 +1685,7 @@
         },
         {
             "file": "src/pointerevent.js",
-            "line": 69,
+            "line": 68,
             "description": "reset the stored pointers",
             "itemtype": "method",
             "name": "reset",
@@ -2023,7 +2080,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 88,
+            "line": 87,
             "description": "find if a string contains the string using indexOf",
             "itemtype": "method",
             "name": "inStr",
@@ -2048,7 +2105,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 100,
+            "line": 99,
             "description": "find if a array contains the object using indexOf or a simple polyfill",
             "itemtype": "method",
             "name": "inArray",
@@ -2073,7 +2130,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 123,
+            "line": 121,
             "description": "convert an array-like object (`arguments`, `touchlist`) to an array",
             "itemtype": "method",
             "name": "toArray",
@@ -2093,7 +2150,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 134,
+            "line": 132,
             "description": "find if a node is in the given parent",
             "itemtype": "method",
             "name": "hasParent",
@@ -2118,7 +2175,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 152,
+            "line": 150,
             "description": "get the center of all the touches",
             "itemtype": "method",
             "name": "getCenter",
@@ -2138,7 +2195,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 192,
+            "line": 190,
             "description": "calculate the velocity between two points. unit is in px per ms.",
             "itemtype": "method",
             "name": "getVelocity",
@@ -2168,7 +2225,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 208,
+            "line": 206,
             "description": "calculate the angle between two coordinates",
             "itemtype": "method",
             "name": "getAngle",
@@ -2193,7 +2250,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 223,
+            "line": 221,
             "description": "do a small comparision to get the direction between two touches.",
             "itemtype": "method",
             "name": "getDirection",
@@ -2218,7 +2275,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 241,
+            "line": 239,
             "description": "calculate the distance between two touches",
             "itemtype": "method",
             "name": "getDistance",
@@ -2243,7 +2300,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 256,
+            "line": 254,
             "description": "calculate the scale factor between two touchLists\nno scale is 1, and goes down to 0 when pinched together, and bigger when pinched out",
             "itemtype": "method",
             "name": "getScale",
@@ -2268,7 +2325,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 273,
+            "line": 271,
             "description": "calculate the rotation degrees between two touchLists",
             "itemtype": "method",
             "name": "getRotation",
@@ -2293,7 +2350,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 289,
+            "line": 287,
             "description": "find out if the direction is vertical   *",
             "itemtype": "method",
             "name": "isVertical",
@@ -2313,7 +2370,7 @@
         },
         {
             "file": "src/utils.js",
-            "line": 300,
+            "line": 298,
             "description": "toggle browser default behavior by setting css properties.\n`userSelect='none'` also sets `element.onselectstart` to false\n`userDrag='none'` also sets `element.ondragstart` to false",
             "itemtype": "method",
             "name": "toggleBehavior",
@@ -2342,16 +2399,32 @@
     ],
     "warnings": [
         {
+            "message": "Missing item type",
+            "line": " src/gestures/drag.js:46"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/gestures/hold.js:15"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/gestures/tap.js:19"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/gestures/transform.js:37"
+        },
+        {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:312"
+            "line": " src/event.js:307"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:322"
+            "line": " src/event.js:317"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:329"
+            "line": " src/event.js:324"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",

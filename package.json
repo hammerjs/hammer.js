@@ -37,7 +37,8 @@
     "grunt-string-replace": "^0.2.7",
     "grunt-contrib-yuidoc": "^0.5.2",
     "faketouches": "git://github.com/jtangelder/faketouches.js.git",
-    "underscore": "1.6.x"
+    "underscore": "1.6.x",
+    "grunt-jscs-checker": "^0.4.1"
   },
   "main": "hammer.js",
   "engines": {

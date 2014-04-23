@@ -12,11 +12,11 @@
  * @param {Object} ev
  */
 Hammer.gestures.Release = {
-  name   : 'release',
-  index  : Infinity,
-  handler: function releaseGesture(ev, inst) {
-    if(ev.eventType == EVENT_RELEASE) {
-      inst.trigger(this.name, ev);
+    name: 'release',
+    index: Infinity,
+    handler: function releaseGesture(ev, inst) {
+        if(ev.eventType == EVENT_RELEASE) {
+            inst.trigger(this.name, ev);
+        }
     }
-  }
 };

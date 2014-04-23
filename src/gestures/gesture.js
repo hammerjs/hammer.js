@@ -13,9 +13,9 @@
  * @param {Object} ev
  */
 Hammer.gestures.Gesture = {
-  name   : 'gesture',
-  index  : 1337,
-  handler: function releaseGesture(ev, inst) {
-    inst.trigger(this.name, ev);
-  }
+    name: 'gesture',
+    index: 1337,
+    handler: function releaseGesture(ev, inst) {
+        inst.trigger(this.name, ev);
+    }
 };

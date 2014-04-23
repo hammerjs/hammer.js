@@ -141,86 +141,90 @@
  * @event rotate
  * @param {Object} ev
  */
+
+/**
+ * @param {String} name
+ */
 (function(name) {
-  var triggered = false;
+    var triggered = false;
 
-  function transformGesture(ev, inst) {
-    switch(ev.eventType) {
-      case EVENT_START:
-        triggered = false;
-        break;
+    function transformGesture(ev, inst) {
+        switch(ev.eventType) {
+            case EVENT_START:
+                triggered = false;
+                break;
 
-      case EVENT_MOVE:
-          // at least multitouch
-        if(ev.touches.length &lt; 2) {
-          return;
+            case EVENT_MOVE:
+                // at least multitouch
+                if(ev.touches.length &lt; 2) {
+                    return;
+                }
+
+                var scale_threshold = Math.abs(1 - ev.scale);
+                var rotation_threshold = Math.abs(ev.rotation);
+
+                // when the distance we moved is too small we skip this gesture
+                // or we can be already in dragging
+                if(scale_threshold &lt; inst.options.transform_min_scale &amp;&amp;
+                    rotation_threshold &lt; inst.options.transform_min_rotation) {
+                    return;
+                }
+
+                // we are transforming!
+                Detection.current.name = name;
+
+                // first time, trigger dragstart event
+                if(!triggered) {
+                    inst.trigger(name + &#x27;start&#x27;, ev);
+                    triggered = true;
+                }
+
+                inst.trigger(name, ev); // basic transform event
+
+                // trigger rotate event
+                if(rotation_threshold &gt; inst.options.transform_min_rotation) {
+                    inst.trigger(&#x27;rotate&#x27;, ev);
+                }
+
+                // trigger pinch event
+                if(scale_threshold &gt; inst.options.transform_min_scale) {
+                    inst.trigger(&#x27;pinch&#x27;, ev);
+                    inst.trigger(&#x27;pinch&#x27; + (ev.scale &lt; 1 ? &#x27;in&#x27; : &#x27;out&#x27;), ev);
+                }
+                break;
+
+            case EVENT_RELEASE:
+                if(triggered &amp;&amp; ev.changedLength &lt; 2) {
+                    inst.trigger(name + &#x27;end&#x27;, ev);
+                    triggered = false;
+                }
+                break;
         }
-
-        var scale_threshold = Math.abs(1 - ev.scale);
-        var rotation_threshold = Math.abs(ev.rotation);
-
-        // when the distance we moved is too small we skip this gesture
-        // or we can be already in dragging
-        if(scale_threshold &lt; inst.options.transform_min_scale &amp;&amp;
-          rotation_threshold &lt; inst.options.transform_min_rotation) {
-          return;
-        }
-
-        // we are transforming!
-        Detection.current.name = name;
-
-        // first time, trigger dragstart event
-        if(!triggered) {
-          inst.trigger(name + &#x27;start&#x27;, ev);
-          triggered = true;
-        }
-
-        inst.trigger(name, ev); // basic transform event
-
-        // trigger rotate event
-        if(rotation_threshold &gt; inst.options.transform_min_rotation) {
-          inst.trigger(&#x27;rotate&#x27;, ev);
-        }
-
-        // trigger pinch event
-        if(scale_threshold &gt; inst.options.transform_min_scale) {
-          inst.trigger(&#x27;pinch&#x27;, ev);
-          inst.trigger(&#x27;pinch&#x27; + (ev.scale&lt;1 ? &#x27;in&#x27; : &#x27;out&#x27;), ev);
-        }
-        break;
-
-      case EVENT_RELEASE:
-        if(triggered &amp;&amp; ev.changedLength &lt; 2) {
-          inst.trigger(name + &#x27;end&#x27;, ev);
-          triggered = false;
-        }
-        break;
     }
-  }
 
-  Hammer.gestures.Transform = {
-    name     : name,
-    index    : 45,
-    defaults : {
-      /**
-       * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
-       * @property transform_min_scale
-       * @type {Number}
-       * @default 0.01
-       */
-      transform_min_scale: 0.01,
+    Hammer.gestures.Transform = {
+        name: name,
+        index: 45,
+        defaults: {
+            /**
+             * minimal scale factor, no scale is 1, zoomin is to 0 and zoomout until higher then 1
+             * @property transform_min_scale
+             * @type {Number}
+             * @default 0.01
+             */
+            transform_min_scale: 0.01,
 
-      /**
-       * rotation in degrees
-       * @property transform_min_rotation
-       * @type {Number}
-       * @default 1
-       */
-      transform_min_rotation: 1
-    },
+            /**
+             * rotation in degrees
+             * @property transform_min_rotation
+             * @type {Number}
+             * @default 1
+             */
+            transform_min_rotation: 1
+        },
 
-    handler: transformGesture
-  };
+        handler: transformGesture
+    };
 })(&#x27;transform&#x27;);
 </pre>
 

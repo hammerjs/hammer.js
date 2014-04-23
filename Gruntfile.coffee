@@ -54,10 +54,15 @@ module.exports = (grunt) ->
       build:
         src: ['hammer.js', 'plugins/*.js']
 
+    jscs:
+      src: ['src/**/*.js', 'plugins/**/*.js']
+      options:
+        force: true
+
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat','string-replace','uglify','jshint']
+        tasks: ['concat','string-replace','uglify','jshint','jscs']
         options:
           interrupt: true
 
@@ -91,9 +96,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-yuidoc'
   grunt.loadNpmTasks 'grunt-string-replace'
+  grunt.loadNpmTasks 'grunt-jscs-checker'
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','string-replace','uglify','yuidoc','test']
-  grunt.registerTask 'test', ['jshint','qunit']
+  grunt.registerTask 'test', ['jshint','jscs','qunit']
   grunt.registerTask 'test-travis', ['build']
