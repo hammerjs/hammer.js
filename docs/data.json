@@ -257,7 +257,7 @@
             "namespace": "",
             "file": "src/gestures/swipe.js",
             "line": 4,
-            "description": "triggers swipe events when the end velocity is above the threshold\nfor best usage, set `prevent_default` (on the drag gesture) to `true`\n````\n hammertime.on(\"dragleft swipeleft\", function(ev) {\n   console.log(ev);\n   ev.gesture.preventDefault();\n });\n````",
+            "description": "triggers swipe events when the end velocity is above the threshold\nfor best usage, set `preventDefault` (on the drag gesture) to `true`\n````\n hammertime.on(\"dragleft swipeleft\", function(ev) {\n   console.log(ev);\n   ev.gesture.preventDefault();\n });\n````",
             "static": 1
         },
         "Tap": {
@@ -302,7 +302,7 @@
             "namespace": "",
             "file": "src/gestures/transform.js",
             "line": 4,
-            "description": "User want to scale or rotate with 2 fingers\nPreventing the default browser behavior is a good way to improve feel and working. This can be done with the\n`transform_always_block` option.",
+            "description": "User want to scale or rotate with 2 fingers\nPreventing the default browser behavior is a good way to improve feel and working. This can be done with the\n`preventDefault` option.",
             "static": 1
         },
         "Detection": {
@@ -1441,21 +1441,21 @@
         },
         {
             "file": "src/event.js",
-            "line": 298,
+            "line": 300,
             "description": "prevent the browser default actions\nmostly used to disable scrolling of the browser",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 308,
+            "line": 310,
             "description": "stop bubbling the event up to its parents",
             "class": "Event",
             "module": "hammer"
         },
         {
             "file": "src/event.js",
-            "line": 315,
+            "line": 317,
             "description": "immediately stop gesture detection\nmight be useful after a swipe was detected",
             "return": {
                 "description": "",
@@ -2434,15 +2434,15 @@
         },
         {
             "message": "Missing item type\nprevent the browser default actions\nmostly used to disable scrolling of the browser",
-            "line": " src/event.js:298"
+            "line": " src/event.js:300"
         },
         {
             "message": "Missing item type\nstop bubbling the event up to its parents",
-            "line": " src/event.js:308"
+            "line": " src/event.js:310"
         },
         {
             "message": "Missing item type\nimmediately stop gesture detection\nmight be useful after a swipe was detected",
-            "line": " src/event.js:315"
+            "line": " src/event.js:317"
         },
         {
             "message": "Missing item type\nsetup events to detect gestures on the document\nthis function is called when creating an new instance",

@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.1 - 2014-04-23
+/*! Hammer.JS - v1.1.1 - 2014-04-24
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -871,6 +871,8 @@ var Event = Hammer.event = {
         var pointerType = POINTER_TOUCH;
         if(Utils.inStr(ev.type, 'mouse') || PointerEvent.matchType(POINTER_MOUSE, ev)) {
             pointerType = POINTER_MOUSE;
+        } else if(PointerEvent.matchType(POINTER_PEN, ev)) {
+            pointerType = POINTER_PEN;
         }
 
         return {
@@ -1728,7 +1730,7 @@ Hammer.gestures.Release = {
  */
 /**
  * triggers swipe events when the end velocity is above the threshold
- * for best usage, set `prevent_default` (on the drag gesture) to `true`
+ * for best usage, set `preventDefault` (on the drag gesture) to `true`
  * ````
  *  hammertime.on("dragleft swipeleft", function(ev) {
  *    console.log(ev);
@@ -1985,7 +1987,7 @@ Hammer.gestures.Touch = {
 /**
  * User want to scale or rotate with 2 fingers
  * Preventing the default browser behavior is a good way to improve feel and working. This can be done with the
- * `transform_always_block` option.
+ * `preventDefault` option.
  *
  * @class Transform
  * @static
