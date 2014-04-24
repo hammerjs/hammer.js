@@ -203,14 +203,12 @@ var Event = Hammer.event = {
     determineEventTypes: function determineEventTypes() {
         var types;
         if(Hammer.HAS_POINTEREVENTS) {
-            // prefixed or full support?
             if(window.PointerEvent) {
                 types = [
                     'pointerdown',
                     'pointermove',
                     'pointerup pointercancel'
                 ];
-            // only IE has prefixed
             } else {
                 types = [
                     'MSPointerDown',
@@ -218,6 +216,12 @@ var Event = Hammer.event = {
                     'MSPointerUp MSPointerCancel'
                 ];
             }
+        } else if(Hammer.NO_MOUSEEVENTS) {
+            types = [
+                'touchstart',
+                'touchmove',
+                'touchend touchcancel'
+            ];
         } else {
             types = [
                 'touchstart mousedown',

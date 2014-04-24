@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.1.2dev
+- Bring back the `NO_MOUSEEVENTS` check. Just has better support this way. It is used to disable binding to mouseevents on most mobile browsers.
+- Pen support for pointerEvents
+
 ### 1.1.1, 2014-04-23
 - All vars and options renamed to be camelCased for more consistency in the code. Options are still allowed to be set with underscores when creating an instance.
 - Codestyle changes, and a grunt task that keeps everything the same CS.

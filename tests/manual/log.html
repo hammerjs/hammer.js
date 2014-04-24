@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html><head><meta charset=utf-8>
+<title>Event listener (shows only events, no timings)</title>
+<meta name="viewport" content="width=device-width">
+<link rel="stylesheet" href="style.css">
+<script>
+window.addEventListener('load', function() {
+	var events = [
+		'mouseover',
+		'mousemove',
+		'mouseout',
+		'mouseenter',
+		'mouseleave',
+		'mousedown',
+		'mouseup',
+		'focus',
+		'blur',
+		'click',
+		'MSPointerDown',
+		'MSPointerUp',
+		'MSPointerCancel',
+		'MSPointerMove',
+		'MSPointerOver',
+		'MSPointerOut',
+		'MSPointerEnter',
+		'MSPointerLeave',
+		'MSGotPointerCapture',
+		'MSLostPointerCapture',
+		'pointerdown',
+		'pointerup',
+		'pointercancel',
+		'pointermove',
+		'pointerover',
+		'pointerout',
+		'pointerenter',
+		'pointerleave',
+		'gotpointercapture',
+		'lostpointercapture',
+		'touchstart',
+		'touchmove',
+		'touchend',
+		'touchenter',
+		'touchleave',
+		'touchcancel'	
+	];
+	var b = document.getElementsByTagName('button')[0];
+	var a = document.getElementById('area');
+	var o = document.getElementsByTagName('output')[0];
+	var report = function(e) {
+		o.innerHTML += e.type;
+		o.innerHTML += '<br>';
+		
+		if(e.type == 'touchmove') {
+			e.preventDefault();
+		}
+	};
+	
+	for (var i=0; i<events.length; i++) {
+		b.addEventListener(events[i], report, false);
+		a.addEventListener(events[i], report, false);
+	}
+}, false);
+</script>
+</head><body>
+<h1>Event listener</h1>
+<p>Lists the order of all relevant events being fired.</p>
+<button class="button">Test button!</button>
+<div id="area" style="max-width: 300px; height: 100px; background: #eee;">Test area!<input type="text"></div>
+<output></output>
+</body></html>
