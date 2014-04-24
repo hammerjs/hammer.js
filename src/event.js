@@ -284,6 +284,8 @@ var Event = Hammer.event = {
         var pointerType = POINTER_TOUCH;
         if(Utils.inStr(ev.type, 'mouse') || PointerEvent.matchType(POINTER_MOUSE, ev)) {
             pointerType = POINTER_MOUSE;
+        } else if(PointerEvent.matchType(POINTER_PEN, ev)) {
+            pointerType = POINTER_PEN;
         }
 
         return {
