@@ -246,7 +246,7 @@ module("Events");
     var types = Hammer.event.determineEventTypes();
     equal(types.start, 'pointerdown', 'event type start');
     equal(types.move, 'pointermove', 'event type move');
-    equal(types.end, 'pointerup pointercancel', 'event type end');
+    equal(types.end, 'pointerup pointercancel lostpointercapture', 'event type end');
   });
 
   test('getTouchList', function() {
