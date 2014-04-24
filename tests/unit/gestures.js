@@ -1,7 +1,7 @@
 var el = document.getElementById('toucharea');
 
 // force showing touches
-Hammer.plugins.showTouches(true);
+Hammer.plugins.showTouches();
 
 // simulate touches
 var simulator = new FakeTouches(el);
@@ -112,7 +112,7 @@ function testEventData(name, ev) {
 
   ok(_.isNumber(ev.gesture.angle), 'ev.gesture.angle');
   ok(_.isNumber(ev.gesture.interimAngle), 'ev.gesture.interimAngle');
-  
+
   if(ev.gesture.eventType == Hammer.EVENT_TOUCH || ev.gesture.eventType == Hammer.EVENT_RELEASE) {
     ok(_.isNumber(ev.gesture.changedLength), 'ev.gesture.changedLength');
   }
@@ -138,6 +138,9 @@ function testEventData(name, ev) {
   if (simulator.touch_type == FakeTouches.POINTER_MOUSE_EVENTS ||
     simulator.touch_type == FakeTouches.MOUSE_EVENTS) {
     pointer_type = 'mouse';
+  }
+  else if (simulator.touch_type == FakeTouches.POINTER_PEN_EVENTS) {
+    pointer_type = 'pen';
   }
   ok(ev.gesture.pointerType == pointer_type, 'not matching pointertype: ' + ev.gesture.eventType + ':' + ev.gesture.pointerType + ':' + pointer_type);
 
