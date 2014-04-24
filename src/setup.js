@@ -118,14 +118,14 @@ Hammer.defaults = {
  * @type {HTMLElement}
  * @default window.document
  */
-Hammer.DOCUMENT = window.document;
+Hammer.DOCUMENT = document;
 
 /**
  * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
-Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 
 /**
  * detect support for touch events
@@ -139,7 +139,7 @@ Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
  * @property IS_MOBILE
  * @type {Boolean}
  */
-Hammer.IS_MOBILE = window.navigator.userAgent.match(/mobile|tablet|ip(ad|hone|od)|android|silk/i);
+Hammer.IS_MOBILE = /mobile|tablet|ip(ad|hone|od)|android|silk/i.test(navigator.userAgent);
 
 /**
  * detect if we want to support mouseevents at all
