@@ -207,13 +207,13 @@ var Event = Hammer.event = {
                 types = [
                     'pointerdown',
                     'pointermove',
-                    'pointerup pointercancel'
+                    'pointerup pointercancel lostpointercapture'
                 ];
             } else {
                 types = [
                     'MSPointerDown',
                     'MSPointerMove',
-                    'MSPointerUp MSPointerCancel'
+                    'MSPointerUp MSPointerCancel MSLostPointerCapture'
                 ];
             }
         } else if(Hammer.NO_MOUSEEVENTS) {

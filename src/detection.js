@@ -161,7 +161,10 @@ var Detection = Hammer.detection = {
         if(ev.eventType == EVENT_TOUCH || ev.eventType == EVENT_RELEASE) {
             startEv.touches = [];
             Utils.each(ev.touches, function(touch) {
-                startEv.touches.push(Utils.extend({}, touch));
+                startEv.touches.push({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
             });
         }
 

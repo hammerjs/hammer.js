@@ -279,7 +279,7 @@ var Utils = Hammer.utils = {
      */
     extend: function extend(dest, src, merge) {
         for(var key in src) {
-            if(dest[key] !== undefined && merge || key == 'returnValue') {
+            if(!src.hasOwnProperty(key) || (dest[key] !== undefined && merge)) {
                 continue;
             }
             dest[key] = src[key];
@@ -808,13 +808,13 @@ var Event = Hammer.event = {
                 types = [
                     'pointerdown',
                     'pointermove',
-                    'pointerup pointercancel'
+                    'pointerup pointercancel lostpointercapture'
                 ];
             } else {
                 types = [
                     'MSPointerDown',
                     'MSPointerMove',
-                    'MSPointerUp MSPointerCancel'
+                    'MSPointerUp MSPointerCancel MSLostPointerCapture'
                 ];
             }
         } else if(Hammer.NO_MOUSEEVENTS) {
@@ -1167,7 +1167,10 @@ var Detection = Hammer.detection = {
         if(ev.eventType == EVENT_TOUCH || ev.eventType == EVENT_RELEASE) {
             startEv.touches = [];
             Utils.each(ev.touches, function(touch) {
-                startEv.touches.push(Utils.extend({}, touch));
+                startEv.touches.push({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
             });
         }
 
