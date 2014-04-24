@@ -11,10 +11,10 @@ manually and pass your gesture object as a param
 The object structure of a gesture:
 
 ````js
-{ name: 'mygesture',
+{ name: 'myGesture',
   index: 1337,
   defaults: {
-	mygesture_option: true
+	myGestureOption: true
   }
   handler: function(ev, inst) {
 	// trigger gesture event
