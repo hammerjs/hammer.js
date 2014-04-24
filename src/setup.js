@@ -135,18 +135,18 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
 Hammer.HAS_TOUCHEVENTS = ('ontouchstart' in window);
 
 /**
- * regex used to detect mobile browsers
- * @property MOBILE_REGEX
- * @type {RegExp}
+ * detect mobile browsers
+ * @property IS_MOBILE
+ * @type {Boolean}
  */
-Hammer.MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
+Hammer.IS_MOBILE = window.navigator.userAgent.match(/mobile|tablet|ip(ad|hone|od)|android|silk/i);
 
 /**
  * detect if we want to support mouseevents at all
  * @property NO_MOUSEEVENTS
  * @type {Boolean}
  */
-Hammer.NO_MOUSEEVENTS = Hammer.HAS_TOUCHEVENTS && window.navigator.userAgent.match(Hammer.MOBILE_REGEX);
+Hammer.NO_MOUSEEVENTS = (Hammer.HAS_TOUCHEVENTS && Hammer.IS_MOBILE) || Hammer.HAS_POINTEREVENTS;
 
 /**
  * interval in which Hammer recalculates current velocity/direction/angle in ms
