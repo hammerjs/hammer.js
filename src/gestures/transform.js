@@ -4,7 +4,7 @@
 /**
  * User want to scale or rotate with 2 fingers
  * Preventing the default browser behavior is a good way to improve feel and working. This can be done with the
- * `transform_always_block` option.
+ * `preventDefault` option.
  *
  * @class Transform
  * @static

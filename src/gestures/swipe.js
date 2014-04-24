@@ -3,7 +3,7 @@
  */
 /**
  * triggers swipe events when the end velocity is above the threshold
- * for best usage, set `prevent_default` (on the drag gesture) to `true`
+ * for best usage, set `preventDefault` (on the drag gesture) to `true`
  * ````
  *  hammertime.on("dragleft swipeleft", function(ev) {
  *    console.log(ev);
