@@ -161,9 +161,9 @@ Hammer.NO_MOUSEEVENTS = (Hammer.HAS_TOUCHEVENTS && Hammer.IS_MOBILE) || Hammer.H
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
  * @type {Number}
- * @default 50
+ * @default 25
  */
-Hammer.CALCULATE_INTERVAL = 50;
+Hammer.CALCULATE_INTERVAL = 25;
 
 /**
  * eventtypes per touchevent (start, move, end) are filled by `Event.determineEventTypes` on `setup`
@@ -1801,9 +1801,9 @@ Hammer.gestures.Swipe = {
          * horizontal swipe velocity
          * @property swipeVelocityX
          * @type {Number}
-         * @default 0.7
+         * @default 0.6
          */
-        swipeVelocityX: 0.7,
+        swipeVelocityX: 0.6,
 
         /**
          * vertical swipe velocity

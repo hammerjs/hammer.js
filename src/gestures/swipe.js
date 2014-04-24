@@ -56,9 +56,9 @@ Hammer.gestures.Swipe = {
          * horizontal swipe velocity
          * @property swipeVelocityX
          * @type {Number}
-         * @default 0.7
+         * @default 0.6
          */
-        swipeVelocityX: 0.7,
+        swipeVelocityX: 0.6,
 
         /**
          * vertical swipe velocity
