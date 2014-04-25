@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/setup.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.1</em>
+            <em>API Docs for: 1.1.2</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -226,14 +226,14 @@ Hammer.defaults = {
  * @type {HTMLElement}
  * @default window.document
  */
-Hammer.DOCUMENT = window.document;
+Hammer.DOCUMENT = document;
 
 /**
  * detect support for pointer events
  * @property HAS_POINTEREVENTS
  * @type {Boolean}
  */
-Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.msPointerEnabled;
+Hammer.HAS_POINTEREVENTS = navigator.pointerEnabled || navigator.msPointerEnabled;
 
 /**
  * detect support for touch events
@@ -243,12 +243,26 @@ Hammer.HAS_POINTEREVENTS = window.navigator.pointerEnabled || window.navigator.m
 Hammer.HAS_TOUCHEVENTS = (&#x27;ontouchstart&#x27; in window);
 
 /**
+ * detect mobile browsers
+ * @property IS_MOBILE
+ * @type {Boolean}
+ */
+Hammer.IS_MOBILE = /mobile|tablet|ip(ad|hone|od)|android|silk/i.test(navigator.userAgent);
+
+/**
+ * detect if we want to support mouseevents at all
+ * @property NO_MOUSEEVENTS
+ * @type {Boolean}
+ */
+Hammer.NO_MOUSEEVENTS = (Hammer.HAS_TOUCHEVENTS &amp;&amp; Hammer.IS_MOBILE) || Hammer.HAS_POINTEREVENTS;
+
+/**
  * interval in which Hammer recalculates current velocity/direction/angle in ms
  * @property CALCULATE_INTERVAL
  * @type {Number}
- * @default 50
+ * @default 25
  */
-Hammer.CALCULATE_INTERVAL = 50;
+Hammer.CALCULATE_INTERVAL = 25;
 
 /**
  * eventtypes per touchevent (start, move, end) are filled by &#x60;Event.determineEventTypes&#x60; on &#x60;setup&#x60;

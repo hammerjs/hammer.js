@@ -79,26 +79,29 @@ var Event = Hammer.event = {
 
         var onTouchHandler = function onTouchHandler(ev) {
             var srcType = ev.type.toLowerCase(),
-                hasPointerEvents = Hammer.HAS_POINTEREVENTS,
-                triggerType,
-                isMouse = Utils.inStr(srcType, 'mouse');
+                isPointer = Hammer.HAS_POINTEREVENTS,
+                isMouse = Utils.inStr(srcType, 'mouse'),
+                triggerType;
 
             // if we are in a mouseevent, but there has been a touchevent triggered in this session
             // we want to do nothing. simply break out of the event.
             if(isMouse && self.preventMouseEvents) {
                 return;
+
             // mousebutton must be down
-            } else if(isMouse && eventType == EVENT_START) {
+            } else if(isMouse && eventType == EVENT_START && ev.button === 0) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
+            } else if(isPointer && eventType == EVENT_START) {
+                self.shouldDetect = (ev.buttons === 1);
             // just a valid start event, but no mouse
-            } else if(eventType == EVENT_START && !isMouse) {
+            } else if(!isMouse && eventType == EVENT_START) {
                 self.preventMouseEvents = true;
                 self.shouldDetect = true;
             }
 
             // update the pointer event before entering the detection
-            if(hasPointerEvents && eventType != EVENT_END) {
+            if(isPointer && eventType != EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
 
@@ -114,7 +117,9 @@ var Event = Hammer.event = {
                 self.shouldDetect = false;
                 PointerEvent.reset();
             // update the pointerevent object after the detection
-            } else if(hasPointerEvents && eventType == EVENT_END) {
+            }
+
+            if(isPointer && eventType == EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
         };

@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: Hammer</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.1</em>
+            <em>API Docs for: 1.1.2</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -197,10 +197,10 @@
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l137"><code>src&#x2F;setup.js:137</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l151"><code>src&#x2F;setup.js:151</code></a></span>
     <p>interval in which Hammer recalculates current velocity/direction/angle in ms</p>
 
-    <strong>Default:</strong> 50
+    <strong>Default:</strong> 25
     
 </div>
 
@@ -342,7 +342,7 @@ Mainly for desktop browsers.</p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l155"><code>src&#x2F;setup.js:155</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l169"><code>src&#x2F;setup.js:169</code></a></span>
     <p>direction strings, for safe comparisons</p>
 
     <strong>Default:</strong> &#x27;down&#x27; &#x27;left&#x27; &#x27;up&#x27; &#x27;right&#x27;
@@ -370,7 +370,7 @@ Mainly for desktop browsers.</p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l178"><code>src&#x2F;setup.js:178</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l192"><code>src&#x2F;setup.js:192</code></a></span>
     <p>eventtypes</p>
 
     <strong>Default:</strong> &#x27;start&#x27; &#x27;change&#x27; &#x27;move&#x27; &#x27;end&#x27; &#x27;release&#x27; &#x27;touch&#x27;
@@ -384,7 +384,7 @@ Mainly for desktop browsers.</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l145"><code>src&#x2F;setup.js:145</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l159"><code>src&#x2F;setup.js:159</code></a></span>
     <p>eventtypes per touchevent (start, move, end) are filled by <code>Event.determineEventTypes</code> on <code>setup</code>
 the object contains the DOM event names per type (<code>EVENT_START</code>, <code>EVENT_MOVE</code>, <code>EVENT_END</code>)</p>
 
@@ -399,7 +399,7 @@ the object contains the DOM event names per type (<code>EVENT_START</code>, <cod
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l207"><code>src&#x2F;setup.js:207</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l221"><code>src&#x2F;setup.js:221</code></a></span>
     <p>gestures namespace
 see <code>/gestures</code> for the definitions</p>
 
@@ -436,13 +436,41 @@ see <code>/gestures</code> for the definitions</p>
 </div>
 
             
+                <a name="props_IS_MOBILE"></a>
+<div class="props item">
+    <code>IS_MOBILE</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l137"><code>src&#x2F;setup.js:137</code></a></span>
+    <p>detect mobile browsers</p>
+
+    
+    
+</div>
+
+            
+                <a name="props_NO_MOUSEEVENTS"></a>
+<div class="props item">
+    <code>NO_MOUSEEVENTS</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean" class="crosslink external" target="_blank">Boolean</a></strong>&gt;
+    
+    
+    <br>
+    <span class="foundat"><a href="../files/src_setup.js.html#l144"><code>src&#x2F;setup.js:144</code></a></span>
+    <p>detect if we want to support mouseevents at all</p>
+
+    
+    
+</div>
+
+            
                 <a name="props_plugins"></a>
 <div class="props item">
     <code>plugins</code> &lt;<strong><a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object" class="crosslink external" target="_blank">Object</a></strong>&gt;
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l200"><code>src&#x2F;setup.js:200</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l214"><code>src&#x2F;setup.js:214</code></a></span>
     <p>plugins namespace</p>
 
     
@@ -456,7 +484,7 @@ see <code>/gestures</code> for the definitions</p>
     <em>(final)</em>
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l167"><code>src&#x2F;setup.js:167</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l181"><code>src&#x2F;setup.js:181</code></a></span>
     <p>pointertype strings, for safe comparisons</p>
 
     <strong>Default:</strong> &#x27;mouse&#x27; &#x27;touch&#x27; &#x27;pen&#x27;
@@ -470,7 +498,7 @@ see <code>/gestures</code> for the definitions</p>
     
     
     <br>
-    <span class="foundat"><a href="../files/src_setup.js.html#l191"><code>src&#x2F;setup.js:191</code></a></span>
+    <span class="foundat"><a href="../files/src_setup.js.html#l205"><code>src&#x2F;setup.js:205</code></a></span>
     <p>if the window events are set...</p>
 
     <strong>Default:</strong> false

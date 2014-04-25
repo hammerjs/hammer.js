@@ -280,6 +280,33 @@ var Utils = Hammer.utils = {
     },
 
     /**
+     * set css properties with their prefixes
+     * @param {HTMLElement} element
+     * @param {String} prop
+     * @param {String} value
+     * @param {Boolean} [toggle=true]
+     * @return {Boolean}
+     */
+    setPrefixedCss: function setPrefixedCss(element, prop, value, toggle) {
+        var prefixes = ['', 'Webkit', 'Moz', 'O', 'ms'];
+        prop = Utils.toCamelCase(prop);
+
+        for(var i = 0; i < prefixes.length; i++) {
+            var p = prop;
+            // prefixes
+            if(prefixes[i]) {
+                p = prefixes[i] + p.slice(0, 1).toUpperCase() + p.slice(1);
+            }
+
+            // test the style
+            if(p in element.style) {
+                element.style[p] = (toggle == null || toggle) && value || '';
+                break;
+            }
+        }
+    },
+
+    /**
      * toggle browser default behavior by setting css properties.
      * `userSelect='none'` also sets `element.onselectstart` to false
      * `userDrag='none'` also sets `element.ondragstart` to false
@@ -287,38 +314,29 @@ var Utils = Hammer.utils = {
      * @method toggleBehavior
      * @param {HtmlElement} element
      * @param {Object} props
-     * @param {Boolean} [toggle=false]
+     * @param {Boolean} [toggle=true]
      */
     toggleBehavior: function toggleBehavior(element, props, toggle) {
         if(!props || !element || !element.style) {
             return;
         }
 
-        // with css properties for modern browsers
-        Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
-            Utils.each(props, function(value, prop) {
-                // vender prefix at the property
-                if(vendor) {
-                    prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-                }
-                // set the style
-                if(prop in element.style) {
-                    element.style[prop] = !toggle && value;
-                }
-            });
+        // set the css properties
+        Utils.each(props, function(value, prop) {
+            Utils.setPrefixedCss(element, prop, value, toggle);
         });
 
-        var falseFn = function() {
+        var falseFn = toggle && function() {
             return false;
         };
 
         // also the disable onselectstart
         if(props.userSelect == 'none') {
-            element.onselectstart = !toggle && falseFn;
+            element.onselectstart = falseFn;
         }
         // and disable ondragstart
         if(props.userDrag == 'none') {
-            element.ondragstart = !toggle && falseFn;
+            element.ondragstart = falseFn;
         }
     },
 

@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/event.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.1</em>
+            <em>API Docs for: 1.1.2</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -187,26 +187,29 @@ var Event = Hammer.event = {
 
         var onTouchHandler = function onTouchHandler(ev) {
             var srcType = ev.type.toLowerCase(),
-                hasPointerEvents = Hammer.HAS_POINTEREVENTS,
-                triggerType,
-                isMouse = Utils.inStr(srcType, &#x27;mouse&#x27;);
+                isPointer = Hammer.HAS_POINTEREVENTS,
+                isMouse = Utils.inStr(srcType, &#x27;mouse&#x27;),
+                triggerType;
 
             // if we are in a mouseevent, but there has been a touchevent triggered in this session
             // we want to do nothing. simply break out of the event.
             if(isMouse &amp;&amp; self.preventMouseEvents) {
                 return;
+
             // mousebutton must be down
-            } else if(isMouse &amp;&amp; eventType == EVENT_START) {
+            } else if(isMouse &amp;&amp; eventType == EVENT_START &amp;&amp; ev.button === 0) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
+            } else if(isPointer &amp;&amp; eventType == EVENT_START) {
+                self.shouldDetect = (ev.buttons === 1);
             // just a valid start event, but no mouse
-            } else if(eventType == EVENT_START &amp;&amp; !isMouse) {
+            } else if(!isMouse &amp;&amp; eventType == EVENT_START) {
                 self.preventMouseEvents = true;
                 self.shouldDetect = true;
             }
 
             // update the pointer event before entering the detection
-            if(hasPointerEvents &amp;&amp; eventType != EVENT_END) {
+            if(isPointer &amp;&amp; eventType != EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
 
@@ -222,7 +225,9 @@ var Event = Hammer.event = {
                 self.shouldDetect = false;
                 PointerEvent.reset();
             // update the pointerevent object after the detection
-            } else if(hasPointerEvents &amp;&amp; eventType == EVENT_END) {
+            }
+
+            if(isPointer &amp;&amp; eventType == EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
         };
@@ -311,21 +316,25 @@ var Event = Hammer.event = {
     determineEventTypes: function determineEventTypes() {
         var types;
         if(Hammer.HAS_POINTEREVENTS) {
-            // prefixed or full support?
             if(window.PointerEvent) {
                 types = [
                     &#x27;pointerdown&#x27;,
                     &#x27;pointermove&#x27;,
-                    &#x27;pointerup pointercancel&#x27;
+                    &#x27;pointerup pointercancel lostpointercapture&#x27;
                 ];
-            // only IE has prefixed
             } else {
                 types = [
                     &#x27;MSPointerDown&#x27;,
                     &#x27;MSPointerMove&#x27;,
-                    &#x27;MSPointerUp MSPointerCancel&#x27;
+                    &#x27;MSPointerUp MSPointerCancel MSLostPointerCapture&#x27;
                 ];
             }
+        } else if(Hammer.NO_MOUSEEVENTS) {
+            types = [
+                &#x27;touchstart&#x27;,
+                &#x27;touchmove&#x27;,
+                &#x27;touchend touchcancel&#x27;
+            ];
         } else {
             types = [
                 &#x27;touchstart mousedown&#x27;,
@@ -433,6 +442,7 @@ var Event = Hammer.event = {
         };
     }
 };
+
 </pre>
 
 </div>

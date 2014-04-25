@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.1 - 2014-04-24
+/*! Hammer.JS - v1.1.2 - 2014-04-25
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -37,7 +37,7 @@ var Hammer = function Hammer(element, options) {
  * @final
  * @type {String}
  */
-Hammer.VERSION = '1.1.1';
+Hammer.VERSION = '1.1.2';
 
 /**
  * default settings.
@@ -543,6 +543,33 @@ var Utils = Hammer.utils = {
     },
 
     /**
+     * set css properties with their prefixes
+     * @param {HTMLElement} element
+     * @param {String} prop
+     * @param {String} value
+     * @param {Boolean} [toggle=true]
+     * @return {Boolean}
+     */
+    setPrefixedCss: function setPrefixedCss(element, prop, value, toggle) {
+        var prefixes = ['', 'Webkit', 'Moz', 'O', 'ms'];
+        prop = Utils.toCamelCase(prop);
+
+        for(var i = 0; i < prefixes.length; i++) {
+            var p = prop;
+            // prefixes
+            if(prefixes[i]) {
+                p = prefixes[i] + p.slice(0, 1).toUpperCase() + p.slice(1);
+            }
+
+            // test the style
+            if(p in element.style) {
+                element.style[p] = (toggle == null || toggle) && value || '';
+                break;
+            }
+        }
+    },
+
+    /**
      * toggle browser default behavior by setting css properties.
      * `userSelect='none'` also sets `element.onselectstart` to false
      * `userDrag='none'` also sets `element.ondragstart` to false
@@ -550,38 +577,29 @@ var Utils = Hammer.utils = {
      * @method toggleBehavior
      * @param {HtmlElement} element
      * @param {Object} props
-     * @param {Boolean} [toggle=false]
+     * @param {Boolean} [toggle=true]
      */
     toggleBehavior: function toggleBehavior(element, props, toggle) {
         if(!props || !element || !element.style) {
             return;
         }
 
-        // with css properties for modern browsers
-        Utils.each(['webkit', 'moz', 'Moz', 'ms', 'o', ''], function setStyle(vendor) {
-            Utils.each(props, function(value, prop) {
-                // vender prefix at the property
-                if(vendor) {
-                    prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-                }
-                // set the style
-                if(prop in element.style) {
-                    element.style[prop] = !toggle && value;
-                }
-            });
+        // set the css properties
+        Utils.each(props, function(value, prop) {
+            Utils.setPrefixedCss(element, prop, value, toggle);
         });
 
-        var falseFn = function() {
+        var falseFn = toggle && function() {
             return false;
         };
 
         // also the disable onselectstart
         if(props.userSelect == 'none') {
-            element.onselectstart = !toggle && falseFn;
+            element.onselectstart = falseFn;
         }
         // and disable ondragstart
         if(props.userDrag == 'none') {
-            element.ondragstart = !toggle && falseFn;
+            element.ondragstart = falseFn;
         }
     },
 
@@ -680,26 +698,29 @@ var Event = Hammer.event = {
 
         var onTouchHandler = function onTouchHandler(ev) {
             var srcType = ev.type.toLowerCase(),
-                hasPointerEvents = Hammer.HAS_POINTEREVENTS,
-                triggerType,
-                isMouse = Utils.inStr(srcType, 'mouse');
+                isPointer = Hammer.HAS_POINTEREVENTS,
+                isMouse = Utils.inStr(srcType, 'mouse'),
+                triggerType;
 
             // if we are in a mouseevent, but there has been a touchevent triggered in this session
             // we want to do nothing. simply break out of the event.
             if(isMouse && self.preventMouseEvents) {
                 return;
+
             // mousebutton must be down
-            } else if(isMouse && eventType == EVENT_START) {
+            } else if(isMouse && eventType == EVENT_START && ev.button === 0) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
+            } else if(isPointer && eventType == EVENT_START) {
+                self.shouldDetect = (ev.buttons === 1);
             // just a valid start event, but no mouse
-            } else if(eventType == EVENT_START && !isMouse) {
+            } else if(!isMouse && eventType == EVENT_START) {
                 self.preventMouseEvents = true;
                 self.shouldDetect = true;
             }
 
             // update the pointer event before entering the detection
-            if(hasPointerEvents && eventType != EVENT_END) {
+            if(isPointer && eventType != EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
 
@@ -715,7 +736,9 @@ var Event = Hammer.event = {
                 self.shouldDetect = false;
                 PointerEvent.reset();
             // update the pointerevent object after the detection
-            } else if(hasPointerEvents && eventType == EVENT_END) {
+            }
+
+            if(isPointer && eventType == EVENT_END) {
                 PointerEvent.updatePointer(eventType, ev);
             }
         };
@@ -931,6 +954,7 @@ var Event = Hammer.event = {
     }
 };
 
+
 /**
  * @module hammer
  *
@@ -966,7 +990,7 @@ var PointerEvent = Hammer.PointerEvent = {
      * @param {Object} pointerEvent
      */
     updatePointer: function updatePointer(eventType, pointerEvent) {
-        if(eventType == EVENT_END) {
+        if(eventType == EVENT_END || (eventType != EVENT_END && pointerEvent.buttons !== 1)) {
             delete this.pointers[pointerEvent.pointerId];
         } else {
             pointerEvent.identifier = pointerEvent.pointerId;
@@ -1284,7 +1308,7 @@ Hammer.Instance = function(element, options) {
 
     // add some css to the element to prevent the browser from doing its native behavoir
     if(this.options.behavior) {
-        Utils.toggleBehavior(this.element, this.options.behavior, false);
+        Utils.toggleBehavior(this.element, this.options.behavior, true);
     }
 
     /**
@@ -1393,9 +1417,7 @@ Hammer.Instance.prototype = {
         var i, eh;
 
         // undo all changes made by stop_browser_behavior
-        if(this.options.behavior) {
-            Utils.toggleBehavior(this.element, this.options.behavior, true);
-        }
+        Utils.toggleBehavior(this.element, this.options.behavior, false);
 
         // unbind all custom event handlers
         for(i = -1; (eh = this.eventHandlers[++i]);) {

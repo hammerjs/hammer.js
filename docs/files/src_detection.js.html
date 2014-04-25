@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/detection.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.1</em>
+            <em>API Docs for: 1.1.2</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -269,7 +269,10 @@ var Detection = Hammer.detection = {
         if(ev.eventType == EVENT_TOUCH || ev.eventType == EVENT_RELEASE) {
             startEv.touches = [];
             Utils.each(ev.touches, function(touch) {
-                startEv.touches.push(Utils.extend({}, touch));
+                startEv.touches.push({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
             });
         }
 

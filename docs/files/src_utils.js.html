@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/utils.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.1</em>
+            <em>API Docs for: 1.1.2</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -124,7 +124,7 @@ var Utils = Hammer.utils = {
      */
     extend: function extend(dest, src, merge) {
         for(var key in src) {
-            if(dest[key] !== undefined &amp;&amp; merge || key == &#x27;returnValue&#x27;) {
+            if(!src.hasOwnProperty(key) || (dest[key] !== undefined &amp;&amp; merge)) {
                 continue;
             }
             dest[key] = src[key];
@@ -388,6 +388,33 @@ var Utils = Hammer.utils = {
     },
 
     /**
+     * set css properties with their prefixes
+     * @param {HTMLElement} element
+     * @param {String} prop
+     * @param {String} value
+     * @param {Boolean} [toggle=true]
+     * @return {Boolean}
+     */
+    setPrefixedCss: function setPrefixedCss(element, prop, value, toggle) {
+        var prefixes = [&#x27;&#x27;, &#x27;Webkit&#x27;, &#x27;Moz&#x27;, &#x27;O&#x27;, &#x27;ms&#x27;];
+        prop = Utils.toCamelCase(prop);
+
+        for(var i = 0; i &lt; prefixes.length; i++) {
+            var p = prop;
+            // prefixes
+            if(prefixes[i]) {
+                p = prefixes[i] + p.slice(0, 1).toUpperCase() + p.slice(1);
+            }
+
+            // test the style
+            if(p in element.style) {
+                element.style[p] = (toggle == null || toggle) &amp;&amp; value || &#x27;&#x27;;
+                break;
+            }
+        }
+    },
+
+    /**
      * toggle browser default behavior by setting css properties.
      * &#x60;userSelect=&#x27;none&#x27;&#x60; also sets &#x60;element.onselectstart&#x60; to false
      * &#x60;userDrag=&#x27;none&#x27;&#x60; also sets &#x60;element.ondragstart&#x60; to false
@@ -395,38 +422,29 @@ var Utils = Hammer.utils = {
      * @method toggleBehavior
      * @param {HtmlElement} element
      * @param {Object} props
-     * @param {Boolean} [toggle=false]
+     * @param {Boolean} [toggle=true]
      */
     toggleBehavior: function toggleBehavior(element, props, toggle) {
         if(!props || !element || !element.style) {
             return;
         }
 
-        // with css properties for modern browsers
-        Utils.each([&#x27;webkit&#x27;, &#x27;moz&#x27;, &#x27;Moz&#x27;, &#x27;ms&#x27;, &#x27;o&#x27;, &#x27;&#x27;], function setStyle(vendor) {
-            Utils.each(props, function(value, prop) {
-                // vender prefix at the property
-                if(vendor) {
-                    prop = vendor + prop.substring(0, 1).toUpperCase() + prop.substring(1);
-                }
-                // set the style
-                if(prop in element.style) {
-                    element.style[prop] = !toggle &amp;&amp; value;
-                }
-            });
+        // set the css properties
+        Utils.each(props, function(value, prop) {
+            Utils.setPrefixedCss(element, prop, value, toggle);
         });
 
-        var falseFn = function() {
+        var falseFn = toggle &amp;&amp; function() {
             return false;
         };
 
         // also the disable onselectstart
         if(props.userSelect == &#x27;none&#x27;) {
-            element.onselectstart = !toggle &amp;&amp; falseFn;
+            element.onselectstart = falseFn;
         }
         // and disable ondragstart
         if(props.userDrag == &#x27;none&#x27;) {
-            element.ondragstart = !toggle &amp;&amp; falseFn;
+            element.ondragstart = falseFn;
         }
     },
 

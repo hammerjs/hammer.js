@@ -11,10 +11,10 @@ function createTouch(x,y,id) {
   };
 }
 
-function createMouse(x,y,which) {
+function createMouse(x,y,button) {
   return {
     pageX: x, pageY: y, clientX: x, clientY: y,
-    which: which
+    button: button
   };
 }
 
@@ -22,7 +22,8 @@ function createPointerEvent(x,y,id,type) {
   return {
     pageX: x, pageY: y, clientX: x, clientY: y,
     pointerId: id,
-    pointerType: type
+    pointerType: type,
+    buttons: 1
   };
 }
 
@@ -262,7 +263,7 @@ module("Events");
     var touch_ev = {touches: [createTouch(100,100,1)],changedTouches: [createTouch(100,100,1)]};
     equal(Hammer.event.getTouchList(touch_ev, 'start').length, 1, 'getTouchList returns an array with touches');
 
-    var mouse_ev = createMouse(100,100,1);
+    var mouse_ev = createMouse(100,100,0);
     equal(Hammer.event.getTouchList(mouse_ev, 'start').length, 1, 'getTouchList returns an array with mouse');
 
   });
