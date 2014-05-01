@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.2 - 2014-05-01
+/*! Hammer.JS - v1.1.3dev - 2014-05-01
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -37,7 +37,7 @@ var Hammer = function Hammer(element, options) {
  * @final
  * @type {String}
  */
-Hammer.VERSION = '1.1.2';
+Hammer.VERSION = '1.1.3dev';
 
 /**
  * default settings.
