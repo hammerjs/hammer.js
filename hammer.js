@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.2 - 2014-04-25
+/*! Hammer.JS - v1.1.2 - 2014-05-01
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -1098,11 +1098,7 @@ var Detection = Hammer.detection = {
         Utils.each(this.gestures, function triggerGesture(gesture) {
             // only when the instance options have enabled this gesture
             if(!this.stopped && inst.enabled && instOptions[gesture.name]) {
-                // if a handler returns false, we stop with the detection
-                if(gesture.handler.call(gesture, eventData, inst) === false) {
-                    this.stopDetect();
-                    return false;
-                }
+                gesture.handler.call(gesture, eventData, inst);
             }
         }, this);
 
