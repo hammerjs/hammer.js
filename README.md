@@ -27,4 +27,4 @@ See the [Wiki on GitHub](https://github.com/EightMedia/hammer.js/wiki) for docum
 ### Further notes
 Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands.
 
-It's recommend to listen to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
+It's recommended to listen to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
