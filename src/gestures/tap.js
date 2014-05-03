@@ -39,7 +39,7 @@
                 break;
 
             case EVENT_END:
-                if(ev.srcEvent.type != 'touchcancel' && ev.deltaTime < options.tapMaxTime && !hasMoved) {
+                if(!Utils.inStr(ev.srcEvent.type, 'cancel') && ev.deltaTime < options.tapMaxTime && !hasMoved) {
                     // previous gesture, for the double tap since these are two different gesture detections
                     sincePrev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
                     didDoubleTap = false;
@@ -58,6 +58,7 @@
                         inst.trigger(current.name, ev);
                     }
                 }
+                break;
         }
     }
 
