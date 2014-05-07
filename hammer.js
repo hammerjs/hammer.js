@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.3dev - 2014-05-01
+/*! Hammer.JS - v1.1.3dev - 2014-05-07
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -712,7 +712,7 @@ var Event = Hammer.event = {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer && eventType == EVENT_START) {
-                self.shouldDetect = (ev.buttons === 1);
+                self.shouldDetect = (ev.buttons === 1 || PointerEvent.matchType(POINTER_TOUCH, ev));
             // just a valid start event, but no mouse
             } else if(!isMouse && eventType == EVENT_START) {
                 self.preventMouseEvents = true;
@@ -1899,7 +1899,7 @@ Hammer.gestures.Swipe = {
                 break;
 
             case EVENT_END:
-                if(ev.srcEvent.type != 'touchcancel' && ev.deltaTime < options.tapMaxTime && !hasMoved) {
+                if(!Utils.inStr(ev.srcEvent.type, 'cancel') && ev.deltaTime < options.tapMaxTime && !hasMoved) {
                     // previous gesture, for the double tap since these are two different gesture detections
                     sincePrev = prev && prev.lastEvent && ev.timeStamp - prev.lastEvent.timeStamp;
                     didDoubleTap = false;
@@ -1918,6 +1918,7 @@ Hammer.gestures.Swipe = {
                         inst.trigger(current.name, ev);
                     }
                 }
+                break;
         }
     }
 

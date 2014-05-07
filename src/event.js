@@ -93,7 +93,7 @@ var Event = Hammer.event = {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer && eventType == EVENT_START) {
-                self.shouldDetect = (ev.buttons === 1);
+                self.shouldDetect = (ev.buttons === 1 || PointerEvent.matchType(POINTER_TOUCH, ev));
             // just a valid start event, but no mouse
             } else if(!isMouse && eventType == EVENT_START) {
                 self.preventMouseEvents = true;
