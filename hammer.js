@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.3dev - 2014-05-07
+/*! Hammer.JS - v1.1.3dev - 2014-05-19
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -72,12 +72,12 @@ Hammer.defaults = {
 
         /**
          * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
-         * Used by IE10>. By default this makes the element blocking any touch event.
+         * Used by Chrome 35> and IE10>. By default this makes the element blocking any touch event.
          * @property defaults.behavior.touchAction
          * @type {String}
-         * @default: 'none'
+         * @default: 'pan-y'
          */
-        touchAction: 'none',
+        touchAction: 'pan-y',
 
         /**
          * Disables the default callout shown when you touch and hold a touch target.
