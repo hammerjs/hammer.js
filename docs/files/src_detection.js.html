@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/detection.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.2</em>
+            <em>API Docs for: 1.1.3</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -176,11 +176,7 @@ var Detection = Hammer.detection = {
         Utils.each(this.gestures, function triggerGesture(gesture) {
             // only when the instance options have enabled this gesture
             if(!this.stopped &amp;&amp; inst.enabled &amp;&amp; instOptions[gesture.name]) {
-                // if a handler returns false, we stop with the detection
-                if(gesture.handler.call(gesture, eventData, inst) === false) {
-                    this.stopDetect();
-                    return false;
-                }
+                gesture.handler.call(gesture, eventData, inst);
             }
         }, this);
 

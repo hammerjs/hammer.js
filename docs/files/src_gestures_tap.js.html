@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/gestures/tap.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.2</em>
+            <em>API Docs for: 1.1.3</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -147,7 +147,7 @@
                 break;
 
             case EVENT_END:
-                if(ev.srcEvent.type != &#x27;touchcancel&#x27; &amp;&amp; ev.deltaTime &lt; options.tapMaxTime &amp;&amp; !hasMoved) {
+                if(!Utils.inStr(ev.srcEvent.type, &#x27;cancel&#x27;) &amp;&amp; ev.deltaTime &lt; options.tapMaxTime &amp;&amp; !hasMoved) {
                     // previous gesture, for the double tap since these are two different gesture detections
                     sincePrev = prev &amp;&amp; prev.lastEvent &amp;&amp; ev.timeStamp - prev.lastEvent.timeStamp;
                     didDoubleTap = false;
@@ -166,6 +166,7 @@
                         inst.trigger(current.name, ev);
                     }
                 }
+                break;
         }
     }
 

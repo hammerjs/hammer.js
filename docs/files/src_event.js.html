@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/event.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.2</em>
+            <em>API Docs for: 1.1.3</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -201,7 +201,7 @@ var Event = Hammer.event = {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer &amp;&amp; eventType == EVENT_START) {
-                self.shouldDetect = (ev.buttons === 1);
+                self.shouldDetect = (ev.buttons === 1 || PointerEvent.matchType(POINTER_TOUCH, ev));
             // just a valid start event, but no mouse
             } else if(!isMouse &amp;&amp; eventType == EVENT_START) {
                 self.preventMouseEvents = true;

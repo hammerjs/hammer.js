@@ -1,9 +1,9 @@
 # Changelog
 
-### 1.1.3dev
+### 1.1.3, 2014-05-20
 - Removed unused gesture handler check. See [#545](https://github.com/EightMedia/hammer.js/issues/545)
-- Changed the default value of `behavior.touchAction` from `none` to `pan-y`, for improved default behavior in IE10> and Chrome35>. 
-It makes the element less blocking and improves the detection of horizontal swipes.
+- Changed the default value of `behavior.touchAction` from `none` to `pan-y`, for improved default behavior in IE10> and Chrome35>.
+It makes the element less blocking and improves the detection of horizontal swipes. See the wiki for more details.
 
 ### 1.1.2, 2014-04-25
 - Bring back the `NO_MOUSEEVENTS` check. Just has better support this way. It is used to disable binding to mouseevents on most mobile browsers.

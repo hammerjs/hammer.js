@@ -16,7 +16,7 @@
             <h1><a href="../index.html">Hammer.JS: src/setup.js</a></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.2</em>
+            <em>API Docs for: 1.1.3</em>
         </div>
     </div>
     <div class="yui3-g">
@@ -171,12 +171,12 @@ Hammer.defaults = {
 
         /**
          * Specifies whether and how a given region can be manipulated by the user (for instance, by panning or zooming).
-         * Used by IE10&gt;. By default this makes the element blocking any touch event.
+         * Used by Chrome 35&gt; and IE10&gt;. By default this makes the element blocking any touch event.
          * @property defaults.behavior.touchAction
          * @type {String}
-         * @default: &#x27;none&#x27;
+         * @default: &#x27;pan-y&#x27;
          */
-        touchAction: &#x27;none&#x27;,
+        touchAction: &#x27;pan-y&#x27;,
 
         /**
          * Disables the default callout shown when you touch and hold a touch target.

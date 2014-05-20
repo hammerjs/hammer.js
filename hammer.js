@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.3dev - 2014-05-19
+/*! Hammer.JS - v1.1.3 - 2014-05-20
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -37,7 +37,7 @@ var Hammer = function Hammer(element, options) {
  * @final
  * @type {String}
  */
-Hammer.VERSION = '1.1.3dev';
+Hammer.VERSION = '1.1.3';
 
 /**
  * default settings.
@@ -279,7 +279,7 @@ var Utils = Hammer.utils = {
      */
     extend: function extend(dest, src, merge) {
         for(var key in src) {
-            if(dest[key] !== undefined && merge) {
+            if(!src.hasOwnProperty(key) || (dest[key] !== undefined && merge)) {
                 continue;
             }
             dest[key] = src[key];
