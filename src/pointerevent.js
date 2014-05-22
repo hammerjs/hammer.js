@@ -23,6 +23,7 @@ var PointerEvent = Hammer.PointerEvent = {
         Utils.each(this.pointers, function(pointer) {
             touchlist.push(pointer);
         });
+
         return touchlist;
     },
 
@@ -33,7 +34,7 @@ var PointerEvent = Hammer.PointerEvent = {
      * @param {Object} pointerEvent
      */
     updatePointer: function updatePointer(eventType, pointerEvent) {
-        if(eventType == EVENT_END || (eventType != EVENT_END && pointerEvent.buttons !== 1)) {
+        if(eventType == EVENT_END) {
             delete this.pointers[pointerEvent.pointerId];
         } else {
             pointerEvent.identifier = pointerEvent.pointerId;
