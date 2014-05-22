@@ -69,3 +69,53 @@ function removeEvent(element, types, handler) {
 function inStr(str, find) {
     return str.indexOf(find) > -1;
 }
+
+/**
+ * find if a array contains the object using indexOf or a simple polyfill
+ * @method inArray
+ * @param {String} src
+ * @param {String} find
+ * @return {Boolean|Number} false when not found, or the index
+ */
+function inArray(src, find) {
+    if(src.indexOf) {
+        var index = src.indexOf(find);
+        return (index === -1) ? false : index;
+    } else {
+        for(var i = 0, len = src.length; i < len; i++) {
+            if(src[i] === find) {
+                return i;
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * convert array-like objects to real arrays
+ * @param obj
+ * @returns {Array}
+ */
+function toArray(obj) {
+    return Array.prototype.slice.call(obj, 0);
+}
+
+/**
+ * unique array based on a key (like 'id')
+ * @param src
+ * @param key
+ * @returns {Array}
+ */
+function uniqueArray(src, key) {
+    var results = [];
+    var keys = [];
+
+    each(src, function(item) {
+        if(inArray(keys, item[key]) === false) {
+            results.push(item);
+        }
+        keys.push(item[key]);
+    });
+
+    return results;
+}

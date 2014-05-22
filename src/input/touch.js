@@ -1,3 +1,12 @@
+var INPUT_TOUCH_TYPE_MAP = {
+    'touchstart': INPUT_EVENT_START,
+    'touchmove': INPUT_EVENT_MOVE,
+    'touchend': INPUT_EVENT_END,
+    'touchcancel': INPUT_EVENT_END
+};
+
+var INPUT_TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
+
 /**
  * Touch events input
  * @param inst
@@ -9,9 +18,7 @@ Input.Touch = function(inst, callback) {
     this.callback = callback;
 
     this._handler = bindFn(this.handler, this);
-    this._events = 'touchstart touchmove touchend touchcancel';
-
-    addEvent(this.inst.element, this._events, this._handler);
+    addEvent(this.inst.element, INPUT_TOUCH_EVENTS, this._handler);
 };
 
 Input.Touch.prototype = {
@@ -22,33 +29,36 @@ Input.Touch.prototype = {
     handler: function(ev) {
         var touches = this.normalizeTouches(ev);
         var data = {
-            pointers: touches.all,
-            changedPointers: touches.changed,
-            pointerType: 'touch',
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
             _event: ev
         };
 
-        this.callback(this.inst, ev.type.replace('touch',''), data);
+        this.callback(this.inst, INPUT_TOUCH_TYPE_MAP[ev.type], data);
     },
 
     /**
      * make sure all browsers return the same touches
      * @param ev
-     * @returns {{all: *, changed: *}}
+     * @returns [all, changed]
      */
     normalizeTouches: function(ev) {
-        return {
+        var changedTouches = toArray(ev.changedTouches);
+        var touches = toArray(ev.touches).concat(changedTouches);
+
+        return [
             // should contain all the touches, touches + changedTouches
-            all: ev.touches,
+            uniqueArray(touches, 'identifier'),
             // should contain only the touches that have changed
-            changed: ev.changedTouches
-        };
+            changedTouches
+        ];
     },
 
     /**
      * remove the event listeners
      */
     destroy: function() {
-        removeEvent(this.inst.element, this._events, this._handler);
+        removeEvent(this.inst.element, INPUT_TOUCH_EVENTS, this._handler);
     }
 };

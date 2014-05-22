@@ -1,3 +1,0 @@
-Input.PointerEvents = function(pointers) {
-
-};

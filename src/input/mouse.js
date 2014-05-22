@@ -1,3 +1,14 @@
+// constants
+var INPUT_MOUSE_TYPE_MAP = {
+    'mousedown': INPUT_EVENT_START,
+    'mousemove': INPUT_EVENT_MOVE,
+    'mouseup': INPUT_EVENT_END,
+    'mouseout': INPUT_EVENT_END
+};
+
+var INPUT_MOUSE_EVENTS = 'mousedown mousemove mouseup';
+var INPUT_MOUSE_WINDOW_EVENTS = 'mouseout';
+
 /**
  * Mouse events input
  * @param inst
@@ -8,12 +19,13 @@ Input.Mouse = function(inst, callback) {
     this.inst = inst;
     this.callback = callback;
 
-    this._handler = bindFn(this.handler, this);
-    this._events = 'mousedown mousemove mouseup';
-    addEvent(this.inst.element, this._events, this._handler);
-    addEvent(window, 'mouseout', this._handler);
+    this._allow = true; // used by Input.TouchMouse to disable mouse events
+    this._pressed = false; // mousedown state
 
-    this._pressed = false;
+    this._handler = bindFn(this.handler, this);
+
+    addEvent(this.inst.element, INPUT_MOUSE_EVENTS, this._handler);
+    addEvent(window, INPUT_MOUSE_WINDOW_EVENTS, this._handler);
 };
 
 Input.Mouse.prototype = {
@@ -26,8 +38,8 @@ Input.Mouse.prototype = {
             this._pressed = true;
         }
 
-        // mousebutton must be down
-        if(!this._pressed) {
+        // mousebutton must be down, and mouse events are allowed (because of the TouchMouse input)
+        if(!this._pressed || !this._allow) {
             return;
         }
 
@@ -35,28 +47,24 @@ Input.Mouse.prototype = {
             this._pressed = false;
         }
 
+        // fake identifier
+        ev.identifier = 1;
+
         var data = {
-            pointers: ev,
-            changedPointers: ev,
-            pointerType: 'mouse',
+            pointers: [ev],
+            changedPointers: [ev],
+            pointerType: INPUT_TYPE_MOUSE,
             _event: ev
         };
 
-        var types = {
-            'mousedown': 'start',
-            'mousemove': 'move',
-            'mouseup': 'end',
-            'mouseout': 'end'
-        };
-
-        this.callback(this.inst, types[ev.type], data);
+        this.callback(this.inst, INPUT_MOUSE_TYPE_MAP[ev.type], data);
     },
 
     /**
      * remove the event listeners
      */
     destroy: function() {
-        removeEvent(this.inst.element, this._events, this._handler);
-        removeEvent(window, 'mouseout', this._handler);
+        removeEvent(this.inst.element, INPUT_MOUSE_EVENTS, this._handler);
+        removeEvent(window, INPUT_MOUSE_WINDOW_EVENTS, this._handler);
     }
 };

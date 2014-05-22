@@ -18,10 +18,9 @@ module.exports = (grunt) ->
           banner: '<%= meta.banner %>'
         src: [
           'src/hammer.prefix'
-          'src/defines.js'
+          'src/hammer.js'
           'src/*.js'
           'src/**/*.js'
-          'src/instance.js'
           'src/export.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
