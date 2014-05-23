@@ -1,5 +1,5 @@
 Gestures.Drag = {
-    handler: function(inst, session, inputData) {
-        console.log(this, inst, session, inputData);
+    handler: function(inst, inputData) {
+        console.log(this, inst, inputData);
     }
 };

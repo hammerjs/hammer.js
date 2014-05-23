@@ -2,7 +2,9 @@
  * set and mimic the touch-action property
  */
 
-var NATIVE_TOUCHACTION = ("touchAction" in document.body.style) || ("msTouchAction" in document.body.style);
+var BODY_STYLE = document.body.style;
+var NATIVE_TOUCH_ACTION = ("touchAction" in BODY_STYLE) || ("msTouchAction" in BODY_STYLE);
+
 
 function TouchAction(inst, value) {
     this.inst = inst;
@@ -13,7 +15,7 @@ TouchAction.prototype = {
     setValue: function(value) {
         this.value = value;
 
-        if(NATIVE_TOUCHACTION) {
+        if(NATIVE_TOUCH_ACTION) {
             var style = this.inst.element.style;
             style.touchAction = value;
             style.msTouchAction = value;
@@ -21,16 +23,17 @@ TouchAction.prototype = {
     },
 
     update: function(inputData) {
-        if(!NATIVE_TOUCHACTION) {
-            return;
-        }
-
         var event = inputData._event;
         var touchAction = this.value;
 
+        // not needed for native and mouse input
+        if(!NATIVE_TOUCH_ACTION || inputData.pointerType == INPUT_TYPE_MOUSE) {
+            return;
+        }
+
         // if the touch action did prevented once this session,
         // prevent it everytime
-        if(this.inst.sessions[0].ta_prevented) {
+        if(this.inst.sessions[0].prevented) {
             event.preventDefault();
         }
 
@@ -52,17 +55,19 @@ TouchAction.prototype = {
         }
 
         // 'manipulation'
+        // only on touchend we want to prevent the default
+        // it should then remove the 300ms (@todo check this)
         if(isManipulation && event.type == 'touchend') {
             this.preventDefault(event);
         }
     },
 
     /**
-     * preventdefault and save in the session
+     * call preventDefault and save in the session
      * @param event
      */
     preventDefault: function(event) {
-        this.inst.sessions[0].ta_prevented = true;
+        this.inst.sessions[0].prevented = true;
         event.preventDefault();
     }
 };

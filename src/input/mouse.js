@@ -1,4 +1,3 @@
-// constants
 var INPUT_MOUSE_TYPE_MAP = {
     'mousedown': INPUT_EVENT_START,
     'mousemove': INPUT_EVENT_MOVE,
@@ -6,7 +5,7 @@ var INPUT_MOUSE_TYPE_MAP = {
     'mouseout': INPUT_EVENT_END
 };
 
-var INPUT_MOUSE_EVENTS = 'mousedown mousemove mouseup';
+var INPUT_MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
 var INPUT_MOUSE_WINDOW_EVENTS = 'mouseout';
 
 /**
@@ -24,7 +23,7 @@ Input.Mouse = function(inst, callback) {
 
     this._handler = bindFn(this.handler, this);
 
-    addEvent(this.inst.element, INPUT_MOUSE_EVENTS, this._handler);
+    addEvent(this.inst.element, INPUT_MOUSE_ELEMENT_EVENTS, this._handler);
     addEvent(window, INPUT_MOUSE_WINDOW_EVENTS, this._handler);
 };
 
@@ -64,7 +63,7 @@ Input.Mouse.prototype = {
      * remove the event listeners
      */
     destroy: function() {
-        removeEvent(this.inst.element, INPUT_MOUSE_EVENTS, this._handler);
+        removeEvent(this.inst.element, INPUT_MOUSE_ELEMENT_EVENTS, this._handler);
         removeEvent(window, INPUT_MOUSE_WINDOW_EVENTS, this._handler);
     }
 };

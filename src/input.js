@@ -17,6 +17,9 @@ var DIRECTION_UP = 'up';
 var DIRECTION_DOWN = 'down';
 var DIRECTION_NONE = 'none';
 
+var PROPS_XY = ['x','y'];
+var PROPS_CLIENTXY = ['clientX','clientY'];
+
 /**
  * create new input type instance
  * @param inst
@@ -66,24 +69,53 @@ function inputHandler(inst, inputEventType, inputData) {
  * @param inputData
  */
 function computeInputData(session, inputEventType, inputData) {
-    var event = inputData._event;
+    var pointers = inputData.pointers;
+    var pointersLength = pointers.length;
 
+    // store the first input to calculate the distance and direction
     if(!session.firstInput) {
-        session.firstInput = {
-            timeStamp: event.timeStamp,
-            pointers: inputData.pointers,
-            center: getCenter(inputData.pointers)
-        };
+        session.firstInput = simpleCloneInputData(inputData);
     }
+
+    // to compute scale and rotation we need to store the multiple touches
+    if(pointersLength > 1 && !session.firstMultiple) {
+        session.firstMultiple = simpleCloneInputData(inputData);
+    } else if(pointersLength === 1) {
+        session.firstMultiple = false;
+    }
+
+    var firstInput = session.firstInput;
+    var firstMultiple = session.firstMultiple;
+
+    var center = getCenter(pointers);
+    var firstCenter = firstInput.center;
 
     inputData.inputEventType = inputEventType;
 
-    inputData.center = getCenter(inputData.pointers);
-    inputData.direction = getDirection(inputData.center, session.firstInput.center);
-    inputData.distance = getDistance(inputData.center, session.firstInput.center);
+    inputData.center = center;
+    inputData.angle = getAngle(firstCenter, center);
+    inputData.distance = getDistance(firstCenter, center);
+    inputData.direction = getDirection(firstCenter, center);
 
-    inputData.scale = 1;
-    inputData.rotation = 0;
+    inputData.deltaTime = inputData._event.timeStamp - firstInput.timeStamp;
+    inputData.deltaX = center.x - firstCenter.x;
+    inputData.deltaY = center.y - firstCenter.y;
+
+    inputData.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+    inputData.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+}
+
+/**
+ * create a simple clone from the inputData used for storage of firstInput and firstMultiple
+ * @param inputData
+ * @returns {Object} clonedInputData
+ */
+function simpleCloneInputData(inputData) {
+    return {
+        timeStamp: inputData._event.timeStamp,
+        pointers: inputData.pointers,
+        center: getCenter(inputData.pointers)
+    };
 }
 
 /**
@@ -116,17 +148,17 @@ function getCenter(pointers) {
 }
 
 /**
- * do a small comparision to get the direction between two center pointers
+ * get the direction between two points
  * @method getDirection
- * @param {Object} center1
- * @param {Object} center2
+ * @param {Object} p1 {x, y}
+ * @param {Object} p2 {x, y}
  * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
  */
-function getDirection(center1, center2) {
-    var x = center1.x - center2.x,
-        y = center1.y - center2.y;
+function getDirection(p1, p2) {
+    var x = p1.x - p2.x,
+        y = p1.y - p2.y;
 
-    if(x == y) {
+    if(x === y) {
         return DIRECTION_NONE;
     }
 
@@ -137,14 +169,56 @@ function getDirection(center1, center2) {
 }
 
 /**
- * calculate the distance between two center pointers
+ * calculate the absolute distance between two points
  * @method getDistance
- * @param {Object} center1
- * @param {Object} center2
+ * @param {Object} p1 {x, y}
+ * @param {Object} p2 {x, y}
  * @return {Number} distance
  */
-function getDistance(center1, center2) {
-    var x = center2.x - center1.x,
-        y = center2.y - center1.y;
+function getDistance(p1, p2, props) {
+    if(!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
     return Math.sqrt((x * x) + (y * y));
+}
+
+/**
+ * calculate the scale factor between two pointersets
+ * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+ * @method getScale
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} scale
+ */
+function getScale(start, end) {
+    return getDistance(end[0], end[1], PROPS_CLIENTXY) / getDistance(start[0], start[1], PROPS_CLIENTXY);
+}
+
+/**
+ * calculate the angle between two coordinates
+ * @method getAngle
+ * @param {Object} p1
+ * @param {Object} p2
+ * @return {Number} angle
+ */
+function getAngle(p1, p2, props) {
+    if(!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+    return Math.atan2(y, x) * 180 / Math.PI;
+}
+
+/**
+ * calculate the rotation degrees between two pointersets
+ * @method getRotation
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} rotation
+ */
+function getRotation(start, end) {
+    return getAngle(end[1], end[0], PROPS_CLIENTXY) - getAngle(start[1], start[0], PROPS_CLIENTXY);
 }
