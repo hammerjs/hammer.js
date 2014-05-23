@@ -28,15 +28,15 @@
   "dependencies": {},
   "devDependencies": {
     "grunt": "0.4.x",
-    "grunt-contrib-connect": "0.7.x",
     "grunt-contrib-concat": "0.3.x",
-    "grunt-contrib-uglify": "0.4.x",
+    "grunt-contrib-connect": "0.7.x",
     "grunt-contrib-jshint": "0.9.x",
+    "grunt-contrib-uglify": "0.4.x",
     "grunt-contrib-watch": "0.6.x",
-    "grunt-contrib-qunit": "0.4.x",
-    "grunt-string-replace": "^0.2.7",
     "grunt-contrib-yuidoc": "^0.5.2",
-    "grunt-jscs-checker": "^0.4.1"
+    "grunt-jscs-checker": "^0.4.1",
+    "grunt-mocha": "^0.4.10",
+    "grunt-string-replace": "^0.2.7"
   },
   "main": "hammer.js",
   "engines": {

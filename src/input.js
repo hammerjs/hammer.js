@@ -1,24 +1,24 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
 var SUPPORT_POINTEREVENT = window.PointerEvent || window.msPointerEvent;
-var SUPPORT_TOUCH = ('ontouchstart' in window);
+var SUPPORT_TOUCH = ("ontouchstart" in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
-var INPUT_TYPE_TOUCH = 'touch';
-var INPUT_TYPE_MOUSE = 'mouse';
+var INPUT_TYPE_TOUCH = "touch";
+var INPUT_TYPE_MOUSE = "mouse";
 
-var INPUT_EVENT_START = 'start';
-var INPUT_EVENT_MOVE = 'move';
-var INPUT_EVENT_END = 'end';
+var INPUT_EVENT_START = "start";
+var INPUT_EVENT_MOVE = "move";
+var INPUT_EVENT_END = "end";
 
-var DIRECTION_LEFT = 'left';
-var DIRECTION_RIGHT = 'right';
-var DIRECTION_UP = 'up';
-var DIRECTION_DOWN = 'down';
-var DIRECTION_NONE = 'none';
+var DIRECTION_LEFT = "left";
+var DIRECTION_RIGHT = "right";
+var DIRECTION_UP = "up";
+var DIRECTION_DOWN = "down";
+var DIRECTION_NONE = "";
 
-var PROPS_XY = ['x', 'y'];
-var PROPS_CLIENTXY = ['clientX', 'clientY'];
+var PROPS_XY = ["x", "y"];
+var PROPS_CLIENTXY = ["clientX", "clientY"];
 
 /**
  * create new input type instance
@@ -27,13 +27,13 @@ var PROPS_CLIENTXY = ['clientX', 'clientY'];
  * @constructor
  */
 function Input(inst) {
-    var type = 'TouchMouse';
+    var type = "TouchMouse";
     if(SUPPORT_POINTEREVENT) {
-        type = 'PointerEvent';
+        type = "PointerEvent";
     } else if(SUPPORT_ONLY_TOUCH) {
-        type = 'Touch';
+        type = "Touch";
     } else if(!SUPPORT_TOUCH) {
-        type = 'Mouse';
+        type = "Mouse";
     }
     return new Input[type](inst, inputHandler);
 }

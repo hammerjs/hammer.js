@@ -1,5 +1,5 @@
 var DEFAULT_OPTIONS = {
-    touchAction: 'pan-y'
+    touchAction: "pan-y"
 };
 
 /**

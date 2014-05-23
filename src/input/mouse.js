@@ -5,8 +5,8 @@ var INPUT_MOUSE_TYPE_MAP = {
     mouseout: INPUT_EVENT_END
 };
 
-var INPUT_MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
-var INPUT_MOUSE_WINDOW_EVENTS = 'mouseout';
+var INPUT_MOUSE_ELEMENT_EVENTS = "mousedown mousemove mouseup";
+var INPUT_MOUSE_WINDOW_EVENTS = "mouseout";
 
 /**
  * Mouse events input
@@ -33,7 +33,7 @@ Input.Mouse.prototype = {
      * @param {Object} ev
      */
     handler: function(ev) {
-        if(ev.type == 'mousedown' && ev.button === 0) {
+        if(ev.type == "mousedown" && ev.button === 0) {
             this._pressed = true;
         }
 
@@ -42,7 +42,7 @@ Input.Mouse.prototype = {
             return;
         }
 
-        if(ev.type == 'mouseup' || ev.type == 'mouseout') {
+        if(ev.type == "mouseup" || ev.type == "mouseout") {
             this._pressed = false;
         }
 

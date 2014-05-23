@@ -5,7 +5,7 @@ var INPUT_TOUCH_TYPE_MAP = {
     touchcancel: INPUT_EVENT_END
 };
 
-var INPUT_TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
+var INPUT_TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
 
 /**
  * Touch events input
@@ -49,7 +49,7 @@ Input.Touch.prototype = {
 
         return [
             // should contain all the touches, touches + changedTouches
-            uniqueArray(touches, 'identifier'),
+            uniqueArray(touches, "identifier"),
             // should contain only the touches that have changed
             changedTouches
         ];

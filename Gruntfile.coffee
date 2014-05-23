@@ -11,11 +11,7 @@ module.exports = (grunt) ->
  * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
     concat:
-      options:
-        separator: '\n\n'
       build:
-        options:
-          banner: '<%= meta.banner %>'
         src: [
           'src/hammer.prefix'
           'src/hammer.js'
@@ -24,13 +20,19 @@ module.exports = (grunt) ->
           'src/export.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
+      test:
+        src: [
+          'src/hammer.js'
+          'src/*.js'
+          'src/**/*.js']
+        dest: 'tests/build.js'
 
     uglify:
-      options:
-        report: 'gzip'
-        sourceMap: 'hammer.min.map'
-        banner: '<%= meta.banner %>'
-      build:
+      min:
+        options:
+          report: 'gzip'
+          sourceMap: 'hammer.min.map'
+          banner: '<%= meta.banner %>'
         files:
           'hammer.min.js': ['hammer.js']
 
@@ -68,8 +70,12 @@ module.exports = (grunt) ->
           hostname: "0.0.0.0"
           port: 8000
 
-    mocha:
-      test: ['tests/unit/**/*.html']
+    mocha: # disabled
+      test:
+        src: ['tests/unit/*.html']
+        options:
+          reporter: 'List'
+
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -78,11 +84,12 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-mocha'
+  grunt.loadNpmTasks 'grunt-simple-mocha'
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'build', ['concat','string-replace','uglify','yuidoc','test']
-  grunt.registerTask 'test', ['jshint','jscs','qunit']
+  grunt.registerTask 'build', ['concat','string-replace','uglify','test']
+  grunt.registerTask 'test', ['jshint','jscs','concat:test']
   grunt.registerTask 'test-travis', ['build']

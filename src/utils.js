@@ -7,7 +7,7 @@
 function each(obj, iterator, context) {
     var i, len;
 
-    if('forEach' in obj) {
+    if("forEach" in obj) {
         obj.forEach(iterator, context);
     } else if(obj.length !== undefined) {
         for(i = 0, len = obj.length; i < len; i++) {
@@ -43,7 +43,7 @@ function bindFn(fn, context) {
  * @param {Function} handler
  */
 function addEvent(element, types, handler) {
-    each(types.split(' '), function(type) {
+    each(types.split(" "), function(type) {
         element.addEventListener(type, handler, false);
     });
 }
@@ -55,7 +55,7 @@ function addEvent(element, types, handler) {
  * @param {Function} handler
  */
 function removeEvent(element, types, handler) {
-    each(types.split(' '), function(type) {
+    each(types.split(" "), function(type) {
         element.removeEventListener(type, handler, false);
     });
 }
@@ -100,7 +100,7 @@ function toArray(obj) {
 }
 
 /**
- * unique array based on a key (like 'id')
+ * unique array based on a key (like "id")
  * @param {Array} src
  * @param {String} key
  * @returns {Array}

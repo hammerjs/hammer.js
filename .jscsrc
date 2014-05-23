@@ -25,7 +25,7 @@
         "requireParamTypes": true
     },
     "validateIndentation": 4,
-    "validateQuoteMarks": "'",
+    "validateQuoteMarks": "\"",
 
     "excludeFiles": [
     	"*.js",
