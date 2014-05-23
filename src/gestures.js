@@ -4,7 +4,7 @@ function Gestures(inst) {
 
 /**
  * update
- * @param inputData
+ * @param {Object} inputData
  */
 Gestures.prototype.update = function(inputData) {
     for(var name in Gestures) {

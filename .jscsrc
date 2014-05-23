@@ -3,7 +3,7 @@
     "requireSpaceAfterKeywords": ["else", "return"],
     "disallowSpaceAfterKeywords": ["if", "for", "while", "do", "switch", "try", "catch"],
     "disallowLeftStickedOperators": ["?", "+", "-", "/", "*", "=", "==", "===", "!=", "!==", ">", ">=", "<", "<="],
-    "disallowRightStickedOperators": ["?", "+", "/", "*", ":", "=", "==", "===", "!=", "!==", ">", ">=", "<", "<="],
+    "disallowRightStickedOperators": ["?", "/", "*", ":", "=", "==", "===", "!=", "!==", ">", ">=", "<", "<="],
     "requireRightStickedOperators": ["!"],
     "requireLeftStickedOperators": [","],
     "disallowImplicitTypeConversion": ["string"],
@@ -26,7 +26,7 @@
     },
     "validateIndentation": 4,
     "validateQuoteMarks": "'",
-    
+
     "excludeFiles": [
     	"*.js",
     	"tests/**",

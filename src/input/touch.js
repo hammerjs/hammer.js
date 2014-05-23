@@ -1,16 +1,16 @@
 var INPUT_TOUCH_TYPE_MAP = {
-    'touchstart': INPUT_EVENT_START,
-    'touchmove': INPUT_EVENT_MOVE,
-    'touchend': INPUT_EVENT_END,
-    'touchcancel': INPUT_EVENT_END
+    touchstart: INPUT_EVENT_START,
+    touchmove: INPUT_EVENT_MOVE,
+    touchend: INPUT_EVENT_END,
+    touchcancel: INPUT_EVENT_END
 };
 
 var INPUT_TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
- * @param inst
- * @param callback
+ * @param {Hammer} inst
+ * @param {Function} callback
  * @constructor
  */
 Input.Touch = function(inst, callback) {
@@ -24,7 +24,7 @@ Input.Touch = function(inst, callback) {
 Input.Touch.prototype = {
     /**
      * handle touch events
-     * @param ev
+     * @param {Object} ev
      */
     handler: function(ev) {
         var touches = this.normalizeTouches(ev);
@@ -40,8 +40,8 @@ Input.Touch.prototype = {
 
     /**
      * make sure all browsers return the same touches
-     * @param ev
-     * @returns [all, changed]
+     * @param {Object} ev
+     * @returns {Array} [all, changed]
      */
     normalizeTouches: function(ev) {
         var changedTouches = toArray(ev.changedTouches);

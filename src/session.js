@@ -11,11 +11,11 @@ function Session(inst) {
 
     // max 10 sessions in the history per instance
     inst.sessions.splice(9, 1);
-};
+}
 
 /**
  * update
- * @param inputData
+ * @param {Object} inputData
  */
 Session.prototype.update = function(inputData) {
     this.inst.touchAction.update(inputData);

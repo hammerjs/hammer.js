@@ -4,8 +4,8 @@
  * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
  * This because touch devices also trigger mouse events while doing a touch.
  *
- * @param inst
- * @param callback
+ * @param {Hammer} inst
+ * @param {Function} callback
  * @constructor
  */
 Input.TouchMouse = function(inst, callback) {
@@ -19,9 +19,9 @@ Input.TouchMouse = function(inst, callback) {
 Input.TouchMouse.prototype = {
     /**
      * handle mouse and touch events
-     * @param inst
-     * @param inputEventType
-     * @param inputData
+     * @param {Hammer} inst
+     * @param {String} inputEventType
+     * @param {Object} inputData
      */
     handler: function(inst, inputEventType, inputData) {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),

@@ -1,8 +1,8 @@
 var INPUT_MOUSE_TYPE_MAP = {
-    'mousedown': INPUT_EVENT_START,
-    'mousemove': INPUT_EVENT_MOVE,
-    'mouseup': INPUT_EVENT_END,
-    'mouseout': INPUT_EVENT_END
+    mousedown: INPUT_EVENT_START,
+    mousemove: INPUT_EVENT_MOVE,
+    mouseup: INPUT_EVENT_END,
+    mouseout: INPUT_EVENT_END
 };
 
 var INPUT_MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
@@ -10,8 +10,8 @@ var INPUT_MOUSE_WINDOW_EVENTS = 'mouseout';
 
 /**
  * Mouse events input
- * @param inst
- * @param callback
+ * @param {Hammer} inst
+ * @param {Function} callback
  * @constructor
  */
 Input.Mouse = function(inst, callback) {
@@ -30,7 +30,7 @@ Input.Mouse = function(inst, callback) {
 Input.Mouse.prototype = {
     /**
      * handle mouse events
-     * @param ev
+     * @param {Object} ev
      */
     handler: function(ev) {
         if(ev.type == 'mousedown' && ev.button === 0) {

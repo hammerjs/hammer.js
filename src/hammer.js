@@ -3,9 +3,9 @@ var DEFAULT_OPTIONS = {
 };
 
 /**
- * hammer instance for an element
- * @param element
- * @param options
+ * Hammer instance for an element
+ * @param {HTMLElement} element
+ * @param {Object} [options]
  * @constructor
  */
 function Hammer(element, options) {
@@ -28,7 +28,3 @@ Hammer.prototype.destroy = function() {
     this.sessions.length = 0;
     this.input.destroy();
 };
-
-
-
-

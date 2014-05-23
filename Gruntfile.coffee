@@ -58,7 +58,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat','string-replace','uglify'] #,'jshint','jscs']
+        tasks: ['concat','string-replace','uglify','jshint','jscs']
         options:
           interrupt: true
 
@@ -68,20 +68,8 @@ module.exports = (grunt) ->
           hostname: "0.0.0.0"
           port: 8000
 
-    qunit:
-      all: ['tests/unit/**/*.html']
-
-    yuidoc:
-      build:
-        name: '<%= pkg.title %>'
-        description: '<%= pkg.description %>'
-        version: '<%= pkg.version %>'
-        url: '<%= pkg.homepage %>'
-        options:
-          linkNatives: true
-          paths: 'src/'
-          outdir: 'docs/'
-          themedir: 'misc/docstheme/'
+    mocha:
+      test: ['tests/unit/**/*.html']
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -89,8 +77,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-  grunt.loadNpmTasks 'grunt-contrib-qunit'
-  grunt.loadNpmTasks 'grunt-contrib-yuidoc'
+  grunt.loadNpmTasks 'grunt-mocha'
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 

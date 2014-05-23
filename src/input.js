@@ -1,7 +1,7 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
 var SUPPORT_POINTEREVENT = window.PointerEvent || window.msPointerEvent;
-var SUPPORT_TOUCH = ("ontouchstart" in window);
+var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = 'touch';
@@ -17,13 +17,13 @@ var DIRECTION_UP = 'up';
 var DIRECTION_DOWN = 'down';
 var DIRECTION_NONE = 'none';
 
-var PROPS_XY = ['x','y'];
-var PROPS_CLIENTXY = ['clientX','clientY'];
+var PROPS_XY = ['x', 'y'];
+var PROPS_CLIENTXY = ['clientX', 'clientY'];
 
 /**
  * create new input type instance
- * @param inst
- * @returns {}
+ * @param {Hammer} inst
+ * @returns {Input}
  * @constructor
  */
 function Input(inst) {
@@ -40,9 +40,9 @@ function Input(inst) {
 
 /**
  * handle input events
- * @param inst
- * @param inputEventType
- * @param inputData
+ * @param {Hammer} inst
+ * @param {String} inputEventType
+ * @param {Object} inputData
  */
 function inputHandler(inst, inputEventType, inputData) {
     var session;
@@ -64,9 +64,9 @@ function inputHandler(inst, inputEventType, inputData) {
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
- * @param session
- * @param inputEventType
- * @param inputData
+ * @param {Session} session
+ * @param {String} inputEventType
+ * @param {Object} inputData
  */
 function computeInputData(session, inputEventType, inputData) {
     var pointers = inputData.pointers;
@@ -107,7 +107,7 @@ function computeInputData(session, inputEventType, inputData) {
 
 /**
  * create a simple clone from the inputData used for storage of firstInput and firstMultiple
- * @param inputData
+ * @param {Object} inputData
  * @returns {Object} clonedInputData
  */
 function simpleCloneInputData(inputData) {
@@ -120,7 +120,6 @@ function simpleCloneInputData(inputData) {
 
 /**
  * get the center of all the pointers
- * @method getCenter
  * @param {Array} pointers
  * @return {Object} center contains `x` and `y` properties
  */
@@ -149,7 +148,6 @@ function getCenter(pointers) {
 
 /**
  * get the direction between two points
- * @method getDirection
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}
  * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
@@ -170,7 +168,6 @@ function getDirection(p1, p2) {
 
 /**
  * calculate the absolute distance between two points
- * @method getDistance
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}
  * @return {Number} distance
@@ -187,7 +184,6 @@ function getDistance(p1, p2, props) {
 /**
  * calculate the scale factor between two pointersets
  * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
- * @method getScale
  * @param {Array} start array of pointers
  * @param {Array} end array of pointers
  * @return {Number} scale
@@ -198,7 +194,6 @@ function getScale(start, end) {
 
 /**
  * calculate the angle between two coordinates
- * @method getAngle
  * @param {Object} p1
  * @param {Object} p2
  * @return {Number} angle
@@ -214,7 +209,6 @@ function getAngle(p1, p2, props) {
 
 /**
  * calculate the rotation degrees between two pointersets
- * @method getRotation
  * @param {Array} start array of pointers
  * @param {Array} end array of pointers
  * @return {Number} rotation

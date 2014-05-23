@@ -1,8 +1,8 @@
 /**
  * walk objects and arrays
- * @param obj
- * @param iterator
- * @param context
+ * @param {Object} obj
+ * @param {Function} iterator
+ * @param {Object} context
  */
 function each(obj, iterator, context) {
     var i, len;
@@ -26,8 +26,8 @@ function each(obj, iterator, context) {
 
 /**
  * simple function bind
- * @param fn
- * @param context
+ * @param {Function} fn
+ * @param {Object} context
  * @returns {Function}
  */
 function bindFn(fn, context) {
@@ -38,9 +38,9 @@ function bindFn(fn, context) {
 
 /**
  * addEventListener with multiple events at once
- * @param element
- * @param types
- * @param handler
+ * @param {HTMLElement} element
+ * @param {String} types
+ * @param {Function} handler
  */
 function addEvent(element, types, handler) {
     each(types.split(' '), function(type) {
@@ -50,9 +50,9 @@ function addEvent(element, types, handler) {
 
 /**
  * removeEventListener with multiple events at once
- * @param element
- * @param types
- * @param handler
+ * @param {HTMLElement} element
+ * @param {String} types
+ * @param {Function} handler
  */
 function removeEvent(element, types, handler) {
     each(types.split(' '), function(type) {
@@ -62,8 +62,8 @@ function removeEvent(element, types, handler) {
 
 /**
  * find in string
- * @param str
- * @param find
+ * @param {String} str
+ * @param {String} find
  * @returns {boolean}
  */
 function inStr(str, find) {
@@ -72,7 +72,6 @@ function inStr(str, find) {
 
 /**
  * find if a array contains the object using indexOf or a simple polyfill
- * @method inArray
  * @param {String} src
  * @param {String} find
  * @return {Boolean|Number} false when not found, or the index
@@ -93,7 +92,7 @@ function inArray(src, find) {
 
 /**
  * convert array-like objects to real arrays
- * @param obj
+ * @param {Object} obj
  * @returns {Array}
  */
 function toArray(obj) {
@@ -102,8 +101,8 @@ function toArray(obj) {
 
 /**
  * unique array based on a key (like 'id')
- * @param src
- * @param key
+ * @param {Array} src
+ * @param {String} key
  * @returns {Array}
  */
 function uniqueArray(src, key) {

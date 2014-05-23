@@ -3,8 +3,7 @@
  */
 
 var BODY_STYLE = document.body.style;
-var NATIVE_TOUCH_ACTION = ("touchAction" in BODY_STYLE) || ("msTouchAction" in BODY_STYLE);
-
+var NATIVE_TOUCH_ACTION = ('touchAction' in BODY_STYLE) || ('msTouchAction' in BODY_STYLE);
 
 function TouchAction(inst, value) {
     this.inst = inst;
@@ -49,8 +48,8 @@ TouchAction.prototype = {
 
         // 'pan-y' or 'pan-x'
         var direction = inputData.direction;
-        if((isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT))
-           || (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
+        if((isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT)) ||
+            (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
             this.preventDefault(event);
         }
 
@@ -64,7 +63,7 @@ TouchAction.prototype = {
 
     /**
      * call preventDefault and save in the session
-     * @param event
+     * @param {Object} event
      */
     preventDefault: function(event) {
         this.inst.sessions[0].prevented = true;
