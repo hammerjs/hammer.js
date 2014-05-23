@@ -20,11 +20,13 @@ module.exports = (grunt) ->
           'src/export.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
-      test:
+
+      test: # special test build that exposes everything so it's testable
         src: [
           'src/hammer.js'
           'src/*.js'
-          'src/**/*.js']
+          'src/**/*.js'
+          'src/export.js']
         dest: 'tests/build.js'
 
     uglify:
@@ -50,10 +52,10 @@ module.exports = (grunt) ->
       options:
         jshintrc: true
       build:
-        src: ['hammer.js', 'plugins/*.js']
+        src: ['hammer.js']
 
     jscs:
-      src: ['src/**/*.js', 'plugins/**/*.js']
+      src: ['src/**/*.js']
       options:
         force: true
 
