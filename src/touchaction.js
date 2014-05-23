@@ -34,25 +34,25 @@ TouchAction.prototype = {
             event.preventDefault();
         }
 
-        var TA_PAN_Y = inStr(touchAction, 'pan-y');
-        var TA_PAN_X = inStr(touchAction, 'pan-x');
-        var TA_NONE = inStr(touchAction, 'none');
-        var TA_MANIPULATION = inStr(touchAction, 'manipulation');
+        var isPanY = inStr(touchAction, 'pan-y');
+        var isPanX = inStr(touchAction, 'pan-x');
+        var isNone = inStr(touchAction, 'none');
+        var isManipulation = inStr(touchAction, 'manipulation');
 
         // 'none' and 'pan-y pan-x'
-        if(TA_NONE || (TA_PAN_Y && TA_PAN_X)) {
+        if(isNone || (isPanY && isPanX)) {
             this.preventDefault(event);
         }
 
         // 'pan-y' or 'pan-x'
         var direction = inputData.direction;
-        if((TA_PAN_Y && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT))
-           || (TA_PAN_X && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
+        if((isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT))
+           || (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
             this.preventDefault(event);
         }
 
         // 'manipulation'
-        if(TA_MANIPULATION && event.type == 'touchend') {
+        if(isManipulation && event.type == 'touchend') {
             this.preventDefault(event);
         }
     },

@@ -1,4 +1,4 @@
-var HAMMER_OPTIONS = {
+var DEFAULT_OPTIONS = {
     touchAction: 'pan-y'
 };
 
@@ -10,15 +10,16 @@ var HAMMER_OPTIONS = {
  */
 function Hammer(element, options) {
     this.element = element;
-    this.options = options || HAMMER_OPTIONS;
+    this.options = options || DEFAULT_OPTIONS;
 
     this.sessions = [];
 
     this.input = new Input(this);
     this.touchAction = new TouchAction(this, this.options.touchAction);
+    this.gestures = new Gestures(this);
 }
 
-Hammer.defaults = HAMMER_OPTIONS;
+Hammer.defaults = DEFAULT_OPTIONS;
 
 /**
  * destroy the instance

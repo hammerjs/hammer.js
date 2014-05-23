@@ -1,6 +1,6 @@
 var incrementalSessionId = 0;
 
-var Session = Hammer.Session = function(inst) {
+function Session(inst) {
     this.id = incrementalSessionId++;
     this.inst = inst;
 
@@ -9,7 +9,7 @@ var Session = Hammer.Session = function(inst) {
     // this may be used to store data from gestures
     this.data = {};
 
-    // only max 10 sessions in the history per instance
+    // max 10 sessions in the history per instance
     inst.sessions.splice(9, 1);
 };
 
@@ -19,5 +19,5 @@ var Session = Hammer.Session = function(inst) {
  */
 Session.prototype.update = function(inputData) {
     this.inst.touchAction.update(inputData);
-    Gestures(this.inst, inputData, this);
+    this.inst.gestures.update(inputData);
 };
