@@ -1,6 +1,6 @@
 /**
  * global gesture
  */
-Gestures.register({ }, function(inst, inputData) {
+registerGesture({}, function(inst, inputData) {
     inst.trigger("gesture", inputData);
 });

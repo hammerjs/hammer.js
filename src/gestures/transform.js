@@ -1,7 +1,7 @@
 /**
  * transform gesture
  */
-Gestures.register({
+registerGesture({
     scaleThreshold: 5,
     rotationThreshold: 3
 },

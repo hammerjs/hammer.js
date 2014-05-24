@@ -1,7 +1,7 @@
 /**
  * drag gesture
  */
-Gestures.register({
+registerGesture({
     dragThreshold: 5
 },
 function(inst, inputData, session) {

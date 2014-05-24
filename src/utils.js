@@ -1,3 +1,5 @@
+var VENDOR_PREFIXES = ["", "webkit", "moz", "MS", "ms"];
+
 /**
  * walk objects and arrays
  * @param {Object} obj
@@ -24,7 +26,13 @@ function each(obj, iterator, context) {
     }
 }
 
-function extend(dest, src) {
+/**
+ * merge the values from src in the dest
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
+ */
+function merge(dest, src) {
     for(var key in src) {
         if(!src.hasOwnProperty(key)) {
             continue;
@@ -125,6 +133,35 @@ function uniqueArray(src, key) {
         }
         keys.push(item[key]);
     });
-
     return results;
+}
+
+/**
+ * get/set (vendor prefixed) property. allows css properties, properties and functions.
+ * if you want to call a function by this function, you should pass an array with arguments (see .apply())
+ * else, a bindFn function will be returned
+ *
+ * @param {String} property
+ * @param {Object} obj
+ * @param {*} [val]
+ * @returns {*}
+ */
+function prefixed(property, obj, val) {
+    var prefix, prop, i;
+    var camelProp = property[0].toUpperCase() + property.slice(1);
+
+    for(i = 0; i < VENDOR_PREFIXES.length; i++) {
+        prefix = VENDOR_PREFIXES[i];
+        prop = (prefix) ? prefix + camelProp : property;
+
+        if(!(prop in obj)) {
+            continue;
+        } else if(typeof obj[prop] == TYPE_FUNCTION) {
+            return (typeof val == TYPE_UNDEFINED) ? bindFn(prop, obj) : obj[prop].apply(obj, val);
+        } else if(val) {
+            obj[prop] = val;
+        }
+        return obj[prop];
+    }
+    return null;
 }

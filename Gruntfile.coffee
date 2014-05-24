@@ -15,6 +15,7 @@ module.exports = (grunt) ->
         src: [
           'src/hammer.prefix'
           'src/hammer.js'
+          'src/utils.js'
           'src/*.js'
           'src/**/*.js'
           'src/export.js'

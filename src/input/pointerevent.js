@@ -1,5 +1,3 @@
-var MS_POINTER = window.MSPointerEvent;
-
 var POINTER_SRC_EVENT_MAP = {
     pointerdown: SRC_EVENT_START,
     pointermove: SRC_EVENT_MOVE,
@@ -11,13 +9,13 @@ var POINTER_SRC_EVENT_MAP = {
 var POINTER_ELEMENT_EVENTS = "pointerdown pointermove pointerup pointercancel";
 var POINTER_WINDOW_EVENTS = "pointerout";
 
-var POINTER_TYPE_MAP = {
+var IE10_POINTER_TYPE_MAP = {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
     4: INPUT_TYPE_MOUSE
 };
 
-if(MS_POINTER) {
+if(window.MSPointerEvent) {
     POINTER_ELEMENT_EVENTS = "MSPointerDown MSPointerMove MSPointerUp MSPointerCancel";
     POINTER_WINDOW_EVENTS = "MSPointerOut";
 }
@@ -55,7 +53,7 @@ Input.PointerEvent.prototype = {
         if(evType == "pointerdown") {
             // pointer must be down
             store.push(ev);
-            element[(MS_POINTER ? "msSetPointerCapture" : "setPointerCapture")](ev.pointerId);
+            prefixed("setPointerCapture", element, [ev.pointerId]);
         } else if(evType == "pointerup" || evType == "pointerout" || evType == "pointercancel") {
             // we've lost the pointer
             removePointer = true;
@@ -74,7 +72,7 @@ Input.PointerEvent.prototype = {
         var data = {
             pointers: store,
             changedPointers: [ev],
-            pointerType: POINTER_TYPE_MAP[store[0].pointerType] || store[0].pointerType, // IE10 returns integers
+            pointerType: IE10_POINTER_TYPE_MAP[store[0].pointerType] || store[0].pointerType,
             srcEvent: ev
         };
 
@@ -83,7 +81,7 @@ Input.PointerEvent.prototype = {
         if(removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
-            element[(MS_POINTER ? "msReleasePointerCapture" : "releasePointerCapture")](ev.pointerId);
+            prefixed("releasePointerCapture", element, [ev.pointerId]);
         }
     },
 

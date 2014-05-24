@@ -2,8 +2,7 @@
  * set and mimic the touch-action property
  */
 
-var BODY_STYLE = document.body.style;
-var NATIVE_TOUCH_ACTION = ("touchAction" in BODY_STYLE) || ("msTouchAction" in BODY_STYLE);
+var NATIVE_TOUCH_ACTION = prefixed("touchAction", document.body.style);
 
 function TouchAction(inst, value) {
     this.inst = inst;
@@ -15,9 +14,7 @@ TouchAction.prototype = {
         this.value = value;
 
         if(NATIVE_TOUCH_ACTION) {
-            var style = this.inst.element.style;
-            style.touchAction = value;
-            style.msTouchAction = value;
+            prefixed("touchAction", this.inst.element.style, value);
         }
     },
 
@@ -26,7 +23,9 @@ TouchAction.prototype = {
         var touchAction = this.value;
 
         // not needed for native and mouse input
-        if(!NATIVE_TOUCH_ACTION || inputData.pointerType == INPUT_TYPE_MOUSE || inputData.srcType == SRC_EVENT_START) {
+        if(!NATIVE_TOUCH_ACTION ||
+            inputData.pointerType == INPUT_TYPE_MOUSE ||
+            inputData.srcType == SRC_EVENT_START) {
             return;
         }
 

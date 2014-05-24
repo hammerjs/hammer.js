@@ -20,10 +20,10 @@ Gestures.prototype.update = function(inputData) {
  * @param {Object} options
  * @param {Function} handler
  */
-Gestures.register = function(options, handler) {
+function registerGesture(options, handler) {
     registeredGestures.push({
         options: options,
         handler: handler
     });
-    extend(DEFAULT_OPTIONS, options);
-};
+    merge(DEFAULT_OPTIONS, options);
+}

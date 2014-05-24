@@ -1,3 +1,6 @@
+var TYPE_FUNCTION = "function";
+var TYPE_UNDEFINED = "undefined";
+
 var DEFAULT_OPTIONS = {
     touchAction: "pan-y"
 };
@@ -19,6 +22,7 @@ function Hammer(element, options) {
     this.gestures = new Gestures(this);
 }
 
+// expose
 Hammer.defaults = DEFAULT_OPTIONS;
 
 /**
