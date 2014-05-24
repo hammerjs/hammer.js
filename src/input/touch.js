@@ -1,11 +1,11 @@
-var INPUT_TOUCH_TYPE_MAP = {
-    touchstart: INPUT_EVENT_START,
-    touchmove: INPUT_EVENT_MOVE,
-    touchend: INPUT_EVENT_END,
-    touchcancel: INPUT_EVENT_END
+var TOUCH_SRC_EVENT_MAP = {
+    touchstart: SRC_EVENT_START,
+    touchmove: SRC_EVENT_MOVE,
+    touchend: SRC_EVENT_END,
+    touchcancel: SRC_EVENT_CANCEL
 };
 
-var INPUT_TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
+var TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
 
 /**
  * Touch events input
@@ -18,7 +18,7 @@ Input.Touch = function(inst, callback) {
     this.callback = callback;
 
     this._handler = bindFn(this.handler, this);
-    addEvent(this.inst.element, INPUT_TOUCH_EVENTS, this._handler);
+    addEvent(inst.element, TOUCH_EVENTS, this._handler);
 };
 
 Input.Touch.prototype = {
@@ -32,10 +32,10 @@ Input.Touch.prototype = {
             pointers: touches[0],
             changedPointers: touches[1],
             pointerType: INPUT_TYPE_TOUCH,
-            _event: ev
+            srcEvent: ev
         };
 
-        this.callback(this.inst, INPUT_TOUCH_TYPE_MAP[ev.type], data);
+        this.callback(this.inst, TOUCH_SRC_EVENT_MAP[ev.type], data);
     },
 
     /**
@@ -59,6 +59,6 @@ Input.Touch.prototype = {
      * remove the event listeners
      */
     destroy: function() {
-        removeEvent(this.inst.element, INPUT_TOUCH_EVENTS, this._handler);
+        removeEvent(this.inst.element, TOUCH_EVENTS, this._handler);
     }
 };

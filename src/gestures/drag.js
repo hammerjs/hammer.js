@@ -1,14 +1,18 @@
-Gestures.Drag = {
-    options: {
-        minDistance: 10
-    },
-    handler: function(inst, inputData) {
-        var options = inst.options;
+/**
+ * drag gesture
+ */
+Gestures.register({
+    dragThreshold: 5
+},
+function(inst, inputData, session) {
+    var sessionData = session.data;
 
-        console.log(this, arguments);
-
-        if(inputData.distance > options.minDistance) {
-            //inst.trigger("drag");
-        }
+    if(inputData.eventType != EVENT_MOVE) {
+        return;
     }
-};
+
+    if(sessionData.dragged || inputData.distance > inst.options.dragThreshold) {
+        inst.trigger("drag", inputData);
+        sessionData.dragged = true;
+    }
+});

@@ -1,15 +1,24 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
-var SUPPORT_POINTEREVENT = window.PointerEvent || window.msPointerEvent;
+var SUPPORT_POINTER_EVENTS = window.PointerEvent || window.MSPointerEvent;
 var SUPPORT_TOUCH = ("ontouchstart" in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = "touch";
+var INPUT_TYPE_PEN = "pen";
 var INPUT_TYPE_MOUSE = "mouse";
 
-var INPUT_EVENT_START = "start";
-var INPUT_EVENT_MOVE = "move";
-var INPUT_EVENT_END = "end";
+var SRC_EVENT_START = "start";
+var SRC_EVENT_MOVE = "move";
+var SRC_EVENT_END = "end";
+var SRC_EVENT_CANCEL = "cancel";
+
+var EVENT_START = "start";
+var EVENT_TOUCH = "touch";
+var EVENT_MOVE = "move";
+var EVENT_RELEASE = "release";
+var EVENT_END = "end";
+var EVENT_CANCEL = "cancel";
 
 var DIRECTION_LEFT = "left";
 var DIRECTION_RIGHT = "right";
@@ -18,7 +27,7 @@ var DIRECTION_DOWN = "down";
 var DIRECTION_NONE = "";
 
 var PROPS_XY = ["x", "y"];
-var PROPS_CLIENTXY = ["clientX", "clientY"];
+var PROPS_CLIENT_XY = ["clientX", "clientY"];
 
 /**
  * create new input type instance
@@ -28,7 +37,7 @@ var PROPS_CLIENTXY = ["clientX", "clientY"];
  */
 function Input(inst) {
     var type = "TouchMouse";
-    if(SUPPORT_POINTEREVENT) {
+    if(SUPPORT_POINTER_EVENTS) {
         type = "PointerEvent";
     } else if(SUPPORT_ONLY_TOUCH) {
         type = "Touch";
@@ -41,13 +50,13 @@ function Input(inst) {
 /**
  * handle input events
  * @param {Hammer} inst
- * @param {String} inputEventType
+ * @param {String} srcEventType
  * @param {Object} inputData
  */
-function inputHandler(inst, inputEventType, inputData) {
+function inputHandler(inst, srcEventType, inputData) {
     var session;
 
-    if(inputEventType == INPUT_EVENT_START) {
+    if(srcEventType == SRC_EVENT_START) {
         // create session
         session = new Session(inst);
         inst.sessions.unshift(session);
@@ -56,19 +65,27 @@ function inputHandler(inst, inputEventType, inputData) {
         session = inst.sessions[0];
     }
 
-    computeInputData(session, inputEventType, inputData);
+    // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
+    inputData.srcEventType = srcEventType;
 
-    // update the session and run gestures
-    session.update(inputData);
+    // compute scale, rotation etc
+    computeInputData(session, inputData);
+
+    // we want to trigger pretty events like 'start' at the beginning, 'end' as the last,
+    // 'touch' on new touch, 'release' when a pointer goes up etc
+    each(getEventTypes(srcEventType, inputData), function(eventType) {
+        inputData.eventType = eventType;
+        // update session and trigger the gestures
+        session.update(inputData);
+    });
 }
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
  * @param {Session} session
- * @param {String} inputEventType
  * @param {Object} inputData
  */
-function computeInputData(session, inputEventType, inputData) {
+function computeInputData(session, inputData) {
     var pointers = inputData.pointers;
     var pointersLength = pointers.length;
 
@@ -90,14 +107,12 @@ function computeInputData(session, inputEventType, inputData) {
     var center = getCenter(pointers);
     var firstCenter = firstInput.center;
 
-    inputData.inputEventType = inputEventType;
-
     inputData.center = center;
     inputData.angle = getAngle(firstCenter, center);
     inputData.distance = getDistance(firstCenter, center);
     inputData.direction = getDirection(firstCenter, center);
 
-    inputData.deltaTime = inputData._event.timeStamp - firstInput.timeStamp;
+    inputData.deltaTime = inputData.srcEvent.timeStamp - firstInput.timeStamp;
     inputData.deltaX = center.x - firstCenter.x;
     inputData.deltaY = center.y - firstCenter.y;
 
@@ -111,11 +126,68 @@ function computeInputData(session, inputEventType, inputData) {
  * @returns {Object} clonedInputData
  */
 function simpleCloneInputData(inputData) {
+    // make a simple copy of the pointers because we will get a reference if we don't
+    // we only need clientXY for the calculations
+    var pointers = [];
+    each(inputData.pointers, function(pointer) {
+        pointers.push({
+            clientX: pointer.clientX,
+            clientY: pointer.clientY
+        });
+    });
+
     return {
-        timeStamp: inputData._event.timeStamp,
-        pointers: inputData.pointers,
-        center: getCenter(inputData.pointers)
+        timeStamp: inputData.srcEvent.timeStamp,
+        pointers: pointers,
+        center: getCenter(pointers)
     };
+}
+
+/**
+ * get the event that is used by gestures
+ * these are pretty events for more control.
+ * it makes sure the start and end events are triggered only once, the touch/release on pointerdown/up etc.
+ *
+ * @param {String} srcEventType
+ * @param {Object} inputData
+ * @returns {Array} events
+ */
+function getEventTypes(srcEventType, inputData) {
+    var pointersLength = inputData.pointers.length;
+    var changedPointersLength = inputData.changedPointers.length;
+    var diffPointers = pointersLength - changedPointersLength;
+
+    // first touch
+    if(pointersLength === 1 && srcEventType == SRC_EVENT_START) {
+        return [EVENT_START, EVENT_TOUCH];
+    }
+
+    // new touch, but not the first
+    if(pointersLength > 1 && srcEventType == SRC_EVENT_START) {
+        return [EVENT_TOUCH];
+    }
+
+    // just a move event
+    if(srcEventType == SRC_EVENT_MOVE) {
+        return [EVENT_MOVE];
+    }
+
+    // and just a cancel event
+    if(srcEventType == SRC_EVENT_CANCEL) {
+        return [EVENT_CANCEL];
+    }
+
+    // end, but not the last one
+    if(diffPointers >= 1 && srcEventType == SRC_EVENT_END) {
+        return [EVENT_RELEASE];
+    }
+
+    // end and the last
+    if(diffPointers === 0) {
+        return [EVENT_RELEASE, EVENT_END];
+    }
+
+    return [];
 }
 
 /**
@@ -150,12 +222,13 @@ function getCenter(pointers) {
  * get the direction between two points
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}
- * @return {String} direction matches `DIRECTION_LEFT|RIGHT|UP|DOWN`
+ * @return {String} direction matches `DIRECTION_NONE|LEFT|RIGHT|UP|DOWN`
  */
 function getDirection(p1, p2) {
     var x = p1.x - p2.x,
         y = p1.y - p2.y;
 
+    // no direction because the positions are equal
     if(x === y) {
         return DIRECTION_NONE;
     }
@@ -170,6 +243,7 @@ function getDirection(p1, p2) {
  * calculate the absolute distance between two points
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}
+ * @param {Array} [props] containing x and y keys
  * @return {Number} distance
  */
 function getDistance(p1, p2, props) {
@@ -182,20 +256,10 @@ function getDistance(p1, p2, props) {
 }
 
 /**
- * calculate the scale factor between two pointersets
- * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
- * @param {Array} start array of pointers
- * @param {Array} end array of pointers
- * @return {Number} scale
- */
-function getScale(start, end) {
-    return getDistance(end[0], end[1], PROPS_CLIENTXY) / getDistance(start[0], start[1], PROPS_CLIENTXY);
-}
-
-/**
  * calculate the angle between two coordinates
  * @param {Object} p1
  * @param {Object} p2
+ * @param {Array} [props] containing x and y keys
  * @return {Number} angle
  */
 function getAngle(p1, p2, props) {
@@ -214,5 +278,16 @@ function getAngle(p1, p2, props) {
  * @return {Number} rotation
  */
 function getRotation(start, end) {
-    return getAngle(end[1], end[0], PROPS_CLIENTXY) - getAngle(start[1], start[0], PROPS_CLIENTXY);
+    return getAngle(end[1], end[0], PROPS_CLIENT_XY) - getAngle(start[1], start[0], PROPS_CLIENT_XY);
+}
+
+/**
+ * calculate the scale factor between two pointersets
+ * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} scale
+ */
+function getScale(start, end) {
+    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
 }

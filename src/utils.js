@@ -24,6 +24,16 @@ function each(obj, iterator, context) {
     }
 }
 
+function extend(dest, src) {
+    for(var key in src) {
+        if(!src.hasOwnProperty(key)) {
+            continue;
+        }
+        dest[key] = src[key];
+    }
+    return dest;
+}
+
 /**
  * simple function bind
  * @param {Function} fn
@@ -72,21 +82,21 @@ function inStr(str, find) {
 
 /**
  * find if a array contains the object using indexOf or a simple polyfill
- * @param {String} src
+ * @param {Array} src
  * @param {String} find
+ * @param {String} [findByKey]
  * @return {Boolean|Number} false when not found, or the index
  */
-function inArray(src, find) {
-    if(src.indexOf) {
-        var index = src.indexOf(find);
-        return (index === -1) ? false : index;
+function inArray(src, find, findByKey) {
+    if(src.indexOf && !findByKey) {
+        return src.indexOf(find);
     } else {
         for(var i = 0, len = src.length; i < len; i++) {
-            if(src[i] === find) {
+            if((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
                 return i;
             }
         }
-        return false;
+        return -1;
     }
 }
 
@@ -110,7 +120,7 @@ function uniqueArray(src, key) {
     var keys = [];
 
     each(src, function(item) {
-        if(inArray(keys, item[key]) === false) {
+        if(inArray(keys, item[key]) < 0) {
             results.push(item);
         }
         keys.push(item[key]);

@@ -6,7 +6,10 @@ function Session(inst) {
 
     this.timeStamp = +new Date();
 
-    // this may be used to store data from gestures
+    this.firstInput = false;
+    this.firstMultiple = false;
+
+    // used by gestures to store things
     this.data = {};
 
     // max 10 sessions in the history per instance

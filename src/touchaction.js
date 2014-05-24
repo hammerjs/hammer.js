@@ -22,11 +22,11 @@ TouchAction.prototype = {
     },
 
     update: function(inputData) {
-        var event = inputData._event;
+        var event = inputData.srcEvent;
         var touchAction = this.value;
 
         // not needed for native and mouse input
-        if(!NATIVE_TOUCH_ACTION || inputData.pointerType == INPUT_TYPE_MOUSE) {
+        if(!NATIVE_TOUCH_ACTION || inputData.pointerType == INPUT_TYPE_MOUSE || inputData.srcType == SRC_EVENT_START) {
             return;
         }
 

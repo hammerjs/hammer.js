@@ -20,10 +20,10 @@ Input.TouchMouse.prototype = {
     /**
      * handle mouse and touch events
      * @param {Hammer} inst
-     * @param {String} inputEventType
+     * @param {String} inputEvent
      * @param {Object} inputData
      */
-    handler: function(inst, inputEventType, inputData) {
+    handler: function(inst, inputEvent, inputData) {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
@@ -36,11 +36,11 @@ Input.TouchMouse.prototype = {
         }
 
         // reset the allowMouse when we"re done
-        if(inputEventType == INPUT_EVENT_END) {
+        if(inputEvent == SRC_EVENT_END) {
             this.mouse._allow = true;
         }
 
-        this.callback(inst, inputEventType, inputData);
+        this.callback(inst, inputEvent, inputData);
     },
 
     /**

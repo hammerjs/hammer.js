@@ -10,7 +10,7 @@ var DEFAULT_OPTIONS = {
  */
 function Hammer(element, options) {
     this.element = element;
-    this.options = options || DEFAULT_OPTIONS;
+    this.options = options || Hammer.defaults;
 
     this.sessions = [];
 
@@ -27,4 +27,20 @@ Hammer.defaults = DEFAULT_OPTIONS;
 Hammer.prototype.destroy = function() {
     this.sessions.length = 0;
     this.input.destroy();
+    this.element = null;
+};
+
+/**
+ * @param {String} gesture
+ * @param {Object} eventData
+ * @returns {Hammer}
+ */
+Hammer.prototype.trigger = function(gesture, eventData) {
+    // create DOM event
+    var event = document.createEvent("Event");
+    event.initEvent(gesture, true, true);
+    event.gesture = eventData;
+
+    this.element.dispatchEvent(event);
+    return this;
 };
