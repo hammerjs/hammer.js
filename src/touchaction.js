@@ -26,7 +26,7 @@ TouchAction.prototype = {
         if(NATIVE_TOUCH_ACTION ||
             touchAction == 'auto' ||
             inputData.pointerType == INPUT_TYPE_MOUSE ||
-            inputData.srcEventType === SRC_EVENT_START) {
+            inputData.eventType === EVENT_START) {
             return;
         }
 

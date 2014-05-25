@@ -19,3 +19,7 @@ Gestures.prototype.update = function(inputData) {
         recognizer.update(inputData);
     });
 };
+
+Gestures.prototype.preventRecognizers = function(recognizers) {
+    // todo
+};

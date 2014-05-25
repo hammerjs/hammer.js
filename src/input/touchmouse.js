@@ -36,7 +36,7 @@ Input.TouchMouse.prototype = {
         }
 
         // reset the allowMouse when we"re done
-        if(inputEvent == SRC_EVENT_END) {
+        if(inputEvent == EVENT_END) {
             this.mouse._allow = true;
         }
 

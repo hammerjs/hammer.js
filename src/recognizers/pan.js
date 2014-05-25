@@ -27,5 +27,6 @@ function test(input) {
 },
 
 function handler(input) {
+    this.gestures.preventRecognizers(['tap', 'pinch']);
     this.inst.trigger(this.name + this.getEventStatePostfix(), input);
 });

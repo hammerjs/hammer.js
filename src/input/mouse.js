@@ -1,8 +1,8 @@
-var MOUSE_SRC_EVENT_MAP = {
-    mousedown: SRC_EVENT_START,
-    mousemove: SRC_EVENT_MOVE,
-    mouseup: SRC_EVENT_END,
-    mouseout: SRC_EVENT_END
+var MOUSE_EVENT_MAP = {
+    mousedown: EVENT_START,
+    mousemove: EVENT_MOVE,
+    mouseup: EVENT_END,
+    mouseout: EVENT_END
 };
 
 var MOUSE_ELEMENT_EVENTS = "mousedown mousemove mouseup";
@@ -53,7 +53,7 @@ Input.Mouse.prototype = {
             srcEvent: ev
         };
 
-        this.callback(this.inst, MOUSE_SRC_EVENT_MAP[ev.type], data);
+        this.callback(this.inst, MOUSE_EVENT_MAP[ev.type], data);
     },
 
     /**

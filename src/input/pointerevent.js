@@ -1,9 +1,9 @@
-var POINTER_SRC_EVENT_MAP = {
-    pointerdown: SRC_EVENT_START,
-    pointermove: SRC_EVENT_MOVE,
-    pointerup: SRC_EVENT_END,
-    pointercancel: SRC_EVENT_CANCEL,
-    pointerout: SRC_EVENT_CANCEL
+var POINTER_EVENT_MAP = {
+    pointerdown: EVENT_START,
+    pointermove: EVENT_MOVE,
+    pointerup: EVENT_END,
+    pointercancel: EVENT_CANCEL,
+    pointerout: EVENT_CANCEL
 };
 
 var POINTER_ELEMENT_EVENTS = "pointerdown pointermove pointerup pointercancel";
@@ -76,7 +76,7 @@ Input.PointerEvent.prototype = {
             srcEvent: ev
         };
 
-        this.callback(this.inst, POINTER_SRC_EVENT_MAP[evType], data);
+        this.callback(this.inst, POINTER_EVENT_MAP[evType], data);
 
         if(removePointer) {
             // remove from the store

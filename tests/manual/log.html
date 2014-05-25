@@ -14,6 +14,7 @@
         var mc = new Hammer(el);
         el.addEventListener('pan', logGesture, false);
         el.addEventListener('pinch', logGesture, false);
+        el.addEventListener('tap', logGesture, false);
 
         Object.prototype.toDirString = function() {
             var output = [];

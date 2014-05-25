@@ -8,17 +8,10 @@ var INPUT_TYPE_TOUCH = "touch";
 var INPUT_TYPE_PEN = "pen";
 var INPUT_TYPE_MOUSE = "mouse";
 
-var SRC_EVENT_START = 1;
-var SRC_EVENT_MOVE = 2;
-var SRC_EVENT_END = 3;
-var SRC_EVENT_CANCEL = 4;
-
 var EVENT_START = 1;
-var EVENT_TOUCH = 2;
-var EVENT_MOVE = 3;
-var EVENT_RELEASE = 4;
-var EVENT_END = 5;
-var EVENT_CANCEL = 6;
+var EVENT_MOVE = 2;
+var EVENT_END = 3;
+var EVENT_CANCEL = 4;
 
 var DIRECTION_LEFT = "left";
 var DIRECTION_RIGHT = "right";
@@ -50,13 +43,13 @@ function Input(inst) {
 /**
  * handle input events
  * @param {Hammer} inst
- * @param {String} srcEventType
+ * @param {String} eventType
  * @param {Object} inputData
  */
-function inputHandler(inst, srcEventType, inputData) {
+function inputHandler(inst, eventType, inputData) {
     var session;
 
-    if(srcEventType == SRC_EVENT_START) {
+    if(eventType == EVENT_START) {
         // create session
         session = new Session(inst);
         inst.sessions.unshift(session);
@@ -66,18 +59,12 @@ function inputHandler(inst, srcEventType, inputData) {
     }
 
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
-    inputData.srcEventType = srcEventType;
+    inputData.eventType = eventType;
 
     // compute scale, rotation etc
     computeInputData(session, inputData);
 
-    // we want to trigger pretty events like 'start' at the beginning, 'end' as the last,
-    // 'touch' on new touch, 'release' when a pointer goes up etc
-    each(getEventTypes(srcEventType, inputData), function(eventType) {
-        inputData.eventType = eventType;
-        // update session and trigger the gestures
-        session.update(inputData);
-    });
+    session.update(inputData);
 }
 
 /**
@@ -103,9 +90,11 @@ function computeInputData(session, inputData) {
 
     var firstInput = session.firstInput;
     var firstMultiple = session.firstMultiple;
+    var firstCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+
+    console.log(firstMultiple, firstCenter);
 
     var center = getCenter(pointers);
-    var firstCenter = firstInput.center;
 
     inputData.center = center;
     inputData.angle = getAngle(firstCenter, center);
@@ -141,53 +130,6 @@ function simpleCloneInputData(inputData) {
         pointers: pointers,
         center: getCenter(pointers)
     };
-}
-
-/**
- * get the event that is used by gestures
- * these are pretty events for more control.
- * it makes sure the start and end events are triggered only once, the touch/release on pointerdown/up etc.
- *
- * @param {String} srcEventType
- * @param {Object} inputData
- * @returns {Array} events
- */
-function getEventTypes(srcEventType, inputData) {
-    var pointersLength = inputData.pointers.length;
-    var changedPointersLength = inputData.changedPointers.length;
-    var diffPointers = pointersLength - changedPointersLength;
-
-    // first touch
-    if(pointersLength === 1 && srcEventType == SRC_EVENT_START) {
-        return [EVENT_START, EVENT_TOUCH];
-    }
-
-    // new touch, but not the first
-    if(pointersLength > 1 && srcEventType == SRC_EVENT_START) {
-        return [EVENT_TOUCH];
-    }
-
-    // just a move event
-    if(srcEventType == SRC_EVENT_MOVE) {
-        return [EVENT_MOVE];
-    }
-
-    // and just a cancel event
-    if(srcEventType == SRC_EVENT_CANCEL) {
-        return [EVENT_CANCEL];
-    }
-
-    // end, but not the last one
-    if(diffPointers >= 1 && srcEventType == SRC_EVENT_END) {
-        return [EVENT_RELEASE];
-    }
-
-    // end and the last
-    if(diffPointers === 0) {
-        return [EVENT_RELEASE, EVENT_END];
-    }
-
-    return [];
 }
 
 /**

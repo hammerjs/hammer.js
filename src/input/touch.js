@@ -1,8 +1,8 @@
-var TOUCH_SRC_EVENT_MAP = {
-    touchstart: SRC_EVENT_START,
-    touchmove: SRC_EVENT_MOVE,
-    touchend: SRC_EVENT_END,
-    touchcancel: SRC_EVENT_CANCEL
+var TOUCH_EVENT_MAP = {
+    touchstart: EVENT_START,
+    touchmove: EVENT_MOVE,
+    touchend: EVENT_END,
+    touchcancel: EVENT_CANCEL
 };
 
 var TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
@@ -35,7 +35,7 @@ Input.Touch.prototype = {
             srcEvent: ev
         };
 
-        this.callback(this.inst, TOUCH_SRC_EVENT_MAP[ev.type], data);
+        this.callback(this.inst, TOUCH_EVENT_MAP[ev.type], data);
     },
 
     /**
