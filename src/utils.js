@@ -165,3 +165,7 @@ function prefixed(property, obj, val) {
     }
     return null;
 }
+
+function inRange(value, min,max) {
+    return value >= min && value <= max;
+}

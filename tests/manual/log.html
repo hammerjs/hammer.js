@@ -3,7 +3,6 @@
 <head>
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title></title>
-    <!--<script src="http://192.168.0.112:8081/target/target-script-min.js"></script>-->
 </head>
 <body>
     <pre style="background: silver; width: 100%; height: 400px; overflow: hidden" id="hit"></pre>
@@ -13,7 +12,8 @@
 
         var el = document.querySelector("#hit");
         var mc = new Hammer(el);
-        el.addEventListener('gesture', onGesture, false);
+        el.addEventListener('pan', logGesture, false);
+        el.addEventListener('pinch', logGesture, false);
 
         Object.prototype.toDirString = function() {
             var output = [];
@@ -29,8 +29,8 @@
             return output.join("\n")
         };
 
-        function onGesture(ev) {
-            el.textContent = ev.gesture.toDirString();
+        function logGesture(ev) {
+            el.textContent = ev.type +"\n"+ ev.gesture.toDirString();
         }
 
     </script>

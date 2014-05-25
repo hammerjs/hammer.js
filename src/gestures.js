@@ -1,7 +1,13 @@
-var registeredGestures = [];
-
 function Gestures(inst) {
     this.inst = inst;
+
+    this.recognizers = {};
+    each(registeredRecognizers, function(r) {
+        var recInst = new Recognizer(r.name, r.options, r.test, r.handler);
+        recInst.inst = inst;
+        recInst.gestures = this;
+        this.recognizers[r.name] = recInst;
+    }, this);
 }
 
 /**
@@ -9,21 +15,7 @@ function Gestures(inst) {
  * @param {Object} inputData
  */
 Gestures.prototype.update = function(inputData) {
-    each(registeredGestures, function(gesture) {
-        gesture.handler(this.inst, inputData, this.inst.sessions[0]);
-    }, this);
-};
-
-/**
- * register new gestures
- * @static
- * @param {Object} options
- * @param {Function} handler
- */
-function registerGesture(options, handler) {
-    registeredGestures.push({
-        options: options,
-        handler: handler
+    each(this.recognizers, function(recognizer) {
+        recognizer.update(inputData);
     });
-    merge(DEFAULT_OPTIONS, options);
-}
+};

@@ -1,5 +1,4 @@
 // expose some methods
-Hammer.register = registerGesture;
 Hammer.each = each;
 Hammer.merge = merge;
 Hammer.bindFn = bindFn;

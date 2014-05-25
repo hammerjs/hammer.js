@@ -18,7 +18,7 @@ function Hammer(element, options) {
     this.sessions = [];
 
     this.input = new Input(this);
-    this.touchAction = new TouchAction(this, this.options.touchAction);
+    this.touchAction = new TouchAction(this);
     this.gestures = new Gestures(this);
 }
 

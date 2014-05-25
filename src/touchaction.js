@@ -4,14 +4,14 @@
 
 var NATIVE_TOUCH_ACTION = prefixed("touchAction", document.body.style);
 
-function TouchAction(inst, value) {
+function TouchAction(inst) {
     this.inst = inst;
-    this.setValue(value);
+    this.setValue(inst.options.touchAction);
 }
 
 TouchAction.prototype = {
     setValue: function(value) {
-        this.value = value;
+        this.value = value.toLowerCase();
 
         if(NATIVE_TOUCH_ACTION) {
             prefixed("touchAction", this.inst.element.style, value);
@@ -23,9 +23,10 @@ TouchAction.prototype = {
         var touchAction = this.value;
 
         // not needed for native and mouse input
-        if(!NATIVE_TOUCH_ACTION ||
+        if(NATIVE_TOUCH_ACTION ||
+            touchAction == 'auto' ||
             inputData.pointerType == INPUT_TYPE_MOUSE ||
-            inputData.srcType == SRC_EVENT_START) {
+            inputData.srcEventType === SRC_EVENT_START) {
             return;
         }
 

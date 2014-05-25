@@ -8,17 +8,17 @@ var INPUT_TYPE_TOUCH = "touch";
 var INPUT_TYPE_PEN = "pen";
 var INPUT_TYPE_MOUSE = "mouse";
 
-var SRC_EVENT_START = "start";
-var SRC_EVENT_MOVE = "move";
-var SRC_EVENT_END = "end";
-var SRC_EVENT_CANCEL = "cancel";
+var SRC_EVENT_START = 1;
+var SRC_EVENT_MOVE = 2;
+var SRC_EVENT_END = 3;
+var SRC_EVENT_CANCEL = 4;
 
-var EVENT_START = "start";
-var EVENT_TOUCH = "touch";
-var EVENT_MOVE = "move";
-var EVENT_RELEASE = "release";
-var EVENT_END = "end";
-var EVENT_CANCEL = "cancel";
+var EVENT_START = 1;
+var EVENT_TOUCH = 2;
+var EVENT_MOVE = 3;
+var EVENT_RELEASE = 4;
+var EVENT_END = 5;
+var EVENT_CANCEL = 6;
 
 var DIRECTION_LEFT = "left";
 var DIRECTION_RIGHT = "right";
