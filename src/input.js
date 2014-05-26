@@ -24,7 +24,7 @@ var PROPS_CLIENT_XY = ['clientX', 'clientY'];
 
 /**
  * create new input type instance
- * @param {Hammer} inst
+ * @param {Instance} inst
  * @param {Function} callback
  * @returns {Input}
  * @constructor
@@ -35,7 +35,17 @@ function Input(inst, callback) {
 
     // used for internal events
     this._handler = bindFn(this.handler, this);
+
+    this._elEvents && addEvent(this.inst.element, this._elEvents, this._handler);
+    this._winEvents && addEvent(window, this._winEvents, this._handler);
 }
+
+Input.prototype = {
+    destroy: function() {
+        this._elEvents && removeEvent(this.inst.element, this._elEvents, this._handler);
+        this._winEvents && removeEvent(window, this._winEvents, this._handler);
+    }
+};
 
 /**
  * create new input type instance

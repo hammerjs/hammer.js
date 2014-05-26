@@ -7,6 +7,8 @@
 <body>
     <pre style="background: silver; width: 100%; height: 400px; overflow: hidden" id="hit"></pre>
 
+    <p>In the console is a log of all triggered events</p>
+
     <script src="../../hammer.js"></script>
     <script>
 
@@ -30,12 +32,11 @@
         });
 
         new Hammer.PanRecognizer(mc);
-        new Hammer.PanRecognizer(mc, { event: 'multipan', pointers: 2 });
 
         new Hammer.RotationRecognizer(mc);
         new Hammer.PinchRecognizer(mc);
 
-        new Hammer.LongPressRecognizer(mc);
+        //new Hammer.LongPressRecognizer(mc);
 
         new Hammer.TapRecognizer(mc);
         new Hammer.TapRecognizer(mc, { event: 'doubletap', taps: 2 });

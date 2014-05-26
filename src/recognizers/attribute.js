@@ -8,6 +8,14 @@ inherit(AttrRecognizer, Recognizer, {
         pointers: 1
     },
 
+    failTest: function(input){
+        return input.pointers.length > this.options.pointers;
+    },
+
+    validTest: function(input){
+        return true;
+    },
+
     test: function(input) {
         var options = this.options;
         var state = this.state;
@@ -17,11 +25,11 @@ inherit(AttrRecognizer, Recognizer, {
         var isRecognized = state <= STATE_RECOGNIZED;
 
         var validPointers = pointersLength === options.pointers;
-        var validAttribute = this.testAttr(input);
+        var validAttribute = this.validTest(input);
 
         if(state <= STATE_RECOGNIZED && eventType === EVENT_CANCEL) {
             return STATE_CANCELLED;
-        } else if(pointersLength > options.pointers) {
+        } else if(this.failTest(input)) {
             return STATE_FAILED;
         } else if(validPointers && (isRecognized || validAttribute) && eventType < EVENT_END) {
             return (state === STATE_POSSIBLE) ? STATE_BEGAN : STATE_CHANGED;

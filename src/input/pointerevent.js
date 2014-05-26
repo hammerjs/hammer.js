@@ -27,11 +27,12 @@ if(window.MSPointerEvent) {
  * @constructor
  */
 function PointerEventInput(/*inst, callback*/) {
-    Input.apply(this, arguments);
+    this._store = (this.inst.session._pointerEvents = []);
 
-    this._store = (this.inst.sessions._pointerEvents = []);
-    addEvent(this.inst.element, POINTER_ELEMENT_EVENTS, this._handler);
-    addEvent(window, POINTER_WINDOW_EVENTS, this._handler);
+    this._elEvents = POINTER_ELEMENT_EVENTS;
+    this._winEvents = POINTER_WINDOW_EVENTS;
+
+    Input.apply(this, arguments);
 }
 
 inherit(PointerEventInput, Input, {
@@ -81,12 +82,4 @@ inherit(PointerEventInput, Input, {
             prefixed('releasePointerCapture', element, [ev.pointerId]);
         }
     },
-
-    /**
-     * remove the event listeners
-     */
-    destroy: function() {
-        removeEvent(this.inst.element, POINTER_ELEMENT_EVENTS, this._handler);
-        removeEvent(window, POINTER_WINDOW_EVENTS, this._handler);
-    }
 });

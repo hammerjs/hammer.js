@@ -9,7 +9,12 @@ inherit(PanRecognizer, AttrRecognizer, {
         pointers: 1
     },
 
-    testAttr: function(input) {
+    validTest: function(input) {
         return input.distance > this.options.threshold;
+    },
+
+    handler: function(input) {
+        this.inst.trigger(this.options.event + this.statePostfix(), input);
+        this.inst.trigger(this.options.event + input.direction + this.statePostfix(), input);
     }
 });

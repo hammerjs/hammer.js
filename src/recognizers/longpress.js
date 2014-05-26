@@ -1,15 +1,22 @@
 function LongPressRecognizer(/* inst, options */) {
-    Recognizer.apply(this, arguments);
+    AttrRecognizer.apply(this, arguments);
+
+    this.timer = null;
 }
 
-inherit(LongPressRecognizer, Recognizer, {
+inherit(LongPressRecognizer, AttrRecognizer, {
     defaults: {
         event: 'longpress',
-        time: 500
+        duration: 500,
+        movement: 10,
+        pointers: 1
     },
 
-    test: function(input) {
+    failAttr: function(input) {
+        return input.distance > this.options.distance;
+    },
 
+    testAttr: function(input) {
         return STATE_FAILED;
     },
 

@@ -6,7 +6,7 @@ Hammer.PanRecognizer = PanRecognizer;
 Hammer.SwipeRecognizer = SwipeRecognizer;
 Hammer.PinchRecognizer = PinchRecognizer;
 Hammer.RotationRecognizer = RotationRecognizer;
-Hammer.LongPressRecognizer = LongPressRecognizer;
+//Hammer.LongPressRecognizer = LongPressRecognizer;
 
 // expose some methods
 Hammer.each = each;

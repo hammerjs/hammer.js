@@ -9,9 +9,13 @@ inherit(PinchRecognizer, AttrRecognizer, {
         pointers: 2
     },
 
-    testAttr: function(input) {
+    validTest: function(input) {
         return Math.abs(1 - input.scale) > this.options.threshold;
+    },
+
+    handler: function(input) {
+        var inOut = input.scale < 1 ? 'in' : 'out';
+        this.inst.trigger(this.options.event + this.statePostfix(), input);
+        this.inst.trigger(this.options.event + inOut + this.statePostfix(), input);
     }
 });
-
-

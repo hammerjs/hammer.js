@@ -15,13 +15,13 @@ var MOUSE_WINDOW_EVENTS = 'mouseout';
  * @constructor
  */
 function MouseInput(/*inst, callback*/) {
-    Input.apply(this, arguments);
+    this._elEvents = MOUSE_ELEMENT_EVENTS;
+    this._winEvents = MOUSE_WINDOW_EVENTS;
 
     this._allow = true; // used by Input.TouchMouse to disable mouse events
     this._pressed = false; // mousedown state
 
-    addEvent(this.inst.element, MOUSE_ELEMENT_EVENTS, this._handler);
-    addEvent(window, MOUSE_WINDOW_EVENTS, this._handler);
+    Input.apply(this, arguments);
 }
 
 inherit(MouseInput, Input, {
@@ -52,12 +52,4 @@ inherit(MouseInput, Input, {
 
         this.callback(this.inst, MOUSE_EVENT_MAP[ev.type], data);
     },
-
-    /**
-     * remove the event listeners
-     */
-    destroy: function() {
-        removeEvent(this.inst.element, MOUSE_ELEMENT_EVENTS, this._handler);
-        removeEvent(window, MOUSE_WINDOW_EVENTS, this._handler);
-    }
 });

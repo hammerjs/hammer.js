@@ -14,9 +14,9 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @constructor
  */
 function TouchInput(/*inst, callback*/) {
-    Input.apply(this, arguments);
+    this._elEvents = TOUCH_EVENTS;
 
-    addEvent(this.inst.element, TOUCH_EVENTS, this._handler);
+    Input.apply(this, arguments);
 }
 
 inherit(TouchInput, Input, {
@@ -52,11 +52,4 @@ inherit(TouchInput, Input, {
             changedTouches
         ];
     },
-
-    /**
-     * remove the event listeners
-     */
-    destroy: function() {
-        removeEvent(this.inst.element, TOUCH_EVENTS, this._handler);
-    }
 });
