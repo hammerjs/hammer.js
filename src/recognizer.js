@@ -1,11 +1,11 @@
 var STATE_BEGAN = 1;
 var STATE_CHANGED = 2;
-var STATE_ENDED = 3;
+var STATE_ENDED = 4;
 var STATE_RECOGNIZED = STATE_ENDED;
-var STATE_CANCELLED = 4;
+var STATE_CANCELLED = 8;
 
-var STATE_POSSIBLE = 10;
-var STATE_FAILED = 11;
+var STATE_POSSIBLE = 16;
+var STATE_FAILED = 32;
 
 function Recognizer(inst, options) {
     this.inst = inst;
@@ -23,6 +23,14 @@ Recognizer.prototype = {
      */
     reset: function() {
         this.state = STATE_POSSIBLE;
+    },
+
+    /**
+     * default handler
+     * @param input
+     */
+    handler: function(input) {
+        this.inst.trigger(this.options.event + this.statePostfix(), input);
     },
 
     /**

@@ -1,9 +1,12 @@
 Hammer.Instance = Instance;
 
+Hammer.AttrRecognizer = AttrRecognizer;
+Hammer.TapRecognizer = TapRecognizer;
 Hammer.PanRecognizer = PanRecognizer;
 Hammer.SwipeRecognizer = SwipeRecognizer;
-Hammer.TransformRecognizer = TransformRecognizer;
-Hammer.TapRecognizer = TapRecognizer;
+Hammer.PinchRecognizer = PinchRecognizer;
+Hammer.RotationRecognizer = RotationRecognizer;
+Hammer.LongPressRecognizer = LongPressRecognizer;
 
 // expose some methods
 Hammer.each = each;

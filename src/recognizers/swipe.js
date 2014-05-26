@@ -28,9 +28,5 @@ inherit(SwipeRecognizer, Recognizer, {
             return STATE_POSSIBLE;
         }
         return STATE_POSSIBLE;
-    },
-
-    handler: function(input) {
-        this.inst.trigger(this.options.event + this.statePostfix(), input);
     }
 });

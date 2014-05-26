@@ -32,7 +32,7 @@ TouchAction.prototype = {
 
         // if the touch action did prevented once this session,
         // prevent it everytime
-        if(this.inst.sessions[0].prevented) {
+        if(this.inst.session.prevented) {
             event.preventDefault();
         }
 
@@ -66,7 +66,7 @@ TouchAction.prototype = {
      * @param {Object} event
      */
     preventDefault: function(event) {
-        this.inst.sessions[0].prevented = true;
+        this.inst.session.prevented = true;
         event.preventDefault();
     }
 };

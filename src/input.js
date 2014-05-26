@@ -10,8 +10,8 @@ var INPUT_TYPE_MOUSE = 'mouse';
 
 var EVENT_START = 1;
 var EVENT_MOVE = 2;
-var EVENT_END = 3;
-var EVENT_CANCEL = 4;
+var EVENT_END = 4;
+var EVENT_CANCEL = 8;
 
 var DIRECTION_LEFT = 'left';
 var DIRECTION_RIGHT = 'right';

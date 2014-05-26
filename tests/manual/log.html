@@ -25,16 +25,26 @@
         };
 
         var el = document.querySelector("#hit");
-        var mc = new Hammer.Instance(el);
+        var mc = new Hammer.Instance(el, {
+            touchAction: 'none'
+        });
 
         new Hammer.PanRecognizer(mc);
         new Hammer.PanRecognizer(mc, { event: 'multipan', pointers: 2 });
+
+        new Hammer.RotationRecognizer(mc);
+        new Hammer.PinchRecognizer(mc);
+
+        new Hammer.LongPressRecognizer(mc);
 
         new Hammer.TapRecognizer(mc);
         new Hammer.TapRecognizer(mc, { event: 'doubletap', taps: 2 });
 
         el.addEventListener("pan", logGesture, false);
         el.addEventListener("multipan", logGesture, false);
+        el.addEventListener("pinch", logGesture, false);
+        el.addEventListener("rotate", logGesture, false);
+        el.addEventListener("longpress", logGesture, false);
         el.addEventListener("tap", logGesture, false);
         el.addEventListener("doubletap", logGesture, false);
 
