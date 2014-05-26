@@ -4,7 +4,7 @@ function TapRecognizer() {
     this.prevTime = false;
     this.prevCenter = false;
 
-    this.tapCount = 0;
+    this.counter = 0;
 }
 
 inherit(TapRecognizer, Recognizer, {
@@ -32,17 +32,23 @@ inherit(TapRecognizer, Recognizer, {
             var validTapTime = input.deltaTime < options.time;
             var validMovement = !this.prevCenter || getDistance(this.prevCenter, input.center) < options.movementBetweenTaps;
 
-            this.tapCount = (!validPointers || !validInterval || !validTapTime || !validMovement) ? 0 : this.tapCount += 1;
-
-            var validTapCount = (this.tapCount !== 0 || options.taps === 1) && this.tapCount % options.taps === 0;
-
             this.prevTime = input.timeStamp;
             this.prevCenter = input.center;
 
-            if(validTapCount && validTapTime) {
-                if(this.tapCount === 0) {
-                    this.tapCount = 1;
-                }
+            if(!validPointers || !validTapTime || !validMovement) {
+                this.counter = 0;
+                return STATE_FAILED;
+            }
+
+            if(validInterval) {
+                this.counter += 1;
+            } else {
+                this.counter = 1;
+            }
+
+            var validTapCount = (this.counter % options.taps === 0);
+
+            if(validTapCount && validTapTime && validPointers && validMovement) {
                 return STATE_RECOGNIZED;
             }
         }
@@ -50,7 +56,11 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     handler: function(input) {
-        input.tapCount = this.tapCount;
+        input.tapCount = this.counter;
         this.inst.trigger(this.options.event, input);
+    },
+
+    reset: function() {
+        return Recognizer.prototype.reset.apply(this, arguments);
     }
 });

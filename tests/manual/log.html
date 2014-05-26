@@ -5,7 +5,7 @@
     <title></title>
 </head>
 <body>
-    <pre style="background: silver; width: 100%; height: 400px; overflow: hidden" id="hit"></pre>
+    <pre style="background: silver; width: 100%; height: 400px; overflow: hidden; -webkit-user-select: none;" id="hit"></pre>
 
     <p>In the console is a log of all triggered events</p>
 
@@ -28,19 +28,20 @@
 
 
         var el = document.querySelector("#hit");
+
         var mc = new Hammer.Instance(el, {
             touchAction: 'none'
         });
 
-
         mc.addRecognizer(new Hammer.RecognizerSet([
-            new Hammer.PanRecognizer({event: 'multipan', pointers: 3 }),
-            new Hammer.PinchRecognizer({event: 'multipinch', pointers: 3 }),
+            new Hammer.PanRecognizer({event: 'triplepan', pointers: 3 }),
+            new Hammer.PinchRecognizer({event: 'triplepinch', pointers: 3 }),
         ]));
 
         mc.addRecognizer(new Hammer.PanRecognizer());
         mc.addRecognizer(new Hammer.RotationRecognizer());
         mc.addRecognizer(new Hammer.PinchRecognizer());
+
         mc.addRecognizer(new Hammer.TapRecognizer());
         mc.addRecognizer(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
 
