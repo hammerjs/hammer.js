@@ -27,12 +27,12 @@ if(window.MSPointerEvent) {
  * @constructor
  */
 function PointerEventInput(/*inst, callback*/) {
-    this._store = (this.inst.session._pointerEvents = []);
-
     this._elEvents = POINTER_ELEMENT_EVENTS;
     this._winEvents = POINTER_WINDOW_EVENTS;
 
     Input.apply(this, arguments);
+
+    this._store = (this.inst.session._pointerEvents = []);
 }
 
 inherit(PointerEventInput, Input, {

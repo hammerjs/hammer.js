@@ -127,6 +127,15 @@ function inStr(str, find) {
 }
 
 /**
+ * simple wrapper around math.round
+ * @param {Number} number
+ * @returns {number}
+ */
+function round(number) {
+    return Math.round(number);
+}
+
+/**
  * find if a array contains the object using indexOf or a simple polyfill
  * @param {Array} src
  * @param {String} find

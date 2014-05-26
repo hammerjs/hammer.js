@@ -30,7 +30,6 @@ Instance.prototype = {
         }
 
         each(this.recognizers, function(recognizer) {
-
             if(!session.curRecognizer || session.curRecognizer == recognizer) {
                 recognizer.update(inputData);
 

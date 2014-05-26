@@ -14,8 +14,8 @@ inherit(TapRecognizer, Recognizer, {
         time: 200,
         pointers: 1,
         taps: 1,
-        movementBetweenTaps: 20,
-        movementDuringTap: 3
+        movementBetweenTaps: 10,
+        movementDuringTap: 2
     },
 
     test: function(input) {

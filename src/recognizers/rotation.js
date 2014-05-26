@@ -5,7 +5,7 @@ function RotationRecognizer() {
 inherit(RotationRecognizer, AttrRecognizer, {
     defaults: {
         event: 'rotate',
-        threshold: 5,
+        threshold: 3,
         pointers: 2
     },
 
