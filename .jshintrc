@@ -7,7 +7,7 @@
   "maxerr" : 100,
   "newcap" : true,
   "node" : true,
-  "quotmark" : "double",
+  "quotmark" : "single",
   "strict" : true,
   "sub" : false,
   "trailing" : true,

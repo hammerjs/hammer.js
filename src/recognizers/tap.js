@@ -1,36 +1,53 @@
-/**
- * tap gesture
- */
-registerRecognizer('tap', {
-    tapMaxInterval: 300,
-    tapMinPointers: 1,
-    tapMaxPointers: Infinity
-},
+function TapRecognizer(/* inst, options */) {
+    Recognizer.apply(this, arguments);
 
-function test(input) {
-    var options = this.inst.options;
-    var state = this.state;
-    var eventType = input.eventType;
-    var pointersInRange = inRange(input.pointers.length, options.tapMinPointers, options.tapMaxPointers);
+    this.prevTime = false;
+    this.prevCenter = false;
 
-    if(state <= STATE_RECOGNIZED && eventType === EVENT_CANCEL) {
-        return STATE_CANCELLED;
+    this.tapCount = 0;
+}
 
-    } else if(pointersInRange && input.deltaTime < options.tapMaxInterval && eventType === EVENT_END) {
-        return STATE_RECOGNIZED;
+inherit(TapRecognizer, Recognizer, {
+    defaults: {
+        event: 'tap',
+        interval: 500,
+        tapTime: 200,
+        pointers: 1,
+        taps: 1,
+        movementBetweenTaps: 10,
+        movementDuringTap: 3
+    },
 
-    } else if(!pointersInRange || eventType !== EVENT_END) {
+    test: function(input) {
+        var options = this.options;
+        var eventType = input.eventType;
+
+        if(eventType === EVENT_MOVE && input.distance > options.movementDuringTap) {
+             return STATE_FAILED;
+        }  else if(eventType !== EVENT_END) {
+            return STATE_POSSIBLE;
+        } else {
+            var validPointers = input.pointers.length === options.pointers;
+            var validInterval = this.prevTime ? (input.timeStamp - this.prevTime < options.interval) : true;
+            var validTapTime = input.deltaTime < options.tapTime;
+            var validMovement = !this.prevCenter || getDistance(this.prevCenter, input.center) < options.movementBetweenTaps;
+
+            this.tapCount = (!validPointers || !validInterval || !validTapTime || !validMovement) ? 0 : this.tapCount += 1;
+
+            var validTapCount = (this.tapCount !== 0 || options.taps === 1) && this.tapCount % options.taps === 0;
+
+            this.prevTime = input.timeStamp;
+            this.prevCenter = input.center;
+
+            if(validTapCount) {
+                return STATE_RECOGNIZED;
+            }
+        }
         return STATE_FAILED;
+    },
+
+    handler: function(input) {
+        input.tapCount = this.tapCount;
+        this.inst.trigger(this.options.event, input);
     }
-    return STATE_POSSIBLE;
-},
-
-function handler(input) {
-    var session = this.inst.sessions[0].data;
-    var prevSession = this.inst.sessions[1] && this.inst.sessions[1].data;
-
-    session.tapCount = ((prevSession && prevSession.tapCount) || 0) + 1;
-
-    input.tapCount = session.tapCount;
-    this.inst.trigger(this.name, input);
 });

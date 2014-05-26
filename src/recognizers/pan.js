@@ -1,32 +1,34 @@
-/**
- * pan gesture
- */
-registerRecognizer('pan', {
-    panMinDistance: 10,
-    panMinPointers: 1,
-    panMaxPointers: Infinity
-},
+function PanRecognizer(/* inst, options */) {
+    Recognizer.apply(this, arguments);
+}
 
-function test(input) {
-    var options = this.inst.options;
-    var state = this.state;
-    var eventType = input.eventType;
-    var pointersInRange = inRange(input.pointers.length, options.panMinPointers, options.panMaxPointers);
-    var isStarted = inRange(state, STATE_BEGAN, STATE_CHANGED);
+inherit(PanRecognizer, Recognizer, {
+    defaults: {
+        event: 'pan',
+        threshold: 10,
+        pointers: 1
+    },
 
-    if(state <= STATE_RECOGNIZED && eventType === EVENT_CANCEL) {
-        return STATE_CANCELLED;
+    test: function(input) {
+        var options = this.options;
+        var state = this.state;
+        var eventType = input.eventType;
 
-    } else if(pointersInRange && (isStarted || input.distance > options.panMinDistance) && eventType < EVENT_END) {
-        return (state < STATE_BEGAN) ? STATE_BEGAN : STATE_CHANGED;
+        var isRecognized = state <= STATE_RECOGNIZED;
+        var validPoints = input.pointers.length === options.pointers;
+        var validDistance = input.distance > options.threshold;
 
-    } else if(!pointersInRange || eventType === EVENT_END) {
-        return isStarted ? STATE_ENDED : STATE_FAILED;
+        if(isRecognized && eventType === EVENT_CANCEL) {
+            return STATE_CANCELLED;
+        } else if(validPoints && (isRecognized || validDistance) && eventType < EVENT_END) {
+            return (state === STATE_POSSIBLE) ? STATE_BEGAN : STATE_CHANGED;
+        } else if(!validPoints || !validDistance || eventType === EVENT_END) {
+            return isRecognized ? STATE_ENDED : STATE_POSSIBLE;
+        }
+        return STATE_POSSIBLE;
+    },
+
+    handler: function(input) {
+        this.inst.trigger(this.options.event + this.statePostfix(), input);
     }
-    return STATE_POSSIBLE;
-},
-
-function handler(input) {
-    this.gestures.preventRecognizers(['tap', 'pinch']);
-    this.inst.trigger(this.name + this.getEventStatePostfix(), input);
 });

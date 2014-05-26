@@ -2,7 +2,7 @@
  * set and mimic the touch-action property
  */
 
-var NATIVE_TOUCH_ACTION = prefixed("touchAction", document.body.style);
+var NATIVE_TOUCH_ACTION = prefixed('touchAction', document.body.style);
 
 function TouchAction(inst) {
     this.inst = inst;
@@ -14,7 +14,7 @@ TouchAction.prototype = {
         this.value = value.toLowerCase();
 
         if(NATIVE_TOUCH_ACTION) {
-            prefixed("touchAction", this.inst.element.style, value);
+            prefixed('touchAction', this.inst.element.style, value);
         }
     },
 
@@ -36,27 +36,27 @@ TouchAction.prototype = {
             event.preventDefault();
         }
 
-        var isPanY = inStr(touchAction, "pan-y");
-        var isPanX = inStr(touchAction, "pan-x");
-        var isNone = inStr(touchAction, "none");
-        var isManipulation = inStr(touchAction, "manipulation");
+        var isPanY = inStr(touchAction, 'pan-y');
+        var isPanX = inStr(touchAction, 'pan-x');
+        var isNone = inStr(touchAction, 'none');
+        var isManipulation = inStr(touchAction, 'manipulation');
 
-        // "none" and "pan-y pan-x"
+        // 'none' and 'pan-y pan-x'
         if(isNone || (isPanY && isPanX)) {
             this.preventDefault(event);
         }
 
-        // "pan-y" or "pan-x"
+        // 'pan-y' or 'pan-x'
         var direction = inputData.direction;
         if((isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT)) ||
             (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
             this.preventDefault(event);
         }
 
-        // "manipulation"
+        // 'manipulation'
         // only on touchend we want to prevent the default
         // it should then remove the 300ms (@todo check this)
-        if(isManipulation && event.type == "touchend") {
+        if(isManipulation && event.type == 'touchend') {
             this.preventDefault(event);
         }
     },

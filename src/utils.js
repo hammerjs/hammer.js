@@ -1,4 +1,7 @@
-var VENDOR_PREFIXES = ["", "webkit", "moz", "MS", "ms"];
+var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms'];
+
+var TYPE_FUNCTION = 'function';
+var TYPE_UNDEFINED = 'undefined';
 
 /**
  * walk objects and arrays
@@ -9,7 +12,7 @@ var VENDOR_PREFIXES = ["", "webkit", "moz", "MS", "ms"];
 function each(obj, iterator, context) {
     var i, len;
 
-    if("forEach" in obj) {
+    if('forEach' in obj) {
         obj.forEach(iterator, context);
     } else if(obj.length !== undefined) {
         for(i = 0, len = obj.length; i < len; i++) {
@@ -27,19 +30,54 @@ function each(obj, iterator, context) {
 }
 
 /**
- * merge the values from src in the dest
+ * merge the values from src in the dest.
+ * means that properties that exist in dest will not be overwritten by src
  * @param {Object} dest
  * @param {Object} src
  * @returns {Object} dest
  */
 function merge(dest, src) {
     for(var key in src) {
-        if(!src.hasOwnProperty(key)) {
-            continue;
+        if(src.hasOwnProperty(key) && typeof dest[key] == TYPE_UNDEFINED) {
+            dest[key] = src[key];
         }
-        dest[key] = src[key];
     }
     return dest;
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param dest
+ * @param src
+ */
+function extend(dest, src) {
+    for(var key in src) {
+        if(src.hasOwnProperty(key)) {
+            dest[key] = src[key];
+        }
+    }
+    return dest;
+}
+
+/**
+ * simple class inheritance
+ * @param {Function} child
+ * @param {Function} parent
+ * @param {Object} [methods]
+ */
+function inherit(child, parent, methods) {
+    extend(child, parent);
+
+    function Inherited() {
+        this.constructor = child;
+    }
+    Inherited.prototype = parent.prototype;
+    child.prototype = new Inherited();
+
+    if(methods) {
+        extend(child.prototype, methods)
+    }
 }
 
 /**
@@ -61,7 +99,7 @@ function bindFn(fn, context) {
  * @param {Function} handler
  */
 function addEvent(element, types, handler) {
-    each(types.split(" "), function(type) {
+    each(types.split(' '), function(type) {
         element.addEventListener(type, handler, false);
     });
 }
@@ -73,7 +111,7 @@ function addEvent(element, types, handler) {
  * @param {Function} handler
  */
 function removeEvent(element, types, handler) {
-    each(types.split(" "), function(type) {
+    each(types.split(' '), function(type) {
         element.removeEventListener(type, handler, false);
     });
 }
@@ -118,7 +156,7 @@ function toArray(obj) {
 }
 
 /**
- * unique array based on a key (like "id")
+ * unique array based on a key (like 'id')
  * @param {Array} src
  * @param {String} key
  * @returns {Array}

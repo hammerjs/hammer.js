@@ -10,12 +10,6 @@
     <script src="../../hammer.js"></script>
     <script>
 
-        var el = document.querySelector("#hit");
-        var mc = new Hammer(el);
-        el.addEventListener('pan', logGesture, false);
-        el.addEventListener('pinch', logGesture, false);
-        el.addEventListener('tap', logGesture, false);
-
         Object.prototype.toDirString = function() {
             var output = [];
             for(var key in this) {
@@ -29,6 +23,20 @@
             }
             return output.join("\n")
         };
+
+        var el = document.querySelector("#hit");
+        var mc = new Hammer.Instance(el);
+
+        new Hammer.PanRecognizer(mc);
+        new Hammer.PanRecognizer(mc, { event: 'multipan', pointers: 2 });
+
+        new Hammer.TapRecognizer(mc);
+        new Hammer.TapRecognizer(mc, { event: 'doubletap', taps: 2 });
+
+        el.addEventListener("pan", logGesture, false);
+        el.addEventListener("multipan", logGesture, false);
+        el.addEventListener("tap", logGesture, false);
+        el.addEventListener("doubletap", logGesture, false);
 
         function logGesture(ev) {
             el.textContent = ev.type +"\n"+ ev.gesture.toDirString();

@@ -1,3 +1,10 @@
+Hammer.Instance = Instance;
+
+Hammer.PanRecognizer = PanRecognizer;
+Hammer.SwipeRecognizer = SwipeRecognizer;
+Hammer.TransformRecognizer = TransformRecognizer;
+Hammer.TapRecognizer = TapRecognizer;
+
 // expose some methods
 Hammer.each = each;
 Hammer.merge = merge;

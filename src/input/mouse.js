@@ -5,8 +5,8 @@ var MOUSE_EVENT_MAP = {
     mouseout: EVENT_END
 };
 
-var MOUSE_ELEMENT_EVENTS = "mousedown mousemove mouseup";
-var MOUSE_WINDOW_EVENTS = "mouseout";
+var MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
+var MOUSE_WINDOW_EVENTS = 'mouseout';
 
 /**
  * Mouse events input
@@ -14,26 +14,23 @@ var MOUSE_WINDOW_EVENTS = "mouseout";
  * @param {Function} callback
  * @constructor
  */
-Input.Mouse = function(inst, callback) {
-    this.inst = inst;
-    this.callback = callback;
+function MouseInput(/*inst, callback*/) {
+    Input.apply(this, arguments);
 
     this._allow = true; // used by Input.TouchMouse to disable mouse events
     this._pressed = false; // mousedown state
 
-    this._handler = bindFn(this.handler, this);
-
-    addEvent(inst.element, MOUSE_ELEMENT_EVENTS, this._handler);
+    addEvent(this.inst.element, MOUSE_ELEMENT_EVENTS, this._handler);
     addEvent(window, MOUSE_WINDOW_EVENTS, this._handler);
-};
+}
 
-Input.Mouse.prototype = {
+inherit(MouseInput, Input, {
     /**
      * handle mouse events
      * @param {Object} ev
      */
     handler: function(ev) {
-        if(ev.type == "mousedown" && ev.button === 0) {
+        if(ev.type == 'mousedown' && ev.button === 0) {
             this._pressed = true;
         }
 
@@ -42,7 +39,7 @@ Input.Mouse.prototype = {
             return;
         }
 
-        if(ev.type == "mouseup" || ev.type == "mouseout") {
+        if(ev.type == 'mouseup' || ev.type == 'mouseout') {
             this._pressed = false;
         }
 
@@ -63,4 +60,4 @@ Input.Mouse.prototype = {
         removeEvent(this.inst.element, MOUSE_ELEMENT_EVENTS, this._handler);
         removeEvent(window, MOUSE_WINDOW_EVENTS, this._handler);
     }
-};
+});

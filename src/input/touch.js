@@ -5,7 +5,7 @@ var TOUCH_EVENT_MAP = {
     touchcancel: EVENT_CANCEL
 };
 
-var TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
+var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
@@ -13,15 +13,13 @@ var TOUCH_EVENTS = "touchstart touchmove touchend touchcancel";
  * @param {Function} callback
  * @constructor
  */
-Input.Touch = function(inst, callback) {
-    this.inst = inst;
-    this.callback = callback;
+function TouchInput(/*inst, callback*/) {
+    Input.apply(this, arguments);
 
-    this._handler = bindFn(this.handler, this);
-    addEvent(inst.element, TOUCH_EVENTS, this._handler);
-};
+    addEvent(this.inst.element, TOUCH_EVENTS, this._handler);
+}
 
-Input.Touch.prototype = {
+inherit(TouchInput, Input, {
     /**
      * handle touch events
      * @param {Object} ev
@@ -49,7 +47,7 @@ Input.Touch.prototype = {
 
         return [
             // should contain all the touches, touches + changedTouches
-            uniqueArray(touches, "identifier"),
+            uniqueArray(touches, 'identifier'),
             // should contain only the touches that have changed
             changedTouches
         ];
@@ -61,4 +59,4 @@ Input.Touch.prototype = {
     destroy: function() {
         removeEvent(this.inst.element, TOUCH_EVENTS, this._handler);
     }
-};
+});

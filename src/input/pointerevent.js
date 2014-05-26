@@ -6,8 +6,8 @@ var POINTER_EVENT_MAP = {
     pointerout: EVENT_CANCEL
 };
 
-var POINTER_ELEMENT_EVENTS = "pointerdown pointermove pointerup pointercancel";
-var POINTER_WINDOW_EVENTS = "pointerout";
+var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
+var POINTER_WINDOW_EVENTS = 'pointerout';
 
 var IE10_POINTER_TYPE_MAP = {
     2: INPUT_TYPE_TOUCH,
@@ -16,8 +16,8 @@ var IE10_POINTER_TYPE_MAP = {
 };
 
 if(window.MSPointerEvent) {
-    POINTER_ELEMENT_EVENTS = "MSPointerDown MSPointerMove MSPointerUp MSPointerCancel";
-    POINTER_WINDOW_EVENTS = "MSPointerOut";
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown MSPointerMove MSPointerUp MSPointerCancel';
+    POINTER_WINDOW_EVENTS = 'MSPointerOut';
 }
 
 /**
@@ -26,18 +26,15 @@ if(window.MSPointerEvent) {
  * @param {Function} callback
  * @constructor
  */
-Input.PointerEvent = function(inst, callback) {
-    this.inst = inst;
-    this.callback = callback;
+function PointerEventInput(/*inst, callback*/) {
+    Input.apply(this, arguments);
 
     this._store = (this.inst.sessions._pointerEvents = []);
-    this._handler = bindFn(this.handler, this);
-
-    addEvent(inst.element, POINTER_ELEMENT_EVENTS, this._handler);
+    addEvent(this.inst.element, POINTER_ELEMENT_EVENTS, this._handler);
     addEvent(window, POINTER_WINDOW_EVENTS, this._handler);
-};
+}
 
-Input.PointerEvent.prototype = {
+inherit(PointerEventInput, Input, {
     /**
      * handle mouse events
      * @param {Object} ev
@@ -48,19 +45,19 @@ Input.PointerEvent.prototype = {
         var removePointer = false;
 
         // normalize event.type
-        var evType = ev.type.toLowerCase().replace("ms", "");
+        var evType = ev.type.toLowerCase().replace('ms', '');
 
-        if(evType == "pointerdown") {
+        if(evType == 'pointerdown') {
             // pointer must be down
             store.push(ev);
-            prefixed("setPointerCapture", element, [ev.pointerId]);
-        } else if(evType == "pointerup" || evType == "pointerout" || evType == "pointercancel") {
+            prefixed('setPointerCapture', element, [ev.pointerId]);
+        } else if(evType == 'pointerup' || evType == 'pointerout' || evType == 'pointercancel') {
             // we've lost the pointer
             removePointer = true;
         }
 
         // get index of the event in the store
-        var storeIndex = inArray(store, ev.pointerId, "pointerId");
+        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
         if(storeIndex < 0) {
             // not found, so the pointer hasn't been down (so it's probably a hover)
             return;
@@ -81,7 +78,7 @@ Input.PointerEvent.prototype = {
         if(removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
-            prefixed("releasePointerCapture", element, [ev.pointerId]);
+            prefixed('releasePointerCapture', element, [ev.pointerId]);
         }
     },
 
@@ -92,4 +89,4 @@ Input.PointerEvent.prototype = {
         removeEvent(this.inst.element, POINTER_ELEMENT_EVENTS, this._handler);
         removeEvent(window, POINTER_WINDOW_EVENTS, this._handler);
     }
-};
+});

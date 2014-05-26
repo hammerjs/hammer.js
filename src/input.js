@@ -1,75 +1,92 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
-var SUPPORT_POINTER_EVENTS = prefixed("PointerEvent", window);
-var SUPPORT_TOUCH = ("ontouchstart" in window);
+var SUPPORT_POINTER_EVENTS = prefixed('PointerEvent', window);
+var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
-var INPUT_TYPE_TOUCH = "touch";
-var INPUT_TYPE_PEN = "pen";
-var INPUT_TYPE_MOUSE = "mouse";
+var INPUT_TYPE_TOUCH = 'touch';
+var INPUT_TYPE_PEN = 'pen';
+var INPUT_TYPE_MOUSE = 'mouse';
 
 var EVENT_START = 1;
 var EVENT_MOVE = 2;
 var EVENT_END = 3;
 var EVENT_CANCEL = 4;
 
-var DIRECTION_LEFT = "left";
-var DIRECTION_RIGHT = "right";
-var DIRECTION_UP = "up";
-var DIRECTION_DOWN = "down";
-var DIRECTION_NONE = "";
+var DIRECTION_LEFT = 'left';
+var DIRECTION_RIGHT = 'right';
+var DIRECTION_UP = 'up';
+var DIRECTION_DOWN = 'down';
+var DIRECTION_NONE = '';
 
-var PROPS_XY = ["x", "y"];
-var PROPS_CLIENT_XY = ["clientX", "clientY"];
+var PROPS_XY = ['x', 'y'];
+var PROPS_CLIENT_XY = ['clientX', 'clientY'];
+
+/**
+ * create new input type instance
+ * @param {Hammer} inst
+ * @param {Function} callback
+ * @returns {Input}
+ * @constructor
+ */
+function Input(inst, callback) {
+    this.inst = inst;
+    this.callback = callback;
+
+    // used for internal events
+    this._handler = bindFn(this.handler, this);
+}
 
 /**
  * create new input type instance
  * @param {Hammer} inst
  * @returns {Input}
- * @constructor
  */
-function Input(inst) {
-    var type = "TouchMouse";
+function createInputInstance(inst) {
+    var type;
     if(SUPPORT_POINTER_EVENTS) {
-        type = "PointerEvent";
+        type = PointerEventInput;
     } else if(SUPPORT_ONLY_TOUCH) {
-        type = "Touch";
+        type = TouchInput;
     } else if(!SUPPORT_TOUCH) {
-        type = "Mouse";
+        type = MouseInput;
+    } else {
+        type = TouchMouseInput
     }
-    return new Input[type](inst, inputHandler);
+    return new (type)(inst, inputHandler);
 }
 
 /**
  * handle input events
- * @param {Hammer} inst
+ * @param {Instance} inst
  * @param {String} eventType
  * @param {Object} inputData
  */
 function inputHandler(inst, eventType, inputData) {
-    var session;
+    var pointersLen = inputData.pointers.length;
+    var changedPointersLen = inputData.changedPointers.length;
 
-    if(eventType == EVENT_START) {
-        // create session
-        session = new Session(inst);
-        inst.sessions.unshift(session);
-    } else {
-        // get latest session
-        session = inst.sessions[0];
+    var isFirst = (eventType === EVENT_START && (pointersLen - changedPointersLen === 0));
+    var isFinal = (eventType === EVENT_END && (pointersLen - changedPointersLen === 0));
+
+    inputData.isFirst = isFirst;
+    inputData.isFinal = isFinal;
+
+    if(eventType === EVENT_START && inputData.isFirst) {
+        inst.session = {};
     }
-
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
     inputData.eventType = eventType;
 
     // compute scale, rotation etc
-    computeInputData(session, inputData);
+    computeInputData(inst.session, inputData);
 
-    session.update(inputData);
+    inst.update(inputData);
 }
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
- * @param {Session} session
+ * @param {Object} session
  * @param {Object} inputData
  */
 function computeInputData(session, inputData) {
@@ -90,20 +107,24 @@ function computeInputData(session, inputData) {
 
     var firstInput = session.firstInput;
     var firstMultiple = session.firstMultiple;
-    var firstCenter = firstMultiple ? firstMultiple.center : firstInput.center;
-
-    console.log(firstMultiple, firstCenter);
+    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
 
     var center = getCenter(pointers);
 
-    inputData.center = center;
-    inputData.angle = getAngle(firstCenter, center);
-    inputData.distance = getDistance(firstCenter, center);
-    inputData.direction = getDirection(firstCenter, center);
+    inputData.timeStamp = inputData.srcEvent.timeStamp;
 
-    inputData.deltaTime = inputData.srcEvent.timeStamp - firstInput.timeStamp;
-    inputData.deltaX = center.x - firstCenter.x;
-    inputData.deltaY = center.y - firstCenter.y;
+    inputData.center = center;
+    inputData.angle = getAngle(offsetCenter, center);
+    inputData.distance = getDistance(offsetCenter, center);
+    inputData.direction = getDirection(offsetCenter, center);
+
+    inputData.velocity = .5;
+    inputData.velocityX = .5;
+    inputData.velocityY = .5;
+
+    inputData.deltaTime = inputData.timeStamp - firstInput.timeStamp;
+    inputData.deltaX = center.x - offsetCenter.x;
+    inputData.deltaY = center.y - offsetCenter.y;
 
     inputData.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     inputData.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;

@@ -8,15 +8,14 @@
  * @param {Function} callback
  * @constructor
  */
-Input.TouchMouse = function(inst, callback) {
-    this.callback = callback;
+function TouchMouseInput(inst, callback) {
+    Input.apply(this, arguments);
 
-    this._handler = bindFn(this.handler, this);
     this.touch = new Input.Touch(inst, this._handler);
     this.mouse = new Input.Mouse(inst, this._handler);
-};
+}
 
-Input.TouchMouse.prototype = {
+inherit(TouchMouseInput, Input, {
     /**
      * handle mouse and touch events
      * @param {Hammer} inst
@@ -27,7 +26,7 @@ Input.TouchMouse.prototype = {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
-        // when we"re in a touch event, so  block all upcoming mouse events
+        // when we're in a touch event, so  block all upcoming mouse events
         // most mobile browser also trigger mouseevents, right after touchstart
         if(isTouch) {
             this.mouse._allow = false;
@@ -35,7 +34,7 @@ Input.TouchMouse.prototype = {
             return;
         }
 
-        // reset the allowMouse when we"re done
+        // reset the allowMouse when we're done
         if(inputEvent == EVENT_END) {
             this.mouse._allow = true;
         }
@@ -50,4 +49,4 @@ Input.TouchMouse.prototype = {
         this.touch.destroy();
         this.mouse.destroy();
     }
-};
+});
