@@ -22,9 +22,30 @@ function Instance(element, options) {
 Instance.prototype = {
     update: function(inputData) {
         this.touchAction.update(inputData);
+
+        var session = this.session;
+
+        if(inputData.isFirst) {
+            session.curRecognizer = null;
+        }
+
         each(this.recognizers, function(recognizer) {
-            recognizer.update(inputData);
+
+            if(!session.curRecognizer || session.curRecognizer == recognizer) {
+                recognizer.update(inputData);
+
+                if(recognizer.state <= STATE_RECOGNIZED) {
+                    session.curRecognizer = recognizer;
+                } else {
+                    session.curRecognizer = null;
+                }
+            }
         });
+    },
+
+    addRecognizer: function(recognizerInst) {
+        this.recognizers.push(recognizerInst);
+        recognizerInst.setInstance(this);
     },
 
     /**

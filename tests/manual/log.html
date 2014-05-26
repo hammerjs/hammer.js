@@ -26,20 +26,23 @@
             return output.join("\n")
         };
 
+
         var el = document.querySelector("#hit");
         var mc = new Hammer.Instance(el, {
             touchAction: 'none'
         });
 
-        new Hammer.PanRecognizer(mc);
 
-        new Hammer.RotationRecognizer(mc);
-        new Hammer.PinchRecognizer(mc);
+        mc.addRecognizer(new Hammer.RecognizerSet([
+            new Hammer.PanRecognizer({event: 'multipan', pointers: 3 }),
+            new Hammer.PinchRecognizer({event: 'multipinch', pointers: 3 }),
+        ]));
 
-        //new Hammer.LongPressRecognizer(mc);
-
-        new Hammer.TapRecognizer(mc);
-        new Hammer.TapRecognizer(mc, { event: 'doubletap', taps: 2 });
+        mc.addRecognizer(new Hammer.PanRecognizer());
+        mc.addRecognizer(new Hammer.RotationRecognizer());
+        mc.addRecognizer(new Hammer.PinchRecognizer());
+        mc.addRecognizer(new Hammer.TapRecognizer());
+        mc.addRecognizer(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
 
         el.addEventListener("pan", logGesture, false);
         el.addEventListener("multipan", logGesture, false);

@@ -1,4 +1,4 @@
-function LongPressRecognizer(/* inst, options */) {
+function LongPressRecognizer() {
     AttrRecognizer.apply(this, arguments);
 
     this.timer = null;

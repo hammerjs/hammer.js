@@ -1,4 +1,4 @@
-function AttrRecognizer(/* inst, options */) {
+function AttrRecognizer() {
     Recognizer.apply(this, arguments);
 }
 

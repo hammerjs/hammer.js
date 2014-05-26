@@ -1,4 +1,4 @@
-function PanRecognizer(/* inst, options */) {
+function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 

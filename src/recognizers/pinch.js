@@ -1,4 +1,4 @@
-function PinchRecognizer(/* inst, options */) {
+function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 

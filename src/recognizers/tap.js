@@ -1,4 +1,4 @@
-function TapRecognizer(/* inst, options */) {
+function TapRecognizer() {
     Recognizer.apply(this, arguments);
 
     this.prevTime = false;
@@ -14,7 +14,7 @@ inherit(TapRecognizer, Recognizer, {
         time: 200,
         pointers: 1,
         taps: 1,
-        movementBetweenTaps: 10,
+        movementBetweenTaps: 20,
         movementDuringTap: 3
     },
 
@@ -39,7 +39,10 @@ inherit(TapRecognizer, Recognizer, {
             this.prevTime = input.timeStamp;
             this.prevCenter = input.center;
 
-            if(validTapCount) {
+            if(validTapCount && validTapTime) {
+                if(this.tapCount === 0) {
+                    this.tapCount = 1;
+                }
                 return STATE_RECOGNIZED;
             }
         }

@@ -7,13 +7,9 @@ var STATE_CANCELLED = 8;
 var STATE_POSSIBLE = 16;
 var STATE_FAILED = 32;
 
-function Recognizer(inst, options) {
-    this.inst = inst;
-    inst.recognizers.push(this);
-
+function Recognizer(options) {
     this.state = STATE_POSSIBLE;
     this.enabled = true;
-
     this.options = merge(options || {}, this.defaults);
 }
 
@@ -23,6 +19,10 @@ Recognizer.prototype = {
      */
     reset: function() {
         this.state = STATE_POSSIBLE;
+    },
+
+    setInstance: function(inst) {
+        this.inst = inst;
     },
 
     /**
@@ -54,6 +54,11 @@ Recognizer.prototype = {
      * @param inputData
      */
     update: function(inputData) {
+        if(!this.enabled) {
+            this.state = STATE_FAILED;
+            return;
+        }
+
         // get detection state
         if(this.state <= STATE_POSSIBLE) {
             this.state = this.test(inputData);
@@ -64,7 +69,7 @@ Recognizer.prototype = {
             this.handler(inputData);
         }
 
-        if(inputData.isFinal) {
+        if(this.state >= STATE_ENDED) {
             this.reset();
         }
     }

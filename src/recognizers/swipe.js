@@ -1,4 +1,4 @@
-function SwipeRecognizer(/* inst, options */) {
+function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 

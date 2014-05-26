@@ -1,4 +1,4 @@
-function RotationRecognizer(/* inst, options */) {
+function RotationRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
