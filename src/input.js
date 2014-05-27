@@ -53,17 +53,17 @@ Input.prototype = {
  * @returns {Input}
  */
 function createInputInstance(inst) {
-    var type;
+    var Type;
     if(SUPPORT_POINTER_EVENTS) {
-        type = PointerEventInput;
+        Type = PointerEventInput;
     } else if(SUPPORT_ONLY_TOUCH) {
-        type = TouchInput;
+        Type = TouchInput;
     } else if(!SUPPORT_TOUCH) {
-        type = MouseInput;
+        Type = MouseInput;
     } else {
-        type = TouchMouseInput
+        Type = TouchMouseInput;
     }
-    return new (type)(inst, inputHandler);
+    return new (Type)(inst, inputHandler);
 }
 
 /**
@@ -128,9 +128,9 @@ function computeInputData(session, inputData) {
     inputData.distance = getDistance(offsetCenter, center);
     inputData.direction = getDirection(offsetCenter, center);
 
-    inputData.velocity = .5;
-    inputData.velocityX = .5;
-    inputData.velocityY = .5;
+    inputData.velocity = 0.5;
+    inputData.velocityX = 0.5;
+    inputData.velocityY = 0.5;
 
     inputData.deltaTime = inputData.timeStamp - firstInput.timeStamp;
     inputData.deltaX = center.x - offsetCenter.x;

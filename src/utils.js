@@ -48,8 +48,9 @@ function merge(dest, src) {
 /**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
- * @param dest
- * @param src
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
  */
 function extend(dest, src) {
     for(var key in src) {
@@ -76,7 +77,7 @@ function inherit(child, parent, methods) {
     child.prototype = new Inherited();
 
     if(methods) {
-        extend(child.prototype, methods)
+        extend(child.prototype, methods);
     }
 }
 
@@ -211,8 +212,4 @@ function prefixed(property, obj, val) {
         return obj[prop];
     }
     return null;
-}
-
-function inRange(value, min,max) {
-    return value >= min && value <= max;
 }

@@ -6,7 +6,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     defaults: {
         event: 'swipe',
         distance: 10,
-        velocity: .6,
+        velocity: 0.6,
         pointers: 1
     },
 

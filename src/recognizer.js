@@ -21,13 +21,17 @@ Recognizer.prototype = {
         this.state = STATE_POSSIBLE;
     },
 
+    /**
+     * set instance
+     * @param {Instance} inst
+     */
     setInstance: function(inst) {
         this.inst = inst;
     },
 
     /**
      * default handler
-     * @param input
+     * @param {Object} input
      */
     handler: function(input) {
         this.inst.trigger(this.options.event + this.statePostfix(), input);
@@ -51,7 +55,7 @@ Recognizer.prototype = {
 
     /**
      * update the recognizer
-     * @param inputData
+     * @param {Object} inputData
      */
     update: function(inputData) {
         if(!this.enabled) {

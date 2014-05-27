@@ -23,7 +23,7 @@ inherit(TapRecognizer, Recognizer, {
         var eventType = input.eventType;
 
         if(eventType === EVENT_MOVE && input.distance > options.movementDuringTap || input.pointers.length > options.pointers) {
-             return STATE_FAILED;
+            return STATE_FAILED;
         }  else if(eventType !== EVENT_END) {
             return STATE_POSSIBLE;
         } else {

@@ -9,11 +9,9 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
- * @param {Hammer} inst
- * @param {Function} callback
  * @constructor
  */
-function TouchInput(/*inst, callback*/) {
+function TouchInput() {
     this._elEvents = TOUCH_EVENTS;
 
     Input.apply(this, arguments);

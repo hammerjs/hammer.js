@@ -4,15 +4,13 @@
  * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
  * This because touch devices also trigger mouse events while doing a touch.
  *
- * @param {Hammer} inst
- * @param {Function} callback
  * @constructor
  */
-function TouchMouseInput(inst, callback) {
+function TouchMouseInput() {
     Input.apply(this, arguments);
 
-    this.touch = new Input.Touch(inst, this._handler);
-    this.mouse = new Input.Mouse(inst, this._handler);
+    this.touch = new Input.Touch(this.inst, this._handler);
+    this.mouse = new Input.Mouse(this.inst, this._handler);
 }
 
 inherit(TouchMouseInput, Input, {

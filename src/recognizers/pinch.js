@@ -5,7 +5,7 @@ function PinchRecognizer() {
 inherit(PinchRecognizer, AttrRecognizer, {
     defaults: {
         event: 'pinch',
-        threshold: .2,
+        threshold: 0.2,
         pointers: 2
     },
 

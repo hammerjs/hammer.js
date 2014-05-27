@@ -10,11 +10,9 @@ var MOUSE_WINDOW_EVENTS = 'mouseout';
 
 /**
  * Mouse events input
- * @param {Hammer} inst
- * @param {Function} callback
  * @constructor
  */
-function MouseInput(/*inst, callback*/) {
+function MouseInput() {
     this._elEvents = MOUSE_ELEMENT_EVENTS;
     this._winEvents = MOUSE_WINDOW_EVENTS;
 

@@ -63,7 +63,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat','string-replace','uglify']#,'jshint','jscs']
+        tasks: ['concat','string-replace','uglify','jshint','jscs']
         options:
           interrupt: true
 

@@ -7,3 +7,5 @@
 function Hammer(element, options) {
     this.inst = new Instance(element, options);
 }
+
+Hammer.version = '{{PKG_VERSION}}';

@@ -8,11 +8,11 @@ inherit(AttrRecognizer, Recognizer, {
         pointers: 1
     },
 
-    failTest: function(input){
+    failTest: function(input) {
         return input.pointers.length > this.options.pointers;
     },
 
-    validTest: function(input){
+    validTest: function(/*input*/) {
         return true;
     },
 

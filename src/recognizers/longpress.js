@@ -12,11 +12,11 @@ inherit(LongPressRecognizer, AttrRecognizer, {
         pointers: 1
     },
 
-    failAttr: function(input) {
+    failTest: function(input) {
         return input.distance > this.options.distance;
     },
 
-    testAttr: function(input) {
+    validTest: function(/*input*/) {
         return STATE_FAILED;
     },
 

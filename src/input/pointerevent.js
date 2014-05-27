@@ -22,11 +22,9 @@ if(window.MSPointerEvent) {
 
 /**
  * Pointer events input
- * @param {Hammer} inst
- * @param {Function} callback
  * @constructor
  */
-function PointerEventInput(/*inst, callback*/) {
+function PointerEventInput() {
     this._elEvents = POINTER_ELEMENT_EVENTS;
     this._winEvents = POINTER_WINDOW_EVENTS;
 
