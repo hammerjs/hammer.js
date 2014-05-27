@@ -8,6 +8,8 @@ var INPUT_TYPE_TOUCH = 'touch';
 var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
 
+var COMPUTE_INTERVAL = 50;
+
 var EVENT_START = 1;
 var EVENT_MOVE = 2;
 var EVENT_END = 4;
@@ -70,47 +72,47 @@ function createInputInstance(inst) {
  * handle input events
  * @param {Instance} inst
  * @param {String} eventType
- * @param {Object} inputData
+ * @param {Object} input
  */
-function inputHandler(inst, eventType, inputData) {
-    var pointersLen = inputData.pointers.length;
-    var changedPointersLen = inputData.changedPointers.length;
+function inputHandler(inst, eventType, input) {
+    var pointersLen = input.pointers.length;
+    var changedPointersLen = input.changedPointers.length;
 
     var isFirst = (eventType === EVENT_START && (pointersLen - changedPointersLen === 0));
     var isFinal = (eventType === EVENT_END && (pointersLen - changedPointersLen === 0));
 
-    inputData.isFirst = isFirst;
-    inputData.isFinal = isFinal;
+    input.isFirst = isFirst;
+    input.isFinal = isFinal;
 
-    if(eventType === EVENT_START && inputData.isFirst) {
+    if(eventType === EVENT_START && input.isFirst) {
         inst.session = {};
     }
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
-    inputData.eventType = eventType;
+    input.eventType = eventType;
 
     // compute scale, rotation etc
-    computeInputData(inst.session, inputData);
+    computeInputData(inst.session, input);
 
-    inst.update(inputData);
+    inst.update(input);
 }
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
  * @param {Object} session
- * @param {Object} inputData
+ * @param {Object} input
  */
-function computeInputData(session, inputData) {
-    var pointers = inputData.pointers;
+function computeInputData(session, input) {
+    var pointers = input.pointers;
     var pointersLength = pointers.length;
 
     // store the first input to calculate the distance and direction
     if(!session.firstInput) {
-        session.firstInput = simpleCloneInputData(inputData);
+        session.firstInput = simpleCloneInputData(input);
     }
 
     // to compute scale and rotation we need to store the multiple touches
     if(pointersLength > 1 && !session.firstMultiple) {
-        session.firstMultiple = simpleCloneInputData(inputData);
+        session.firstMultiple = simpleCloneInputData(input);
     } else if(pointersLength === 1) {
         session.firstMultiple = false;
     }
@@ -121,35 +123,60 @@ function computeInputData(session, inputData) {
 
     var center = getCenter(pointers);
 
-    inputData.timeStamp = inputData.srcEvent.timeStamp;
+    input.timeStamp = input.srcEvent.timeStamp;
 
-    inputData.center = center;
-    inputData.angle = getAngle(offsetCenter, center);
-    inputData.distance = getDistance(offsetCenter, center);
-    inputData.direction = getDirection(offsetCenter, center);
+    input.center = center;
+    input.angle = getAngle(offsetCenter, center);
+    input.distance = getDistance(offsetCenter, center);
+    input.direction = getDirection(offsetCenter, center);
 
-    inputData.velocity = 0.5;
-    inputData.velocityX = 0.5;
-    inputData.velocityY = 0.5;
+    input.deltaTime = input.timeStamp - firstInput.timeStamp;
+    input.deltaX = center.x - offsetCenter.x;
+    input.deltaY = center.y - offsetCenter.y;
 
-    inputData.deltaTime = inputData.timeStamp - firstInput.timeStamp;
-    inputData.deltaX = center.x - offsetCenter.x;
-    inputData.deltaY = center.y - offsetCenter.y;
+    input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+    input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
 
-    inputData.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
-    inputData.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+    computeIntervalInputData(session, input);
 }
 
 /**
- * create a simple clone from the inputData used for storage of firstInput and firstMultiple
- * @param {Object} inputData
+ * velocity is calculated every x ms
+ * @param {Object} session
+ * @param {Object} input
+ */
+function computeIntervalInputData(session, input) {
+    if(!session.lastInterval) {
+        session.lastInterval = simpleCloneInputData(input);
+    }
+
+    var deltaTime = input.timeStamp - session.lastInterval.timeStamp;
+
+    if(deltaTime > COMPUTE_INTERVAL || !session.lastInterval.velocity) {
+        var deltaX = input.deltaX - session.lastInterval.deltaX;
+        var deltaY = input.deltaY - session.lastInterval.deltaY;
+
+        session.lastInterval = simpleCloneInputData(input);
+        session.lastInterval.velocity = getVelocity(deltaTime, deltaX, deltaY);
+    }
+
+    var velocity = session.lastInterval.velocity;
+
+    input.velocity = Math.max(velocity.x, velocity.y);
+    input.velocityX = velocity.x;
+    input.velocityY = velocity.y;
+}
+
+/**
+ * create a simple clone from the input used for storage of firstInput and firstMultiple
+ * @param {Object} input
  * @returns {Object} clonedInputData
  */
-function simpleCloneInputData(inputData) {
+function simpleCloneInputData(input) {
     // make a simple copy of the pointers because we will get a reference if we don't
     // we only need clientXY for the calculations
     var pointers = [];
-    each(inputData.pointers, function(pointer) {
+    each(input.pointers, function(pointer) {
         pointers.push({
             clientX: round(pointer.clientX),
             clientY: round(pointer.clientY)
@@ -157,9 +184,11 @@ function simpleCloneInputData(inputData) {
     });
 
     return {
-        timeStamp: inputData.srcEvent.timeStamp,
+        timeStamp: input.srcEvent.timeStamp,
         pointers: pointers,
-        center: getCenter(pointers)
+        center: getCenter(pointers),
+        deltaX: input.deltaX,
+        deltaY: input.deltaY
     };
 }
 
@@ -188,6 +217,20 @@ function getCenter(pointers) {
     return {
         x: round((Math.min.apply(Math, x) + Math.max.apply(Math, x)) / 2),
         y: round((Math.min.apply(Math, y) + Math.max.apply(Math, y)) / 2)
+    };
+}
+
+/**
+ * calculate the velocity between two points. unit is in px per ms.
+ * @param {Number} deltaTime
+ * @param {Number} deltaX
+ * @param {Number} deltaY
+ * @return {Object} velocity `x` and `y`
+ */
+function getVelocity(deltaTime, deltaX, deltaY) {
+    return {
+        x: Math.abs(deltaX / deltaTime) || 0,
+        y: Math.abs(deltaY / deltaTime) || 0
     };
 }
 
