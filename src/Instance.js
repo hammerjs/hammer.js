@@ -66,6 +66,8 @@ Instance.prototype = {
         event.initEvent(gesture, true, true);
         event.gesture = eventData;
 
+        console.log(gesture);
+
         this.element.dispatchEvent(event);
     }
 };
