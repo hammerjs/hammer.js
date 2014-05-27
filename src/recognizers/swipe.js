@@ -11,8 +11,6 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     },
 
     validTest: function(input) {
-        console.log(input.velocity, this.options.velocity)
-
         return input.velocity > this.options.velocity &&
             input.distance > this.options.distance &&
             input.eventType == EVENT_END;
