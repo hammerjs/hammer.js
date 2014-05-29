@@ -5,22 +5,24 @@
  * @constructor
  */
 function Hammer(element, options) {
+    options = options || {};
     var inst = new Instance(element, options);
 
-    inst.addRecognizer(new RecognizerGroup([
-        new RotationRecognizer(),
-        new PinchRecognizer()
+    inst.use(new RecognizerGroup([
+        new RotationRecognizer(options.rotation),
+        new PinchRecognizer(options.pinch)
     ]));
 
-    inst.addRecognizer(new RecognizerGroup([
-        new PanRecognizer(),
-        new SwipeRecognizer()
+    inst.use(new RecognizerGroup([
+        new PanRecognizer(options.pan),
+        new SwipeRecognizer(options.swipe)
     ]));
 
-    inst.addRecognizer(new TapRecognizer({ event: 'doubletap', taps: 2 }));
-    inst.addRecognizer(new TapRecognizer());
+    options.doubleTap = merge(options.doubleTap || {}, { event: 'doubletap', taps: 2 });
+    inst.use(new TapRecognizer(options.doubleTap));
+    inst.use(new TapRecognizer(options.tap));
 
-    inst.addRecognizer(new LongPressRecognizer());
+    inst.use(new LongPressRecognizer(options.longPress));
 
     return inst;
 }

@@ -33,21 +33,21 @@
             touchAction: 'none'
         });
 
-        mc.addRecognizer(new Hammer.RecognizerGroup([
+        mc.use(new Hammer.RecognizerGroup([
             new Hammer.PanRecognizer({event: 'triplepan', pointers: 3 }),
             new Hammer.PinchRecognizer({event: 'triplepinch', pointers: 3 }),
         ]));
 
-        mc.addRecognizer(new Hammer.RecognizerGroup([
+        mc.use(new Hammer.RecognizerGroup([
             new Hammer.SwipeRecognizer(),
             new Hammer.PanRecognizer()
         ]));
 
-        mc.addRecognizer(new Hammer.RotationRecognizer());
-        mc.addRecognizer(new Hammer.PinchRecognizer());
+        mc.use(new Hammer.RotationRecognizer());
+        mc.use(new Hammer.PinchRecognizer());
 
-        mc.addRecognizer(new Hammer.TapRecognizer());
-        mc.addRecognizer(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
+        mc.use(new Hammer.TapRecognizer());
+        mc.use(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
 
         el.addEventListener("swipe", logGesture, false);
         el.addEventListener("pan", logGesture, false);
