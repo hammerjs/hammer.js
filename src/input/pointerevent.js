@@ -1,9 +1,9 @@
-var POINTER_EVENT_MAP = {
-    pointerdown: EVENT_START,
-    pointermove: EVENT_MOVE,
-    pointerup: EVENT_END,
-    pointercancel: EVENT_CANCEL,
-    pointerout: EVENT_CANCEL
+var POINTER_INPUT_MAP = {
+    pointerdown: INPUT_START,
+    pointermove: INPUT_MOVE,
+    pointerup: INPUT_END,
+    pointercancel: INPUT_CANCEL,
+    pointerout: INPUT_CANCEL
 };
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
@@ -49,7 +49,7 @@ inherit(PointerEventInput, Input, {
         if(evType == 'pointerdown') {
             // pointer must be down
             store.push(ev);
-            prefixed('setPointerCapture', element, [ev.pointerId]);
+            prefixed(element, 'setPointerCapture', [ev.pointerId]);
         } else if(evType == 'pointerup' || evType == 'pointerout' || evType == 'pointercancel') {
             // we've lost the pointer
             removePointer = true;
@@ -72,12 +72,12 @@ inherit(PointerEventInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, POINTER_EVENT_MAP[evType], data);
+        this.callback(this.inst, POINTER_INPUT_MAP[evType], data);
 
         if(removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
-            prefixed('releasePointerCapture', element, [ev.pointerId]);
+            prefixed(element, 'releasePointerCapture', [ev.pointerId]);
         }
     },
 });

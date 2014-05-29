@@ -63,6 +63,10 @@ Recognizer.prototype = {
             return;
         }
 
+        if(this.state >= STATE_ENDED) {
+            this.reset();
+        }
+
         // get detection state
         if(this.state <= STATE_POSSIBLE) {
             this.state = this.test(inputData);
@@ -71,10 +75,6 @@ Recognizer.prototype = {
         // call the handler for valid tests
         if(this.state <= STATE_CANCELLED) {
             this.handler(inputData);
-        }
-
-        if(this.state >= STATE_ENDED) {
-            this.reset();
         }
     }
 };

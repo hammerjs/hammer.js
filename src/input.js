@@ -1,6 +1,6 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
-var SUPPORT_POINTER_EVENTS = prefixed('PointerEvent', window);
+var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent');
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
@@ -10,10 +10,10 @@ var INPUT_TYPE_MOUSE = 'mouse';
 
 var COMPUTE_INTERVAL = 50;
 
-var EVENT_START = 1;
-var EVENT_MOVE = 2;
-var EVENT_END = 4;
-var EVENT_CANCEL = 8;
+var INPUT_START = 1;
+var INPUT_MOVE = 2;
+var INPUT_END = 4;
+var INPUT_CANCEL = 8;
 
 var DIRECTION_LEFT = 'left';
 var DIRECTION_RIGHT = 'right';
@@ -78,13 +78,13 @@ function inputHandler(inst, eventType, input) {
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
 
-    var isFirst = (eventType === EVENT_START && (pointersLen - changedPointersLen === 0));
-    var isFinal = (eventType === EVENT_END && (pointersLen - changedPointersLen === 0));
+    var isFirst = (eventType === INPUT_START && (pointersLen - changedPointersLen === 0));
+    var isFinal = (eventType === INPUT_END && (pointersLen - changedPointersLen === 0));
 
     input.isFirst = isFirst;
     input.isFinal = isFinal;
 
-    if(eventType === EVENT_START && input.isFirst) {
+    if(eventType === INPUT_START && input.isFirst) {
         inst.session = {};
     }
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'

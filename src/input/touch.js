@@ -1,8 +1,8 @@
-var TOUCH_EVENT_MAP = {
-    touchstart: EVENT_START,
-    touchmove: EVENT_MOVE,
-    touchend: EVENT_END,
-    touchcancel: EVENT_CANCEL
+var TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
 };
 
 var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
@@ -31,7 +31,7 @@ inherit(TouchInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, TOUCH_EVENT_MAP[ev.type], data);
+        this.callback(this.inst, TOUCH_INPUT_MAP[ev.type], data);
     },
 
     /**

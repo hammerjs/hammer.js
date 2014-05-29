@@ -1,14 +1,14 @@
-function RecognizerSet(recognizers) {
+function RecognizerGroup(recognizers) {
     Recognizer.call(this, {});
 
     this.recognizers = recognizers;
 }
 
-inherit(RecognizerSet, Recognizer, {
+inherit(RecognizerGroup, Recognizer, {
     setInstance: function(inst) {
         this.inst = inst;
         each(this.recognizers, function(recognizer) {
-            recognizer.inst = inst;
+            recognizer.setInstance(inst);
         });
     },
 
@@ -21,7 +21,6 @@ inherit(RecognizerSet, Recognizer, {
         var newState = STATE_POSSIBLE;
         each(this.recognizers, function(recognizer) {
             recognizer.update(inputData);
-
             if(recognizer.state < newState) {
                 newState = recognizer.state;
             }

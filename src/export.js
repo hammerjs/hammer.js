@@ -6,11 +6,13 @@ Hammer.PanRecognizer = PanRecognizer;
 Hammer.SwipeRecognizer = SwipeRecognizer;
 Hammer.PinchRecognizer = PinchRecognizer;
 Hammer.RotationRecognizer = RotationRecognizer;
+Hammer.LongPressRecognizer = LongPressRecognizer;
 
-Hammer.RecognizerSet = RecognizerSet;
-//Hammer.LongPressRecognizer = LongPressRecognizer;
+Hammer.RecognizerGroup = RecognizerGroup;
 
-// expose some methods
+// expose some useful methods
+Hammer.addEvent = addEvent;
+Hammer.removeEvent = removeEvent;
 Hammer.each = each;
 Hammer.merge = merge;
 Hammer.bindFn = bindFn;

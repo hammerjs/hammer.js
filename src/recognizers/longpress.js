@@ -4,6 +4,8 @@ function LongPressRecognizer() {
     this.timer = null;
 }
 
+// @todo implement this gesture
+
 inherit(LongPressRecognizer, AttrRecognizer, {
     defaults: {
         event: 'longpress',
@@ -17,7 +19,7 @@ inherit(LongPressRecognizer, AttrRecognizer, {
     },
 
     validTest: function(/*input*/) {
-        return STATE_FAILED;
+        return false;
     },
 
     handler: function(input) {

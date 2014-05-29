@@ -1,8 +1,8 @@
-var MOUSE_EVENT_MAP = {
-    mousedown: EVENT_START,
-    mousemove: EVENT_MOVE,
-    mouseup: EVENT_END,
-    mouseout: EVENT_END
+var MOUSE_INPUT_MAP = {
+    mousedown: INPUT_START,
+    mousemove: INPUT_MOVE,
+    mouseup: INPUT_END,
+    mouseout: INPUT_CANCEL
 };
 
 var MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
@@ -48,6 +48,6 @@ inherit(MouseInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, MOUSE_EVENT_MAP[ev.type], data);
+        this.callback(this.inst, MOUSE_INPUT_MAP[ev.type], data);
     },
 });

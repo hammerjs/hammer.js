@@ -2,7 +2,7 @@
  * set and mimic the touch-action property
  */
 
-var NATIVE_TOUCH_ACTION = prefixed('touchAction', document.body.style);
+var NATIVE_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
 
 function TouchAction(inst) {
     this.inst = inst;
@@ -14,7 +14,7 @@ TouchAction.prototype = {
         this.value = value.toLowerCase();
 
         if(NATIVE_TOUCH_ACTION) {
-            prefixed('touchAction', this.inst.element.style, value);
+            prefixed(this.inst.element.style, 'touchAction', value);
         }
     },
 
@@ -26,7 +26,7 @@ TouchAction.prototype = {
         if(NATIVE_TOUCH_ACTION ||
             touchAction == 'auto' ||
             inputData.pointerType == INPUT_TYPE_MOUSE ||
-            inputData.eventType === EVENT_START) {
+            inputData.eventType === INPUT_START) {
             return;
         }
 
@@ -34,29 +34,25 @@ TouchAction.prototype = {
         // prevent it everytime
         if(this.inst.session.prevented) {
             event.preventDefault();
+            return;
         }
 
         var isPanY = inStr(touchAction, 'pan-y');
         var isPanX = inStr(touchAction, 'pan-x');
         var isNone = inStr(touchAction, 'none');
-        var isManipulation = inStr(touchAction, 'manipulation');
 
-        // 'none' and 'pan-y pan-x'
-        if(isNone || (isPanY && isPanX)) {
+        var direction = inputData.direction;
+
+        // 'none', just prevent anything
+        if(isNone) {
             this.preventDefault(event);
         }
 
         // 'pan-y' or 'pan-x'
-        var direction = inputData.direction;
-        if((isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT)) ||
-            (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN))) {
-            this.preventDefault(event);
-        }
-
-        // 'manipulation'
-        // only on touchend we want to prevent the default
-        // it should then remove the 300ms (@todo check this)
-        if(isManipulation && event.type == 'touchend') {
+        if(inputData.eventType === INPUT_MOVE && (
+            (isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT)) ||
+            (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN)
+        ))) {
             this.preventDefault(event);
         }
     },

@@ -11,9 +11,13 @@
         }
 
         html, body {
-            background: #000;
+            background: #333;
             -ms-touch-action: none; /* window phone needs this for the demo, unfortunately */
-            font: 14px sans-serif;
+            font: 15px sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
         }
 
         .animate {
@@ -23,15 +27,25 @@
         }
 
         #hit {
+            position: relative;
+            z-index: 10;
             padding: 10px;
             -ms-touch-select: none; /* Windows Phone grippers are always off. */
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: 'rgba(0,0,0,0)';
         }
 
+        #log {
+            position: absolute;
+            z-index: 1;
+            padding: 10px;
+        }
+
     </style>
 </head>
 <body>
+
+    <div id="log"></div>
 
     <div id="hit" style="background: red; width: 150px; height: 150px;"></div>
 
@@ -40,43 +54,54 @@
     <script>
 
         var transform;
+        var logEl = document.querySelector("#log");
         var el = document.querySelector("#hit");
         var mc = new Hammer.Instance(el, {
             touchAction: 'none'
         });
 
-        Hammer.prefixed('transformOrigin', el.style, "50% 50%");
-
-
-        mc.addRecognizer(new Hammer.PanRecognizer({ threshold: 0 }));
-
-        mc.addRecognizer(new Hammer.RecognizerSet([
+        mc.addRecognizer(new Hammer.RecognizerGroup([
             new Hammer.RotationRecognizer({ threshold: 0 }),
-            new Hammer.PinchRecognizer({ threshold: 0 })]));
+            new Hammer.PinchRecognizer({ threshold: 0 })
+        ]));
 
-        mc.addRecognizer(new Hammer.TapRecognizer());
+         mc.addRecognizer(new Hammer.RecognizerGroup([
+            new Hammer.PanRecognizer({ threshold: 0 }),
+            new Hammer.SwipeRecognizer()
+        ]));
+
+        mc.addRecognizer(new Hammer.TapRecognizer({ event: 'tripletap', taps: 3 }));
         mc.addRecognizer(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
+        mc.addRecognizer(new Hammer.TapRecognizer());
 
         el.addEventListener("pan", onPan, false);
+        el.addEventListener("swipe", onSwipe, false);
+
         el.addEventListener("rotate", onRotate, false);
         el.addEventListener("pinch", onPinch, false);
 
         el.addEventListener("tap", onTap, false);
         el.addEventListener("doubletap", onDoubleTap, false);
+        el.addEventListener("tripletap", onTripleTap, false);
 
-        el.addEventListener("panend", resetElement, false);
-        el.addEventListener("rotateend", resetElement, false);
-        el.addEventListener("pinchend", resetElement, false);
+        Hammer.addEvent(el, "panend rotateend pinchend pancancel rotatecancel pinchcancel", resetElement);
 
+
+        var START_X = (window.innerWidth - el.offsetWidth) / 2;
+        var START_Y = (window.innerHeight - el.offsetHeight) / 2;
 
         function resetElement() {
             transform = {
-                translate: { x: 100, y: 100 },
+                translate: { x: START_X, y: START_Y },
                 scale: 1,
                 rotate: 0
             };
             el.className = 'animate';
             updateElementTransform();
+
+            if(logEl.textContent.length > 2000) {
+                logEl.textContent = logEl.textContent.substring(0, 2000) +"...";
+            }
         }
 
         function updateElementTransform() {
@@ -86,37 +111,61 @@
                 'rotate('+ transform.rotate +'deg)'];
 
             el.textContent = value.join(" ");
+            Hammer.prefixed(el.style, 'transform', value.join(" "));
+        }
 
-            Hammer.prefixed('transform', el.style, value.join(" "));
+        function logEvent(str) {
+            logEl.insertBefore(document.createTextNode(str +"\n"), logEl.firstChild);
         }
 
         function onPan(ev) {
             el.className = '';
             transform.translate = {
-                x: 100 + ev.gesture.deltaX,
-                y: 100 + ev.gesture.deltaY
+                x: START_X + ev.gesture.deltaX,
+                y: START_Y + ev.gesture.deltaY
             };
             updateElementTransform();
+            logEvent(ev.type);
+        }
+
+        function onSwipe(ev) {
+            el.style.background = 'white';
+            setTimeout(function() {
+                el.style.background = 'red';
+                updateElementTransform();
+            }, 300);
+            updateElementTransform();
+            logEvent(ev.type);
         }
 
         function onPinch(ev) {
             el.className = '';
             transform.scale = ev.gesture.scale;
             updateElementTransform();
+            logEvent(ev.type);
         }
         function onRotate(ev) {
             el.className = '';
             transform.rotate = ev.gesture.rotation;
             updateElementTransform();
+            logEvent(ev.type);
         }
 
         function onTap(ev) {
             el.style.background = el.style.background == 'yellow' ? 'red' : 'yellow';
+            logEvent(ev.type);
         }
 
         function onDoubleTap(ev) {
-            transform.scale = transform.scale != 1 ? 1 : 2;
+            transform.scale = transform.scale === 1 ? 1.5 : 1;
             updateElementTransform();
+            logEvent(ev.type);
+        }
+
+        function onTripleTap(ev) {
+            transform.rotate = !transform.rotate ? 360 : 0;
+            updateElementTransform();
+            logEvent(ev.type);
         }
 
         resetElement();

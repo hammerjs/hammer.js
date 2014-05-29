@@ -9,8 +9,8 @@
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
-    this.touch = new Input.Touch(this.inst, this._handler);
-    this.mouse = new Input.Mouse(this.inst, this._handler);
+    this.touch = new TouchInput(this.inst, this._handler);
+    this.mouse = new MouseInput(this.inst, this._handler);
 }
 
 inherit(TouchMouseInput, Input, {
@@ -33,7 +33,7 @@ inherit(TouchMouseInput, Input, {
         }
 
         // reset the allowMouse when we're done
-        if(inputEvent == EVENT_END) {
+        if(inputEvent == INPUT_END) {
             this.mouse._allow = true;
         }
 

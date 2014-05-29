@@ -14,17 +14,13 @@ function each(obj, iterator, context) {
 
     if('forEach' in obj) {
         obj.forEach(iterator, context);
-    } else if(obj.length !== undefined) {
+    } else if(typeof obj.length !== TYPE_UNDEFINED) {
         for(i = 0, len = obj.length; i < len; i++) {
-            if(iterator.call(context, obj[i], i, obj) === false) {
-                return;
-            }
+            iterator.call(context, obj[i], i, obj);
         }
     } else {
         for(i in obj) {
-            if(obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === false) {
-                return;
-            }
+            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
         }
     }
 }
@@ -189,12 +185,12 @@ function uniqueArray(src, key) {
  * if you want to call a function by this function, you should pass an array with arguments (see .apply())
  * else, a bindFn function will be returned
  *
- * @param {String} property
  * @param {Object} obj
+ * @param {String} property
  * @param {*} [val]
  * @returns {*}
  */
-function prefixed(property, obj, val) {
+function prefixed(obj, property, val) {
     var prefix, prop, i;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
@@ -208,8 +204,10 @@ function prefixed(property, obj, val) {
             return (typeof val == TYPE_UNDEFINED) ? bindFn(prop, obj) : obj[prop].apply(obj, val);
         } else if(val) {
             obj[prop] = val;
+            return prop;
+        } else {
+            return prop;
         }
-        return obj[prop];
     }
-    return null;
+    return false;
 }
