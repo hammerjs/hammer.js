@@ -33,30 +33,23 @@
             touchAction: 'none'
         });
 
-        mc.use(new Hammer.RecognizerGroup([
+        mc.add(new Hammer.RecognizerGroup([
             new Hammer.PanRecognizer({event: 'triplepan', pointers: 3 }),
             new Hammer.PinchRecognizer({event: 'triplepinch', pointers: 3 }),
         ]));
 
-        mc.use(new Hammer.RecognizerGroup([
+        mc.add(new Hammer.RecognizerGroup([
             new Hammer.SwipeRecognizer(),
             new Hammer.PanRecognizer()
         ]));
 
-        mc.use(new Hammer.RotationRecognizer());
-        mc.use(new Hammer.PinchRecognizer());
+        mc.add(new Hammer.RotationRecognizer());
+        mc.add(new Hammer.PinchRecognizer());
 
-        mc.use(new Hammer.TapRecognizer());
-        mc.use(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
+        mc.add(new Hammer.TapRecognizer());
+        mc.add(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
 
-        el.addEventListener("swipe", logGesture, false);
-        el.addEventListener("pan", logGesture, false);
-        el.addEventListener("multipan", logGesture, false);
-        el.addEventListener("pinch", logGesture, false);
-        el.addEventListener("rotate", logGesture, false);
-        el.addEventListener("longpress", logGesture, false);
-        el.addEventListener("tap", logGesture, false);
-        el.addEventListener("doubletap", logGesture, false);
+        mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
 
         function logGesture(ev) {
             el.textContent = ev.type +"\n"+ ev.gesture.toDirString();

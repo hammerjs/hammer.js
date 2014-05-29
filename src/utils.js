@@ -2,6 +2,7 @@ var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms'];
 
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
+var TYPE_STRING = 'string';
 
 /**
  * walk objects and arrays
@@ -96,8 +97,10 @@ function bindFn(fn, context) {
  * @param {Function} handler
  */
 function addEvent(element, types, handler) {
-    each(types.split(' '), function(type) {
-        element.addEventListener(type, handler, false);
+    each(types.split(/\s+/), function(type) {
+        if(type) {
+            element.addEventListener(type, handler, false);
+        }
     });
 }
 
@@ -108,8 +111,10 @@ function addEvent(element, types, handler) {
  * @param {Function} handler
  */
 function removeEvent(element, types, handler) {
-    each(types.split(' '), function(type) {
-        element.removeEventListener(type, handler, false);
+    each(types.split(/\s+/), function(type) {
+        if(type) {
+            element.removeEventListener(type, handler, false);
+        }
     });
 }
 

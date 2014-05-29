@@ -1,3 +1,8 @@
+/**
+ * a recognizer group can be created to let recognizers run simultaneous.
+ * @param {Array} recognizers
+ * @constructor
+ */
 function RecognizerGroup(recognizers) {
     Recognizer.call(this, {});
 
@@ -19,12 +24,22 @@ inherit(RecognizerGroup, Recognizer, {
         }
 
         var newState = STATE_POSSIBLE;
-        each(this.recognizers, function(recognizer) {
+        var recognizer;
+
+        for(var i = 0; i < this.recognizers.length; i++) {
+            recognizer = this.recognizers[i];
             recognizer.update(inputData);
             if(recognizer.state < newState) {
                 newState = recognizer.state;
             }
-        }, this);
+        }
+
         this.state = newState;
-    }
+    },
+
+    // use the instance methods
+    // they refer to this.recognizers
+    add: Instance.prototype.add,
+    remove: Instance.prototype.remove,
+    get: Instance.prototype.get
 });

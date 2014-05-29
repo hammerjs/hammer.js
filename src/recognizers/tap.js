@@ -1,10 +1,10 @@
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
 
-    this.prevTime = false;
-    this.prevCenter = false;
+    this._pTime = false;
+    this._pCenter = false;
 
-    this.counter = 0;
+    this._count = 0;
 }
 
 inherit(TapRecognizer, Recognizer, {
@@ -28,25 +28,25 @@ inherit(TapRecognizer, Recognizer, {
             return STATE_POSSIBLE;
         } else {
             var validPointers = input.pointers.length === options.pointers;
-            var validInterval = this.prevTime ? (input.timeStamp - this.prevTime < options.interval) : true;
+            var validInterval = this._pTime ? (input.timeStamp - this._pTime < options.interval) : true;
             var validTapTime = input.deltaTime < options.time;
-            var validMultiTap = !this.prevCenter || getDistance(this.prevCenter, input.center) < options.movementBetweenTaps;
+            var validMultiTap = !this._pCenter || getDistance(this._pCenter, input.center) < options.movementBetweenTaps;
 
-            this.prevTime = input.timeStamp;
-            this.prevCenter = input.center;
+            this._pTime = input.timeStamp;
+            this._pCenter = input.center;
 
             if(!validPointers || !validTapTime) {
-                this.counter = 0;
+                this._count = 0;
                 return STATE_FAILED;
             }
 
             if(!validMultiTap || !validInterval) {
-                this.counter = 1;
+                this._count = 1;
             } else {
-                this.counter += 1;
+                this._count += 1;
             }
 
-            var validTapCount = (this.counter % options.taps === 0);
+            var validTapCount = (this._count % options.taps === 0);
             if(validTapCount && validTapTime && validPointers) {
                 return STATE_RECOGNIZED;
             }
@@ -55,7 +55,7 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     handler: function(input) {
-        input.tapCount = this.counter;
+        input.tapCount = this._count;
         this.inst.trigger(this.options.event, input);
     },
 

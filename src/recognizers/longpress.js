@@ -1,7 +1,7 @@
 function LongPressRecognizer() {
     AttrRecognizer.apply(this, arguments);
 
-    this.timer = null;
+    this._timer = null;
 }
 
 // @todo implement this gesture

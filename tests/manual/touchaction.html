@@ -13,8 +13,7 @@
         }
 
         .scroll-space {
-            height: 5000px;
-            background: #eee;
+            height: 9000px;
         }
 
         #native {
@@ -48,7 +47,7 @@
     <div class="tester" id="auto"></div>
 
     <h3>touch-action: pan-y</h3>
-    <p>Should prevent scrolling on horizontal movement. This is default setting when creating an Hammer instance.</p>
+    <p>Should prevent scrolling on horizontal movement. This is set by default when creating an Hammer instance.</p>
     <div class="tester" id="pan-y"></div>
 
     <h3>touch-action: pan-x</h3>
@@ -59,8 +58,6 @@
     <p>Should prevent all.</p>
     <div class="tester" id="none"></div>
 
-    <div class="scroll-space"></div>
-
     <script src="../../hammer.js"></script>
     <script>
         var support = Hammer.prefixed( document.body.style, 'touchAction');
@@ -70,14 +67,17 @@
         Hammer.each(touchActions, function(touchAction) {
             var el = document.getElementById(touchAction);
 
-            Hammer(el, {
+            var mc = Hammer(el, {
                 touchAction: touchAction
             });
-
-            Hammer.addEvent(el, "pan swipe rotate pinch tap doubletap", function(ev) {
+            mc.on("pan swipe rotate pinch tap doubletap", function(ev) {
                 el.textContent = ev.type +" "+ el.textContent;
             });
         });
     </script>
+
+    <div class="scroll-space"></div>
+    <p>hi.</p>
+
 </body>
 </html>

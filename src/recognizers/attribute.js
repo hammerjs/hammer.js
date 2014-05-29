@@ -34,7 +34,7 @@ inherit(AttrRecognizer, Recognizer, {
         } else if(validPointers && (isRecognized || validAttribute)) {
             if(state === STATE_POSSIBLE && eventType !== INPUT_END) {
                 return STATE_BEGAN;
-            }else if(eventType === INPUT_END) {
+            } else if(eventType === INPUT_END) {
                 return STATE_RECOGNIZED;
             }
             return STATE_CHANGED;

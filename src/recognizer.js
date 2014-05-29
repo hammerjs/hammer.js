@@ -15,10 +15,17 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
     /**
-     * reset the state
+     * enable the recognizer
      */
-    reset: function() {
-        this.state = STATE_POSSIBLE;
+    enable: function() {
+        this.enabled = true;
+    },
+
+    /**
+     * disable the recognizer
+     */
+    disable: function() {
+        this.enabled = false;
     },
 
     /**
@@ -64,7 +71,7 @@ Recognizer.prototype = {
         }
 
         if(this.state >= STATE_ENDED) {
-            this.reset();
+            this.state = STATE_POSSIBLE;
         }
 
         // get detection state
