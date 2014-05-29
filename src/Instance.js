@@ -23,23 +23,29 @@ Instance.prototype = {
     update: function(inputData) {
         this.touchAction.update(inputData);
 
+        var recognizer;
         var session = this.session;
+        var curRecognizer = session.curRecognizer;
 
-        if(inputData.isFirst) {
-            session.curRecognizer = null;
+        // reset when the last recognizer is done, or this is a new session
+        if(!curRecognizer || (curRecognizer && curRecognizer >= STATE_RECOGNIZED)) {
+            curRecognizer = session.curRecognizer = null;
         }
 
-        each(this.recognizers, function(recognizer) {
-            if(!session.curRecognizer || session.curRecognizer == recognizer) {
+        // we're in a active recognizer
+        if(curRecognizer) {
+            curRecognizer.update(inputData);
+        } else {
+            for(var i = 0; i < this.recognizers.length; i++) {
+                recognizer = this.recognizers[i];
                 recognizer.update(inputData);
 
                 if(recognizer.state <= STATE_RECOGNIZED) {
-                    session.curRecognizer = recognizer;
-                } else {
-                    session.curRecognizer = null;
+                    curRecognizer = session.curRecognizer = recognizer;
+                    return;
                 }
             }
-        });
+        }
     },
 
     addRecognizer: function(recognizerInst) {
@@ -61,12 +67,9 @@ Instance.prototype = {
      * @param {Object} eventData
      */
     trigger : function(gesture, eventData) {
-        // create DOM event
         var event = document.createEvent('Event');
         event.initEvent(gesture, true, true);
         event.gesture = eventData;
-
-        console.log(gesture);
 
         this.element.dispatchEvent(event);
     }

@@ -23,8 +23,14 @@
             display: none;
         }
 
-        #native.show {
-            display: block;
+        #no-native {
+            font-weight: bold;
+            color: red;
+            display: none;
+        }
+
+        .show {
+            display: block !important;
         }
 
     </style>
@@ -34,7 +40,8 @@
     <p>Hammer provides a <a href="../../src/touchaction.js">kind of polyfill</a>
         for the browsers that don't support the <a href="http://www.w3.org/TR/pointerevents/#the-touch-action-css-property">touch-action</a> property.</p>
 
-    <div id="native">Hoera! Your browser has support for the touch-action property!</div>
+    <div id="native">Your browser has support for the touch-action property!</div>
+    <div id="no-native">Your browser doesn't support the touch-action property, so we use the polyfill.</div>
 
     <h3>touch-action: pan-y</h3>
     <p>Should prevent horizontal scrolling.</p>
@@ -48,21 +55,14 @@
     <p>Should do all of above...</p>
     <div class="tester" id="none"></div>
 
-
     <div class="scroll-space"></div>
 
     <script src="../../hammer.js"></script>
     <script>
-
-
-
-        var native = Hammer.prefixed( document.body.style, 'touchAction');
-        if(native) {
-            document.getElementById('native').className = 'show';
-        }
+        var support = Hammer.prefixed( document.body.style, 'touchAction');
+        document.getElementById(support ? 'native' : 'no-native').className = 'show';
 
         var touchActions = ['pan-y','pan-x','none'];
-
         Hammer.each(touchActions, function(touchAction) {
             var el = document.getElementById(touchAction);
 
@@ -73,9 +73,7 @@
             Hammer.addEvent(el, "pan swipe rotate pinch tap doubletap", function(ev) {
                 el.textContent = ev.type +" "+ el.textContent;
             });
-
         });
-
     </script>
 </body>
 </html>
