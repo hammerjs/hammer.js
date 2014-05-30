@@ -57,9 +57,5 @@ inherit(TapRecognizer, Recognizer, {
     handler: function(input) {
         input.tapCount = this._count;
         this.inst.trigger(this.options.event, input);
-    },
-
-    reset: function() {
-        return Recognizer.prototype.reset.apply(this, arguments);
     }
 });

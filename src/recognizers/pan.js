@@ -14,7 +14,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     handler: function(input) {
-        AttrRecognizer.prototype.handler.call(this, input);
+        this._super.handler.call(this, input);
         this.inst.trigger(this.options.event + input.direction + statePostfix(this.state), input);
     }
 });
