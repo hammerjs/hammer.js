@@ -38,14 +38,14 @@ function Input(inst, callback) {
     // used for internal events
     this._handler = bindFn(this.handler, this);
 
-    this._elEvents && addEvent(this.inst.element, this._elEvents, this._handler);
-    this._winEvents && addEvent(window, this._winEvents, this._handler);
+    this._elEvents && addDomEvent(this.inst.element, this._elEvents, this._handler);
+    this._winEvents && addDomEvent(window, this._winEvents, this._handler);
 }
 
 Input.prototype = {
     destroy: function() {
-        this._elEvents && removeEvent(this.inst.element, this._elEvents, this._handler);
-        this._winEvents && removeEvent(window, this._winEvents, this._handler);
+        this._elEvents && removeDomEvent(this.inst.element, this._elEvents, this._handler);
+        this._winEvents && removeDomEvent(window, this._winEvents, this._handler);
     }
 };
 
@@ -198,25 +198,25 @@ function simpleCloneInputData(input) {
  * @return {Object} center contains `x` and `y` properties
  */
 function getCenter(pointers) {
+    var pointersLength = pointers.length;
+
     // no need to loop when only one touch
-    if(pointers.length === 1) {
+    if(pointersLength === 1) {
         return {
             x: round(pointers[0].clientX),
             y: round(pointers[0].clientY)
         };
     }
 
-    var x = [],
-        y = [];
-
-    each(pointers, function(pointer) {
-        x.push(pointer.clientX);
-        y.push(pointer.clientY);
-    });
+    var i = 0, x = 0, y = 0;
+    for(; i < pointersLength; i++) {
+        x += pointers[i].clientX;
+        y += pointers[i].clientY;
+    }
 
     return {
-        x: round((Math.min.apply(Math, x) + Math.max.apply(Math, x)) / 2),
-        y: round((Math.min.apply(Math, y) + Math.max.apply(Math, y)) / 2)
+        x: round(x / pointersLength),
+        y: round(y / pointersLength)
     };
 }
 

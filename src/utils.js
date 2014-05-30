@@ -2,7 +2,6 @@ var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms'];
 
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
-var TYPE_STRING = 'string';
 
 /**
  * walk objects and arrays
@@ -72,6 +71,7 @@ function inherit(child, parent, methods) {
     }
     Inherited.prototype = parent.prototype;
     child.prototype = new Inherited();
+    child.prototype._super = parent.prototype;
 
     if(methods) {
         extend(child.prototype, methods);
@@ -96,7 +96,7 @@ function bindFn(fn, context) {
  * @param {String} types
  * @param {Function} handler
  */
-function addEvent(element, types, handler) {
+function addDomEvent(element, types, handler) {
     each(types.split(/\s+/), function(type) {
         if(type) {
             element.addEventListener(type, handler, false);
@@ -110,7 +110,7 @@ function addEvent(element, types, handler) {
  * @param {String} types
  * @param {Function} handler
  */
-function removeEvent(element, types, handler) {
+function removeDomEvent(element, types, handler) {
     each(types.split(/\s+/), function(type) {
         if(type) {
             element.removeEventListener(type, handler, false);
@@ -206,7 +206,11 @@ function prefixed(obj, property, val) {
         if(!(prop in obj)) {
             continue;
         } else if(typeof obj[prop] == TYPE_FUNCTION) {
-            return (typeof val == TYPE_UNDEFINED) ? bindFn(prop, obj) : obj[prop].apply(obj, val);
+            if(typeof val == TYPE_UNDEFINED) {
+                return bindFn(obj[prop], obj);
+            } else {
+                return obj[prop].apply(obj, val);
+            }
         } else if(val) {
             obj[prop] = val;
             return prop;

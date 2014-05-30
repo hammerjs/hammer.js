@@ -15,7 +15,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     handler: function(input) {
         var inOut = input.scale < 1 ? 'in' : 'out';
-        this.inst.trigger(this.options.event + this.statePostfix(), input);
-        this.inst.trigger(this.options.event + inOut + this.statePostfix(), input);
+        this.inst.trigger(this.options.event + statePostfix(this.state), input);
+        this.inst.trigger(this.options.event + inOut + statePostfix(this.state), input);
     }
 });

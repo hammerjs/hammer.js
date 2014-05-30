@@ -1,5 +1,6 @@
 Hammer.defaults = {
-    touchAction: 'pan-y'
+    touchAction: 'pan-y',
+    domEvents: false
 };
 
 /**
@@ -12,65 +13,84 @@ function Instance(element, options) {
     this.element = element;
     this.options = merge(options || {}, Hammer.defaults);
 
-    this.session = {};
-    this.recognizers = [];
+    this.eventHandlers = {};
 
-    this.input = createInputInstance(this);
-    this.touchAction = new TouchAction(this);
+    Manager.apply(this, arguments);
 }
 
-Instance.prototype = {
-    update: function(inputData) {
-        this.touchAction.update(inputData);
-
-        var recognizer;
-        var session = this.session;
-        var curRecognizer = session.curRecognizer;
-
-        // reset when the last recognizer is done, or this is a new session
-        if(!curRecognizer || (curRecognizer && curRecognizer >= STATE_RECOGNIZED)) {
-            curRecognizer = session.curRecognizer = null;
+inherit(Instance, Manager, {
+    /**
+     * bind event
+     * @param {String} event
+     * @param {Function} handler
+     * @returns {Instance}
+     */
+    on: function(event, handler) {
+        var store = this.eventHandlers;
+        var events = event.split(/\s+/);
+        var ev;
+        for(var i = 0; i < events.length; i++) {
+            ev = events[i];
+            if(ev) {
+                store[ev] = store[ev] || [];
+                store[ev].push(handler);
+            }
         }
+        return this;
+    },
 
-        // we're in a active recognizer
-        if(curRecognizer) {
-            curRecognizer.update(inputData);
-        } else {
-            for(var i = 0; i < this.recognizers.length; i++) {
-                recognizer = this.recognizers[i];
-                recognizer.update(inputData);
-
-                if(recognizer.state <= STATE_RECOGNIZED) {
-                    curRecognizer = session.curRecognizer = recognizer;
-                    return;
+    /**
+     * unbind event, leave handler blank to remove all handlers
+     * @param {String} event
+     * @param {Function} [handler]
+     * @returns {Instance}
+     */
+    off: function(event, handler) {
+        var store = this.eventHandlers;
+        var events = event.split(/\s+/);
+        var ev;
+        for(var i = 0; i < events.length; i++) {
+            ev = events[i];
+            if(store[ev]) {
+                if(!handler) {
+                    delete store[ev];
+                } else {
+                    store[ev].splice(inArray(store[ev], handler), 1);
                 }
             }
         }
-    },
-
-    addRecognizer: function(recognizerInst) {
-        this.recognizers.push(recognizerInst);
-        recognizerInst.setInstance(this);
+        return this;
     },
 
     /**
      * destroy the instance
+     * unbinds all events
      */
     destroy: function() {
+        each(this.eventHandlers, function(handlers, event) {
+            this.off(event);
+        }, this);
+
+        this.eventHandlers = [];
         this.session = {};
         this.input.destroy();
         this.element = null;
     },
 
     /**
-     * @param {String} gesture
-     * @param {Object} eventData
+     * @param {String} event
+     * @param {Object} data
      */
-    trigger : function(gesture, eventData) {
-        var event = document.createEvent('Event');
-        event.initEvent(gesture, true, true);
-        event.gesture = eventData;
+    trigger : function(event, data) {
+        data.type = event;
 
-        this.element.dispatchEvent(event);
+        data.preventDefault = data.srcEvent.preventDefault;
+        data.stopPropagation = data.srcEvent.stopPropagation;
+        data.stopImmediatePropagation = data.srcEvent.stopImmediatePropagation;
+        data.target = data.srcEvent.target;
+
+        each(this.eventHandlers[event] || [], function(handler) {
+            handler.call(this, data);
+        }, this);
     }
-};
+});

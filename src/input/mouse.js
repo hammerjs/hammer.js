@@ -5,8 +5,8 @@ var MOUSE_INPUT_MAP = {
     mouseout: INPUT_CANCEL
 };
 
-var MOUSE_ELEMENT_EVENTS = 'mousedown mousemove mouseup';
-var MOUSE_WINDOW_EVENTS = 'mouseout';
+var MOUSE_ELEMENT_EVENTS = 'mousedown';
+var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
 
 /**
  * Mouse events input
@@ -37,7 +37,10 @@ inherit(MouseInput, Input, {
             return;
         }
 
-        if(ev.type == 'mouseup' || ev.type == 'mouseout') {
+        var target = ev.relatedTarget || ev.toElement;
+        var mouseout = (ev.type == 'mouseout' && (!target || target.nodeName == 'HTML'));
+
+        if(ev.type == 'mouseup' || mouseout) {
             this._pressed = false;
         }
 

@@ -27,17 +27,14 @@
         }
 
         #hit {
-            position: relative;
-            z-index: 10;
             padding: 10px;
             -ms-touch-select: none; /* Windows Phone grippers are always off. */
             -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         }
 
         #log {
             position: absolute;
-            z-index: 1;
             padding: 10px;
         }
 
@@ -45,131 +42,146 @@
 </head>
 <body>
 
-    <div id="log"></div>
-
-    <div id="hit" style="background: red; width: 150px; height: 150px;"></div>
-
-
-    <script src="../../hammer.min.js"></script>
-    <script>
-
-        var transform;
-        var log = document.querySelector("#log");
-        var el = document.querySelector("#hit");
-        var mc = new Hammer.Instance(el, {
-            touchAction: 'none'
-        });
-
-        var group = mc.add(new Hammer.RecognizerGroup([
-            new Hammer.RotationRecognizer({ threshold: 0 }),
-            new Hammer.PinchRecognizer({ threshold: 0 })
-        ]));
-
-         mc.add(new Hammer.RecognizerGroup([
-            new Hammer.PanRecognizer({ threshold: 0 }),
-            new Hammer.SwipeRecognizer()
-        ]));
-
-        mc.add(new Hammer.TapRecognizer({ event: 'tripletap', taps: 3 }));
-        mc.add(new Hammer.TapRecognizer({ event: 'doubletap', taps: 2 }));
-        mc.add(new Hammer.TapRecognizer());
-
-        el.addEventListener("pan", onPan, false);
-        el.addEventListener("swipe", onSwipe, false);
-
-        el.addEventListener("rotate", onRotate, false);
-        el.addEventListener("pinch", onPinch, false);
-
-        el.addEventListener("tap", onTap, false);
-        el.addEventListener("doubletap", onDoubleTap, false);
-        el.addEventListener("tripletap", onTripleTap, false);
-
-        Hammer.addEvent(el, "panend rotateend pinchend pancancel rotatecancel pinchcancel", resetElement);
+<div id="log"></div>
+<div id="hit" style="background: red; width: 150px; height: 150px;"></div>
 
 
-        var START_X = (window.innerWidth - el.offsetWidth) / 2;
-        var START_Y = (window.innerHeight - el.offsetHeight) / 2;
+<script src="../../hammer.min.js"></script>
+<script>
 
-        function resetElement() {
-            transform = {
-                translate: { x: START_X, y: START_Y },
-                scale: 1,
-                rotate: 0
-            };
-            el.className = 'animate';
-            updateElementTransform();
+    var reqAnimFrame = (function () {
+        return Hammer.prefixed(window, 'requestAnimationFrame') || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
 
-            if(log.textContent.length > 2000) {
-                log.textContent = log.textContent.substring(0, 2000) +"...";
-            }
+    var log = document.querySelector("#log");
+    var el = document.querySelector("#hit");
+
+    var START_X = Math.round((window.innerWidth - el.offsetWidth) / 2);
+    var START_Y = Math.round((window.innerHeight - el.offsetHeight) / 2);
+
+    var ticking = false;
+    var transform;
+
+    var mc = new Hammer.Instance(el, {
+        touchAction: 'none'
+    });
+
+    mc.join([
+        mc.add(new Hammer.Pan({ threshold: 0, pointers: 2 })),
+        mc.add(new Hammer.Rotation({ threshold: 0 })),
+        mc.add(new Hammer.Pinch({ threshold: 0 }))
+    ]);
+
+    mc.join([
+        mc.add(new Hammer.Pan({ threshold: 0 })),
+        mc.add(new Hammer.Swipe())
+    ]);
+
+    mc.add(new Hammer.Tap({ event: 'tripletap', taps: 3 }));
+    mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+    mc.add(new Hammer.Tap());
+
+    mc.on("pan", onPan);
+    mc.on("swipe", onSwipe);
+    mc.on("rotate", onRotate);
+    mc.on("pinch", onPinch);
+    mc.on("tap", onTap);
+    mc.on("doubletap", onDoubleTap);
+    mc.on("tripletap", onTripleTap);
+
+    mc.on("panend rotateend pinchend pancancel rotatecancel pinchcancel", resetElement);
+
+
+    function resetElement() {
+        transform = {
+            translate: { x: START_X, y: START_Y },
+            scale: 1,
+            rotate: 0
+        };
+        el.className = 'animate';
+
+        requestElementUpdate();
+
+        if (log.textContent.length > 2000) {
+            log.textContent = log.textContent.substring(0, 2000) + "...";
         }
+    }
 
-        function updateElementTransform() {
-            var value = [
-                'translate('+ transform.translate.x +'px, '+ transform.translate.y +'px)',
-                'scale('+ transform.scale +', '+ transform.scale +')',
-                'rotate('+ transform.rotate +'deg)'];
+    function updateElementTransform() {
+        var value = [
+                    'translate(' + transform.translate.x + 'px, ' + transform.translate.y + 'px)',
+                    'scale(' + transform.scale + ', ' + transform.scale + ')',
+                    'rotate(' + transform.rotate + 'deg)'];
 
-            el.textContent = value.join(" ");
-            Hammer.prefixed(el.style, 'transform', value.join(" "));
+        el.textContent = value.join(" ");
+        Hammer.prefixed(el.style, 'transform', value.join(" "));
+        ticking = false;
+    }
+
+    function requestElementUpdate() {
+        if(!ticking) {
+            reqAnimFrame(updateElementTransform);
         }
+    }
 
-        function logEvent(str) {
-            log.insertBefore(document.createTextNode(str +"\n"), log.firstChild);
-        }
+    function logEvent(str) {
+        //log.insertBefore(document.createTextNode(str +"\n"), log.firstChild);
+    }
 
-        function onPan(ev) {
-            el.className = '';
-            transform.translate = {
-                x: START_X + ev.gesture.deltaX,
-                y: START_Y + ev.gesture.deltaY
-            };
-            updateElementTransform();
-            logEvent(ev.type);
-        }
+    function onPan(ev) {
+        el.className = '';
+        transform.translate = {
+            x: START_X + ev.deltaX,
+            y: START_Y + ev.deltaY
+        };
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
 
-        function onSwipe(ev) {
-            el.style.background = 'white';
-            setTimeout(function() {
-                el.style.background = 'red';
-                updateElementTransform();
-            }, 300);
-            updateElementTransform();
-            logEvent(ev.type);
-        }
+    function onSwipe(ev) {
+        el.style.background = 'white';
+        setTimeout(function () {
+            el.style.background = 'red';
+            requestElementUpdate();
+        }, 300);
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
 
-        function onPinch(ev) {
-            el.className = '';
-            transform.scale = ev.gesture.scale;
-            updateElementTransform();
-            logEvent(ev.type);
-        }
-        function onRotate(ev) {
-            el.className = '';
-            transform.rotate = ev.gesture.rotation;
-            updateElementTransform();
-            logEvent(ev.type);
-        }
+    function onPinch(ev) {
+        el.className = '';
+        transform.scale = ev.scale;
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
+    function onRotate(ev) {
+        el.className = '';
+        transform.rotate = ev.rotation;
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
 
-        function onTap(ev) {
-            el.style.background = el.style.background == 'yellow' ? 'red' : 'yellow';
-            logEvent(ev.type);
-        }
+    function onTap(ev) {
+        el.style.background = el.style.background == 'yellow' ? 'red' : 'yellow';
+        logEvent(ev.type);
+    }
 
-        function onDoubleTap(ev) {
-            transform.scale = transform.scale === 1 ? 1.5 : 1;
-            updateElementTransform();
-            logEvent(ev.type);
-        }
+    function onDoubleTap(ev) {
+        transform.scale = transform.scale === 1 ? 1.5 : 1;
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
 
-        function onTripleTap(ev) {
-            transform.rotate = !transform.rotate ? 360 : 0;
-            updateElementTransform();
-            logEvent(ev.type);
-        }
+    function onTripleTap(ev) {
+        transform.rotate = !transform.rotate ? 360 : 0;
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
 
-        resetElement();
+    resetElement();
 
-    </script>
+</script>
 </body>
 </html>

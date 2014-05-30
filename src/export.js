@@ -1,18 +1,21 @@
 Hammer.Instance = Instance;
-
+Hammer.Recognizer = Recognizer;
 Hammer.AttrRecognizer = AttrRecognizer;
-Hammer.TapRecognizer = TapRecognizer;
-Hammer.PanRecognizer = PanRecognizer;
-Hammer.SwipeRecognizer = SwipeRecognizer;
-Hammer.PinchRecognizer = PinchRecognizer;
-Hammer.RotationRecognizer = RotationRecognizer;
-Hammer.LongPressRecognizer = LongPressRecognizer;
+Hammer.Tap = TapRecognizer;
+Hammer.Pan = PanRecognizer;
+Hammer.Swipe = SwipeRecognizer;
+Hammer.Pinch = PinchRecognizer;
+Hammer.Rotation = RotationRecognizer;
+Hammer.LongPress = LongPressRecognizer;
 
-Hammer.RecognizerGroup = RecognizerGroup;
+Hammer.INPUT_START = INPUT_START;
+Hammer.INPUT_MOVE = INPUT_MOVE;
+Hammer.INPUT_END = INPUT_END;
+Hammer.INPUT_CANCEL = INPUT_CANCEL;
 
 // expose some useful methods
-Hammer.addEvent = addEvent;
-Hammer.removeEvent = removeEvent;
+Hammer.on = addDomEvent;
+Hammer.off = removeDomEvent;
 Hammer.each = each;
 Hammer.merge = merge;
 Hammer.bindFn = bindFn;
