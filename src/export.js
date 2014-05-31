@@ -15,11 +15,13 @@ Hammer.INPUT_MOVE = INPUT_MOVE;
 Hammer.INPUT_END = INPUT_END;
 Hammer.INPUT_CANCEL = INPUT_CANCEL;
 
-// expose some useful methods
+// expose some useful/over-writable methods
 Hammer.on = addEventListeners;
 Hammer.off = removeEventListeners;
 Hammer.each = each;
 Hammer.merge = merge;
+Hammer.extend = extend;
+Hammer.inherit = inherit;
 Hammer.bindFn = bindFn;
 Hammer.prefixed = prefixed;
 

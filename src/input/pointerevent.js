@@ -6,14 +6,14 @@ var POINTER_INPUT_MAP = {
     pointerout: INPUT_CANCEL
 };
 
-var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
-var POINTER_WINDOW_EVENTS = 'pointerout';
-
 var IE10_POINTER_TYPE_MAP = {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
     4: INPUT_TYPE_MOUSE
 };
+
+var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
+var POINTER_WINDOW_EVENTS = 'pointerout';
 
 if(window.MSPointerEvent) {
     POINTER_ELEMENT_EVENTS = 'MSPointerDown MSPointerMove MSPointerUp MSPointerCancel';
