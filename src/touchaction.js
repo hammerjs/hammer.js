@@ -4,17 +4,16 @@
 
 var NATIVE_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
 
-function TouchAction(inst) {
-    this.inst = inst;
-    this.setValue(inst.options.touchAction);
+function TouchAction(manager) {
+    this.manager = manager;
 }
 
 TouchAction.prototype = {
-    setValue: function(value) {
+    set: function(value) {
         this.value = value.toLowerCase();
 
         if(NATIVE_TOUCH_ACTION) {
-            prefixed(this.inst.element.style, 'touchAction', value);
+            prefixed(this.manager.element.style, 'touchAction', value);
         }
     },
 
@@ -32,7 +31,7 @@ TouchAction.prototype = {
 
         // if the touch action did prevented once this session,
         // prevent it everytime
-        if(this.inst.session.prevented) {
+        if(this.manager.session.prevented) {
             event.preventDefault();
             return;
         }
@@ -62,7 +61,7 @@ TouchAction.prototype = {
      * @param {Object} event
      */
     preventDefault: function(event) {
-        this.inst.session.prevented = true;
+        this.manager.session.prevented = true;
         event.preventDefault();
     }
 };

@@ -30,7 +30,7 @@ function PointerEventInput() {
 
     Input.apply(this, arguments);
 
-    this._store = (this.inst.session._pointerEvents = []);
+    this._store = (this.manager.session._pointerEvents = []);
 }
 
 inherit(PointerEventInput, Input, {
@@ -40,7 +40,7 @@ inherit(PointerEventInput, Input, {
      */
     handler: function(ev) {
         var store = this._store;
-        var element = this.inst.element;
+        var element = this.manager.element;
         var removePointer = false;
 
         // normalize event.type
@@ -72,7 +72,7 @@ inherit(PointerEventInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, POINTER_INPUT_MAP[evType], data);
+        this.callback(this.manager, POINTER_INPUT_MAP[evType], data);
 
         if(removePointer) {
             // remove from the store

@@ -31,7 +31,7 @@ inherit(TouchInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, TOUCH_INPUT_MAP[ev.type], data);
+        this.callback(this.manager, TOUCH_INPUT_MAP[ev.type], data);
     },
 
     /**

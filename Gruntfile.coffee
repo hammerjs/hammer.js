@@ -16,6 +16,7 @@ module.exports = (grunt) ->
           'src/hammer.prefix'
           'src/hammer.js'
           'src/utils.js'
+          'src/eventemitter.js'
           'src/manager.js'
           'src/*.js'
           'src/**/*.js'

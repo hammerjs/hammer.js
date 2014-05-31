@@ -2,30 +2,30 @@
  * Combined touch and mouse input
  *
  * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
- * This because touch devices also trigger mouse events while doing a touch.
+ * This because touch devices also emit mouse events while doing a touch.
  *
  * @constructor
  */
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
-    this.touch = new TouchInput(this.inst, this._handler);
-    this.mouse = new MouseInput(this.inst, this._handler);
+    this.touch = new TouchInput(this.manager, this._handler);
+    this.mouse = new MouseInput(this.manager, this._handler);
 }
 
 inherit(TouchMouseInput, Input, {
     /**
      * handle mouse and touch events
-     * @param {Hammer} inst
+     * @param {Hammer} manager
      * @param {String} inputEvent
      * @param {Object} inputData
      */
-    handler: function(inst, inputEvent, inputData) {
+    handler: function(manager, inputEvent, inputData) {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
         // when we're in a touch event, so  block all upcoming mouse events
-        // most mobile browser also trigger mouseevents, right after touchstart
+        // most mobile browser also emit mouseevents, right after touchstart
         if(isTouch) {
             this.mouse._allow = false;
         } else if(isMouse && !this.mouse._allow) {
@@ -37,7 +37,7 @@ inherit(TouchMouseInput, Input, {
             this.mouse._allow = true;
         }
 
-        this.callback(inst, inputEvent, inputData);
+        this.callback(manager, inputEvent, inputData);
     },
 
     /**

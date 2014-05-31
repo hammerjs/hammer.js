@@ -1,28 +1,41 @@
 /**
- * create an instance with a default set of recognizers
+ * create an manager with a default set of recognizers
  * @param {HTMLElement} element
  * @param {Object} [options]
  * @constructor
  */
 function Hammer(element, options) {
     options = options || {};
-    var inst = new Instance(element, options);
+    var manager = new Manager(element, options);
 
-    var rotate = inst.add(new RotationRecognizer(options.rotation));
-    var pinch = inst.add(new PinchRecognizer(options.pinch));
-    rotate.join(pinch);
+    /**
+     * setup recognizers
+     * the defauls.recognizers contains an array like this;
+     * [ RecognizerClass, options, join ],
+     * [ .... ]
+     */
+    each(Hammer.defaults.recognizers, function(item) {
+        var recognizer = manager.add(new (item[0])(item[1]));
+        if(item[2]) {
+            recognizer.join(item[2]);
+        }
+    });
 
-    var pan = inst.add(new PanRecognizer(options.pan));
-    var swipe = inst.add(new SwipeRecognizer(options.swipe));
-    pan.join(swipe);
-
-    options.doubleTap = merge(options.doubleTap || {}, { event: 'doubletap', taps: 2 });
-    inst.add(new TapRecognizer(options.doubleTap));
-    inst.add(new TapRecognizer(options.tap));
-
-    inst.add(new LongPressRecognizer(options.longPress));
-
-    return inst;
+    return manager;
 }
 
 Hammer.version = '{{PKG_VERSION}}';
+
+Hammer.defaults = {
+    touchAction: 'pan-y',
+    domEvents: false,
+    recognizers: [
+        [RotationRecognizer],
+        [PinchRecognizer, null, 'rotate'],
+        [PanRecognizer],
+        [SwipeRecognizer, null, 'pan'],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }],
+        [TapRecognizer],
+        [LongPressRecognizer]
+    ]
+};

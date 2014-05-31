@@ -1,29 +1,17 @@
-Hammer.defaults = {
-    touchAction: 'pan-y',
-    domEvents: false
-};
-
 /**
- * Hammer instance for an element
- * @param {HTMLElement} element
- * @param {Object} [options]
+ * Event emitter
  * @constructor
  */
-function Instance(element, options) {
-    this.element = element;
-    this.options = merge(options || {}, Hammer.defaults);
-
+function EventEmitter() {
     this.eventHandlers = {};
-
-    Manager.apply(this, arguments);
 }
 
-inherit(Instance, Manager, {
+EventEmitter.prototype = {
     /**
      * bind event
      * @param {String} event
      * @param {Function} handler
-     * @returns {Instance}
+     * @returns {EventEmitter}
      */
     on: function(event, handler) {
         var store = this.eventHandlers;
@@ -40,10 +28,10 @@ inherit(Instance, Manager, {
     },
 
     /**
-     * unbind event, leave handler blank to remove all handlers
+     * unbind event, leave emit blank to remove all handlers
      * @param {String} event
      * @param {Function} [handler]
-     * @returns {Instance}
+     * @returns {EventEmitter}
      */
     off: function(event, handler) {
         var store = this.eventHandlers;
@@ -63,7 +51,6 @@ inherit(Instance, Manager, {
     },
 
     /**
-     * destroy the instance
      * unbinds all events
      */
     destroy: function() {
@@ -72,16 +59,13 @@ inherit(Instance, Manager, {
         }, this);
 
         this.eventHandlers = [];
-        this.session = {};
-        this.input.destroy();
-        this.element = null;
     },
 
     /**
      * @param {String} event
      * @param {Object} data
      */
-    trigger : function(event, data) {
+    emit : function(event, data) {
         data.type = event;
 
         data.preventDefault = data.srcEvent.preventDefault;
@@ -93,4 +77,4 @@ inherit(Instance, Manager, {
             handler.call(this, data);
         }, this);
     }
-});
+};

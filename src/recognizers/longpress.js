@@ -1,28 +1,59 @@
 function LongPressRecognizer() {
-    AttrRecognizer.apply(this, arguments);
+    Recognizer.apply(this, arguments);
 
     this._timer = null;
+    this._input = null;
 }
 
-// @todo implement this gesture
-
-inherit(LongPressRecognizer, AttrRecognizer, {
+inherit(LongPressRecognizer, Recognizer, {
     defaults: {
         event: 'longpress',
-        duration: 500,
-        movement: 10,
-        pointers: 1
+        pointers: 1,
+        time: 500, // max time of the pointer to be down (like finger on the screen)
+        movement: 10 // a minimal movement is ok, but keep it low
     },
 
-    failTest: function(input) {
-        return input.distance > this.options.distance;
+    reset: function() {
+        clearTimeout(this._timer);
     },
 
-    validTest: function(/*input*/) {
-        return false;
+    test: function(input) {
+        var options = this.options;
+        var eventType = input.eventType;
+
+        this._input = input;
+
+        // too many pointers or some movement
+        if(eventType === INPUT_MOVE && input.distance > options.movement || input.pointers.length > options.pointers) {
+            this.reset();
+            return STATE_FAILED;
+        }
+
+        // start timing
+        if(input.isFirst) {
+            this.reset();
+            //this._timer = setTimeout(bindFn(this.handler, this), options.time);
+            return STATE_POSSIBLE;
+        }
+
+        if(eventType < INPUT_END) {
+            return STATE_POSSIBLE;
+        }
+
+        if(eventType === INPUT_END) {
+            var validPointers = input.pointers.length === options.pointers;
+            var validTime = input.deltaTime > options.time;
+
+            if(!validPointers || !validTime) {
+                return STATE_FAILED;
+            } else {
+                return STATE_RECOGNIZED;
+            }
+        }
+        return STATE_FAILED;
     },
 
-    handler: function(input) {
-        this.inst.trigger(this.options.event, input);
+    emit: function(input) {
+        this.manager.emit(this.options.event, input || this._input);
     }
 });

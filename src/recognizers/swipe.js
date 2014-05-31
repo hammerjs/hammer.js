@@ -10,14 +10,14 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         pointers: 1
     },
 
-    validTest: function(input) {
+    attrTest: function(input) {
         return input.velocity > this.options.velocity &&
             input.distance > this.options.distance &&
-            input.eventType == INPUT_END;
+            input.eventType & INPUT_END;
     },
 
-    handler: function(input) {
-        this.inst.trigger(this.options.event, input);
-        this.inst.trigger(this.options.event + input.direction, input);
+    emit: function(input) {
+        this.manager.emit(this.options.event, input);
+        this.manager.emit(this.options.event + input.direction, input);
     }
 });

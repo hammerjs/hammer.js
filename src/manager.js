@@ -1,20 +1,44 @@
-function Manager() {
+/**
+ * Manager
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Manager(element, options) {
+    EventEmitter.call(this);
+
     this.enabled = true;
+    this.element = element;
+    this.options = merge(options || {}, Hammer.defaults);
 
     this.session = {};
     this.recognizers = [];
 
     this.input = createInputInstance(this);
     this.touchAction = new TouchAction(this);
+    this.touchAction.set(this.options.touchAction);
 }
 
-Manager.prototype = {
+inherit(Manager, EventEmitter, {
+    /**
+     * enable recognizing
+     */
     enable: function() {
         this.enabled = true;
     },
 
+    /**
+     * disable recognizing
+     */
     disable: function() {
         this.enabled = false;
+    },
+
+    /**
+     * stop the current session
+     */
+    stop: function() {
+        this.session.stopped = true;
     },
 
     /**
@@ -22,8 +46,8 @@ Manager.prototype = {
      * this is called by the inputHandler function
      * @param {Object} inputData
      */
-    update: function(inputData) {
-        if(!this.enabled) {
+    recognize: function(inputData) {
+        if(!this.enabled || this.session.stopped) {
             return;
         }
 
@@ -34,7 +58,7 @@ Manager.prototype = {
         var curRecognizer = session.curRecognizer;
 
         // reset when the last recognizer is done, or this is a new session
-        if(!curRecognizer || (curRecognizer && curRecognizer >= STATE_RECOGNIZED)) {
+        if(!curRecognizer || (curRecognizer && curRecognizer & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
@@ -46,12 +70,18 @@ Manager.prototype = {
                 recognizer.update(inputData);
             }
 
-            if(!curRecognizer && recognizer.state <= STATE_RECOGNIZED) {
+            if(!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
         }
     },
 
+    /**
+     * join recognizers so they are allowed to run simultaneous
+     * it just triggers the .join method on each recognizer, but this it is more friendly to use.     *
+     * you can separate joined recognizers by calling .separate() on the recognizer instance
+     * @param {Array} recognizers by name or instance
+     */
     join: function(recognizers) {
         // make sure we have an array with instances
         for(var i = 0; i < recognizers.length; i++) {
@@ -68,18 +98,8 @@ Manager.prototype = {
     },
 
     /**
-     * add a recognizer to the instance
-     * @param {Recognizer} recognizer
-     * @returns {Recognizer}
-     */
-    add: function(recognizer) {
-        this.recognizers.push(recognizer);
-        recognizer.setInstance(this);
-        return recognizer;
-    },
-
-    /**
-     * get a recognizer by its event name
+     * get a recognizer by its event name.
+     * if you pass an Recognizer object it just will be returned
      * @param {Recognizer|String} recognizer
      * @returns {Recognizer|Null}
      */
@@ -98,7 +118,18 @@ Manager.prototype = {
     },
 
     /**
-     * remove a recognizer
+     * add a recognizer to the manager
+     * @param {Recognizer} recognizer
+     * @returns {Recognizer}
+     */
+    add: function(recognizer) {
+        this.recognizers.push(recognizer);
+        recognizer.manager = this;
+        return recognizer;
+    },
+
+    /**
+     * remove a recognizer by name or manager
      * @param {Recognizer|String} recognizer
      * @returns {Recognizer|Null}
      */
@@ -108,9 +139,21 @@ Manager.prototype = {
         var recognizers = this.recognizers;
         for(var i = 0; i < recognizers.length; i++) {
             if(recognizers[i] === recognizer) {
-                return this.recognizers.splice(i, 1);
+                this.recognizers.splice(i, 1);
+                return recognizer;
             }
         }
         return null;
+    },
+
+    /**
+     * destroy the manager
+     * unbinds all events
+     */
+    destroy: function() {
+        this._super.destroy();
+        this.session = {};
+        this.input.destroy();
+        this.element = null;
     }
-};
+});

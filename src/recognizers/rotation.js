@@ -9,7 +9,7 @@ inherit(RotationRecognizer, AttrRecognizer, {
         pointers: 2
     },
 
-    validTest: function(input) {
+    attrTest: function(input) {
         return Math.abs(1 - input.rotation) > this.options.threshold;
     }
 });

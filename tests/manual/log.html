@@ -5,13 +5,15 @@
     <title></title>
 </head>
 <body>
-    <pre style="background: silver; width: 100%; height: 400px; overflow: hidden; -webkit-user-select: none;" id="hit">
-        <div id="target" style="background: blue; height: 60px;"></div>
-    </pre>
+    <div style="background: silver;  padding: 30px; -webkit-user-select: none;" id="hit">
+        <span id="target" style="display: block; background: blue; height: 60px;"></span>
+    </div>
+
+    <pre id="log"></pre>
 
     <p>In the console is a log of all triggered events</p>
 
-    <script src="../../hammer.js"></script>
+    <script src="../../hammer.min.js"></script>
     <script>
 
         Object.prototype.toDirString = function() {
@@ -21,6 +23,8 @@
                     var value = this[key];
                     if(Array.isArray(value)) {
                         value = "Array("+ value.length +"):"+ value;
+                    } else if(value instanceof HTMLElement) {
+                        value = value +" ("+ value.outerHTML.substring(0, 50) +"...)";
                     }
                     output.push(key +": "+ value);
                 }
@@ -30,18 +34,17 @@
 
 
         var el = document.querySelector("#hit");
+        var log = document.querySelector("#log");
 
-        var mc = new Hammer.Instance(el, {
+        var mc = new Hammer.Manager(el, {
             touchAction: 'none'
         });
 
         mc.add(new Hammer.Pan({event: 'triplepan', pointers: 3 }));
-        mc.add(new Hammer.Pinch({event: 'triplepinch', pointers: 3 }));
-        mc.join(['triplepan', 'triplepinch']);
+        mc.add(new Hammer.Pinch({event: 'triplepinch', pointers: 3 })).join('triplepan');
 
         mc.add(new Hammer.Swipe());
-        mc.add(new Hammer.Pan());
-        mc.join(['swipe', 'pan']);
+        mc.add(new Hammer.Pan()).join('swipe');
 
         mc.add(new Hammer.Rotation());
         mc.add(new Hammer.Pinch());
@@ -53,7 +56,7 @@
 
         function logGesture(ev) {
             console.log(ev);
-            el.textContent = ev.type +"\n"+ ev.toDirString();
+            log.textContent = ev.type +"\n"+ ev.toDirString();
         }
 
     </script>

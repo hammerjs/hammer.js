@@ -51,6 +51,6 @@ inherit(MouseInput, Input, {
             srcEvent: ev
         };
 
-        this.callback(this.inst, MOUSE_INPUT_MAP[ev.type], data);
+        this.callback(this.manager, MOUSE_INPUT_MAP[ev.type], data);
     },
 });

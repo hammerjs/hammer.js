@@ -12,7 +12,7 @@ var TYPE_UNDEFINED = 'undefined';
 function each(obj, iterator, context) {
     var i, len;
 
-    if('forEach' in obj) {
+    if(obj.forEach) {
         obj.forEach(iterator, context);
     } else if(typeof obj.length !== TYPE_UNDEFINED) {
         for(i = 0, len = obj.length; i < len; i++) {
@@ -61,21 +61,27 @@ function extend(dest, src) {
  * simple class inheritance
  * @param {Function} child
  * @param {Function} parent
- * @param {Object} [methods]
+ * @param {Object} [properties]
  */
-function inherit(child, parent, methods) {
-    extend(child, parent);
-
-    function Inherited() {
-        this.constructor = child;
+function inherit(child, parent, properties) {
+    // object create is supported since IE9
+    if(Object.create) {
+        child.prototype = Object.create(parent.prototype);
+        child.prototype.constructor = child;
+    } else {
+        extend(child, parent);
+        var Inherited = function() {
+            this.constructor = child;
+        };
+        Inherited.prototype = parent.prototype;
+        child.prototype = new Inherited();
     }
-    Inherited.prototype = parent.prototype;
-    child.prototype = new Inherited();
+
+    if(properties) {
+        extend(child.prototype, properties);
+    }
+
     child.prototype._super = parent.prototype;
-
-    if(methods) {
-        extend(child.prototype, methods);
-    }
 }
 
 /**
@@ -96,7 +102,7 @@ function bindFn(fn, context) {
  * @param {String} types
  * @param {Function} handler
  */
-function addDomEvent(element, types, handler) {
+function addEventListeners(element, types, handler) {
     each(types.split(/\s+/), function(type) {
         if(type) {
             element.addEventListener(type, handler, false);
@@ -110,7 +116,7 @@ function addDomEvent(element, types, handler) {
  * @param {String} types
  * @param {Function} handler
  */
-function removeDomEvent(element, types, handler) {
+function removeEventListeners(element, types, handler) {
     each(types.split(/\s+/), function(type) {
         if(type) {
             element.removeEventListener(type, handler, false);
@@ -134,7 +140,9 @@ function inStr(str, find) {
  * @returns {number}
  */
 function round(number) {
-    return Math.round(number);
+    // bitwise rounding is much faster then math.round in most cases
+    // see http://jsperf.com/math-floor-vs-math-round-vs-parseint/18
+    return number | 0;
 }
 
 /**

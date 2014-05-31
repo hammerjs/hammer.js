@@ -1,4 +1,6 @@
-Hammer.Instance = Instance;
+Hammer.EventEmitter = EventEmitter;
+Hammer.Manager = Manager;
+
 Hammer.Recognizer = Recognizer;
 Hammer.AttrRecognizer = AttrRecognizer;
 Hammer.Tap = TapRecognizer;
@@ -14,8 +16,8 @@ Hammer.INPUT_END = INPUT_END;
 Hammer.INPUT_CANCEL = INPUT_CANCEL;
 
 // expose some useful methods
-Hammer.on = addDomEvent;
-Hammer.off = removeDomEvent;
+Hammer.on = addEventListeners;
+Hammer.off = removeEventListeners;
 Hammer.each = each;
 Hammer.merge = merge;
 Hammer.bindFn = bindFn;

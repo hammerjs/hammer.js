@@ -25,36 +25,36 @@ var PROPS_XY = ['x', 'y'];
 var PROPS_CLIENT_XY = ['clientX', 'clientY'];
 
 /**
- * create new input type instance
- * @param {Instance} inst
+ * create new input type manager
+ * @param {Manager} manager
  * @param {Function} callback
  * @returns {Input}
  * @constructor
  */
-function Input(inst, callback) {
-    this.inst = inst;
+function Input(manager, callback) {
+    this.manager = manager;
     this.callback = callback;
 
     // used for internal events
     this._handler = bindFn(this.handler, this);
 
-    this._elEvents && addDomEvent(this.inst.element, this._elEvents, this._handler);
-    this._winEvents && addDomEvent(window, this._winEvents, this._handler);
+    this._elEvents && addEventListeners(this.manager.element, this._elEvents, this._handler);
+    this._winEvents && addEventListeners(window, this._winEvents, this._handler);
 }
 
 Input.prototype = {
     destroy: function() {
-        this._elEvents && removeDomEvent(this.inst.element, this._elEvents, this._handler);
-        this._winEvents && removeDomEvent(window, this._winEvents, this._handler);
+        this._elEvents && removeEventListeners(this.manager.element, this._elEvents, this._handler);
+        this._winEvents && removeEventListeners(window, this._winEvents, this._handler);
     }
 };
 
 /**
- * create new input type instance
- * @param {Hammer} inst
+ * create new input type manager
+ * @param {Hammer} manager
  * @returns {Input}
  */
-function createInputInstance(inst) {
+function createInputInstance(manager) {
     var Type;
     if(SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
@@ -65,16 +65,16 @@ function createInputInstance(inst) {
     } else {
         Type = TouchMouseInput;
     }
-    return new (Type)(inst, inputHandler);
+    return new (Type)(manager, inputHandler);
 }
 
 /**
  * handle input events
- * @param {Instance} inst
+ * @param {Manager} manager
  * @param {String} eventType
  * @param {Object} input
  */
-function inputHandler(inst, eventType, input) {
+function inputHandler(manager, eventType, input) {
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
 
@@ -85,15 +85,15 @@ function inputHandler(inst, eventType, input) {
     input.isFinal = isFinal;
 
     if(eventType === INPUT_START && input.isFirst) {
-        inst.session = {};
+        manager.session = {};
     }
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
     input.eventType = eventType;
 
     // compute scale, rotation etc
-    computeInputData(inst.session, input);
+    computeInputData(manager.session, input);
 
-    inst.update(input);
+    manager.recognize(input);
 }
 
 /**
