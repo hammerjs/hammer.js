@@ -46,12 +46,11 @@ inherit(PointerEventInput, Input, {
         // normalize event.type
         var evType = ev.type.toLowerCase().replace('ms', '');
 
+        // @todo check mousebutton
         if(evType == 'pointerdown') {
-            // pointer must be down
             store.push(ev);
             prefixed(element, 'setPointerCapture', [ev.pointerId]);
         } else if(evType == 'pointerup' || evType == 'pointerout' || evType == 'pointercancel') {
-            // we've lost the pointer
             removePointer = true;
         }
 

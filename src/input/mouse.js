@@ -28,6 +28,7 @@ inherit(MouseInput, Input, {
      * @param {Object} ev
      */
     handler: function(ev) {
+        // @todo check ev.button, IE has different indexes
         if(ev.type == 'mousedown' && ev.button === 0) {
             this._pressed = true;
         }
