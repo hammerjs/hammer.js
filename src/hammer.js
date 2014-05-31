@@ -36,6 +36,6 @@ Hammer.defaults = {
         [SwipeRecognizer, null, 'pan'],
         [TapRecognizer, { event: 'doubletap', taps: 2 }],
         [TapRecognizer],
-        [LongPressRecognizer]
+        [HoldRecognizer]
     ]
 };

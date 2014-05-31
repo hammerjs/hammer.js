@@ -5,12 +5,13 @@ function PinchRecognizer() {
 inherit(PinchRecognizer, AttrRecognizer, {
     defaults: {
         event: 'pinch',
-        threshold: 0.2,
+        threshold: 0,
         pointers: 2
     },
 
     attrTest: function(input) {
-        return Math.abs(1 - input.scale) > this.options.threshold;
+        return this._super.attrTest.call(this, input) &&
+            Math.abs(1 - input.scale) > this.options.threshold;
     },
 
     emit: function(input) {

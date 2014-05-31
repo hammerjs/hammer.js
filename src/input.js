@@ -84,7 +84,7 @@ function inputHandler(manager, eventType, input) {
     input.isFirst = isFirst;
     input.isFinal = isFinal;
 
-    if(eventType === INPUT_START && input.isFirst) {
+    if(input.isFirst) {
         manager.session = {};
     }
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'

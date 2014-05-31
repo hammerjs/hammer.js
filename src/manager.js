@@ -77,27 +77,6 @@ inherit(Manager, EventEmitter, {
     },
 
     /**
-     * join recognizers so they are allowed to run simultaneous
-     * it just triggers the .join method on each recognizer, but this it is more friendly to use.     *
-     * you can separate joined recognizers by calling .separate() on the recognizer instance
-     * @param {Array} recognizers by name or instance
-     */
-    join: function(recognizers) {
-        // make sure we have an array with instances
-        for(var i = 0; i < recognizers.length; i++) {
-            recognizers[i] = this.get(recognizers[i]);
-        }
-
-        each(recognizers, function(recognizer) {
-            for(var i = 0; i < recognizers.length; i++) {
-                if(recognizers[i] != recognizer) {
-                    recognizer.join(recognizers[i]);
-                }
-            }
-        }, this);
-    },
-
-    /**
      * get a recognizer by its event name.
      * if you pass an Recognizer object it just will be returned
      * @param {Recognizer|String} recognizer

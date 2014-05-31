@@ -8,7 +8,7 @@ Hammer.Pan = PanRecognizer;
 Hammer.Swipe = SwipeRecognizer;
 Hammer.Pinch = PinchRecognizer;
 Hammer.Rotation = RotationRecognizer;
-Hammer.LongPress = LongPressRecognizer;
+Hammer.Hold = HoldRecognizer;
 
 Hammer.INPUT_START = INPUT_START;
 Hammer.INPUT_MOVE = INPUT_MOVE;

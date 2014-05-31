@@ -5,11 +5,12 @@ function RotationRecognizer() {
 inherit(RotationRecognizer, AttrRecognizer, {
     defaults: {
         event: 'rotate',
-        threshold: 3,
+        threshold: 0,
         pointers: 2
     },
 
     attrTest: function(input) {
-        return Math.abs(1 - input.rotation) > this.options.threshold;
+        return this._super.attrTest.call(this, input) &&
+            Math.abs(1 - input.rotation) > this.options.threshold;
     }
 });

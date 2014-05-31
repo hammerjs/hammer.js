@@ -85,7 +85,7 @@ Recognizer.prototype = {
             return;
         }
 
-        if(this.state & STATE_RECOGNIZED) {
+        if(this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
             this.state = STATE_POSSIBLE;
         }
 

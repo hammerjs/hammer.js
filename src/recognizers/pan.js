@@ -10,8 +10,8 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     attrTest: function(input) {
-        console.log(input);
-        return input.distance > this.options.threshold;
+        return this._super.attrTest.call(this, input) &&
+            input.distance > this.options.threshold;
     },
 
     emit: function(input) {

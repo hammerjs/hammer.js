@@ -70,7 +70,7 @@
             var mc = Hammer(el, {
                 touchAction: touchAction
             });
-            mc.on("pan swipe rotate pinch tap doubletap", function(ev) {
+            mc.on("pan swipe rotate pinch tap doubletap hold", function(ev) {
                 el.textContent = ev.type +" "+ el.textContent;
             });
         });

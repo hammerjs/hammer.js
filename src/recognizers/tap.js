@@ -15,36 +15,24 @@ inherit(TapRecognizer, Recognizer, {
         interval: 300, // max time between the multi-tap taps
         time: 250, // max time of the pointer to be down (like finger on the screen)
         movementBetween: 10, // a multi-tap can be a bit off the initial position
-        movementDuring: 2 // a minimal movement is ok, but keep it low
+        movementWhile: 2 // a minimal movement is ok, but keep it low
     },
 
     test: function(input) {
         var options = this.options;
-        var eventType = input.eventType;
-        var state = this.state;
+
+        var validPointers = input.pointers.length === options.pointers;
+        var validMovement = input.distance < options.movementWhile;
+        var validTouchTime = input.deltaTime < options.time;
 
         // we only allow little movement
-        if(eventType & INPUT_MOVE && input.distance > options.movementDuring || input.pointers.length > options.pointers) {
-            return STATE_FAILED;
-
-        // until we've reached an end event, it is never possible
-        } else if(!(eventType & INPUT_END)) {
-            return STATE_FAILED;
-
-        // we've reached an end touch
-        } else if(eventType & INPUT_END) {
-            var validPointers = input.pointers.length === options.pointers;
+        // and we've reached an end event, so a tap is possible
+        if(input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
             var validInterval = this._pTime ? (input.timeStamp - this._pTime < options.interval) : true;
-            var validTapTime = input.deltaTime < options.time;
             var validMultiTap = !this._pCenter || getDistance(this._pCenter, input.center) < options.movementBetween;
 
             this._pTime = input.timeStamp;
             this._pCenter = input.center;
-
-            if(!validPointers || !validTapTime) {
-                this._count = 0;
-                return STATE_FAILED;
-            }
 
             if(!validMultiTap || !validInterval) {
                 this._count = 1;
@@ -53,13 +41,13 @@ inherit(TapRecognizer, Recognizer, {
             }
 
             var validTapCount = (this._count % options.taps === 0);
-            if(validTapCount && validTapTime && validPointers) {
-                return state | STATE_RECOGNIZED;
+            if(validTapCount) {
+                return STATE_RECOGNIZED;
             }
         }
 
         // maybe next round
-        return STATE_POSSIBLE;
+        return STATE_FAILED;
     },
 
     emit: function(input) {
