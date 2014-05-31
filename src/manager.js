@@ -67,7 +67,9 @@ inherit(Manager, EventEmitter, {
             recognizer = this.recognizers[i];
 
             if(!curRecognizer || recognizer == curRecognizer || recognizer.joins(curRecognizer)) {
-                recognizer.update(inputData);
+                recognizer.recognize(inputData);
+            } else {
+                recognizer.reset();
             }
 
             if(!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {

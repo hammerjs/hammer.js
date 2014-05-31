@@ -26,14 +26,12 @@ inherit(AttrRecognizer, Recognizer, {
         var state = this.state;
         var eventType = input.eventType;
 
-        var isRecognized = state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED);
+        var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
         var isValid = this.attrTest(input);
 
-        // on cancel input and we've never recognized before we just return STATE_CANCELLED
+        // on cancel input and we've recognized before, return STATE_CANCELLED
         if(isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
             return state | STATE_CANCELLED;
-
-        // valid properties!
         } else if(isRecognized || isValid) {
             if(eventType & INPUT_END) {
                 return state | STATE_ENDED;

@@ -6,6 +6,12 @@ var STATE_RECOGNIZED = STATE_ENDED;
 var STATE_CANCELLED = 16;
 var STATE_FAILED = 32;
 
+var STATE_POSTFIX_MAP = {
+    2: 'start',
+    8: 'end',
+    16: 'cancel'
+};
+
 function Recognizer(options) {
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
@@ -14,6 +20,14 @@ function Recognizer(options) {
     this.enabled = true;
     this.simultaneous = [];
 }
+
+Recognizer.STATE_POSSIBLE = STATE_POSSIBLE;
+Recognizer.STATE_BEGAN = STATE_BEGAN;
+Recognizer.STATE_CHANGED = STATE_CHANGED;
+Recognizer.STATE_ENDED = STATE_ENDED;
+Recognizer.STATE_RECOGNIZED = STATE_RECOGNIZED;
+Recognizer.STATE_CANCELLED = STATE_CANCELLED;
+Recognizer.STATE_FAILED = STATE_FAILED;
 
 Recognizer.prototype = {
     /**
@@ -35,8 +49,7 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        console.log('emit', this.options.event + statePostfix(this.state), input);
-        this.manager.emit(this.options.event + statePostfix(this.state), input);
+        this.manager.emit(this.options.event + (STATE_POSTFIX_MAP[this.state] || ''), input);
     },
 
     /**
@@ -72,15 +85,16 @@ Recognizer.prototype = {
      */
     joins: function(recognizer) {
         recognizer = this.manager.get(recognizer);
-        return ~inArray(this.simultaneous, recognizer);
+        return inArray(this.simultaneous, recognizer) > -1;
     },
 
     /**
      * update the recognizer
      * @param {Object} inputData
      */
-    update: function(inputData) {
+    recognize: function(inputData) {
         if(!this.enabled) {
+            this.reset();
             this.state = STATE_FAILED;
             return;
         }
@@ -96,26 +110,11 @@ Recognizer.prototype = {
         if(this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
             this.emit(inputData);
         }
+    },
+
+    /**
+     * called when the gesture isn't being updated by the manager update cycle
+     */
+    reset: function() {
     }
 };
-
-/**
- * used for event triggers
- * @param {String} state
- * @returns {String}
- */
-function statePostfix(state) {
-    if(state & STATE_CANCELLED) {
-        return 'cancel';
-    }
-    if(state & STATE_ENDED) {
-        return 'end';
-    }
-    if(state & STATE_CHANGED) {
-        return '';
-    }
-    if(state & STATE_BEGAN) {
-        return 'start';
-    }
-    return '';
-}

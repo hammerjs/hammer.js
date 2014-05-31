@@ -1,5 +1,7 @@
 Hammer.EventEmitter = EventEmitter;
 Hammer.Manager = Manager;
+Hammer.Input = Input;
+Hammer.TouchAction = TouchAction;
 
 Hammer.Recognizer = Recognizer;
 Hammer.AttrRecognizer = AttrRecognizer;
@@ -9,11 +11,6 @@ Hammer.Swipe = SwipeRecognizer;
 Hammer.Pinch = PinchRecognizer;
 Hammer.Rotation = RotationRecognizer;
 Hammer.Hold = HoldRecognizer;
-
-Hammer.INPUT_START = INPUT_START;
-Hammer.INPUT_MOVE = INPUT_MOVE;
-Hammer.INPUT_END = INPUT_END;
-Hammer.INPUT_CANCEL = INPUT_CANCEL;
 
 // expose some useful/over-writable methods
 Hammer.on = addEventListeners;

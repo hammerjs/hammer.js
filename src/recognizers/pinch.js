@@ -18,6 +18,6 @@ inherit(PinchRecognizer, AttrRecognizer, {
         this._super.emit.call(this, input);
 
         var inOut = input.scale < 1 ? 'in' : 'out';
-        this.manager.emit(this.options.event + inOut + statePostfix(this.state), input);
+        this.manager.emit(this.options.event + inOut, input);
     }
 });

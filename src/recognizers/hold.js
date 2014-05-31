@@ -1,14 +1,16 @@
 function HoldRecognizer() {
     Recognizer.apply(this, arguments);
+
+    this._timer = null;
+    this._input = null;
 }
 
 inherit(HoldRecognizer, Recognizer, {
     defaults: {
         event: 'hold',
         pointers: 1,
-        taps: 1,
         time: 500, // minimal time of the pointer to be down (like finger on the screen)
-        movementWhile: 5 // a minimal movement is ok, but keep it low
+        movementWhile: 10 // a minimal movement is ok, but keep it low
     },
 
     test: function(input) {
@@ -16,19 +18,28 @@ inherit(HoldRecognizer, Recognizer, {
 
         var validPointers = input.pointers.length === options.pointers;
         var validMovement = input.distance < options.movementWhile;
-        var validTouchTime = input.deltaTime > options.time;
+        var validTime = input.deltaTime > options.time;
+
+        this._input = input;
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
-        if(input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
-            return STATE_RECOGNIZED;
+        if(!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
+            this.reset();
+        } else if(input.eventType & INPUT_START) {
+            this.reset();
+            this._timer = setTimeout(bindFn(this.emit, this), options.time);
         }
 
         // maybe next round
         return STATE_FAILED;
     },
 
-    emit: function(input) {
-        this.manager.emit(this.options.event, input);
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function() {
+        this.manager.emit(this.options.event, this._input);
     }
 });

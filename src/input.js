@@ -15,11 +15,11 @@ var INPUT_MOVE = 2;
 var INPUT_END = 4;
 var INPUT_CANCEL = 8;
 
-var DIRECTION_LEFT = 'left';
-var DIRECTION_RIGHT = 'right';
-var DIRECTION_UP = 'up';
-var DIRECTION_DOWN = 'down';
-var DIRECTION_NONE = '';
+var DIRECTION_NONE = 1;
+var DIRECTION_LEFT = 2;
+var DIRECTION_RIGHT = 4;
+var DIRECTION_UP = 8;
+var DIRECTION_DOWN = 16;
 
 var PROPS_XY = ['x', 'y'];
 var PROPS_CLIENT_XY = ['clientX', 'clientY'];
@@ -41,6 +41,17 @@ function Input(manager, callback) {
     this._elEvents && addEventListeners(this.manager.element, this._elEvents, this._handler);
     this._winEvents && addEventListeners(window, this._winEvents, this._handler);
 }
+
+Input.START = INPUT_START;
+Input.MOVE = INPUT_MOVE;
+Input.END = INPUT_END;
+Input.CANCEL = INPUT_CANCEL;
+
+Input.DIRECTION_NONE = DIRECTION_NONE;
+Input.DIRECTION_LEFT = DIRECTION_LEFT;
+Input.DIRECTION_RIGHT = DIRECTION_RIGHT;
+Input.DIRECTION_UP = DIRECTION_UP;
+Input.DIRECTION_DOWN = DIRECTION_DOWN;
 
 Input.prototype = {
     destroy: function() {
@@ -77,14 +88,13 @@ function createInputInstance(manager) {
 function inputHandler(manager, eventType, input) {
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
-
-    var isFirst = (eventType === INPUT_START && (pointersLen - changedPointersLen === 0));
-    var isFinal = (eventType === INPUT_END && (pointersLen - changedPointersLen === 0));
+    var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
+    var isFinal = (eventType & INPUT_END && (pointersLen - changedPointersLen === 0));
 
     input.isFirst = isFirst;
     input.isFinal = isFinal;
 
-    if(input.isFirst) {
+    if(isFirst) {
         manager.session = {};
     }
     // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
@@ -146,21 +156,22 @@ function computeInputData(session, input) {
  * @param {Object} input
  */
 function computeIntervalInputData(session, input) {
-    if(!session.lastInterval) {
-        session.lastInterval = simpleCloneInputData(input);
+    var last = session.lastInterval;
+    if(!last) {
+        last = session.lastInterval = simpleCloneInputData(input);
     }
 
-    var deltaTime = input.timeStamp - session.lastInterval.timeStamp;
+    var deltaTime = input.timeStamp - last.timeStamp;
 
-    if(deltaTime > COMPUTE_INTERVAL || !session.lastInterval.velocity) {
-        var deltaX = input.deltaX - session.lastInterval.deltaX;
-        var deltaY = input.deltaY - session.lastInterval.deltaY;
+    if(deltaTime > COMPUTE_INTERVAL || !last.velocity) {
+        var deltaX = input.deltaX - last.deltaX;
+        var deltaY = input.deltaY - last.deltaY;
 
-        session.lastInterval = simpleCloneInputData(input);
-        session.lastInterval.velocity = getVelocity(deltaTime, deltaX, deltaY);
+        last = session.lastInterval = simpleCloneInputData(input);
+        last.velocity = getVelocity(deltaTime, deltaX, deltaY);
     }
 
-    var velocity = session.lastInterval.velocity;
+    var velocity = last.velocity;
 
     input.velocity = Math.max(velocity.x, velocity.y);
     input.velocityX = velocity.x;
