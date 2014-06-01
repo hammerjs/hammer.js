@@ -55,14 +55,24 @@ handle touches on an element. It improves the detection and experience of the ge
 scrolling of the page without any JavaScript has to be executed, which can be too late in some cases.
 
 Hammer makes use of this property, and uses a fallback when needed. It is important to set this property to the
-correct value when creating an instance. By default it is set to `pan-y`, meaning it prevents horizontal scrolling
-(so improving horizontal pan and swipe gestures).
+correct value when creating an instance. By default it tries to read the value from the element, 
+or it is set to `pan-y` when not found.
+
+The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `auto` it doesnt prevent any scrolling, 
+and Hammer would run, but it might fail if you dont call `ev.preventDefault()` soon enough. This is not recommended!
+
+`pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows 
+vertical scrolling, and prevents horizontal scrolling. This means horizontal gestures could be recognized. The `none`
+value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating. 
 
 ## API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there! 
 
 ### `Hammer.Manager(element, [options])`
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
+
+The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
+ it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
 
 ##### `.enable()`, `.disable()` and `.destroy()`
 When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events
@@ -89,7 +99,7 @@ The options object is different  for most of the recognizers, but all have the p
 ##### `.enable()` and `.disable()`
 When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default.
 
-##### `.join(recognizer)` and `separate(recognizer)`
+##### `.join(recognizer)` and `.separate(recognizer)`
 Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a 
 swipe at the end, or a pinch with the ability to rotate the target as well. It accepts a recognizer's event name or 
 it's instance as an argument.

@@ -9,7 +9,18 @@ function Manager(element, options) {
 
     this.enabled = true;
     this.element = element;
-    this.options = merge(options || {}, Hammer.defaults);
+
+    // try and set the touch-action value by getting it from the element
+    // this allows to let it be pre-configured it most cases.
+    options = options || {};
+    if(!options.touchAction) {
+        var touchActionValue = prefixed(element.style, 'touchAction');
+        if(touchActionValue) {
+            options.touchAction = touchActionValue;
+        }
+    }
+
+    this.options = merge(options, Hammer.defaults);
 
     this.session = {};
     this.recognizers = [];
@@ -18,6 +29,19 @@ function Manager(element, options) {
     this.touchAction = new TouchAction(this);
     this.touchAction.set(this.options.touchAction);
 }
+
+Hammer.defaults = {
+    touchAction: 'pan-y',
+    recognizers: [
+        [RotationRecognizer],
+        [PinchRecognizer, null, 'rotate'],
+        [PanRecognizer],
+        [SwipeRecognizer, null, 'pan'],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }],
+        [TapRecognizer],
+        [HoldRecognizer]
+    ]
+};
 
 inherit(Manager, EventEmitter, {
     /**

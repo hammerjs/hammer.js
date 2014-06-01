@@ -14,7 +14,7 @@ function Hammer(element, options) {
      * [ RecognizerClass, options, join ],
      * [ .... ]
      */
-    each(Hammer.defaults.recognizers, function(item) {
+    each(manager.options.recognizers, function(item) {
         var recognizer = manager.add(new (item[0])(item[1]));
         if(item[2]) {
             recognizer.join(item[2]);
@@ -25,17 +25,3 @@ function Hammer(element, options) {
 }
 
 Hammer.version = '{{PKG_VERSION}}';
-
-Hammer.defaults = {
-    touchAction: 'pan-y',
-    domEvents: false,
-    recognizers: [
-        [RotationRecognizer],
-        [PinchRecognizer, null, 'rotate'],
-        [PanRecognizer],
-        [SwipeRecognizer, null, 'pan'],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }],
-        [TapRecognizer],
-        [HoldRecognizer]
-    ]
-};
