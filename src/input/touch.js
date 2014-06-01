@@ -24,14 +24,12 @@ inherit(TouchInput, Input, {
      */
     handler: function(ev) {
         var touches = this.normalizeTouches(ev);
-        var data = {
+        this.callback(this.manager, TOUCH_INPUT_MAP[ev.type], {
             pointers: touches[0],
             changedPointers: touches[1],
             pointerType: INPUT_TYPE_TOUCH,
             srcEvent: ev
-        };
-
-        this.callback(this.manager, TOUCH_INPUT_MAP[ev.type], data);
+        });
     },
 
     /**

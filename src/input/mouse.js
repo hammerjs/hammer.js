@@ -28,8 +28,10 @@ inherit(MouseInput, Input, {
      * @param {Object} ev
      */
     handler: function(ev) {
+        var eventType = MOUSE_INPUT_MAP[ev.type];
+
         // @todo check ev.button, IE has different indexes
-        if(ev.type == 'mousedown' && ev.button === 0) {
+        if(eventType & INPUT_START && ev.button === 0) {
             this._pressed = true;
         }
 
@@ -39,19 +41,17 @@ inherit(MouseInput, Input, {
         }
 
         var target = ev.relatedTarget || ev.toElement;
-        var mouseout = (ev.type == 'mouseout' && (!target || target.nodeName == 'HTML'));
+        var mouseout = (eventType & INPUT_CANCEL && (!target || target.nodeName == 'HTML'));
 
-        if(ev.type == 'mouseup' || mouseout) {
+        if(eventType & INPUT_END || mouseout) {
             this._pressed = false;
         }
 
-        var data = {
+        this.callback(this.manager, eventType, {
             pointers: [ev],
             changedPointers: [ev],
             pointerType: INPUT_TYPE_MOUSE,
             srcEvent: ev
-        };
-
-        this.callback(this.manager, MOUSE_INPUT_MAP[ev.type], data);
+        });
     },
 });

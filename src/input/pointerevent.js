@@ -43,35 +43,32 @@ inherit(PointerEventInput, Input, {
         var element = this.manager.element;
         var removePointer = false;
 
-        // normalize event.type
-        var evType = ev.type.toLowerCase().replace('ms', '');
+        var eventType = POINTER_INPUT_MAP[ev.type.toLowerCase().replace('ms', '')];
 
         // @todo check mousebutton
-        if(evType == 'pointerdown') {
+        if(eventType & INPUT_START) {
             store.push(ev);
             prefixed(element, 'setPointerCapture', [ev.pointerId]);
-        } else if(evType == 'pointerup' || evType == 'pointerout' || evType == 'pointercancel') {
+        } else if(eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         }
 
         // get index of the event in the store
+        // it not found, so the pointer hasn't been down (so it's probably a hover)
         var storeIndex = inArray(store, ev.pointerId, 'pointerId');
         if(storeIndex < 0) {
-            // not found, so the pointer hasn't been down (so it's probably a hover)
             return;
         }
 
         // update the event in the store
         store[storeIndex] = ev;
 
-        var data = {
+        this.callback(this.manager, eventType, {
             pointers: store,
             changedPointers: [ev],
             pointerType: IE10_POINTER_TYPE_MAP[store[0].pointerType] || store[0].pointerType,
             srcEvent: ev
-        };
-
-        this.callback(this.manager, POINTER_INPUT_MAP[evType], data);
+        });
 
         if(removePointer) {
             // remove from the store

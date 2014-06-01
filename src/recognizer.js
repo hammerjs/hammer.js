@@ -43,7 +43,7 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        this.manager.emit(this.options.event + stateEventString(this.state), input);
+        this.manager.emit(this.options.event + this.stateStr(), input);
     },
 
     /**
@@ -113,23 +113,23 @@ Recognizer.prototype = {
     /**
      * called when the gesture isn't being updated by the manager update cycle
      */
-    reset: function() { }
-};
+    reset: function() { },
 
-/**
- * get a usable string, used as event postfix
- * @param {Const} state
- * @returns {string} state
- */
-function stateEventString(state) {
-    if(state & STATE_CANCELLED) {
-        return 'cancel';
-    } else if(state & STATE_ENDED) {
-        return 'end';
-    } else if(state & STATE_CHANGED) {
+    /**
+     * get a usable string, used as event postfix
+     * @returns {string} state
+     */
+    stateStr: function() {
+        var state = this.state;
+        if(state & STATE_CANCELLED) {
+            return 'cancel';
+        } else if(state & STATE_ENDED) {
+            return 'end';
+        } else if(state & STATE_CHANGED) {
+            return '';
+        } else if(state & STATE_BEGAN) {
+            return 'start';
+        }
         return '';
-    } else if(state & STATE_BEGAN) {
-        return 'start';
     }
-    return '';
-}
+};
