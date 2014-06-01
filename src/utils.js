@@ -226,5 +226,4 @@ function prefixed(obj, property, val) {
             return obj[prop];
         }
     }
-    return false;
 }
