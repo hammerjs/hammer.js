@@ -124,7 +124,7 @@ Recognizer.prototype = {
         if(state & STATE_CANCELLED) {
             return 'cancel';
         } else if(state & STATE_ENDED) {
-            return 'end';0
+            return 'end';
         } else if(state & STATE_CHANGED) {
             return '';
         } else if(state & STATE_BEGAN) {

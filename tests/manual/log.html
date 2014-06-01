@@ -5,7 +5,7 @@
     <title></title>
 </head>
 <body style="-webkit-user-select:none;">
-    <div style="background: silver;  padding: 30px; -webkit-user-select: none;" id="hit">
+    <div style="background: silver;  padding: 30px; -webkit-user-select: none; touch-action: pan-x" id="hit">
         <span id="target" style="display: block; background: blue; height: 60px;"></span>
     </div>
 
@@ -37,7 +37,7 @@
         var log = document.querySelector("#log");
 
         var mc = new Hammer.Manager(el, {
-            touchAction: 'none'
+            //touchAction: 'none'
         });
 
         mc.add(new Hammer.Swipe());

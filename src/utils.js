@@ -221,9 +221,9 @@ function prefixed(obj, property, val) {
             }
         } else if(val) {
             obj[prop] = val;
-            return prop;
+            return val;
         } else {
-            return prop;
+            return obj[prop];
         }
     }
     return false;

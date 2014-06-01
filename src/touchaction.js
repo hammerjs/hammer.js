@@ -2,7 +2,7 @@
  * set and mimic the touch-action property
  */
 
-var NATIVE_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
+var NATIVE_TOUCH_ACTION = prefixed(document.body.style, 'touchAction') !== false;
 
 function TouchAction(manager) {
     this.manager = manager;
