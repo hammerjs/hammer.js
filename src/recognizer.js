@@ -6,12 +6,6 @@ var STATE_RECOGNIZED = STATE_ENDED;
 var STATE_CANCELLED = 16;
 var STATE_FAILED = 32;
 
-var STATE_POSTFIX_MAP = {
-    2: 'start',
-    8: 'end',
-    16: 'cancel'
-};
-
 function Recognizer(options) {
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
@@ -49,13 +43,14 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        this.manager.emit(this.options.event + (STATE_POSTFIX_MAP[this.state] || ''), input);
+        this.manager.emit(this.options.event + stateEventString(this.state), input);
     },
 
     /**
      * run together with an other recognizer
      * it adds the current manager also to the other recognizer
      * @param {Recognizer} recognizer
+     * @returns {Recognizer} this
      */
     join: function(recognizer) {
         recognizer = this.manager.get(recognizer);
@@ -63,11 +58,13 @@ Recognizer.prototype = {
             this.simultaneous.push(recognizer);
             recognizer.join(this);
         }
+        return this;
     },
 
     /**
      * split joined recognizers
      * @param {Recognizer} recognizer
+     * @returns {Recognizer} this
      */
     split: function(recognizer) {
         recognizer = this.manager.get(recognizer);
@@ -76,6 +73,7 @@ Recognizer.prototype = {
             this.simultaneous.splice(index, 1);
             recognizer.split(this);
         }
+        return this;
     },
 
     /**
@@ -115,6 +113,23 @@ Recognizer.prototype = {
     /**
      * called when the gesture isn't being updated by the manager update cycle
      */
-    reset: function() {
-    }
+    reset: function() { }
 };
+
+/**
+ * get a usable string, used as event postfix
+ * @param {Const} state
+ * @returns {string} state
+ */
+function stateEventString(state) {
+    if(state & STATE_CANCELLED) {
+        return 'cancel';
+    } else if(state & STATE_ENDED) {
+        return 'end';
+    } else if(state & STATE_CHANGED) {
+        return '';
+    } else if(state & STATE_BEGAN) {
+        return 'start';
+    }
+    return '';
+}

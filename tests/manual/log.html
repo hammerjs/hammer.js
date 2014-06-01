@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title></title>
 </head>
-<body>
+<body style="-webkit-user-select:none;">
     <div style="background: silver;  padding: 30px; -webkit-user-select: none;" id="hit">
         <span id="target" style="display: block; background: blue; height: 60px;"></span>
     </div>
@@ -40,11 +40,8 @@
             touchAction: 'none'
         });
 
-        mc.add(new Hammer.Pan({event: 'triplepan', pointers: 3 }));
-        mc.add(new Hammer.Pinch({event: 'triplepinch', pointers: 3 })).join('triplepan');
-
         mc.add(new Hammer.Swipe());
-        mc.add(new Hammer.Pan()).join('swipe');
+        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).join('swipe');
 
         mc.add(new Hammer.Rotation());
         mc.add(new Hammer.Pinch());
@@ -55,7 +52,7 @@
         mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
 
         function logGesture(ev) {
-            console.log(ev);
+            console.log(ev.direction);
             log.textContent = ev.type +"\n"+ ev.toDirString();
         }
 

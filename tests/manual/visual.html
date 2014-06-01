@@ -69,16 +69,12 @@
         touchAction: 'none'
     });
 
-    mc.join([
-        mc.add(new Hammer.Pan({ threshold: 0, pointers: 2 })),
-        mc.add(new Hammer.Rotation({ threshold: 0 })),
-        mc.add(new Hammer.Pinch({ threshold: 0 }))
-    ]);
+    mc.add(new Hammer.Pan({ threshold: 0, pointers: 2 }));
+    mc.add(new Hammer.Rotation({ threshold: 0 })).join('pan');
+    mc.add(new Hammer.Pinch({ threshold: 0 })).join('pan').join('rotate');
 
-    mc.join([
-        mc.add(new Hammer.Pan({ threshold: 0 })),
-        mc.add(new Hammer.Swipe())
-    ]);
+    mc.add(new Hammer.Swipe());
+    mc.add(new Hammer.Pan({ threshold: 0 })).join('swipe');
 
     mc.add(new Hammer.Tap({ event: 'tripletap', taps: 3 }));
     mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));

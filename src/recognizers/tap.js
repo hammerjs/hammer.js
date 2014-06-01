@@ -1,6 +1,8 @@
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
 
+    // previous time and center,
+    // used for tap counting
     this._pTime = false;
     this._pCenter = false;
 

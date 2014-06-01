@@ -1,29 +1,45 @@
-var PAN_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
-var PAN_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
-
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
-}
 
-PanRecognizer.HORIZONTAL = PAN_HORIZONTAL;
-PanRecognizer.VERTICAL = PAN_VERTICAL;
+    this._pX = null;
+    this._pY = null;
+}
 
 inherit(PanRecognizer, AttrRecognizer, {
     defaults: {
         event: 'pan',
         threshold: 10,
         pointers: 1,
-        direction: PAN_HORIZONTAL | PAN_VERTICAL
+        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL
     },
 
     attrTest: function(input) {
-        // @todo lock to the direction
+        var options = this.options;
+        var isNew = true;
+
+        // lock to axis
+        if(!(input.direction & options.direction)) {
+            var x = input.deltaX;
+            var y = input.deltaY;
+
+            if(options.direction & DIRECTION_HORIZONTAL) {
+                input.direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                isNew = x != this._pX;
+            } else {
+                input.direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+                isNew = y != this._pY;
+            }
+        }
+
         return this._super.attrTest.call(this, input) &&
-            input.direction & this.options.direction &&
-            input.distance > this.options.threshold;
+            input.direction & options.direction && isNew &&
+            (input.distance > options.threshold || this.state & STATE_BEGAN);
     },
 
     emit: function(input) {
+        this._pX = input.deltaX;
+        this._pY = input.deltaY;
+
         this._super.emit.call(this, input);
         this.manager.emit(this.options.event + input.direction, input);
     }

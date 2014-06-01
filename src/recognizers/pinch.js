@@ -11,7 +11,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
-            Math.abs(1 - input.scale) > this.options.threshold;
+            (Math.abs(1 - input.scale) > this.options.threshold || this.state & STATE_BEGAN);
     },
 
     emit: function(input) {

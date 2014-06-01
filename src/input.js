@@ -21,6 +21,9 @@ var DIRECTION_RIGHT = 4;
 var DIRECTION_UP = 8;
 var DIRECTION_DOWN = 16;
 
+var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+
 var PROPS_XY = ['x', 'y'];
 var PROPS_CLIENT_XY = ['clientX', 'clientY'];
 
@@ -41,17 +44,6 @@ function Input(manager, callback) {
     this._elEvents && addEventListeners(this.manager.element, this._elEvents, this._handler);
     this._winEvents && addEventListeners(window, this._winEvents, this._handler);
 }
-
-Input.START = INPUT_START;
-Input.MOVE = INPUT_MOVE;
-Input.END = INPUT_END;
-Input.CANCEL = INPUT_CANCEL;
-
-Input.DIRECTION_NONE = DIRECTION_NONE;
-Input.DIRECTION_LEFT = DIRECTION_LEFT;
-Input.DIRECTION_RIGHT = DIRECTION_RIGHT;
-Input.DIRECTION_UP = DIRECTION_UP;
-Input.DIRECTION_DOWN = DIRECTION_DOWN;
 
 Input.prototype = {
     destroy: function() {
