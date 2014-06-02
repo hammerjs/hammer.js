@@ -85,7 +85,7 @@ module.exports = (grunt) ->
           port: 8000
 
     qunit:
-      all: ['test/unit/index.html']
+      all: ['tests/unit/index.html']
 
 
   # Load tasks
