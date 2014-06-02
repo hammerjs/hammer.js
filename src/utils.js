@@ -140,9 +140,7 @@ function inStr(str, find) {
  * @returns {number}
  */
 function round(number) {
-    // bitwise rounding is much faster then math.round in most cases
-    // see http://jsperf.com/math-floor-vs-math-round-vs-parseint/18
-    return number | 0;
+    return Math.round(number);
 }
 
 /**
