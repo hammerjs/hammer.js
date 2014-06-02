@@ -30,8 +30,14 @@ module.exports = (grunt) ->
       test: # special test build that exposes everything so it's testable
         src: [
           'src/hammer.js'
-          'src/*.js'
-          'src/**/*.js'
+          'src/utils.js'
+          'src/input.js'
+          'src/input/*.js'
+          'src/eventemitter.js'
+          'src/touchaction.js'
+          'src/manager.js'
+          'src/recognizer.js'
+          'src/recognizers/*.js'
           'src/export.js']
         dest: 'tests/build.js'
 
@@ -78,26 +84,22 @@ module.exports = (grunt) ->
           hostname: "0.0.0.0"
           port: 8000
 
-    mocha: # disabled
-      test:
-        src: ['tests/unit/*.html']
-        options:
-          reporter: 'List'
+    qunit:
+      all: ['test/unit/index.html']
 
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-  grunt.loadNpmTasks 'grunt-mocha'
-  grunt.loadNpmTasks 'grunt-simple-mocha'
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 
   # Default task(s).
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','string-replace','uglify','test']
-  grunt.registerTask 'test', ['jshint','jscs','concat:test']
+  grunt.registerTask 'test', ['jshint','jscs','concat:test','qunit']
   grunt.registerTask 'test-travis', ['build']
