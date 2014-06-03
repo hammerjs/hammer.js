@@ -156,7 +156,7 @@ inherit(Manager, EventEmitter, {
      * unbinds all events
      */
     destroy: function() {
-        this._super.destroy();
+        this._super.destroy.call(this);
         this.session = {};
         this.input.destroy();
         this.element = null;
