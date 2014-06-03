@@ -62,43 +62,43 @@ The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `aut
 and Hammer would run, but it might fail if you dont call `ev.preventDefault()` soon enough. This is not recommended!
 
 `pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows 
-vertical scrolling, and prevents horizontal scrolling. This means horizontal gestures could be recognized. The `none`
+vertical scrolling, and prevents horizontal scrolling so gestures are being recognized. The `none`
 value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating. 
 
 ## API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there! 
 
-### `Hammer.Manager(element, [options])`
+### Hammer.Manager(element, [options])
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
  it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
 
-##### `.enable()`, `.disable()` and `.destroy()`
+##### .enable(), .disable() and .destroy()
 When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events
 and input events and makes the manager unusable.
 
-##### `.add(recognizer)`, `.get(recognizer)` and `.remove(recognizer)`
+##### .add(recognizer), .get(recognizer) and .remove(recognizer)
 Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being 
 executed. Just like the `get` method, it returns the added `Recognizer` instance.
 
 The `get` and `remove` methods takes the event name (from a recognizer) or a recognizer instance as an argument.
 
-##### `.on(events, handler)` and `.off(events, [handler])`
+##### .on(events, handler) and .off(events, [handler])
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated 
 by a space.
 
-### `Hammer.Recognizer(options)`
+### Hammer.Recognizer(options)
 Every Recognizer extends from this class. Below are the only methods you would need. The options are different 
 for most of the recognizers, but all have the property `event` and `pointers`,
 
 `event` is used as the triggered event (like `swipe` or `pan`), and as the lookup field when calling `Manager.get()`.
 `pointers` is the amount of touches/pointers the recognizer requires. 
 
-##### `.enable()` and `.disable()`
+##### .enable()` and `.disable()
 When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default.
 
-##### `.join(recognizer)` and `.separate(recognizer)`
+##### .join(recognizer) and .separate(recognizer)
 Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a 
 swipe at the end, or a pinch with the ability to rotate the target as well. It accepts a recognizer's event name or 
 it's instance as an argument.
