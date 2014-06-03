@@ -24,4 +24,4 @@ function Hammer(element, options) {
     return manager;
 }
 
-Hammer.version = '{{PKG_VERSION}}';
+Hammer.VERSION = '{{PKG_VERSION}}';
