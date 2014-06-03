@@ -95,7 +95,7 @@ for most of the recognizers, but all have the property `event` and `pointers`,
 `event` is used as the triggered event (like `swipe` or `pan`), and as the lookup field when calling `Manager.get()`.
 `pointers` is the amount of touches/pointers the recognizer requires. 
 
-##### .enable()` and `.disable()
+##### .enable() and .disable()
 When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default.
 
 ##### .join(recognizer) and .separate(recognizer)
