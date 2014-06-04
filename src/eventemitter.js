@@ -63,15 +63,18 @@ EventEmitter.prototype = {
 
     /**
      * @param {String} event
-     * @param {Object} data
+     * @param {Object} [data]
      */
     emit : function(event, data) {
+        data = data || {};
         data.type = event;
 
-        data.preventDefault = data.srcEvent.preventDefault;
-        data.stopPropagation = data.srcEvent.stopPropagation;
-        data.stopImmediatePropagation = data.srcEvent.stopImmediatePropagation;
-        data.target = data.srcEvent.target;
+        var srcEvent = data.srcEvent;
+        if(srcEvent) {
+            data.preventDefault = srcEvent.preventDefault;
+            data.stopPropagation = srcEvent.stopPropagation;
+            data.target = srcEvent.target;
+        }
 
         each(this.eventHandlers[event] || [], function(handler) {
             handler.call(this, data);

@@ -23,45 +23,49 @@ test("fnBind", function() {
     }, context)(123);
 });
 
-function testInherit() {
-    function Base() {
-        this.name = true;
-    }
-
-    function Child() {
-        Base.call(this);
-    }
-
-    inherit(Child, Base, {
-        newMethod: function () {
+(function() {
+    function testInherit() {
+        function Base() {
+            this.name = true;
         }
+
+        function Child() {
+            Base.call(this);
+        }
+
+        inherit(Child, Base, {
+            newMethod: function () {
+            }
+        });
+
+        var inst = new Child();
+
+        ok(inst.name == true, 'child has extended from base');
+        ok(inst.newMethod, 'child has a new method');
+        ok(Child.prototype.newMethod, 'child has a new prototype method');
+        ok(inst instanceof Child, 'is instanceof Child');
+        ok(inst instanceof Base, 'is instanceof Base');
+        ok(inst._super === Base.prototype, '_super is ref to prototype of Base');
+    }
+
+    test("Inherit objects", testInherit);
+
+    test("Inherit objects without Object.create", function () {
+        Object.backupCreate = Object.create;
+        Object.create = null;
+        testInherit();
+        Object.create = Object.backupCreate;
     });
-
-    var inst = new Child();
-
-    ok(inst.name == true, 'child has extended from base');
-    ok(inst.newMethod, 'child has a new method');
-    ok(Child.prototype.newMethod, 'child has a new prototype method');
-    ok(inst instanceof Child, 'is instanceof Child');
-    ok(inst instanceof Base, 'is instanceof Base');
-    ok(inst._super === Base.prototype, '_super is ref to prototype of Base');
-}
-
-test("Inherit objects", testInherit);
-test("Inherit objects without Object.create", function () {
-    Object.create = null;
-    testInherit();
-});
-
-
-test("toArray", function () {
-    ok(_.isArray(toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray(toArray([true, true])), 'array stays an array');
-});
+})();
 
 test("round", function () {
     ok(round(1.2) === 1, "round 1.2 to 1");
     ok(round(1.51) === 2, "round 1.51 to 2");
+});
+
+test("toArray", function () {
+    ok(_.isArray(toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
+    ok(_.isArray(toArray([true, true])), 'array stays an array');
 });
 
 test("inArray", function () {
@@ -159,23 +163,17 @@ test('merge', function() {
 });
 
 test('test add/removeEventListener', function() {
-    function handleEvent(ev) {
+    function handleEvent() {
         ok(true, "triggered event");
-    }
-
-    function trigger() {
-        var event1 = new Event('testEvent1');
-        window.dispatchEvent(event1);
-
-        var event2 = new Event('testEvent2');
-        window.dispatchEvent(event2);
     }
 
     expect(2);
 
     addEventListeners(window, "testEvent1  testEvent2  ", handleEvent);
-    trigger();
+    triggerEvent(window, 'testEvent1');
+    triggerEvent(window, 'testEvent2');
 
     removeEventListeners(window, " testEvent1 testEvent2 ", handleEvent);
-    trigger();
+    triggerEvent(window, 'testEvent1');
+    triggerEvent(window, 'testEvent2');
 });
