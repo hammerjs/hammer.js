@@ -81,9 +81,8 @@ test("inArray", function () {
     ], "22", "id") === -1, "not found by key and return -1");
 });
 
-test("inStr", function () {
-    ok(inStr("hammer", "h"), "found in string");
-    ok(!inStr("hammer", "d"), "not found in string");
+test("strSplit", function () {
+    deepEqual(strSplit(" a  b  c d   "), ['a','b','c','d'], "str split valid");
 });
 
 test("uniqueArray", function () {

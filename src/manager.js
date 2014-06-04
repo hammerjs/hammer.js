@@ -13,12 +13,7 @@ function Manager(element, options) {
     // try and set the touch-action value by getting it from the element
     // this allows to let it be pre-configured it most cases.
     options = options || {};
-    if(!options.touchAction) {
-        var touchActionValue = prefixed(element.style, 'touchAction');
-        if(touchActionValue) {
-            options.touchAction = touchActionValue;
-        }
-    }
+    options.touchAction = options.touchAction || element.style.touchAction;
 
     this.options = merge(options, Hammer.defaults);
 

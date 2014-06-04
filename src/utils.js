@@ -103,10 +103,8 @@ function bindFn(fn, context) {
  * @param {Function} handler
  */
 function addEventListeners(element, types, handler) {
-    each(types.split(/\s+/), function(type) {
-        if(type) {
-            element.addEventListener(type, handler, false);
-        }
+    each(strSplit(types), function(type) {
+        element.addEventListener(type, handler, false);
     });
 }
 
@@ -117,21 +115,9 @@ function addEventListeners(element, types, handler) {
  * @param {Function} handler
  */
 function removeEventListeners(element, types, handler) {
-    each(types.split(/\s+/), function(type) {
-        if(type) {
-            element.removeEventListener(type, handler, false);
-        }
+    each(strSplit(types), function(type) {
+        element.removeEventListener(type, handler, false);
     });
-}
-
-/**
- * find in string
- * @param {String} str
- * @param {String} find
- * @returns {boolean}
- */
-function inStr(str, find) {
-    return str.indexOf(find) > -1;
 }
 
 /**
@@ -141,6 +127,15 @@ function inStr(str, find) {
  */
 function round(number) {
     return Math.round(number);
+}
+
+/**
+ * split string on whitespace
+ * @param {String} str
+ * @returns {Array} words
+ */
+function strSplit(str) {
+    return str.trim().split(/\s+/g);
 }
 
 /**

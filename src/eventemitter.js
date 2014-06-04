@@ -15,7 +15,7 @@ EventEmitter.prototype = {
      */
     on: function(event, handler) {
         var store = this.eventHandlers;
-        var events = event.split(/\s+/);
+        var events = strSplit(event);
         var ev;
         for(var i = 0; i < events.length; i++) {
             ev = events[i];
@@ -35,7 +35,7 @@ EventEmitter.prototype = {
      */
     off: function(event, handler) {
         var store = this.eventHandlers;
-        var events = event.split(/\s+/);
+        var events = strSplit(event);
         var ev;
         for(var i = 0; i < events.length; i++) {
             ev = events[i];

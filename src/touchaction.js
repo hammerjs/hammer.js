@@ -17,15 +17,13 @@ TouchAction.prototype = {
         }
     },
 
-    update: function(inputData) {
-        var event = inputData.srcEvent;
-        var touchAction = this.value;
+    update: function(input) {
+        var event = input.srcEvent;
 
         // not needed for native and mouse input
         if(NATIVE_TOUCH_ACTION ||
-            touchAction == 'auto' ||
-            inputData.pointerType == INPUT_TYPE_MOUSE ||
-            inputData.eventType === INPUT_START) {
+            input.pointerType == INPUT_TYPE_MOUSE ||
+            input.eventType === INPUT_START) {
             return;
         }
 
@@ -36,32 +34,45 @@ TouchAction.prototype = {
             return;
         }
 
-        var isPanY = inStr(touchAction, 'pan-y');
-        var isPanX = inStr(touchAction, 'pan-x');
-        var isNone = inStr(touchAction, 'none');
-
-        var direction = inputData.direction;
-
-        // 'none', just prevent anything
-        if(isNone) {
-            this.preventDefault(event);
+        // split the value, and try to run a value-handler
+        var actions = strSplit(this.value);
+        var values = this.values;
+        for(var i = 0; i < actions.length; i++) {
+            if(values[actions[i]]) {
+                values[actions[i]](input, event);
+            }
         }
+    },
 
-        // 'pan-y' or 'pan-x'
-        if(inputData.eventType === INPUT_MOVE && (
-            (isPanY && (direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT)) ||
-            (isPanX && (direction == DIRECTION_UP || direction == DIRECTION_DOWN)
-        ))) {
-            this.preventDefault(event);
-        }
+    /**
+     * touch-action value methods
+     */
+    values: {
+        none: function(input, event) {
+            this.prevent(event);
+        },
+        'pan-y': preventDirection(DIRECTION_HORIZONTAL),
+        'pan-x': preventDirection(DIRECTION_VERTICAL),
+        'pan-negative-y': preventDirection(DIRECTION_UP),
+        'pan-negative-x': preventDirection(DIRECTION_LEFT),
+        'pan-positive-y': preventDirection(DIRECTION_DOWN),
+        'pan-positive-x': preventDirection(DIRECTION_RIGHT)
     },
 
     /**
      * call preventDefault and save in the session
      * @param {Object} event
      */
-    preventDefault: function(event) {
+    prevent: function(event) {
         this.manager.session.prevented = true;
         event.preventDefault();
     }
 };
+
+function preventDirection(direction) {
+    return function(input, event) {
+        if(input.direction & direction) {
+            this.prevent(event);
+        }
+    }
+}
