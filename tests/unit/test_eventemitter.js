@@ -39,6 +39,7 @@ test("test the eventemitter", function() {
     // destroy
     ee.destroy();
 
+    ee.emit("testEvent3"); // doenst trigger a thing
     ee.emit("testEvent2"); // doenst trigger a thing
     ee.emit("testEvent1"); // doenst trigger a thing
 });

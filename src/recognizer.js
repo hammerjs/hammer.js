@@ -116,6 +116,13 @@ Recognizer.prototype = {
     reset: function() { },
 
     /**
+     * un-register the recognizer from the manager
+     */
+    remove: function() {
+        this.manager.remove(this);
+    },
+
+    /**
      * get a usable string, used as event postfix
      * @returns {string} state
      */

@@ -74,9 +74,9 @@ Create a Manager. This sets up the input event listeners, and sets the touch-act
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
  it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
 
-##### .enable(), .disable() and .destroy()
-When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events
-and input events and makes the manager unusable.
+##### .enable(), .disable(), .stop() and .destroy()
+When disabled, it doesn't send any input events to the recognizers. When you call `stop`, the current session will be 
+stopped immediately. Calling the destroy method unbinds all events and input events and makes the manager unusable.
 
 ##### .add(recognizer), .get(recognizer) and .remove(recognizer)
 Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being 
@@ -95,8 +95,9 @@ for most of the recognizers, but all have the property `event` and `pointers`,
 `event` is used as the triggered event (like `swipe` or `pan`), and as the lookup field when calling `Manager.get()`.
 `pointers` is the amount of touches/pointers the recognizer requires. 
 
-##### .enable() and .disable()
-When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default.
+##### .enable(), .disable() and remove()
+When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. When calling
+ `remove`, it will be un-registered from the manager.
 
 ##### .join(recognizer) and .separate(recognizer)
 Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a 
