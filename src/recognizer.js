@@ -113,7 +113,8 @@ Recognizer.prototype = {
     /**
      * called when the gesture isn't being updated by the manager update cycle
      */
-    reset: function() { },
+    reset: function() {
+    },
 
     /**
      * un-register the recognizer from the manager

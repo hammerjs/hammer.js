@@ -74,5 +74,5 @@ function preventDirection(direction) {
         if(input.direction & direction) {
             this.prevent(event);
         }
-    }
+    };
 }
