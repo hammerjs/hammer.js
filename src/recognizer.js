@@ -15,14 +15,6 @@ function Recognizer(options) {
     this.simultaneous = [];
 }
 
-Recognizer.STATE_POSSIBLE = STATE_POSSIBLE;
-Recognizer.STATE_BEGAN = STATE_BEGAN;
-Recognizer.STATE_CHANGED = STATE_CHANGED;
-Recognizer.STATE_ENDED = STATE_ENDED;
-Recognizer.STATE_RECOGNIZED = STATE_RECOGNIZED;
-Recognizer.STATE_CANCELLED = STATE_CANCELLED;
-Recognizer.STATE_FAILED = STATE_FAILED;
-
 Recognizer.prototype = {
     /**
      * enable the recognizer
@@ -69,7 +61,7 @@ Recognizer.prototype = {
     split: function(recognizer) {
         recognizer = this.manager.get(recognizer);
         var index = inArray(this.simultaneous, recognizer);
-        if(~index) {
+        if(index > -1) {
             this.simultaneous.splice(index, 1);
             recognizer.split(this);
         }
@@ -77,13 +69,12 @@ Recognizer.prototype = {
     },
 
     /**
-     * if this recognizer joins the other
+     * if this recognizer is joining the other
      * @param {Recognizer} recognizer
      * @returns {boolean}
      */
     joins: function(recognizer) {
-        recognizer = this.manager.get(recognizer);
-        return inArray(this.simultaneous, recognizer) > -1;
+        return inArray(this.simultaneous, this.manager.get(recognizer)) > -1;
     },
 
     /**
@@ -112,9 +103,10 @@ Recognizer.prototype = {
 
     /**
      * called when the gesture isn't being updated by the manager update cycle
+     * can be used by Recognizers that extend from this object
+     * @virtual
      */
-    reset: function() {
-    },
+    reset: function() { },
 
     /**
      * un-register the recognizer from the manager
@@ -125,7 +117,7 @@ Recognizer.prototype = {
 
     /**
      * get a usable string, used as event postfix
-     * @returns {string} state
+     * @returns {String} state
      */
     stateStr: function() {
         var state = this.state;

@@ -15,6 +15,7 @@ inherit(AttrRecognizer, Recognizer, {
     /**
      * used to check if it the recognizer receives valid input, like input.distance > 10
      * this should be overwritten
+     * @virtual
      * @param {Object} input
      * @returns {Boolean} recognized
      */
@@ -40,8 +41,6 @@ inherit(AttrRecognizer, Recognizer, {
             }
             return state | STATE_CHANGED;
         }
-
-        // maybe the next cycle
         return STATE_FAILED;
     }
 });

@@ -35,11 +35,11 @@ TouchAction.prototype = {
         }
 
         // split the value, and try to run a value-handler
-        var actions = strSplit(this.value);
+        var actions = splitStr(this.value);
         var values = this.values;
         for(var i = 0; i < actions.length; i++) {
             if(values[actions[i]]) {
-                values[actions[i]](input, event);
+                values[actions[i]].call(this, input, event);
             }
         }
     },
@@ -51,12 +51,16 @@ TouchAction.prototype = {
         none: function(input, event) {
             this.prevent(event);
         },
-        'pan-y': preventDirection(DIRECTION_HORIZONTAL),
-        'pan-x': preventDirection(DIRECTION_VERTICAL),
-        'pan-negative-y': preventDirection(DIRECTION_UP),
-        'pan-negative-x': preventDirection(DIRECTION_LEFT),
-        'pan-positive-y': preventDirection(DIRECTION_DOWN),
-        'pan-positive-x': preventDirection(DIRECTION_RIGHT)
+        'pan-y': function(input, event) {
+            if(input.direction & DIRECTION_HORIZONTAL) {
+                this.prevent(event);
+            }
+        },
+        'pan-x': function(input, event) {
+            if(input.direction & DIRECTION_VERTICAL) {
+                this.prevent(event);
+            }
+        }
     },
 
     /**
@@ -68,11 +72,3 @@ TouchAction.prototype = {
         event.preventDefault();
     }
 };
-
-function preventDirection(direction) {
-    return function(input, event) {
-        if(input.direction & direction) {
-            this.prevent(event);
-        }
-    };
-}

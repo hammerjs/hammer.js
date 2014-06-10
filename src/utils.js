@@ -1,4 +1,4 @@
-var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms'];
+var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
 
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
@@ -103,7 +103,7 @@ function bindFn(fn, context) {
  * @param {Function} handler
  */
 function addEventListeners(element, types, handler) {
-    each(strSplit(types), function(type) {
+    each(splitStr(types), function(type) {
         element.addEventListener(type, handler, false);
     });
 }
@@ -115,7 +115,7 @@ function addEventListeners(element, types, handler) {
  * @param {Function} handler
  */
 function removeEventListeners(element, types, handler) {
-    each(strSplit(types), function(type) {
+    each(splitStr(types), function(type) {
         element.removeEventListener(type, handler, false);
     });
 }
@@ -134,7 +134,7 @@ function round(number) {
  * @param {String} str
  * @returns {Array} words
  */
-function strSplit(str) {
+function splitStr(str) {
     return str.trim().split(/\s+/g);
 }
 
@@ -177,26 +177,47 @@ function uniqueArray(src, key) {
     var results = [];
     var keys = [];
 
-    each(src, function(item) {
-        if(inArray(keys, item[key]) < 0) {
-            results.push(item);
+    for(var i = 0, len = src.length; i < len; i++) {
+        if(inArray(keys, src[i][key]) < 0) {
+            results.push(src[i]);
         }
-        keys.push(item[key]);
-    });
+        keys.push(src[i][key]);
+    }
     return results;
 }
 
 /**
- * get/set (vendor prefixed) property. allows css properties, properties and functions.
+ * get/set (vendor prefixed) property value. allows css properties, properties and functions.
  * if you want to call a function by this function, you should pass an array with arguments (see .apply())
  * else, a bindFn function will be returned
  *
  * @param {Object} obj
  * @param {String} property
  * @param {*} [val]
- * @returns {*}
+ * @returns {*|Undefined} val
  */
 function prefixed(obj, property, val) {
+    var prop = prefixedName(obj, property);
+    if(!prop) {
+        return;
+    } else if(typeof obj[prop] == TYPE_FUNCTION) {
+        if(typeof val == TYPE_UNDEFINED) {
+            return bindFn(obj[prop], obj);
+        }
+        return obj[prop].apply(obj, val);
+    } else if(val) {
+        obj[prop] = val;
+    }
+    return obj[prop];
+}
+
+/**
+ * get the prefixed property
+ * @param {Object} obj
+ * @param {String} property
+ * @returns {String|Undefined} prefixed
+ */
+function prefixedName(obj, property) {
     var prefix, prop, i;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
@@ -204,19 +225,9 @@ function prefixed(obj, property, val) {
         prefix = VENDOR_PREFIXES[i];
         prop = (prefix) ? prefix + camelProp : property;
 
-        if(!(prop in obj)) {
-            continue;
-        } else if(typeof obj[prop] == TYPE_FUNCTION) {
-            if(typeof val == TYPE_UNDEFINED) {
-                return bindFn(obj[prop], obj);
-            } else {
-                return obj[prop].apply(obj, val);
-            }
-        } else if(val) {
-            obj[prop] = val;
-            return val;
-        } else {
-            return obj[prop];
+        if(prop in obj) {
+            return prop;
         }
     }
+    return;
 }

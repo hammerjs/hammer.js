@@ -26,6 +26,7 @@ function Manager(element, options) {
 }
 
 Hammer.defaults = {
+    // default value is used when a touch-action isn't defined on the element style
     touchAction: 'pan-y',
     recognizers: [
         [RotationRecognizer],

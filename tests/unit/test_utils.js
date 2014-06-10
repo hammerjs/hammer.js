@@ -81,8 +81,8 @@ test("inArray", function () {
     ], "22", "id") === -1, "not found by key and return -1");
 });
 
-test("strSplit", function () {
-    deepEqual(strSplit(" a  b  c d   "), ['a','b','c','d'], "str split valid");
+test("splitStr", function () {
+    deepEqual(splitStr(" a  b  c d   "), ['a','b','c','d'], "str split valid");
 });
 
 test("uniqueArray", function () {

@@ -3,50 +3,46 @@
  * @constructor
  */
 function EventEmitter() {
+    /**
+     * contains handlers, grouped by event name
+     * 'swipe': [Function, Function, ...],
+     * 'hold': [Function, Function, ...]
+     * @type {{}}
+     */
     this.eventHandlers = {};
 }
 
 EventEmitter.prototype = {
     /**
      * bind event
-     * @param {String} event
+     * @param {String} events
      * @param {Function} handler
-     * @returns {EventEmitter}
+     * @returns {EventEmitter} this
      */
-    on: function(event, handler) {
+    on: function(events, handler) {
         var store = this.eventHandlers;
-        var events = strSplit(event);
-        var ev;
-        for(var i = 0; i < events.length; i++) {
-            ev = events[i];
-            if(ev) {
-                store[ev] = store[ev] || [];
-                store[ev].push(handler);
-            }
-        }
+        each(splitStr(events), function(event) {
+            store[event] = store[event] || [];
+            store[event].push(handler);
+        });
         return this;
     },
 
     /**
      * unbind event, leave emit blank to remove all handlers
-     * @param {String} event
+     * @param {String} events
      * @param {Function} [handler]
-     * @returns {EventEmitter}
+     * @returns {EventEmitter} this
      */
-    off: function(event, handler) {
+    off: function(events, handler) {
         var store = this.eventHandlers;
-        var events = strSplit(event);
-        var ev;
-        for(var i = 0; i < events.length; i++) {
-            ev = events[i];
-            if(store[ev]) {
-                if(!handler) {
-                    delete store[ev];
-                } else {
-                    store[ev].splice(inArray(store[ev], handler), 1);
-                }
+        each(splitStr(events), function(event) {
+            if(!handler) {
+                delete store[event];
+            } else {
+                store[event].splice(inArray(store[event], handler), 1);
             }
-        }
+        });
         return this;
     },
 
@@ -54,11 +50,7 @@ EventEmitter.prototype = {
      * unbinds all events
      */
     destroy: function() {
-        each(this.eventHandlers, function(handlers, event) {
-            this.off(event);
-        }, this);
-
-        this.eventHandlers = [];
+        this.eventHandlers = {};
     },
 
     /**
@@ -66,18 +58,35 @@ EventEmitter.prototype = {
      * @param {Object} [data]
      */
     emit : function(event, data) {
+        var session = this.session;
+        var handlers = this.eventHandlers[event];
+
+        // if the event has no handlers, or the stopImmediate is called
+        if(!handlers && (!session || !session.stopImmediate)) {
+            return;
+        }
+
         data = data || {};
         data.type = event;
 
         var srcEvent = data.srcEvent;
         if(srcEvent) {
-            data.preventDefault = srcEvent.preventDefault;
-            data.stopPropagation = srcEvent.stopPropagation;
             data.target = srcEvent.target;
+
+            data.preventDefault = function() {
+                srcEvent.preventDefault();
+            };
+            data.stopPropagation = function() {
+                srcEvent.stopPropagation();
+            };
+            data.stopImmediatePropagation = function() {
+                session.stopImmediate = true;
+                srcEvent.stopImmediatePropagation();
+            };
         }
 
-        each(this.eventHandlers[event] || [], function(handler) {
-            handler.call(this, data);
-        }, this);
+        for(var i = 0; i < handlers.length; i++) {
+            handlers[i](data);
+        }
     }
 };

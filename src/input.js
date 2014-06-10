@@ -179,12 +179,12 @@ function simpleCloneInputData(input) {
     // make a simple copy of the pointers because we will get a reference if we don't
     // we only need clientXY for the calculations
     var pointers = [];
-    each(input.pointers, function(pointer) {
+    for(var i = 0; i < input.pointers; i++) {
         pointers.push({
-            clientX: round(pointer.clientX),
-            clientY: round(pointer.clientY)
+            clientX: round(input.pointers[i].clientX),
+            clientY: round(input.pointers[i].clientY)
         });
-    });
+    }
 
     return {
         timeStamp: input.srcEvent.timeStamp,

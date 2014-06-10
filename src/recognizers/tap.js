@@ -3,10 +3,10 @@ function TapRecognizer() {
 
     // previous time and center,
     // used for tap counting
-    this._pTime = false;
-    this._pCenter = false;
+    this.pTime = false;
+    this.pCenter = false;
 
-    this._count = 0;
+    this.count = 0;
 }
 
 inherit(TapRecognizer, Recognizer, {
@@ -30,30 +30,28 @@ inherit(TapRecognizer, Recognizer, {
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
         if(input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
-            var validInterval = this._pTime ? (input.timeStamp - this._pTime < options.interval) : true;
-            var validMultiTap = !this._pCenter || getDistance(this._pCenter, input.center) < options.movementBetween;
+            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+            var validMultiTap = !this.pCenter || getDistance(this._pCenter, input.center) < options.movementBetween;
 
-            this._pTime = input.timeStamp;
-            this._pCenter = input.center;
+            this.pTime = input.timeStamp;
+            this.pCenter = input.center;
 
             if(!validMultiTap || !validInterval) {
-                this._count = 1;
+                this.count = 1;
             } else {
-                this._count += 1;
+                this.count += 1;
             }
 
-            var validTapCount = (this._count % options.taps === 0);
+            var validTapCount = (this.count % options.taps === 0);
             if(validTapCount) {
                 return STATE_RECOGNIZED;
             }
         }
-
-        // maybe next round
         return STATE_FAILED;
     },
 
     emit: function(input) {
-        input.tapCount = this._count;
+        input.tapCount = this.count;
         this.manager.emit(this.options.event, input);
     }
 });

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title></title>
+    <style>
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
+            background: silver;
+        }
+
+        .panes {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pane {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="panes wrapper">
+        <div class="pane" style="background: #8DA35D;">
+            <div class="panes">
+                <div class="pane" style="background: rgba(0,0,0,0);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.2);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.4);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.6);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.8);"></div>
+            </div>
+        </div>
+        <div class="pane" style="background: #5279AD;">
+            <div class="panes">
+                <div class="pane" style="background: rgba(0,0,0,0);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.2);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.4);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.6);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.8);"></div>
+            </div>
+        </div>
+        <div class="pane" style="background: #FF8533;">
+            <div class="panes">
+                <div class="pane" style="background: rgba(0,0,0,0);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.2);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.4);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.6);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.8);"></div>
+            </div>
+        </div>
+        <div class="pane" style="background: #FFF0D8;">
+            <div class="panes">
+                <div class="pane" style="background: rgba(0,0,0,0);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.2);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.4);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.6);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.8);"></div>
+            </div>
+        </div>
+        <div class="pane" style="background: #0088CC;">
+            <div class="panes">
+                <div class="pane" style="background: rgba(0,0,0,0);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.2);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.4);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.6);"></div>
+                <div class="pane" style="background: rgba(0,0,0,.8);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../hammer.js"></script>
+    <script>
+
+        var reqAnimationFrame = (function() {
+            return Hammer.prefixed(window, "requestAnimationFrame") || function(callback) {
+                setTimeout(callback, 1000 / 60);
+            }
+        })();
+
+
+        /**
+         * Carousel
+         * @param container
+         * @param direction
+         * @constructor
+         */
+        function HammerCarousel(container, direction) {
+            this.container = container;
+            this.direction = direction;
+
+            this.panes = Array.prototype.slice.call(this.container.children, 0);
+            this.containerSize = this.container[(direction & Hammer.DIRECTION_HORIZONTAL) ? 'offsetWidth' : 'offsetHeight'];
+
+            this.currentIndex = 0;
+
+            // setup hammer with a pan and swipe recognizer
+            this.hammer = new Hammer.Manager(this.container, {
+                touchAction: (direction & Hammer.DIRECTION_HORIZONTAL) ? "pan-y" : "pan-x"
+            });
+            this.hammer.add(new Hammer.Swipe());
+            this.hammer.add(new Hammer.Pan({ direction: this.direction })).join('swipe');
+
+            this.hammer.on("swipe", Hammer.bindFn(this.onSwipe, this));
+            this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
+
+            this.show(0);
+        }
+
+
+        HammerCarousel.prototype = {
+            _curPos : [],
+            _aniTimer: null,
+
+            _tickPos : [],
+            _ticking : false,
+
+            render: function(positions, force) {
+                var self = this;
+                var panes = this.panes;
+
+                function update() {
+                    self._ticking = false;
+                    for (var i = 0; i < self._tickPos.length; i++) {
+                        var translate;
+                        if(self.direction & Hammer.DIRECTION_HORIZONTAL) {
+                            translate = 'translate(' + self._tickPos[i] + 'px, 0)';
+                        } else {
+                            translate = 'translate(0, ' + self._tickPos[i] + 'px)'
+                        }
+
+                        panes[i].style.transform = translate;
+                        panes[i].style.webkitTransform = translate;
+                    }
+                    self._curPos = self._tickPos.slice();
+                    self._tickPos = [];
+                }
+
+                this._tickPos = positions;
+                if(!this._ticking && !force) {
+                    reqAnimationFrame(update);
+                } else if(force) {
+                    update();
+                }
+            },
+
+            animate: function(to, duration) {
+                var self = this;
+                var from = this._curPos.slice();
+                var end = +new Date() + duration;
+
+                var step = function() {
+                    var current = Date.now(),
+                        remaining = end - current;
+
+                    if(remaining <= 1) {
+                        self.render(to, true);
+                    } else {
+                        var rate = 1 - remaining/duration;
+                        var animPos = [];
+
+                        for (var i = 0; i < from.length; i++) {
+                            animPos[i] = from[i] + ((to[i] - from[i]) * rate);
+                        }
+
+                        self.render(animPos, true);
+                        reqAnimationFrame(step);
+                    }
+                };
+                step();
+
+                this.render(to);
+            },
+
+            /**
+             * show a pane
+             * @param {Number} showIndex
+             * @param {Number} [percent] percentage visible
+             * @param {Boolean} [duration]
+             */
+            show: function(showIndex, percent, duration){
+                var paneIndex;
+
+                showIndex = Math.max(0, Math.min(showIndex, this.panes.length - 1));
+                percent = percent || 0;
+
+                var positions = [];
+                for (paneIndex = 0; paneIndex < this.panes.length; paneIndex++) {
+                    positions.push((this.containerSize / 100) * (((paneIndex - showIndex) * 100) + percent));
+                }
+
+                if(duration) {
+                    this.animate(positions, duration);
+                } else {
+                    this.render(positions);
+                }
+                this.currentIndex = showIndex;
+            },
+
+            /**
+             * handle swipe
+             * @param {Object} ev
+             */
+            onSwipe : function (ev) {
+                var index = (ev.direction & (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP)) ? 1 : -1;
+                this.show(this.currentIndex + index, 0, 150);
+
+                this.parentHammer && this.parentHammer.disable();
+
+                ev.stopImmediatePropagation();
+                ev.stopPropagation();
+            },
+
+            /**
+             * handle pan
+             * @param {Object} ev
+             */
+            onPan : function (ev) {
+                var delta = (this.direction & Hammer.DIRECTION_HORIZONTAL) ? ev.deltaX : ev.deltaY;
+                var percent = (100 / this.containerSize) * delta;
+                var duration = 0;
+
+                this.parentHammer && this.parentHammer.disable();
+
+                if (ev.type == 'panend' || ev.type == 'pancancel') {
+                    if (Math.abs(percent) > 20 && ev.type == 'panend') {
+                        this.currentIndex += (percent < 0) ? 1 : -1;
+                    }
+                    percent = 0;
+                    duration = 150;
+                    this.parentHammer && this.parentHammer.enable();
+                }
+
+                this.show(this.currentIndex, percent, duration);
+            }
+        };
+
+        var outer = new HammerCarousel(document.querySelector(".panes.wrapper"), Hammer.DIRECTION_HORIZONTAL);
+
+        console.log(document.querySelectorAll(".pane .panes"));
+        Hammer.each(document.querySelectorAll(".pane .panes"), function(container) {
+            var inner = new HammerCarousel(container, Hammer.DIRECTION_VERTICAL);
+            inner.parentHammer = outer.hammer;
+        });
+
+    </script>
+
+</body>
+</html>

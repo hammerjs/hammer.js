@@ -18,6 +18,14 @@ Hammer.INPUT_MOVE = INPUT_MOVE;
 Hammer.INPUT_END = INPUT_END;
 Hammer.INPUT_CANCEL = INPUT_CANCEL;
 
+Hammer.STATE_POSSIBLE = STATE_POSSIBLE;
+Hammer.STATE_BEGAN = STATE_BEGAN;
+Hammer.STATE_CHANGED = STATE_CHANGED;
+Hammer.STATE_ENDED = STATE_ENDED;
+Hammer.STATE_RECOGNIZED = STATE_RECOGNIZED;
+Hammer.STATE_CANCELLED = STATE_CANCELLED;
+Hammer.STATE_FAILED = STATE_FAILED;
+
 Hammer.DIRECTION_NONE = DIRECTION_NONE;
 Hammer.DIRECTION_LEFT = DIRECTION_LEFT;
 Hammer.DIRECTION_RIGHT = DIRECTION_RIGHT;
@@ -36,6 +44,7 @@ Hammer.extend = extend;
 Hammer.inherit = inherit;
 Hammer.bindFn = bindFn;
 Hammer.prefixed = prefixed;
+Hammer.prefixedName = prefixedName;
 
 // export to amd/module/window
 if(typeof define == TYPE_FUNCTION && define.amd) {
