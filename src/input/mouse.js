@@ -13,8 +13,8 @@ var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
  * @constructor
  */
 function MouseInput() {
-    this._elEvents = MOUSE_ELEMENT_EVENTS;
-    this._winEvents = MOUSE_WINDOW_EVENTS;
+    this.elEvents = MOUSE_ELEMENT_EVENTS;
+    this.winEvents = MOUSE_WINDOW_EVENTS;
 
     this._allow = true; // used by Input.TouchMouse to disable mouse events
     this._pressed = false; // mousedown state

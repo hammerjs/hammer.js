@@ -60,28 +60,31 @@ function extend(dest, src) {
 /**
  * simple class inheritance
  * @param {Function} child
- * @param {Function} parent
+ * @param {Function} base
  * @param {Object} [properties]
  */
-function inherit(child, parent, properties) {
+function inherit(child, base, properties) {
+    var baseP = base.prototype,
+        childP;
+
     // object create is supported since IE9
     if(Object.create) {
-        child.prototype = Object.create(parent.prototype);
-        child.prototype.constructor = child;
+        childP = child.prototype = Object.create(baseP);
+        childP.constructor = child;
     } else {
         extend(child, parent);
         var Inherited = function() {
             this.constructor = child;
         };
-        Inherited.prototype = parent.prototype;
-        child.prototype = new Inherited();
+        Inherited.prototype = baseP;
+        childP = child.prototype = new Inherited();
     }
 
     if(properties) {
-        extend(child.prototype, properties);
+        extend(childP, properties);
     }
 
-    child.prototype._super = parent.prototype;
+    childP._super = baseP;
 }
 
 /**

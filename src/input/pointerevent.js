@@ -25,8 +25,8 @@ if(window.MSPointerEvent) {
  * @constructor
  */
 function PointerEventInput() {
-    this._elEvents = POINTER_ELEMENT_EVENTS;
-    this._winEvents = POINTER_WINDOW_EVENTS;
+    this.elEvents = POINTER_ELEMENT_EVENTS;
+    this.winEvents = POINTER_WINDOW_EVENTS;
 
     Input.apply(this, arguments);
 

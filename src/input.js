@@ -41,14 +41,14 @@ function Input(manager, callback) {
     // used for internal events
     this._handler = bindFn(this.handler, this);
 
-    this._elEvents && addEventListeners(this.manager.element, this._elEvents, this._handler);
-    this._winEvents && addEventListeners(window, this._winEvents, this._handler);
+    this.elEvents && addEventListeners(this.manager.element, this.elEvents, this._handler);
+    this.winEvents && addEventListeners(window, this.winEvents, this._handler);
 }
 
 Input.prototype = {
     destroy: function() {
-        this._elEvents && removeEventListeners(this.manager.element, this._elEvents, this._handler);
-        this._winEvents && removeEventListeners(window, this._winEvents, this._handler);
+        this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this._handler);
+        this.winEvents && removeEventListeners(window, this.winEvents, this._handler);
     }
 };
 
