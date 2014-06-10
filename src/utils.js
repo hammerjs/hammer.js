@@ -201,7 +201,7 @@ function uniqueArray(src, key) {
 function prefixed(obj, property, val) {
     var prop = prefixedName(obj, property);
     if(!prop) {
-        return;
+        return undefined;
     } else if(typeof obj[prop] == TYPE_FUNCTION) {
         if(typeof val == TYPE_UNDEFINED) {
             return bindFn(obj[prop], obj);
@@ -231,5 +231,5 @@ function prefixedName(obj, property) {
             return prop;
         }
     }
-    return;
+    return undefined;
 }
