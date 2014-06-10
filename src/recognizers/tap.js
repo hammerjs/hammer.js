@@ -31,7 +31,7 @@ inherit(TapRecognizer, Recognizer, {
         // and we've reached an end event, so a tap is possible
         if(input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
             var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-            var validMultiTap = !this.pCenter || getDistance(this._pCenter, input.center) < options.movementBetween;
+            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.movementBetween;
 
             this.pTime = input.timeStamp;
             this.pCenter = input.center;

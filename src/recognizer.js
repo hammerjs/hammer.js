@@ -82,6 +82,7 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
+
         if(!this.enabled) {
             this.reset();
             this.state = STATE_FAILED;

@@ -139,7 +139,7 @@ function splitStr(str) {
 }
 
 /**
- * find if a array contains the object using indexOf or a simple polyfill
+ * find if a array contains the object using indexOf or a simple polyFill
  * @param {Array} src
  * @param {String} find
  * @param {String} [findByKey]
@@ -168,20 +168,19 @@ function toArray(obj) {
 }
 
 /**
- * unique array based on a key (like 'id')
- * @param {Array} src
+ * unique array with objects based on a key (like 'id')
+ * @param {Array} src [{id:1},{id:2},{id:1}]
  * @param {String} key
- * @returns {Array}
+ * @returns {Array} [{id:1},{id:2}]
  */
 function uniqueArray(src, key) {
     var results = [];
-    var keys = [];
-
+    var values = [];
     for(var i = 0, len = src.length; i < len; i++) {
-        if(inArray(keys, src[i][key]) < 0) {
+        if(inArray(values, src[i][key]) < 0) {
             results.push(src[i]);
         }
-        keys.push(src[i][key]);
+        values[i] = src[i][key];
     }
     return results;
 }

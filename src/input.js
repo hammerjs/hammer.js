@@ -1,6 +1,6 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
-var SUPPORT_POINTER_EVENTS = typeof prefixed(window, 'PointerEvent') !== TYPE_UNDEFINED;
+var SUPPORT_POINTER_EVENTS = typeof prefixedName(window, 'PointerEvent') != TYPE_UNDEFINED;
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
@@ -179,11 +179,11 @@ function simpleCloneInputData(input) {
     // make a simple copy of the pointers because we will get a reference if we don't
     // we only need clientXY for the calculations
     var pointers = [];
-    for(var i = 0; i < input.pointers; i++) {
-        pointers.push({
+    for(var i = 0; i < input.pointers.length; i++) {
+        pointers[i] = {
             clientX: round(input.pointers[i].clientX),
             clientY: round(input.pointers[i].clientY)
-        });
+        };
     }
 
     return {
@@ -211,8 +211,8 @@ function getCenter(pointers) {
         };
     }
 
-    var i = 0, x = 0, y = 0;
-    for(; i < pointersLength; i++) {
+    var x = 0, y = 0;
+    for(var i = 0; i < pointersLength; i++) {
         x += pointers[i].clientX;
         y += pointers[i].clientY;
     }
