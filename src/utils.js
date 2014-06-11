@@ -124,6 +124,23 @@ function removeEventListeners(element, types, handler) {
 }
 
 /**
+ * find if a node is in the given parent
+ * @method hasParent
+ * @param {HTMLElement} node
+ * @param {HTMLElement} parent
+ * @return {Boolean} found
+ */
+function hasParent(node, parent) {
+    while(node) {
+        if(node == parent) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+    return false;
+}
+
+/**
  * simple wrapper around math.round
  * @param {Number} number
  * @returns {number}

@@ -93,17 +93,18 @@ function inputHandler(manager, eventType, input) {
     input.eventType = eventType;
 
     // compute scale, rotation etc
-    computeInputData(manager.session, input);
+    computeInputData(manager, input);
 
     manager.recognize(input);
 }
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
- * @param {Object} session
+ * @param {Object} manager
  * @param {Object} input
  */
-function computeInputData(session, input) {
+function computeInputData(manager, input) {
+    var session = manager.session;
     var pointers = input.pointers;
     var pointersLength = pointers.length;
 
@@ -138,6 +139,13 @@ function computeInputData(session, input) {
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+
+    // find the correct target
+    var target = manager.element;
+    if(hasParent(input.srcEvent.target, target)) {
+        target = input.srcEvent.target;
+    }
+    input.target = target;
 
     computeIntervalInputData(session, input);
 }
