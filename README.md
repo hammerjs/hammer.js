@@ -65,6 +65,15 @@ and Hammer would run, but it might fail if you dont call `ev.preventDefault()` s
 vertical scrolling, and prevents horizontal scrolling so gestures are being recognized. The `none`
 value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating. 
 
+Below is a list of the available parameters for touch-action.
+
+| Property  | Gestures              | Description           |
+|-----------|-----------------------|-----------------------|
+| `auto`    | tap, doubletap        | The browser will add the normal touch interactions which it supports. |
+| `none`	| pinch, rotate         | No touch interactions will be handled by the browser. |
+| `pan-x`	| panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
+| `pan-y`	| panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
+
 ## API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there! 
 
