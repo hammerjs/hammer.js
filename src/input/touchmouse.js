@@ -27,14 +27,14 @@ inherit(TouchMouseInput, Input, {
         // when we're in a touch event, so  block all upcoming mouse events
         // most mobile browser also emit mouseevents, right after touchstart
         if(isTouch) {
-            this.mouse._allow = false;
-        } else if(isMouse && !this.mouse._allow) {
+            this.mouse.allow = false;
+        } else if(isMouse && !this.mouse.allow) {
             return;
         }
 
         // reset the allowMouse when we're done
         if(inputEvent & INPUT_END) {
-            this.mouse._allow = true;
+            this.mouse.allow = true;
         }
 
         this.callback(manager, inputEvent, inputData);

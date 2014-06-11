@@ -16,8 +16,8 @@ function MouseInput() {
     this.elEvents = MOUSE_ELEMENT_EVENTS;
     this.winEvents = MOUSE_WINDOW_EVENTS;
 
-    this._allow = true; // used by Input.TouchMouse to disable mouse events
-    this._pressed = false; // mousedown state
+    this.allow = true; // used by Input.TouchMouse to disable mouse events
+    this.pressed = false; // mousedown state
 
     Input.apply(this, arguments);
 }
@@ -30,21 +30,21 @@ inherit(MouseInput, Input, {
     handler: function(ev) {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
-        // @todo check ev.button, IE has different indexes
+        // on start we want to have the left mouse button down
         if(eventType & INPUT_START && ev.button === 0) {
-            this._pressed = true;
+            this.pressed = true;
         }
 
-        // mousebutton must be down, and mouse events are allowed (because of the TouchMouse input)
-        if(!this._pressed || !this._allow) {
+        // mouse must be down, and mouse events are allowed (see the TouchMouse input)
+        if(!this.pressed || !this.allow) {
             return;
         }
 
         var target = ev.relatedTarget || ev.toElement;
-        var mouseout = (eventType & INPUT_CANCEL && (!target || target.nodeName == 'HTML'));
+        var mouseOut = (eventType & INPUT_CANCEL && (!target || target.nodeName == 'HTML'));
 
-        if(eventType & INPUT_END || mouseout) {
-            this._pressed = false;
+        if(eventType & INPUT_END || mouseOut) {
+            this.pressed = false;
         }
 
         this.callback(this.manager, eventType, {

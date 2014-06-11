@@ -30,7 +30,7 @@ function PointerEventInput() {
 
     Input.apply(this, arguments);
 
-    this._store = (this.manager.session._pointerEvents = []);
+    this.store = (this.manager.session.pointerEvents = []);
 }
 
 inherit(PointerEventInput, Input, {
@@ -39,14 +39,14 @@ inherit(PointerEventInput, Input, {
      * @param {Object} ev
      */
     handler: function(ev) {
-        var store = this._store;
+        var store = this.store;
         var element = this.manager.element;
         var removePointer = false;
 
         var eventType = POINTER_INPUT_MAP[ev.type.toLowerCase().replace('ms', '')];
 
-        // @todo check mousebutton
-        if(eventType & INPUT_START) {
+        // start and mouse must be down
+        if(eventType & INPUT_START && ev.button === 0) {
             store.push(ev);
             prefixed(element, 'setPointerCapture', [ev.pointerId]);
         } else if(eventType & (INPUT_END | INPUT_CANCEL)) {
