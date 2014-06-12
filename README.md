@@ -1,4 +1,4 @@
-# Hammer.js [![Build Status](http://img.shields.io/travis/EightMedia/hammer.js.svg)](https://travis-ci.org/EightMedia/hammer.js/)
+# Hammer.js [![Build Status](https://travis-ci.org/EightMedia/hammer.js.svg?branch=master)](https://travis-ci.org/EightMedia/hammer.js/)
 
 #### A javascript library for multi-touch gestures
 
