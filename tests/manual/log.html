@@ -5,13 +5,11 @@
     <title></title>
 </head>
 <body style="-webkit-user-select:none;">
-    <div style="background: silver;  padding: 30px; -webkit-user-select: none; touch-action: pan-x" id="hit">
+    <div style="background: silver;  padding: 30px; -webkit-user-select: none; -ms-touch-select: none;" id="hit">
         <span id="target" style="display: block; background: blue; height: 60px;"></span>
     </div>
 
     <pre id="log"></pre>
-
-    <p>In the console is a log of all triggered events</p>
 
     <script src="../../hammer.min.js"></script>
     <script>
@@ -37,7 +35,7 @@
         var log = document.querySelector("#log");
 
         var mc = new Hammer.Manager(el, {
-            //touchAction: 'none'
+            touchAction: 'pan-y'
         });
 
         mc.add(new Hammer.Swipe());

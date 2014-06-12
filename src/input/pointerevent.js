@@ -40,15 +40,20 @@ inherit(PointerEventInput, Input, {
      */
     handler: function(ev) {
         var store = this.store;
-        var element = this.manager.element;
         var removePointer = false;
 
-        var eventType = POINTER_INPUT_MAP[ev.type.toLowerCase().replace('ms', '')];
+        var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
+        var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+
+        // out of the window?
+        var target = ev.relatedTarget || ev.toElement || ev.target;
+        if(eventTypeNormalized == 'pointerout' && target.nodeName != 'HTML') {
+            eventType = INPUT_MOVE;
+        }
 
         // start and mouse must be down
         if(eventType & INPUT_START && ev.button === 0) {
             store.push(ev);
-            prefixed(element, 'setPointerCapture', [ev.pointerId]);
         } else if(eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         }
@@ -73,7 +78,6 @@ inherit(PointerEventInput, Input, {
         if(removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
-            prefixed(element, 'releasePointerCapture', [ev.pointerId]);
         }
     },
 });
