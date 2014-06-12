@@ -1,4 +1,4 @@
-# Hammer.js, 2.0 development
+# Hammer.js, 2.0 development [![Build Status](https://travis-ci.org/EightMedia/hammer.js.svg?branch=2.0.x)](https://travis-ci.org/EightMedia/hammer.js/)
 
 **Completely rewritten, with reusable gesture recognizers, and better support for the recent mobile browsers by
 making use of the `touch-action` css property when possible. Also support for multiple Hammer instances the same
