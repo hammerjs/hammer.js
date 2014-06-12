@@ -78,7 +78,7 @@ var Event = Hammer.event = {
         var self = this;
         var opts = { mouseButtons: [0] };
 
-        if (options) {
+        if(options) {
             opts = Utils.extend(opts, options);
         }
 
@@ -94,8 +94,7 @@ var Event = Hammer.event = {
                 return;
 
             // mousebutton must be down
-            } else if(isMouse && eventType == EVENT_START
-                      && Utils.inArray(opts.mouseButtons, ev.button) !== false) {
+            } else if(isMouse && eventType == EVENT_START && Utils.inArray(opts.mouseButtons, ev.button) !== false) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer && eventType == EVENT_START) {
