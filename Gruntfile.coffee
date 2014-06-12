@@ -18,7 +18,6 @@ module.exports = (grunt) ->
           'src/utils.js'
           'src/input.js'
           'src/input/*.js'
-          'src/domeventemitter.js'
           'src/eventemitter.js'
           'src/touchaction.js'
           'src/manager.js'
