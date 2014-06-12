@@ -61,7 +61,7 @@ Hammer.Instance = function(element, options) {
         } else if(ev.eventType == EVENT_TOUCH) {
             Detection.detect(ev);
         }
-    });
+    }, this.options);
 
     /**
      * keep a list of user event handlers which needs to be removed when calling 'dispose'
