@@ -52,8 +52,7 @@
         mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
 
         function logGesture(ev) {
-            console.log(ev.direction);
-            log.textContent = ev.type +"\n"+ ev.toDirString();
+            log.textContent = ev.toDirString() +"\n\n"+ (ev.gesture && ev.gesture.toDirString());
         }
 
     </script>

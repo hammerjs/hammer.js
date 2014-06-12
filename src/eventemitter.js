@@ -2,7 +2,10 @@
  * Event emitter
  * @constructor
  */
-function EventEmitter() {
+function EventEmitter(element, domEvents) {
+    this.element = element;
+    this.domEvents = domEvents;
+
     /**
      * contains handlers, grouped by event name
      * 'swipe': [Function, Function, ...],
@@ -47,46 +50,49 @@ EventEmitter.prototype = {
     },
 
     /**
-     * unbinds all events
+     * removes all events handlers
+     * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
         this.eventHandlers = {};
     },
 
     /**
+     * emit event to the listeners
      * @param {String} event
-     * @param {Object} [data]
+     * @param {Object} data
      */
     emit : function(event, data) {
-        var session = this.session;
-        var handlers = this.eventHandlers[event];
+        // we also want to trigger dom events
+        if(this.domEvents) {
+            triggerDomEvent(event, data);
+        }
 
-        // if the event has no handlers, or the stopImmediate is called
-        if(!handlers && (!session || !session.stopImmediate)) {
+        // no handlers, so skip it all
+        var handlers = this.eventHandlers[event];
+        if(!handlers || !handlers.length) {
             return;
         }
 
-        data = data || {};
         data.type = event;
-
-        var srcEvent = data.srcEvent;
-        if(srcEvent) {
-            data.target = srcEvent.target;
-
-            data.preventDefault = function() {
-                srcEvent.preventDefault();
-            };
-            data.stopPropagation = function() {
-                srcEvent.stopPropagation();
-            };
-            data.stopImmediatePropagation = function() {
-                session.stopImmediate = true;
-                srcEvent.stopImmediatePropagation();
-            };
-        }
+        data.preventDefault = function() {
+            data.srcEvent.preventDefault();
+        };
 
         for(var i = 0; i < handlers.length; i++) {
             handlers[i](data);
         }
     }
 };
+
+/**
+ * trigger dom event
+ * @param {String} event
+ * @param {Object} data
+ */
+function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
+}

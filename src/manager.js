@@ -5,10 +5,7 @@
  * @constructor
  */
 function Manager(element, options) {
-    EventEmitter.call(this);
-
     this.enabled = true;
-    this.element = element;
 
     // try and set the touch-action value by getting it from the element
     // this allows to let it be pre-configured it most cases.
@@ -16,6 +13,8 @@ function Manager(element, options) {
     options.touchAction = options.touchAction || element.style.touchAction;
 
     this.options = merge(options, Hammer.defaults);
+
+    EventEmitter.call(this, element, this.options.domEvents);
 
     this.session = {};
     this.recognizers = [];
@@ -26,8 +25,12 @@ function Manager(element, options) {
 }
 
 Hammer.defaults = {
+    // when set to true, dom events are being triggered.
+    // but this is slower, so disabled by default.
+    domEvents: false,
     // default value is used when a touch-action isn't defined on the element style
     touchAction: 'pan-y',
+    // default setup when calling Hammer()
     recognizers: [
         [RotationRecognizer],
         [PinchRecognizer, null, 'rotate'],
