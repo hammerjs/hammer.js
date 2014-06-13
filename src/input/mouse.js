@@ -42,7 +42,6 @@ inherit(MouseInput, Input, {
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement;
-        console.log(target.nodeName);
         if(ev.type == 'mouseout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }
