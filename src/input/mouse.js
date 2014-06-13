@@ -40,10 +40,14 @@ inherit(MouseInput, Input, {
             return;
         }
 
+        // out of the window?
         var target = ev.relatedTarget || ev.toElement;
-        var mouseOut = (eventType & INPUT_CANCEL && (!target || target.nodeName == 'HTML'));
+        console.log(target.nodeName);
+        if(ev.type == 'mouseout' && target.nodeName != 'HTML') {
+            eventType = INPUT_MOVE;
+        }
 
-        if(eventType & INPUT_END || mouseOut) {
+        if(eventType & (INPUT_END | INPUT_CANCEL)) {
             this.pressed = false;
         }
 
