@@ -9,7 +9,7 @@
         <span id="target" style="display: block; background: blue; height: 60px;"></span>
     </div>
 
-    <pre id="log"></pre>
+    <pre id="log" style="overflow:hidden;"></pre>
 
     <script src="../../hammer.min.js"></script>
     <script>
@@ -39,7 +39,7 @@
         });
 
         mc.add(new Hammer.Swipe());
-        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).join('swipe');
+        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith('swipe');
 
         mc.add(new Hammer.Rotation());
         mc.add(new Hammer.Pinch());
