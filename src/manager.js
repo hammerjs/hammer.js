@@ -45,23 +45,10 @@ Hammer.defaults = {
 inherit(Manager, EventEmitter, {
     /**
      * enable recognizing
+     * @param {Boolean} enable
      */
-    enable: function() {
-        this.enabled = true;
-    },
-
-    /**
-     * disable recognizing
-     */
-    disable: function() {
-        this.enabled = false;
-    },
-
-    /**
-     * stop the current session
-     */
-    stop: function() {
-        this.session.stopped = true;
+    enable: function(enable) {
+        this.enabled = enable;
     },
 
     /**
@@ -70,10 +57,6 @@ inherit(Manager, EventEmitter, {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        if(!this.enabled || this.session.stopped) {
-            return;
-        }
-
         this.touchAction.update(inputData);
 
         var recognizer;
@@ -81,7 +64,7 @@ inherit(Manager, EventEmitter, {
         var curRecognizer = session.curRecognizer;
 
         // reset when the last recognizer is done, or this is a new session
-        if(!curRecognizer || (curRecognizer && curRecognizer & STATE_RECOGNIZED)) {
+        if(!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
@@ -89,7 +72,7 @@ inherit(Manager, EventEmitter, {
         for(var i = 0; i < this.recognizers.length; i++) {
             recognizer = this.recognizers[i];
 
-            if(!curRecognizer || recognizer == curRecognizer || recognizer.joins(curRecognizer)) {
+            if(!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();

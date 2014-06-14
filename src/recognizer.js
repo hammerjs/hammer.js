@@ -7,27 +7,23 @@ var STATE_CANCELLED = 16;
 var STATE_FAILED = 32;
 
 function Recognizer(options) {
+    this.id = uniqueId();
+
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
 
     this.state = STATE_POSSIBLE;
     this.enabled = true;
-    this.simultaneous = [];
+    this.simultaneous = {};
 }
 
 Recognizer.prototype = {
     /**
      * enable the recognizer
+     * @param {Boolean} enable
      */
-    enable: function() {
-        this.enabled = true;
-    },
-
-    /**
-     * disable the recognizer
-     */
-    disable: function() {
-        this.enabled = false;
+    enable: function(enable) {
+        this.enabled = enable;
     },
 
     /**
@@ -39,42 +35,40 @@ Recognizer.prototype = {
     },
 
     /**
-     * run together with an other recognizer
-     * it adds the current manager also to the other recognizer
-     * @param {Recognizer} recognizer
+     * recognize simultaneous with an other recognizer.
+     * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
-    join: function(recognizer) {
-        recognizer = this.manager.get(recognizer);
-        if(!this.joins(recognizer)) {
-            this.simultaneous.push(recognizer);
-            recognizer.join(this);
+    recognizeWith: function(otherRecognizer) {
+        otherRecognizer = this.manager.get(otherRecognizer);
+        if(!this.canRecognizeWith(otherRecognizer)) {
+            this.simultaneous[otherRecognizer.id] = otherRecognizer;
+            otherRecognizer.recognizeWith(this);
         }
         return this;
     },
 
     /**
-     * split joined recognizers
-     * @param {Recognizer} recognizer
+     * don't recognize simultaneous with an other recognizer.
+     * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
-    split: function(recognizer) {
-        recognizer = this.manager.get(recognizer);
-        var index = inArray(this.simultaneous, recognizer);
-        if(index > -1) {
-            this.simultaneous.splice(index, 1);
-            recognizer.split(this);
+    dontRecognizeWith: function(otherRecognizer) {
+        otherRecognizer = this.manager.get(otherRecognizer);
+        if(this.canRecognizeWith(otherRecognizer)) {
+            delete this.simultaneous[otherRecognizer.id];
+            otherRecognizer.dontRecognizeWith(this);
         }
         return this;
     },
 
     /**
-     * if this recognizer is joining the other
-     * @param {Recognizer} recognizer
-     * @returns {boolean}
+     * if the recognizer can recognize simultaneous with an other recognizer
+     * @param {Recognizer} otherRecognizer
+     * @returns {Boolean}
      */
-    joins: function(recognizer) {
-        return inArray(this.simultaneous, this.manager.get(recognizer)) > -1;
+    canRecognizeWith: function(otherRecognizer) {
+        return !!this.simultaneous[otherRecognizer.id];
     },
 
     /**
@@ -82,7 +76,6 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-
         if(!this.enabled) {
             this.reset();
             this.state = STATE_FAILED;
@@ -108,13 +101,6 @@ Recognizer.prototype = {
      * @virtual
      */
     reset: function() { },
-
-    /**
-     * un-register the recognizer from the manager
-     */
-    remove: function() {
-        this.manager.remove(this);
-    },
 
     /**
      * get a usable string, used as event postfix

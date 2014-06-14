@@ -11,13 +11,13 @@ function Hammer(element, options) {
     /**
      * setup recognizers
      * the defauls.recognizers contains an array like this;
-     * [ RecognizerClass, options, join ],
+     * [ RecognizerClass, options, recognizeWith ],
      * [ .... ]
      */
     each(manager.options.recognizers, function(item) {
         var recognizer = manager.add(new (item[0])(item[1]));
         if(item[2]) {
-            recognizer.join(item[2]);
+            recognizer.recognizeWith(item[2]);
         }
     });
 

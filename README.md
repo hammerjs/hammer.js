@@ -43,7 +43,7 @@ below does this with the pinch and rotate recognizers, which will improve usabil
 ````js
 var pinch = mc.add(new Hammer.Pinch());
 var rotate = mc.add(new Hammer.Rotation());
-pinch.join(rotate); // run the pinch-rotation recognizers simultaneous
+pinch.recognizeWith(rotate); // recognize the pinch-rotation recognizers simultaneous
 ````
 
 Now Hammer is able to run pinch and rotate the same time. You can also separate them with the `separate()` method on
@@ -55,15 +55,15 @@ handle touches on an element. It improves the detection and experience of the ge
 scrolling of the page without any JavaScript has to be executed, which can be too late in some cases.
 
 Hammer makes use of this property, and uses a fallback when needed. It is important to set this property to the
-correct value when creating an instance. By default it tries to read the value from the element, 
+correct value when creating an instance. By default it tries to read the value from the element,
 or it is set to `pan-y` when not found.
 
-The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `auto` it doesnt prevent any scrolling, 
+The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `auto` it doesnt prevent any scrolling,
 and Hammer would run, but it might fail if you dont call `ev.preventDefault()` soon enough. This is not recommended!
 
-`pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows 
+`pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows
 vertical scrolling, and prevents horizontal scrolling so gestures are being recognized. The `none`
-value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating. 
+value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating.
 
 Below is a list of the available parameters for touch-action.
 
@@ -75,7 +75,7 @@ Below is a list of the available parameters for touch-action.
 | `pan-y`	| panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
 
 ## API
-The source code is well documented (JSDoc), you could figure out the rest of the API over there! 
+The source code is well documented (JSDoc), you could figure out the rest of the API over there!
 
 ### Hammer.Manager(element, [options])
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
@@ -83,37 +83,36 @@ Create a Manager. This sets up the input event listeners, and sets the touch-act
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
  it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
 
-##### .enable(), .disable(), .stop() and .destroy()
-When disabled, it doesn't send any input events to the recognizers. When you call `stop`, the current session will be 
-stopped immediately. Calling the destroy method unbinds all events and input events and makes the manager unusable.
+##### .enable(Boolean) and .destroy()
+When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events and 
+input events and makes the manager unusable.
 
-##### .add(recognizer), .get(recognizer) and .remove(recognizer)
-Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being 
+##### .add(Recognizer), .get(Recognizer) and .remove(Recognizer)
+Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being
 executed. Just like the `get` method, it returns the added `Recognizer` instance.
 
 The `get` and `remove` methods takes the event name (from a recognizer) or a recognizer instance as an argument.
 
 ##### .on(events, handler) and .off(events, [handler])
-Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated 
+Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
 
 ### Hammer.Recognizer(options)
-Every Recognizer extends from this class. Below are the only methods you would need. The options are different 
+Every Recognizer extends from this class. Below are the only methods you would need. The options are different
 for most of the recognizers, but all have the property `event` and `pointers`,
 
 `event` is used as the triggered event (like `swipe` or `pan`), and as the lookup field when calling `Manager.get()`.
-`pointers` is the amount of touches/pointers the recognizer requires. 
+`pointers` is the amount of touches/pointers the recognizer requires.
 
-##### .enable(), .disable() and remove()
-When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. When calling
- `remove`, it will be un-registered from the manager.
+##### .enable(Boolean)
+When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. 
 
-##### .join(recognizer) and .separate(recognizer)
-Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a 
-swipe at the end, or a pinch with the ability to rotate the target as well. It accepts a recognizer's event name or 
+##### .recognizeWith(Recognizer) and .dontRecognizeWith(Recognizer)
+Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a
+swipe at the end, or a pinch with the ability to rotate the target as well. It accepts a recognizer's event name or
 it's instance as an argument.
 
 ## Further notes
-Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at 
-[Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands. It's recommended to listen to 
+Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at
+[Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands. It's recommended to listen to
 [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.

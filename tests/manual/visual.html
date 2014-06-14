@@ -47,7 +47,7 @@
 <div id="hit" style="background: red; width: 150px; height: 150px;"></div>
 
 
-<script src="../../hammer.min.js"></script>
+<script src="../../hammer.js"></script>
 <script>
 
     var reqAnimationFrame = (function () {
@@ -70,11 +70,11 @@
     });
 
     mc.add(new Hammer.Pan({ threshold: 0, pointers: 2 }));
-    mc.add(new Hammer.Rotation({ threshold: 0 })).join('pan');
-    mc.add(new Hammer.Pinch({ threshold: 0 })).join('pan').join('rotate');
+    mc.add(new Hammer.Rotation({ threshold: 0 })).recognizeWith('pan');
+    mc.add(new Hammer.Pinch({ threshold: 0 })).recognizeWith('pan').recognizeWith('rotate');
 
     mc.add(new Hammer.Swipe());
-    mc.add(new Hammer.Pan({ threshold: 0 })).join('swipe');
+    var singlePan = mc.add(new Hammer.Pan({ threshold: 0 })).recognizeWith('swipe');
 
     mc.add(new Hammer.Tap({ event: 'tripletap', taps: 3 }));
     mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
@@ -108,7 +108,7 @@
 
     function updateElementTransform() {
         var value = [
-                    'translate(' + transform.translate.x + 'px, ' + transform.translate.y + 'px)',
+                    'translate3d(' + transform.translate.x + 'px, ' + transform.translate.y + 'px, 0)',
                     'scale(' + transform.scale + ', ' + transform.scale + ')',
                     'rotate(' + transform.rotate + 'deg)'];
 
@@ -120,6 +120,7 @@
     function requestElementUpdate() {
         if(!ticking) {
             reqAnimationFrame(updateElementTransform);
+            ticking = true;
         }
     }
 

@@ -12,7 +12,7 @@ function EventEmitter(element, domEvents) {
      * 'hold': [Function, Function, ...]
      * @type {{}}
      */
-    this.eventHandlers = {};
+    this.handlers = {};
 }
 
 EventEmitter.prototype = {
@@ -23,10 +23,10 @@ EventEmitter.prototype = {
      * @returns {EventEmitter} this
      */
     on: function(events, handler) {
-        var store = this.eventHandlers;
+        var handlers = this.handlers;
         each(splitStr(events), function(event) {
-            store[event] = store[event] || [];
-            store[event].push(handler);
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
         });
         return this;
     },
@@ -38,12 +38,12 @@ EventEmitter.prototype = {
      * @returns {EventEmitter} this
      */
     off: function(events, handler) {
-        var store = this.eventHandlers;
+        var handlers = this.handlers;
         each(splitStr(events), function(event) {
             if(!handler) {
-                delete store[event];
+                delete handlers[event];
             } else {
-                store[event].splice(inArray(store[event], handler), 1);
+                handlers[event].splice(inArray(handlers[event], handler), 1);
             }
         });
         return this;
@@ -54,7 +54,7 @@ EventEmitter.prototype = {
      * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        this.eventHandlers = {};
+        this.handlers = {};
     },
 
     /**
@@ -69,7 +69,7 @@ EventEmitter.prototype = {
         }
 
         // no handlers, so skip it all
-        var handlers = this.eventHandlers[event];
+        var handlers = this.handlers[event];
         if(!handlers || !handlers.length) {
             return;
         }

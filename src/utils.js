@@ -33,12 +33,7 @@ function each(obj, iterator, context) {
  * @returns {Object} dest
  */
 function merge(dest, src) {
-    for(var key in src) {
-        if(src.hasOwnProperty(key) && typeof dest[key] == TYPE_UNDEFINED) {
-            dest[key] = src[key];
-        }
-    }
-    return dest;
+    return extend(dest, src, true);
 }
 
 /**
@@ -46,11 +41,12 @@ function merge(dest, src) {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
+ * @param {Boolean} [merge]
  * @returns {Object} dest
  */
-function extend(dest, src) {
+function extend(dest, src, merge) {
     for(var key in src) {
-        if(src.hasOwnProperty(key)) {
+        if(src.hasOwnProperty(key) && (!merge || (merge && typeof dest[key] == TYPE_UNDEFINED))) {
             dest[key] = src[key];
         }
     }
@@ -249,4 +245,13 @@ function prefixedName(obj, property) {
         }
     }
     return undefined;
+}
+
+/**
+ * get a unique id
+ * @returns {number} uniqueId
+ */
+var _uniqueId = 1;
+function uniqueId() {
+    return _uniqueId++;
 }

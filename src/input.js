@@ -35,20 +35,25 @@ var PROPS_CLIENT_XY = ['clientX', 'clientY'];
  * @constructor
  */
 function Input(manager, callback) {
+    var self = this;
     this.manager = manager;
     this.callback = callback;
 
     // used for internal events
-    this._handler = bindFn(this.handler, this);
+    this.domHandler = function(ev) {
+        if(self.manager.enabled) {
+            self.handler(ev);
+        }
+    };
 
-    this.elEvents && addEventListeners(this.manager.element, this.elEvents, this._handler);
-    this.winEvents && addEventListeners(window, this.winEvents, this._handler);
+    this.elEvents && addEventListeners(this.manager.element, this.elEvents, this.domHandler);
+    this.winEvents && addEventListeners(window, this.winEvents, this.domHandler);
 }
 
 Input.prototype = {
     destroy: function() {
-        this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this._handler);
-        this.winEvents && removeEventListeners(window, this.winEvents, this._handler);
+        this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
+        this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);
     }
 };
 
