@@ -3,7 +3,7 @@ test('hammer shortcut', function()
 {
     var mc = Hammer(document.querySelector('#qunit-fixture'));
     ok(mc instanceof Manager, "returns an instance of Manager");
-    ok(mc.touchAction.value == Hammer.defaults.touchAction, "set the default touchAction");
+    ok(mc.touchAction.actions[0] == Hammer.defaults.touchAction, "set the default touchAction");
     mc.destroy();
 });
 
@@ -13,7 +13,7 @@ test('hammer shortcut with options', function()
         touchAction: 'none'
     });
     ok(mc instanceof Manager, "returns an instance of Manager");
-    ok(mc.touchAction.value == 'none', "set the default touchAction");
+    ok(mc.touchAction.actions[0] == 'none', "set the default touchAction");
     mc.destroy();
 });
 
@@ -23,7 +23,7 @@ test('hammer shortcut without options and get touchAction from the style attribu
     el.style.touchAction = 'pan-x';
     var mc = Hammer(el);
     ok(mc instanceof Manager, "returns an instance of Manager");
-    ok(mc.touchAction.value == 'pan-x', "get the touchAction from the style");
+    ok(mc.touchAction.actions[0] == 'pan-x', "get the touchAction from the style");
     mc.destroy();
 
     el.style.touchAction = '';
