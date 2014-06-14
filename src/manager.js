@@ -52,11 +52,22 @@ inherit(Manager, EventEmitter, {
     },
 
     /**
+     * stop recognizing for this session
+     */
+    stop: function() {
+        this.session.stopped = true;
+    },
+
+    /**
      * run the recognizers!
      * this is called by the inputHandler function
      * @param {Object} inputData
      */
     recognize: function(inputData) {
+        if(this.session.stopped) {
+            return;
+        }
+
         this.touchAction.update(inputData);
 
         var recognizer;
