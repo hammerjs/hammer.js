@@ -39,7 +39,8 @@ function Input(manager, callback) {
     this.manager = manager;
     this.callback = callback;
 
-    // used for internal events
+    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+    // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
         if(self.manager.enabled) {
             self.handler(ev);
@@ -128,16 +129,14 @@ function computeInputData(manager, input) {
     var firstInput = session.firstInput;
     var firstMultiple = session.firstMultiple;
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
-
     var center = getCenter(pointers);
-
-    input.timeStamp = input.srcEvent.timeStamp;
 
     input.center = center;
     input.angle = getAngle(offsetCenter, center);
     input.distance = getDistance(offsetCenter, center);
     input.direction = getDirection(offsetCenter, center);
 
+    input.timeStamp = input.srcEvent.timeStamp;
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;

@@ -202,31 +202,6 @@ function uniqueArray(src, key) {
 }
 
 /**
- * get/set (vendor prefixed) property value. allows css properties, properties and functions.
- * if you want to call a function by this function, you should pass an array with arguments (see .apply())
- * else, a bindFn function will be returned
- *
- * @param {Object} obj
- * @param {String} property
- * @param {*} [val]
- * @returns {*|Undefined} val
- */
-function prefixed(obj, property, val) {
-    var prop = prefixedName(obj, property);
-    if(!prop) {
-        return undefined;
-    } else if(typeof obj[prop] == TYPE_FUNCTION) {
-        if(typeof val == TYPE_UNDEFINED) {
-            return bindFn(obj[prop], obj);
-        }
-        return obj[prop].apply(obj, val);
-    } else if(val) {
-        obj[prop] = val;
-    }
-    return obj[prop];
-}
-
-/**
  * get the prefixed property
  * @param {Object} obj
  * @param {String} property

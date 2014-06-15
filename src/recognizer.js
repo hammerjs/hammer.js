@@ -12,7 +12,7 @@ var STATE_FAILED = 32;
  * @param {Object} options
  * All recognizers must use the property 'event' which is used to trigger the events and getting the recognizers
  * by name. Also, a function called 'shouldRecognize' can be set which must return a boolean to enable/disable
- * the recognizer. *
+ * the recognizer.
  */
 function Recognizer(options) {
     this.id = uniqueId();

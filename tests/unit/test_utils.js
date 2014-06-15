@@ -1,17 +1,9 @@
 module("utils");
 test("get/set prefixed util", function () {
-    ok(_.isUndefined(prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+    ok(_.isUndefined(prefixedName(window, 'FakeProperty')), 'non existent property returns undefined');
 
     window.webkitFakeProperty = 1337;
-    ok(prefixed(window, 'FakeProperty') == 1337, 'existent prefixed property returns the value');
-    ok(prefixed(window, 'FakeProperty', 123) == 123, 'set the value of the prefixed property');
-
-    window.webkitFakeProperty = function (val) {
-        return val;
-    };
-    ok(prefixed(window, 'FakeProperty', ['test123']) == 'test123', 'execute existent prefixed function and return the value');
-
-    ok(_.isFunction(prefixed(window, 'FakeProperty')), 'return an fnBind function');
+    ok(prefixedName(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
 });
 
 test("fnBind", function() {

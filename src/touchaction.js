@@ -1,8 +1,5 @@
-/**
- * set and mimic the touch-action property
- */
-
-var NATIVE_TOUCH_ACTION = typeof prefixed(document.body.style, 'touchAction') !== TYPE_UNDEFINED;
+var PREFIXED_TOUCH_ACTION = prefixedName(document.body.style, 'touchAction');
+var NATIVE_TOUCH_ACTION = typeof PREFIXED_TOUCH_ACTION !== TYPE_UNDEFINED;
 
 function TouchAction(manager) {
     this.manager = manager;
@@ -11,13 +8,14 @@ function TouchAction(manager) {
 TouchAction.prototype = {
     set: function(value) {
         if(NATIVE_TOUCH_ACTION) {
-            prefixed(this.manager.element.style, 'touchAction', value);
+            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+            return;
         }
         this.actions = splitStr(value.toLowerCase());
     },
 
     update: function(input) {
-        // not needed for native and mouse input
+        // not needed with native support for the touchAction property
         if(NATIVE_TOUCH_ACTION) {
             return;
         }
@@ -25,14 +23,12 @@ TouchAction.prototype = {
         var srcEvent = input.srcEvent;
         var direction = input.direction;
 
-        // if the touch action did prevented once this session,
-        // prevent it every time
+        // if the touch action did prevented once this session
         if(this.manager.session.prevented) {
             srcEvent.preventDefault();
             return;
         }
 
-        // split the value, and try to run a value-handler
         for(var i = 0; i < this.actions.length; i++) {
             switch(this.actions[i]) {
                 case 'none':
@@ -53,11 +49,11 @@ TouchAction.prototype = {
     },
 
     /**
-     * call preventDefault and save in the session
-     * @param {Object} event
+     * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
+     * @param {Object} srcEvent
      */
-    prevent: function(event) {
+    prevent: function(srcEvent) {
         this.manager.session.prevented = true;
-        event.preventDefault();
+        srcEvent.preventDefault();
     }
 };

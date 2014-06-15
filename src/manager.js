@@ -7,9 +7,10 @@
 function Manager(element, options) {
     this.enabled = true;
 
-    // try and set the touch-action value by getting it from the element
-    // this allows to let it be pre-configured it most cases.
     options = options || {};
+
+    // get the touchAction style property value when option.touchAction is empty
+    // otherwise the defaults.touchAction value is used
     options.touchAction = options.touchAction || element.style.touchAction;
 
     this.options = merge(options, Hammer.defaults);
@@ -26,7 +27,7 @@ function Manager(element, options) {
 
 Hammer.defaults = {
     // when set to true, dom events are being triggered.
-    // but this is slower, so disabled by default.
+    // but this is slower and unused by simple implementations, so disabled by default.
     domEvents: false,
     // default value is used when a touch-action isn't defined on the element style
     touchAction: 'pan-y',
@@ -60,7 +61,7 @@ inherit(Manager, EventEmitter, {
 
     /**
      * run the recognizers!
-     * this is called by the inputHandler function
+     * called by the inputHandler function
      * @param {Object} inputData
      */
     recognize: function(inputData) {
@@ -97,7 +98,6 @@ inherit(Manager, EventEmitter, {
 
     /**
      * get a recognizer by its event name.
-     * if you pass an Recognizer object it just will be returned
      * @param {Recognizer|String} recognizer
      * @returns {Recognizer|Null}
      */
@@ -127,7 +127,7 @@ inherit(Manager, EventEmitter, {
     },
 
     /**
-     * remove a recognizer by name or manager
+     * remove a recognizer by name or instance
      * @param {Recognizer|String} recognizer
      * @returns {Recognizer|Null}
      */
@@ -145,8 +145,7 @@ inherit(Manager, EventEmitter, {
     },
 
     /**
-     * destroy the manager
-     * unbinds all events
+     * destroy the manager and unbinds all events
      */
     destroy: function() {
         this._super.destroy.call(this);

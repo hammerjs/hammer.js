@@ -1,18 +1,3 @@
-Hammer.EventEmitter = EventEmitter;
-Hammer.Manager = Manager;
-Hammer.Input = Input;
-Hammer.TouchAction = TouchAction;
-
-Hammer.Recognizer = Recognizer;
-Hammer.AttrRecognizer = AttrRecognizer;
-Hammer.Tap = TapRecognizer;
-Hammer.Pan = PanRecognizer;
-Hammer.Swipe = SwipeRecognizer;
-Hammer.Pinch = PinchRecognizer;
-Hammer.Rotation = RotationRecognizer;
-Hammer.Hold = HoldRecognizer;
-
-// constants
 Hammer.INPUT_START = INPUT_START;
 Hammer.INPUT_MOVE = INPUT_MOVE;
 Hammer.INPUT_END = INPUT_END;
@@ -34,7 +19,20 @@ Hammer.DIRECTION_DOWN = DIRECTION_DOWN;
 Hammer.DIRECTION_HORIZONTAL = DIRECTION_HORIZONTAL;
 Hammer.DIRECTION_VERTICAL = DIRECTION_VERTICAL;
 
-// expose some useful/over-writable methods
+Hammer.EventEmitter = EventEmitter;
+Hammer.Manager = Manager;
+Hammer.Input = Input;
+Hammer.TouchAction = TouchAction;
+
+Hammer.Recognizer = Recognizer;
+Hammer.AttrRecognizer = AttrRecognizer;
+Hammer.Tap = TapRecognizer;
+Hammer.Pan = PanRecognizer;
+Hammer.Swipe = SwipeRecognizer;
+Hammer.Pinch = PinchRecognizer;
+Hammer.Rotation = RotationRecognizer;
+Hammer.Hold = HoldRecognizer;
+
 Hammer.on = addEventListeners;
 Hammer.off = removeEventListeners;
 Hammer.each = each;
@@ -42,10 +40,8 @@ Hammer.merge = merge;
 Hammer.extend = extend;
 Hammer.inherit = inherit;
 Hammer.bindFn = bindFn;
-Hammer.prefixed = prefixed;
 Hammer.prefixedName = prefixedName;
 
-// export to amd/module/window
 if(typeof define == TYPE_FUNCTION && define.amd) {
     define(function() {
         return Hammer;

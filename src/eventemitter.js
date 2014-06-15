@@ -1,6 +1,8 @@
 /**
  * Event emitter
  * @constructor
+ * @param {HTMLElement} element
+ * @param {Boolean} domEvents trigger domEvents (which is slower than a regular function callback)
  */
 function EventEmitter(element, domEvents) {
     this.element = element;

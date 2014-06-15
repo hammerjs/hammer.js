@@ -24,5 +24,4 @@ function Hammer(element, options) {
     return manager;
 }
 
-// version is set on build
 Hammer.VERSION = '{{PKG_VERSION}}';

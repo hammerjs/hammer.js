@@ -23,7 +23,7 @@ module.exports = (grunt) ->
           'src/manager.js'
           'src/recognizer.js'
           'src/recognizers/*.js'
-          'src/export.js'
+          'src/expose.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
 
@@ -38,7 +38,7 @@ module.exports = (grunt) ->
           'src/manager.js'
           'src/recognizer.js'
           'src/recognizers/*.js'
-          'src/export.js']
+          'src/expose.js']
         dest: 'tests/build.js'
 
     uglify:
