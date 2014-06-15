@@ -137,13 +137,9 @@ function hasParent(node, parent) {
 }
 
 /**
- * simple wrapper around math.round
- * @param {Number} number
- * @returns {number}
+ * store Math.round in a var, for better minimisation
  */
-function round(number) {
-    return Math.round(number);
-}
+var round = Math.round;
 
 /**
  * split string on whitespace

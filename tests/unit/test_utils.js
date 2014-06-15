@@ -50,11 +50,6 @@ test("fnBind", function() {
     });
 })();
 
-test("round", function () {
-    ok(round(1.2) === 1, "round 1.2 to 1");
-    ok(round(1.51) === 2, "round 1.51 to 2");
-});
-
 test("toArray", function () {
     ok(_.isArray(toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
     ok(_.isArray(toArray([true, true])), 'array stays an array');

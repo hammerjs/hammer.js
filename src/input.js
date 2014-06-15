@@ -253,7 +253,7 @@ function getVelocity(deltaTime, deltaX, deltaY) {
  * get the direction between two points
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}
- * @return {String} direction matches `DIRECTION_NONE|LEFT|RIGHT|UP|DOWN`
+ * @return {Number} direction
  */
 function getDirection(p1, p2) {
     var x = p1.x - p2.x,
