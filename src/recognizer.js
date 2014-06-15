@@ -6,6 +6,14 @@ var STATE_RECOGNIZED = STATE_ENDED;
 var STATE_CANCELLED = 16;
 var STATE_FAILED = 32;
 
+/**
+ * Recognizer
+ * @constructor
+ * @param {Object} options
+ * All recognizers must use the property 'event' which is used to trigger the events and getting the recognizers
+ * by name. Also, a function called 'shouldRecognize' can be set which must return a boolean to enable/disable
+ * the recognizer. *
+ */
 function Recognizer(options) {
     this.id = uniqueId();
 
@@ -13,19 +21,10 @@ function Recognizer(options) {
     this.options = merge(options || {}, this.defaults);
 
     this.state = STATE_POSSIBLE;
-    this.enabled = true;
     this.simultaneous = {};
 }
 
 Recognizer.prototype = {
-    /**
-     * enable the recognizer
-     * @param {Boolean} enable
-     */
-    enable: function(enable) {
-        this.enabled = enable;
-    },
-
     /**
      * default emitter
      * @param {Object} input
@@ -76,13 +75,16 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        if(!this.enabled) {
+        // allow users to enable/disable recognizers with a own function called 'shouldRecognize'
+        var shouldRecognizeFn = this.options.shouldRecognize;
+        if(shouldRecognizeFn && !shouldRecognizeFn(inputData)) {
             this.reset();
             this.state = STATE_FAILED;
             return;
         }
 
         if(this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+            this.reset();
             this.state = STATE_POSSIBLE;
         }
 
@@ -96,8 +98,8 @@ Recognizer.prototype = {
     },
 
     /**
-     * called when the gesture isn't being updated by the manager update cycle
-     * can be used by Recognizers that extend from this object
+     * called when the gesture has been recognized and when not allowed to
+     * recognize (by the option.shouldRecognize method)
      * @virtual
      */
     reset: function() { },

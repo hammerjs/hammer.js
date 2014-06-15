@@ -26,17 +26,6 @@ function each(obj, iterator, context) {
 }
 
 /**
- * merge the values from src in the dest.
- * means that properties that exist in dest will not be overwritten by src
- * @param {Object} dest
- * @param {Object} src
- * @returns {Object} dest
- */
-function merge(dest, src) {
-    return extend(dest, src, true);
-}
-
-/**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
@@ -51,6 +40,17 @@ function extend(dest, src, merge) {
         }
     }
     return dest;
+}
+
+/**
+ * merge the values from src in the dest.
+ * means that properties that exist in dest will not be overwritten by src
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
+ */
+function merge(dest, src) {
+    return extend(dest, src, true);
 }
 
 /**
