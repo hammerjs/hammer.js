@@ -20,11 +20,20 @@ function Recognizer(options) {
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
 
+    this.enabled = true;
     this.state = STATE_POSSIBLE;
     this.simultaneous = {};
 }
 
 Recognizer.prototype = {
+    /**
+     * enable the recognizer
+     * @param {Boolean} enable
+     */
+    enable: function(enable) {
+        this.enabled = enable;
+    },
+
     /**
      * default emitter
      * @param {Object} input
@@ -77,14 +86,13 @@ Recognizer.prototype = {
     recognize: function(inputData) {
         // allow users to enable/disable recognizers with a own function called 'shouldRecognize'
         var shouldRecognizeFn = this.options.shouldRecognize;
-        if(shouldRecognizeFn && !shouldRecognizeFn(inputData)) {
+        if(!this.enabled || (shouldRecognizeFn && !shouldRecognizeFn(inputData))) {
             this.reset();
             this.state = STATE_FAILED;
             return;
         }
 
         if(this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
-            this.reset();
             this.state = STATE_POSSIBLE;
         }
 

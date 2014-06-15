@@ -30,8 +30,6 @@ inherit(HoldRecognizer, Recognizer, {
             this.reset();
             this._timer = setTimeout(bindFn(this.emit, this), options.time);
         }
-
-        // maybe next round
         return STATE_FAILED;
     },
 
