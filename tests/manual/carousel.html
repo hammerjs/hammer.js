@@ -88,7 +88,7 @@
     <script>
 
         var reqAnimationFrame = (function() {
-            return Hammer.prefixed(window, "requestAnimationFrame") || function(callback) {
+            return window[Hammer.prefixedName(window, "requestAnimationFrame")] || function(callback) {
                 setTimeout(callback, 1000 / 60);
             }
         })();

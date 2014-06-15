@@ -51,7 +51,7 @@
 <script>
 
     var reqAnimationFrame = (function () {
-        return Hammer.prefixed(window, 'requestAnimationFrame') || function (callback) {
+        return window[Hammer.prefixedName(window, 'requestAnimationFrame')] || function (callback) {
             window.setTimeout(callback, 1000 / 60);
         };
     })();
@@ -112,8 +112,11 @@
                     'scale(' + transform.scale + ', ' + transform.scale + ')',
                     'rotate(' + transform.rotate + 'deg)'];
 
-        el.textContent = value.join(" ");
-        Hammer.prefixed(el.style, 'transform', value.join(" "));
+        value = value.join(" ");
+        el.textContent = value;
+        el.style.webkitTransform = value;
+        el.style.mozTransform = value;
+        el.style.transform = value;
         ticking = false;
     }
 
