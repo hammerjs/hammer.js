@@ -44,6 +44,7 @@ inherit(PointerEventInput, Input, {
 
         var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+        var pointerType = IE10_POINTER_TYPE_MAP[ev.pointerType] || ev.pointerType;
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement || ev.target;
@@ -52,7 +53,7 @@ inherit(PointerEventInput, Input, {
         }
 
         // start and mouse must be down
-        if(eventType & INPUT_START && ev.button === 0) {
+        if(eventType & INPUT_START && (ev.button === 0 || pointerType == INPUT_TYPE_TOUCH)) {
             store.push(ev);
         } else if(eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
@@ -71,7 +72,7 @@ inherit(PointerEventInput, Input, {
         this.callback(this.manager, eventType, {
             pointers: store,
             changedPointers: [ev],
-            pointerType: IE10_POINTER_TYPE_MAP[store[0].pointerType] || store[0].pointerType,
+            pointerType: pointerType,
             srcEvent: ev
         });
 
@@ -79,5 +80,5 @@ inherit(PointerEventInput, Input, {
             // remove from the store
             store.splice(storeIndex, 1);
         }
-    },
+    }
 });

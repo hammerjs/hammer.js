@@ -4,10 +4,12 @@
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title></title>
 </head>
-<body style="-webkit-user-select:none;">
-    <div style="background: silver;  padding: 30px; -webkit-user-select: none; -ms-touch-select: none;" id="hit">
+<body>
+    <div style="background: silver;  padding: 30px;" id="hit">
         <span id="target" style="display: block; background: blue; height: 60px;"></span>
     </div>
+
+    <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
 
     <pre id="log" style="overflow:hidden;"></pre>
 
@@ -33,9 +35,10 @@
 
         var el = document.querySelector("#hit");
         var log = document.querySelector("#log");
+        var debug = document.querySelector("#debug");
 
         var mc = new Hammer.Manager(el, {
-            touchAction: 'pan-y'
+            touchAction: 'none'
         });
 
         mc.add(new Hammer.Swipe());
@@ -49,6 +52,9 @@
 
         mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
 
+        function DEBUG(str) {
+            debug.textContent = str;
+        }
         function logGesture(ev) {
             log.textContent = ev.toDirString() +"\n\n"+ (ev.gesture && ev.gesture.toDirString());
         }
