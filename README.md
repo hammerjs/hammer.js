@@ -102,6 +102,8 @@ The `get` and `remove` methods takes the event name (from a recognizer) or a rec
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
 
+----
+
 ### Hammer.Recognizer(options)
 Every Recognizer extends from this class. Below is a list of the options that are available for all recognizers.
 
@@ -118,7 +120,8 @@ When disabled, it doesn't send any input events to the recognizer. The recognize
 Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
 combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
 
-## Further notes
+----
+
 Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at
 [Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands. It's recommended to listen to
 [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
