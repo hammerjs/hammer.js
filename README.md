@@ -129,7 +129,7 @@ Below is a list of all available recognizers with their options.
 ### Options per recognizer
 #### Hammer.HoldRecognizer(options)
 | Option    | Default  | Description       |
-|-----------|------------------------------|
+|-----------|----------|-------------------|
 | event     | hold     | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | threshold | 10       | Minimal movement that is allowed while pressing. |
@@ -137,7 +137,7 @@ Below is a list of all available recognizers with their options.
 
 #### Hammer.PanRecognizer(options)
 | Option    | Default  | Description       |
-|-----------|------------------------------|
+|-----------|----------|-------------------|
 | event     | pan      | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | threshold | 10       | Minimal pan distance required before recognizing. |
@@ -152,14 +152,14 @@ Below is a list of all available recognizers with their options.
 
 #### Hammer.RotateRecognizer(options)
 | Option    | Default  | Description       |
-|-----------|------------------------------|
+|-----------|----------|-------------------|
 | event     | rotate   | Name of the event. |
 | pointers  | 2        | Required pointers, with a minimal of 2. |
 | threshold | 0        | Minimal rotation before recognizing. |
 
 #### Hammer.SwipeRecognizer(options)
 | Option    | Default  | Description       |
-|-----------|------------------------------|
+|-----------|----------|-------------------|
 | event     | swipe    | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | distance  | 10       | Minimal distance required before recognizing. |
@@ -167,7 +167,7 @@ Below is a list of all available recognizers with their options.
 
 #### Hammer.TapRecognizer(options)
 | Option    | Default  | Description       |
-|-----------|------------------------------|
+|-----------|----------|-------------------|
 | event     | swipe    | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | taps      | 1        | Amount of taps required. |
