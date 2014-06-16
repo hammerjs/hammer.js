@@ -85,8 +85,7 @@ The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values,
  
 | Option        | Description                   |
 |---------------|-------------------------------|
-| touchAction   | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default
- it tries to read the style value from the element, otherwise it is set to `pan-y`. |
+| touchAction   | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default it tries to read the style value from the element, otherwise it is set to `pan-y`. |
 | domEvents     | this let's hammer also fire domEvents. Default is `false`. |
 
 ##### .enable(Boolean) and .destroy()
