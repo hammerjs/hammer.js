@@ -86,7 +86,7 @@ Recognizer.prototype = {
     recognize: function(inputData) {
         // allow users to enable/disable recognizers with a own function called 'shouldRecognize'
         var shouldRecognizeFn = this.options.shouldRecognize;
-        if(!this.enabled || (shouldRecognizeFn && !shouldRecognizeFn(inputData))) {
+        if(!this.enabled || (shouldRecognizeFn && !shouldRecognizeFn.call(this, inputData))) {
             this.reset();
             this.state = STATE_FAILED;
             return;

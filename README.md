@@ -69,10 +69,10 @@ Below is a list of the available parameters for touch-action.
 
 | Property  | Gestures              | Description           |
 |-----------|-----------------------|-----------------------|
-| `auto`    | tap, doubletap        | The browser will add the normal touch interactions which it supports. |
-| `none`	| pinch, rotate         | No touch interactions will be handled by the browser. |
-| `pan-x`	| panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
-| `pan-y`	| panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
+| auto      | tap, doubletap        | The browser will add the normal touch interactions which it supports. |
+| none	    | pinch, rotate         | No touch interactions will be handled by the browser. |
+| pan-x	    | panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
+| pan-y	    | panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
 
 ## API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
@@ -82,6 +82,12 @@ Create a Manager. This sets up the input event listeners, and sets the touch-act
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
  it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
+ 
+| Option        | Description                   |
+|---------------|-------------------------------|
+| touchAction   | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default
+ it tries to read the style value from the element, otherwise it is set to `pan-y`. |
+| domEvents     | this let's hammer also fire domEvents. Default is `false`. |
 
 ##### .enable(Boolean) and .destroy()
 When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events and 
@@ -98,19 +104,20 @@ Listen to events triggered by the added recognizers, or remove the binded events
 by a space.
 
 ### Hammer.Recognizer(options)
-Every Recognizer extends from this class. Below are the only methods you would need. The options are different
-for most of the recognizers, but all have the property `event` and `pointers`,
+Every Recognizer extends from this class. Below is a list of the options that are available for all recognizers.
 
-`event` is used as the triggered event (like `swipe` or `pan`), and as the lookup field when calling `Manager.get()`.
-`pointers` is the amount of touches/pointers the recognizer requires.
+| Option            | Description                   |
+|-------------------|-------------------------------|
+| event             | Used to trigger the events, also used by `Manager.get()` to get a recognizer. |
+| pointers          | How many pointers the recognizer requires. For the pinch and rotate there is a minimum of 2. |
+| shouldRecognize   | A callback function to enable/disable the recognizer on the fly. |
 
 ##### .enable(Boolean)
 When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. 
 
-##### .recognizeWith(Recognizer) and .dontRecognizeWith(Recognizer)
-Run the recognizer simultaneous with the given other recognizer. This is usable for like combining a pan with a
-swipe at the end, or a pinch with the ability to rotate the target as well. It accepts a recognizer's event name or
-it's instance as an argument.
+##### .recognizeWith(otherRecognizer) and .dontRecognizeWith(otherRecognizer)
+Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
+combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
 
 ## Further notes
 Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at
