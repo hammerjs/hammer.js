@@ -203,7 +203,7 @@ function uniqueArray(src, key) {
  * @param {String} property
  * @returns {String|Undefined} prefixed
  */
-function prefixedName(obj, property) {
+function prefixed(obj, property) {
     var prefix, prop, i;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 

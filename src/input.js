@@ -1,6 +1,6 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
 
-var SUPPORT_POINTER_EVENTS = typeof prefixedName(window, 'PointerEvent') != TYPE_UNDEFINED;
+var SUPPORT_POINTER_EVENTS = typeof prefixed(window, 'PointerEvent') != TYPE_UNDEFINED;
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 

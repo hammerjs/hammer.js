@@ -1,4 +1,4 @@
-var PREFIXED_TOUCH_ACTION = prefixedName(document.body.style, 'touchAction');
+var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = typeof PREFIXED_TOUCH_ACTION !== TYPE_UNDEFINED;
 
 function TouchAction(manager) {

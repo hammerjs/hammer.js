@@ -31,7 +31,7 @@ Hammer.Tap = TapRecognizer;
 Hammer.Pan = PanRecognizer;
 Hammer.Swipe = SwipeRecognizer;
 Hammer.Pinch = PinchRecognizer;
-Hammer.Rotation = RotationRecognizer;
+Hammer.Rotate = RotateRecognizer;
 Hammer.Hold = HoldRecognizer;
 
 Hammer.on = addEventListeners;
@@ -41,7 +41,7 @@ Hammer.merge = merge;
 Hammer.extend = extend;
 Hammer.inherit = inherit;
 Hammer.bindFn = bindFn;
-Hammer.prefixedName = prefixedName;
+Hammer.prefixed = prefixed;
 
 if(typeof define == TYPE_FUNCTION && define.amd) {
     define(function() {

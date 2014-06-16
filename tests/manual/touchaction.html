@@ -60,7 +60,7 @@
 
     <script src="../../hammer.js"></script>
     <script>
-        var support = Hammer.prefixedName(document.body.style, 'touchAction');
+        var support = Hammer.prefixed(document.body.style, 'touchAction');
         document.getElementById(support ? 'native' : 'no-native').className = 'show';
 
         var touchActions = ['auto', 'pan-y', 'pan-x', 'none'];

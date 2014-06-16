@@ -23,14 +23,18 @@ function Manager(element, options) {
     this.input = createInputInstance(this);
     this.touchAction = new TouchAction(this);
     this.touchAction.set(this.options.touchAction);
+
+    toggleCssProps(this, true);
 }
 
 Hammer.defaults = {
     // when set to true, dom events are being triggered.
     // but this is slower and unused by simple implementations, so disabled by default.
     domEvents: false,
+
     // default value is used when a touch-action isn't defined on the element style
     touchAction: 'pan-y',
+
     // default setup when calling Hammer()
     recognizers: [
         [RotateRecognizer],
@@ -40,7 +44,32 @@ Hammer.defaults = {
         [TapRecognizer, { event: 'doubletap', taps: 2 }],
         [TapRecognizer],
         [HoldRecognizer]
-    ]
+    ],
+
+    // with some style attributes you can improve the experience.
+    cssProps: {
+        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+        userSelect: 'none',
+
+        // Disable the Windows Phone grippers when pressing an element.
+        touchSelect: 'none',
+
+        // Disables the default callout shown when you touch and hold a touch target.
+        // On iOS, when you touch and hold a touch target such as a link, Safari displays
+        // a callout containing information about the link. This property allows you to disable that callout.
+        touchCallout: 'none',
+
+        // Specifies whether zooming is enabled. Used by IE10>
+        contentZooming: 'none',
+
+        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+        userDrag: 'none',
+
+        // Overrides the highlight color shown when the user taps a link or a JavaScript
+        // clickable element in iOS. This property obeys the alpha value, if specified.
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
 };
 
 inherit(Manager, EventEmitter, {
@@ -129,19 +158,11 @@ inherit(Manager, EventEmitter, {
     /**
      * remove a recognizer by name or instance
      * @param {Recognizer|String} recognizer
-     * @returns {Recognizer|Null}
      */
     remove: function(recognizer) {
-        recognizer = this.get(recognizer);
-
         var recognizers = this.recognizers;
-        for(var i = 0; i < recognizers.length; i++) {
-            if(recognizers[i] === recognizer) {
-                this.recognizers.splice(i, 1);
-                return recognizer;
-            }
-        }
-        return null;
+        recognizer = this.get(recognizer);
+        recognizers.splice(inArray(recognizers, recognizer), 1);
     },
 
     /**
@@ -149,8 +170,28 @@ inherit(Manager, EventEmitter, {
      */
     destroy: function() {
         this._super.destroy.call(this);
+
+        toggleCssProps(this, false);
         this.session = {};
         this.input.destroy();
         this.element = null;
     }
 });
+
+/**
+ * add/remove the css properties as defined in manager.options.cssProps
+ * @param {Manager} manager
+ * @param {Boolean} add
+ */
+function toggleCssProps(manager, add) {
+    var element = manager.element;
+    var cssProps = manager.options.cssProps;
+
+    each(cssProps, function(value, name) {
+        element.style[prefixed(element.style, name)] = add ? value : '';
+    });
+
+    var falseFn = add && function() { return false; };
+    if(cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
+    if(cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
+}

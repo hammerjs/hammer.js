@@ -51,7 +51,7 @@
 <script>
 
     var reqAnimationFrame = (function () {
-        return window[Hammer.prefixedName(window, 'requestAnimationFrame')] || function (callback) {
+        return window[Hammer.prefixed(window, 'requestAnimationFrame')] || function (callback) {
             window.setTimeout(callback, 1000 / 60);
         };
     })();
@@ -70,7 +70,7 @@
     });
 
     mc.add(new Hammer.Pan({ threshold: 0, pointers: 2 }));
-    mc.add(new Hammer.Rotation({ threshold: 0 })).recognizeWith('pan');
+    mc.add(new Hammer.Rotate({ threshold: 0 })).recognizeWith('pan');
     mc.add(new Hammer.Pinch({ threshold: 0 })).recognizeWith('pan').recognizeWith('rotate');
 
     mc.add(new Hammer.Swipe());
