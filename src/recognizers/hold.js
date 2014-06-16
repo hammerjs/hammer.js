@@ -10,14 +10,14 @@ inherit(HoldRecognizer, Recognizer, {
         event: 'hold',
         pointers: 1,
         time: 500, // minimal time of the pointer to be down (like finger on the screen)
-        movementWhile: 10 // a minimal movement is ok, but keep it low
+        threshold: 10 // a minimal movement is ok, but keep it low
     },
 
     test: function(input) {
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
-        var validMovement = input.distance < options.movementWhile;
+        var validMovement = input.distance < options.threshold;
         var validTime = input.deltaTime > options.time;
 
         this._input = input;

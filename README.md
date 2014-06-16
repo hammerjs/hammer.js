@@ -77,7 +77,13 @@ Below is a list of the available parameters for touch-action.
 ## API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
 
-### Hammer.Manager(element, [options])
+### Hammer(HTMLElement, [options])
+Creates a Manager instance with a default set of recognizers and returns the manager instance. The default set 
+contains `tap`, `doubletap`, `pan`, `swipe`, `hold`, `pinch` and `rotate` recognizer instances.
+
+
+
+### Hammer.Manager(HTMLElement, [options])
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
@@ -103,14 +109,11 @@ The `get` and `remove` methods takes the event name (from a recognizer) or a rec
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
 
-### Hammer.Recognizer(options)
-Every Recognizer extends from this class. Below is a list of the options that are available for all recognizers.
 
-| Option            | Description                   |
-|-------------------|-------------------------------|
-| event             | Used to trigger the events, also used by `Manager.get()` to get a recognizer. |
-| pointers          | How many pointers the recognizer requires. For the pinch and rotate there is a minimum of 2. |
-| shouldRecognize   | A callback function to enable/disable the recognizer on the fly. |
+
+### Hammer.Recognizer(options)
+Every Recognizer extends from this class. All recognizers also have the option `shouldRecognize`, which is callback 
+function to enable/disable the recognizer on the fly.
 
 ##### .enable(Boolean)
 When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. 
@@ -118,6 +121,62 @@ When disabled, it doesn't send any input events to the recognizer. The recognize
 ##### .recognizeWith(otherRecognizer) and .dontRecognizeWith(otherRecognizer)
 Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
 combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
+
+Below is a list of all available recognizers with their options.
+
+
+
+### Options per recognizer
+#### Hammer.HoldRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|------------------------------|
+| event     | hold     | Name of the event. |
+| pointers  | 1        | Required pointers. |
+| threshold | 10       | Minimal movement that is allowed while pressing. |
+| time      | 500      | Minimal press time. |
+
+#### Hammer.PanRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|------------------------------|
+| event     | pan      | Name of the event. |
+| pointers  | 1        | Required pointers. |
+| threshold | 10       | Minimal pan distance required before recognizing. |
+| direction | DIRECTION_ALL | Direction of the panning. |
+
+#### Hammer.PinchRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|----------|-------------------|
+| event     | pinch    | Name of the event. |
+| pointers  | 2        | Required pointers, with a minimal of 2. |
+| threshold | 0        | Minimal scale before recognizing. |
+
+#### Hammer.RotateRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|------------------------------|
+| event     | rotate   | Name of the event. |
+| pointers  | 2        | Required pointers, with a minimal of 2. |
+| threshold | 0        | Minimal rotation before recognizing. |
+
+#### Hammer.SwipeRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|------------------------------|
+| event     | swipe    | Name of the event. |
+| pointers  | 1        | Required pointers. |
+| distance  | 10       | Minimal distance required before recognizing. |
+| velocity  | 0.65     | Minimal velocity required before recognizing, unit is in px per ms. |
+
+#### Hammer.TapRecognizer(options)
+| Option    | Default  | Description       |
+|-----------|------------------------------|
+| event     | swipe    | Name of the event. |
+| pointers  | 1        | Required pointers. |
+| taps      | 1        | Amount of taps required. |
+| interval  | 300      | Maximum time between multiple taps. |
+| time      | 250      | Maximum press time. |
+| movementBetween | 10 | The maximum distance between multiple taps. |
+| movementWhile | 2    | While doing a tap some small movement is allowed. |
+
+
 
 ## Further notes
 Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at

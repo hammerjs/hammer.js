@@ -1,8 +1,8 @@
-function RotationRecognizer() {
+function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
-inherit(RotationRecognizer, AttrRecognizer, {
+inherit(RotateRecognizer, AttrRecognizer, {
     defaults: {
         event: 'rotate',
         threshold: 0,

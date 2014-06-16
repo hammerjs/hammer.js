@@ -33,7 +33,7 @@ Hammer.defaults = {
     touchAction: 'pan-y',
     // default setup when calling Hammer()
     recognizers: [
-        [RotationRecognizer],
+        [RotateRecognizer],
         [PinchRecognizer, null, 'rotate'],
         [PanRecognizer],
         [SwipeRecognizer, null, 'pan'],
