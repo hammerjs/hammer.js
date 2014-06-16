@@ -1,15 +1,15 @@
-function HoldRecognizer() {
+function PressRecognizer() {
     Recognizer.apply(this, arguments);
 
     this._timer = null;
     this._input = null;
 }
 
-inherit(HoldRecognizer, Recognizer, {
+inherit(PressRecognizer, Recognizer, {
     defaults: {
-        event: 'hold',
+        event: 'press',
         pointers: 1,
-        time: 500, // minimal time of the pointer to be down (like finger on the screen)
+        time: 500, // minimal time of the pointer to be pressed
         threshold: 10 // a minimal movement is ok, but keep it low
     },
 

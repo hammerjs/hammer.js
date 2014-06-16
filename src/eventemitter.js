@@ -11,7 +11,7 @@ function EventEmitter(element, domEvents) {
     /**
      * contains handlers, grouped by event name
      * 'swipe': [Function, Function, ...],
-     * 'hold': [Function, Function, ...]
+     * 'press': [Function, Function, ...]
      * @type {{}}
      */
     this.handlers = {};

@@ -13,7 +13,7 @@ var mc = Hammer(myElement);
 mc.on("swipeleft swiperight", mySwipeHandler);
 ````
 
-By default it supports the `tap`, `doubletap`, `pan`, `swipe`, `hold`, `pinch` and `rotate` gestures. The default
+By default it supports the `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` gestures. The default
 `touch-action` property is set to `pan-y`, so horizontal scrolling is being prevented, but vertical scrolling is
 still possible.
 
@@ -79,7 +79,7 @@ The source code is well documented (JSDoc), you could figure out the rest of the
 
 ### Hammer(HTMLElement, [options])
 Creates a Manager instance with a default set of recognizers and returns the manager instance. The default set 
-contains `tap`, `doubletap`, `pan`, `swipe`, `hold`, `pinch` and `rotate` recognizer instances.
+contains `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` recognizer instances.
 
 
 
@@ -127,15 +127,15 @@ Below is a list of all available recognizers with their options.
 
 
 ### Options per recognizer
-#### Hammer.HoldRecognizer(options)
+#### Hammer.Press(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
-| event     | hold     | Name of the event. |
+| event     | press    | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | threshold | 10       | Minimal movement that is allowed while pressing. |
 | time      | 500      | Minimal press time. |
 
-#### Hammer.PanRecognizer(options)
+#### Hammer.Pan(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | pan      | Name of the event. |
@@ -143,21 +143,21 @@ Below is a list of all available recognizers with their options.
 | threshold | 10       | Minimal pan distance required before recognizing. |
 | direction | DIRECTION_ALL | Direction of the panning. |
 
-#### Hammer.PinchRecognizer(options)
+#### Hammer.Pinch(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | pinch    | Name of the event. |
 | pointers  | 2        | Required pointers, with a minimal of 2. |
 | threshold | 0        | Minimal scale before recognizing. |
 
-#### Hammer.RotateRecognizer(options)
+#### Hammer.Rotate(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | rotate   | Name of the event. |
 | pointers  | 2        | Required pointers, with a minimal of 2. |
 | threshold | 0        | Minimal rotation before recognizing. |
 
-#### Hammer.SwipeRecognizer(options)
+#### Hammer.Swipe(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | swipe    | Name of the event. |
@@ -165,7 +165,7 @@ Below is a list of all available recognizers with their options.
 | distance  | 10       | Minimal distance required before recognizing. |
 | velocity  | 0.65     | Minimal velocity required before recognizing, unit is in px per ms. |
 
-#### Hammer.TapRecognizer(options)
+#### Hammer.Tap(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | swipe    | Name of the event. |

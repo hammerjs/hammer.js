@@ -32,7 +32,7 @@ Hammer.Pan = PanRecognizer;
 Hammer.Swipe = SwipeRecognizer;
 Hammer.Pinch = PinchRecognizer;
 Hammer.Rotate = RotateRecognizer;
-Hammer.Hold = HoldRecognizer;
+Hammer.Press = PressRecognizer;
 
 Hammer.on = addEventListeners;
 Hammer.off = removeEventListeners;

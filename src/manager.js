@@ -43,7 +43,7 @@ Hammer.defaults = {
         [SwipeRecognizer, null, 'pan'],
         [TapRecognizer, { event: 'doubletap', taps: 2 }],
         [TapRecognizer],
-        [HoldRecognizer]
+        [PressRecognizer]
     ],
 
     // with some style attributes you can improve the experience.

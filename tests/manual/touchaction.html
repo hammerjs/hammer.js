@@ -9,7 +9,6 @@
             margin: 20px;
             height: 200px;
             overflow: hidden;
-            -webkit-user-select: none;
         }
 
         .scroll-space {
@@ -70,7 +69,7 @@
             var mc = Hammer(el, {
                 touchAction: touchAction
             });
-            mc.on("pan swipe rotate pinch tap doubletap hold", function(ev) {
+            mc.on("pan swipe rotate pinch tap doubletap press", function(ev) {
                 el.textContent = ev.type +" "+ el.textContent;
             });
         });
