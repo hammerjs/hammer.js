@@ -10,9 +10,6 @@ var STATE_FAILED = 32;
  * Recognizer
  * @constructor
  * @param {Object} options
- * All recognizers must use the property 'event' which is used to trigger the events and getting the recognizers
- * by name. Also, a function called 'shouldRecognize' can be set which must return a boolean to enable/disable
- * the recognizer.
  */
 function Recognizer(options) {
     this.id = uniqueId();
@@ -20,7 +17,7 @@ function Recognizer(options) {
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
 
-    this.enabled = true;
+    this.enabled = (typeof this.options.enable == TYPE_UNDEFINED) ? true : this.options.enable;
     this.state = STATE_POSSIBLE;
     this.simultaneous = {};
 }
@@ -28,7 +25,8 @@ function Recognizer(options) {
 Recognizer.prototype = {
     /**
      * enable the recognizer
-     * @param {Boolean} enable
+     * if the argument is a function, it is triggered on every recognize cycle
+     * @param {Boolean|Function} enable
      */
     enable: function(enable) {
         this.enabled = enable;
@@ -84,9 +82,7 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        // allow users to enable/disable recognizers with a own function called 'shouldRecognize'
-        var shouldRecognizeFn = this.options.shouldRecognize;
-        if(!this.enabled || (shouldRecognizeFn && !shouldRecognizeFn.call(this, inputData))) {
+        if(!boolFn(this.enabled, this, [inputData])) {
             this.reset();
             this.state = STATE_FAILED;
             return;

@@ -29,21 +29,14 @@ TouchAction.prototype = {
             return;
         }
 
-        for(var i = 0; i < this.actions.length; i++) {
-            switch(this.actions[i]) {
-                case 'none':
-                    this.prevent(srcEvent);
-                    break;
-                case 'pan-y':
-                    if(direction & DIRECTION_HORIZONTAL) {
-                        this.prevent(srcEvent);
-                    }
-                    break;
-                case 'pan-x':
-                    if(direction & DIRECTION_VERTICAL) {
-                        this.prevent(srcEvent);
-                    }
-                    break;
+        var actions = this.actions;
+        for(var i = 0; i < actions.length; i++) {
+            if(actions[i] == 'none') {
+                this.prevent(srcEvent);
+            } else if(actions[i] == 'pan-y' && direction & DIRECTION_HORIZONTAL) {
+                this.prevent(srcEvent);
+            } else if(actions[i] == 'pan-x' && direction & DIRECTION_VERTICAL) {
+                this.prevent(srcEvent);
             }
         }
     },

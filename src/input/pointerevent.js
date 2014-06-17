@@ -6,6 +6,7 @@ var POINTER_INPUT_MAP = {
     pointerout: INPUT_CANCEL
 };
 
+// in IE10 the pointer types are defined as integers
 var IE10_POINTER_TYPE_MAP = {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
@@ -15,6 +16,7 @@ var IE10_POINTER_TYPE_MAP = {
 var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
 var POINTER_WINDOW_EVENTS = 'pointerout';
 
+// IE10 has prefixed support, and case-sensitive
 if(window.MSPointerEvent) {
     POINTER_ELEMENT_EVENTS = 'MSPointerDown MSPointerMove MSPointerUp MSPointerCancel';
     POINTER_WINDOW_EVENTS = 'MSPointerOut';

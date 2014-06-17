@@ -5,8 +5,6 @@
  * @constructor
  */
 function Manager(element, options) {
-    this.enabled = true;
-
     options = options || {};
 
     // get the touchAction style property value when option.touchAction is empty
@@ -14,6 +12,8 @@ function Manager(element, options) {
     options.touchAction = options.touchAction || element.style.touchAction;
 
     this.options = merge(options, Hammer.defaults);
+
+    this.enabled = this.options.enable;
 
     EventEmitter.call(this, element, this.options.domEvents);
 
@@ -34,6 +34,8 @@ Hammer.defaults = {
 
     // default value is used when a touch-action isn't defined on the element style
     touchAction: 'pan-y',
+
+    enable: true,
 
     // default setup when calling Hammer()
     recognizers: [
@@ -75,14 +77,16 @@ Hammer.defaults = {
 inherit(Manager, EventEmitter, {
     /**
      * enable recognizing
-     * @param {Boolean} enable
+     * if the argument is a function, it is triggered on every recognize cycle
+     * @param {Boolean|Function} enable
      */
     enable: function(enable) {
         this.enabled = enable;
     },
 
     /**
-     * stop recognizing for this session
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired
      */
     stop: function() {
         this.session.stopped = true;

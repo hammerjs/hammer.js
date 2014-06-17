@@ -96,6 +96,20 @@ function bindFn(fn, context) {
 }
 
 /**
+ * let a boolean value also be a function that must return a boolean
+ * @param {Boolean|Function} val
+ * @param {Object} [context]
+ * @param {Array} [args]
+ * @returns {Boolean}
+ */
+function boolFn(val, context, args) {
+    if(typeof val == TYPE_FUNCTION) {
+        return val.apply(context, args);
+    }
+    return val;
+}
+
+/**
  * addEventListener with multiple events at once
  * @param {HTMLElement} element
  * @param {String} types
