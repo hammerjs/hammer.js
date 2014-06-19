@@ -1,6 +1,5 @@
 module('hammer');
-test('hammer shortcut', function()
-{
+test('hammer shortcut', function () {
     Hammer.defaults.touchAction = 'pan-y';
     var mc = Hammer(document.querySelector('#qunit-fixture'));
     ok(mc instanceof Manager, "returns an instance of Manager");
@@ -8,8 +7,7 @@ test('hammer shortcut', function()
     mc.destroy();
 });
 
-test('hammer shortcut with options', function()
-{
+test('hammer shortcut with options', function () {
     var mc = Hammer(document.querySelector('#qunit-fixture'), {
         touchAction: 'none'
     });
@@ -18,8 +16,7 @@ test('hammer shortcut with options', function()
     mc.destroy();
 });
 
-test('hammer shortcut without options and get touchAction from the style attribute', function()
-{
+test('hammer shortcut without options and get touchAction from the style attribute', function () {
     var el = document.querySelector('#qunit-fixture');
     el.style.touchAction = 'pan-x';
 

@@ -4,59 +4,54 @@ var parent,
     hammerParent;
 
 
-
 module('Nested gesture recognizers (Tap Child + Pan Parent)', {
+    setup: function () {
+        parent = document.createElement('div');
+        child = document.createElement("div");
 
-  setup: function() {
-    parent = document.createElement('div');
-    child = document.createElement("div");
+        document.body.appendChild(parent);
+        parent.appendChild(child);
 
-    document.body.appendChild(parent);
-    parent.appendChild(child);
+        hammerParent = new Hammer.Manager(parent, {
+            touchAction: 'none'
+        });
+        hammerChild = new Hammer.Manager(child, {
+            touchAction: 'none'
+        });
 
-    hammerParent = new Hammer.Manager(parent, {
-        touchAction: 'none'
-    });
-    hammerChild = new Hammer.Manager(child, {
-        touchAction: 'none'
-    });
+        hammerChild.add(new Hammer.Tap());
+        hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
 
-    hammerChild.add(new Hammer.Tap());
-    hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
-
-  },
-  teardown: function() {
-    document.body.removeChild(parent);
-    hammerChild.destroy();
-    hammerParent.destroy();
-  }
-
+    },
+    teardown: function () {
+        document.body.removeChild(parent);
+        hammerChild.destroy();
+        hammerParent.destroy();
+    }
 });
 
-test('Tap on the child', function() {
+test('Tap on the child', function () {
     expect(1);
 
-    hammerChild.on('tap', function() {
-      ok(true);
+    hammerChild.on('tap', function () {
+        ok(true);
     });
-    hammerParent.on('tap', function() {
-      throw new Error('tap should not fire on parent');
+    hammerParent.on('tap', function () {
+        throw new Error('tap should not fire on parent');
     });
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     testUtils.dispatchTouchEvent(child, 'end', 0, 10);
-
 });
 
-test('Panning on the child should fire parent pan and should not fire child tap event', function()
-{
+test('Panning on the child should fire parent pan and should not fire child tap event', function () {
     expect(1);
 
-    hammerChild.on('tap', function() {
-      throw new Error('tap should not fire on parent');
+    hammerChild.on('tap', function () {
+        throw new Error('tap should not fire on parent');
     });
-    hammerParent.on('panend', function() {
-      ok(true);
+    hammerParent.on('panend', function () {
+        ok(true);
     });
 
     testUtils.dispatchTouchEvent(child, 'start', 10, 0);
@@ -66,114 +61,113 @@ test('Panning on the child should fire parent pan and should not fire child tap 
 });
 
 /* FAILING test (optional pointers validation)
-test('Panning with one finger down on child, other on parent', function()
-{
-    expect(1);
+ test('Panning with one finger down on child, other on parent', function()
+ {
+ expect(1);
 
-    var event,
-        touches;
+ var event,
+ touches;
 
-    hammerParent.on('panend', function() {
-      ok(true);
-    });
+ hammerParent.on('panend', function() {
+ ok(true);
+ });
 
-    // one finger one child
-    testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
-    testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
+ // one finger one child
+ testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
+ testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
 
-    touches = [{clientX:  20, clientY: 0, identifier: 0 },
-               {clientX:  20, clientY: 0, identifier: 1 }];
+ touches = [{clientX:  20, clientY: 0, identifier: 0 },
+ {clientX:  20, clientY: 0, identifier: 1 }];
 
-    event = document.createTouchEvent('Event');
-    event.initEvent('touchmove', true, true);
-    event.touches = touches;
-    event.changedTouches = touches;
+ event = document.createTouchEvent('Event');
+ event.initEvent('touchmove', true, true);
+ event.touches = touches;
+ event.changedTouches = touches;
 
-    parent.testUtils.dispatchTouchEvent(event);
+ parent.testUtils.dispatchTouchEvent(event);
 
-    touches = [{clientX:  30, clientY: 0, identifier: 0 },
-               {clientX:  30, clientY: 0, identifier: 1 }];
+ touches = [{clientX:  30, clientY: 0, identifier: 0 },
+ {clientX:  30, clientY: 0, identifier: 1 }];
 
-    event = document.createTouchEvent('Event');
-    event.initEvent('touchend', true, true);
-    event.touches = touches;
-    event.changedTouches = touches;
+ event = document.createTouchEvent('Event');
+ event.initEvent('touchend', true, true);
+ event.touches = touches;
+ event.changedTouches = touches;
 
-    parent.testUtils.dispatchTouchEvent(event);
+ parent.testUtils.dispatchTouchEvent(event);
 
-});
-*/
+ });
+ */
 
 var pressPeriod = 200;
 module('Nested gesture recognizers (Press Child + Pan Parent)', {
 
-  setup: function() {
-    parent = document.createElement('div');
-    child = document.createElement("div");
+    setup: function () {
+        parent = document.createElement('div');
+        child = document.createElement("div");
 
-    document.body.appendChild(parent);
-    parent.appendChild(child);
+        document.body.appendChild(parent);
+        parent.appendChild(child);
 
-    hammerParent = new Hammer.Manager(parent, {
-        touchAction: 'none'
-    });
-    hammerChild = new Hammer.Manager(child, {
-        touchAction: 'none'
-    });
+        hammerParent = new Hammer.Manager(parent, {
+            touchAction: 'none'
+        });
+        hammerChild = new Hammer.Manager(child, {
+            touchAction: 'none'
+        });
 
-    hammerChild.add(new Hammer.Press({time: pressPeriod}));
-    hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
+        hammerChild.add(new Hammer.Press({time: pressPeriod}));
+        hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
 
-  },
-  teardown: function() {
-    document.body.removeChild(parent);
-    hammerChild.destroy();
-    hammerParent.destroy();
-  }
+    },
+    teardown: function () {
+        document.body.removeChild(parent);
+        hammerChild.destroy();
+        hammerParent.destroy();
+    }
 
 });
 
-test('Press on the child', function()
-{
+test('Press on the child', function () {
     expect(1);
 
-    hammerChild.on('press', function() {
-      ok(true);
+    hammerChild.on('press', function () {
+        ok(true);
     });
-    hammerParent.on('press', function() {
-      throw new Error('press should not fire on parent');
+    hammerParent.on('press', function () {
+        throw new Error('press should not fire on parent');
     });
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
 
     stop();
 
-    setTimeout(function() {
-      start();
+    setTimeout(function () {
+        start();
     }, pressPeriod);
 
 });
-test("When Press is followed by Pan on the same element, both gestures are recognized", function() {
+test("When Press is followed by Pan on the same element, both gestures are recognized", function () {
 
     expect(2);
-    hammerChild.on('press', function() {
-      ok(true);
+    hammerChild.on('press', function () {
+        ok(true);
     });
-    hammerParent.on('panend', function() {
-      ok(true);
+    hammerParent.on('panend', function () {
+        ok(true);
     });
 
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     stop();
 
-    setTimeout(function() {
-      start();
+    setTimeout(function () {
+        start();
 
-      testUtils.dispatchTouchEvent(child, 'move', 10, 10);
-      testUtils.dispatchTouchEvent(child, 'move', 20, 10);
-      testUtils.dispatchTouchEvent(child, 'move', 30, 10);
-      testUtils.dispatchTouchEvent(child, 'end', 30, 10);
+        testUtils.dispatchTouchEvent(child, 'move', 10, 10);
+        testUtils.dispatchTouchEvent(child, 'move', 20, 10);
+        testUtils.dispatchTouchEvent(child, 'move', 30, 10);
+        testUtils.dispatchTouchEvent(child, 'end', 30, 10);
 
     }, pressPeriod);
 

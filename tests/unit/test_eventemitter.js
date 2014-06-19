@@ -1,13 +1,15 @@
 module("eventEmitter");
 
-test("test the eventemitter", function() {
+test("test the eventemitter", function () {
     expect(6);
 
     var ee = new EventEmitter();
     var inputData = {
         target: document.body,
         srcEvent: {
-            preventDefault: function() { ok(true, "preventDefault ref"); },
+            preventDefault: function () {
+                ok(true, "preventDefault ref");
+            },
             target: document.body
         }
     };
@@ -16,8 +18,10 @@ test("test the eventemitter", function() {
         ok(true, "emitted event3");
     }
 
-    ee.on("testEvent1", function() { ok(true, "emitted event"); });
-    ee.on("testEvent2", function(ev) {
+    ee.on("testEvent1", function () {
+        ok(true, "emitted event");
+    });
+    ee.on("testEvent2", function (ev) {
         ok(true, "emitted event");
         ev.preventDefault();
         ok(ev.target === document.body, 'target is the body');

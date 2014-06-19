@@ -3,19 +3,19 @@ var el,
 
 module('Simultaenous recognition', {
 
-  setup: function() {
+    setup: function () {
 
-    el = document.createElement('div');
+        el = document.createElement('div');
 
-    document.body.appendChild(el);
+        document.body.appendChild(el);
 
-  },
-  teardown: function() {
-    document.body.removeChild(el);
-  }
+    },
+    teardown: function () {
+        document.body.removeChild(el);
+    }
 
 });
-test("should pinch and pan simultaneously be recognized when enabled", function() {
+test("should pinch and pan simultaneously be recognized when enabled", function () {
 
     expect(4);
 
@@ -31,52 +31,58 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
     hammer.add(pinch);
     pinch.recognizeWith(hammer.get('pan'));
 
-    hammer.on('panend', function() {
-      panCount++;
+    hammer.on('panend', function () {
+        panCount++;
     });
-    hammer.on('pinchend', function() {
-      pinchCount++;
+    hammer.on('pinchend', function () {
+        pinchCount++;
     });
 
-    var executeGesture = function() {
+    var executeGesture = function () {
         var event, touches;
 
-      touches = [{clientX:  0, clientY: 10, identifier: 0 },
-                 {clientX:  10, clientY: 10, identifier: 1 }];
+        touches = [
+            {clientX: 0, clientY: 10, identifier: 0 },
+            {clientX: 10, clientY: 10, identifier: 1 }
+        ];
 
-      event = document.createEvent('Event');
-      event.initEvent('touchstart', true, true);
-      event.touches = touches;
-      event.changedTouches = touches;
-
-
-      touches = [{clientX:  10, clientY: 20, identifier: 0 },
-                 {clientX:  20, clientY: 20, identifier: 1 }];
-
-      event = document.createEvent('Event');
-      event.initEvent('touchmove', true, true);
-      event.touches = touches;
-      event.changedTouches = touches;
-
-      el.dispatchEvent(event);
-
-      touches = [{clientX:  20, clientY: 30, identifier: 0 },
-                 {clientX:  40, clientY: 30, identifier: 1 }];
-
-      event = document.createEvent('Event');
-      event.initEvent('touchmove', true, true);
-      event.touches = touches;
-      event.changedTouches = touches;
-
-      el.dispatchEvent(event);
+        event = document.createEvent('Event');
+        event.initEvent('touchstart', true, true);
+        event.touches = touches;
+        event.changedTouches = touches;
 
 
-      event = document.createEvent('Event');
-      event.initEvent('touchend', true, true);
-      event.touches = touches;
-      event.changedTouches = touches;
+        touches = [
+            {clientX: 10, clientY: 20, identifier: 0 },
+            {clientX: 20, clientY: 20, identifier: 1 }
+        ];
 
-      el.dispatchEvent(event);
+        event = document.createEvent('Event');
+        event.initEvent('touchmove', true, true);
+        event.touches = touches;
+        event.changedTouches = touches;
+
+        el.dispatchEvent(event);
+
+        touches = [
+            {clientX: 20, clientY: 30, identifier: 0 },
+            {clientX: 40, clientY: 30, identifier: 1 }
+        ];
+
+        event = document.createEvent('Event');
+        event.initEvent('touchmove', true, true);
+        event.touches = touches;
+        event.changedTouches = touches;
+
+        el.dispatchEvent(event);
+
+
+        event = document.createEvent('Event');
+        event.initEvent('touchend', true, true);
+        event.touches = touches;
+        event.changedTouches = touches;
+
+        el.dispatchEvent(event);
     };
 
     // 2 gesture will be recognized
@@ -96,7 +102,7 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
 
 });
 
-test("the first gesture should block the following gestures (Tap & DoubleTap)", function() {
+test("the first gesture should block the following gestures (Tap & DoubleTap)", function () {
     expect(4);
     var tapCount = 0,
         doubleTapCount = 0;
@@ -111,11 +117,11 @@ test("the first gesture should block the following gestures (Tap & DoubleTap)", 
     hammer.add(tap);
     hammer.add(doubleTap);
 
-    hammer.on('tap', function() {
-      tapCount++;
+    hammer.on('tap', function () {
+        tapCount++;
     });
-    hammer.on('doubletap', function() {
-      doubleTapCount++;
+    hammer.on('doubletap', function () {
+        doubleTapCount++;
     });
 
 
@@ -139,7 +145,7 @@ test("the first gesture should block the following gestures (Tap & DoubleTap)", 
 
 });
 
-test("when disabled, the first gesture should not block gestures  (Tap & DoubleTap )", function() {
+test("when disabled, the first gesture should not block gestures  (Tap & DoubleTap )", function () {
 
     expect(4);
     var tapCount = 0,
@@ -155,11 +161,11 @@ test("when disabled, the first gesture should not block gestures  (Tap & DoubleT
     hammer.add(tap);
     hammer.add(doubleTap);
 
-    hammer.on('tap', function() {
-      tapCount++;
+    hammer.on('tap', function () {
+        tapCount++;
     });
-    hammer.on('doubletap', function() {
-      doubleTapCount++;
+    hammer.on('doubletap', function () {
+        doubleTapCount++;
     });
 
 

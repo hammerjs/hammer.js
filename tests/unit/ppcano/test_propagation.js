@@ -5,37 +5,36 @@ var parent,
 
 module('Propagation (Tap in Child and Parent)', {
 
-  setup: function() {
-    parent = document.createElement('div');
-    child = document.createElement("div");
+    setup: function () {
+        parent = document.createElement('div');
+        child = document.createElement("div");
 
-    document.body.appendChild(parent);
-    parent.appendChild(child);
+        document.body.appendChild(parent);
+        parent.appendChild(child);
 
-    hammerParent = new Hammer.Manager(parent);
-    hammerChild = new Hammer.Manager(child);
+        hammerParent = new Hammer.Manager(parent);
+        hammerChild = new Hammer.Manager(child);
 
-    hammerChild.add(new Hammer.Tap());
-    hammerParent.add(new Hammer.Tap());
+        hammerChild.add(new Hammer.Tap());
+        hammerParent.add(new Hammer.Tap());
 
-  },
-  teardown: function() {
-    document.body.removeChild(parent);
-    hammerChild.destroy();
-    hammerParent.destroy();
-  }
+    },
+    teardown: function () {
+        document.body.removeChild(parent);
+        hammerChild.destroy();
+        hammerParent.destroy();
+    }
 
 });
 
-test('Tap on the child, fires also the tap event to the parent', function()
-{
+test('Tap on the child, fires also the tap event to the parent', function () {
     expect(2);
 
-    hammerChild.on('tap', function() {
-      ok(true);
+    hammerChild.on('tap', function () {
+        ok(true);
     });
-    hammerParent.on('tap', function() {
-      ok(true);
+    hammerParent.on('tap', function () {
+        ok(true);
     });
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
@@ -43,19 +42,18 @@ test('Tap on the child, fires also the tap event to the parent', function()
 
 });
 
-test('When tap on the child and the child stops the input event propagation, the tap event does not get fired in the parent', function()
-{
+test('When tap on the child and the child stops the input event propagation, the tap event does not get fired in the parent', function () {
     expect(1);
 
-    hammerChild.on('tap', function() {
-      ok(true);
+    hammerChild.on('tap', function () {
+        ok(true);
     });
-    hammerParent.on('tap', function() {
-      throw new Error('parent tap gesture should not be recognized');
+    hammerParent.on('tap', function () {
+        throw new Error('parent tap gesture should not be recognized');
     });
 
-    child.addEventListener('touchend', function(ev) {
-      ev.stopPropagation();
+    child.addEventListener('touchend', function (ev) {
+        ev.stopPropagation();
     });
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);

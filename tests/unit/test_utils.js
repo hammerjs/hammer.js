@@ -6,16 +6,16 @@ test("get/set prefixed util", function () {
     ok(prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
 });
 
-test("fnBind", function() {
+test("fnBind", function () {
     var context = { a: true };
 
-    bindFn(function(b) {
+    bindFn(function (b) {
         ok(this.a === true, "bindFn scope");
         ok(b === 123, "bindFn argument");
     }, context)(123);
 });
 
-(function() {
+(function () {
     function testInherit() {
         function Base() {
             this.name = true;
@@ -69,7 +69,7 @@ test("inArray", function () {
 });
 
 test("splitStr", function () {
-    deepEqual(splitStr(" a  b  c d   "), ['a','b','c','d'], "str split valid");
+    deepEqual(splitStr(" a  b  c d   "), ['a', 'b', 'c', 'd'], "str split valid");
 });
 
 test("uniqueArray", function () {
@@ -114,32 +114,32 @@ test('each', function () {
     ok(loop == 3, 'array loop without Array.forEach');
 });
 
-test('extend', function() {
+test('extend', function () {
     expect(2);
     deepEqual(
-      extend(
-        {a: 1, b: 3},
-        {b: 2, c: 3}
-      ),
-      {a: 1, b: 2, c: 3},
-      'Simple extend'
+        extend(
+            {a: 1, b: 3},
+            {b: 2, c: 3}
+        ),
+        {a: 1, b: 2, c: 3},
+        'Simple extend'
     );
 
     var src = { foo: true };
     var dest = extend({}, src);
     src.foo = false;
     deepEqual(dest, {foo: true}, 'Clone reference');
-  });
+});
 
-test('merge', function() {
+test('merge', function () {
     expect(2);
     deepEqual(
-      merge(
-        {a: 1, b: 3},
-        {b: 2, c: 3}
-      ),
-      {a: 1, b: 3, c: 3},
-      'Simple extend'
+        merge(
+            {a: 1, b: 3},
+            {b: 2, c: 3}
+        ),
+        {a: 1, b: 3, c: 3},
+        'Simple extend'
     );
 
     var src = { foo: true };
@@ -148,7 +148,7 @@ test('merge', function() {
     deepEqual(dest, {foo: true}, 'Clone reference');
 });
 
-test('test add/removeEventListener', function() {
+test('test add/removeEventListener', function () {
     function handleEvent() {
         ok(true, "triggered event");
     }

@@ -5,42 +5,42 @@ var parent,
 
 module('Tap', {
 
-  setup: function() {
+    setup: function () {
 
-    parent = document.createElement('div');
-    child = document.createElement("div");
+        parent = document.createElement('div');
+        child = document.createElement("div");
 
-    document.body.appendChild(parent);
-    parent.appendChild(child);
+        document.body.appendChild(parent);
+        parent.appendChild(child);
 
-    hammerParent = new Hammer.Manager(parent, {
-        touchAction: 'none'
-    });
-    hammerChild = new Hammer.Manager(child, {
-        touchAction: 'none'
-    });
+        hammerParent = new Hammer.Manager(parent, {
+            touchAction: 'none'
+        });
+        hammerChild = new Hammer.Manager(child, {
+            touchAction: 'none'
+        });
 
-  },
-  teardown: function() {
-    document.body.removeChild(parent);
-    hammerChild.destroy();
-    hammerParent.destroy();
-  }
+    },
+    teardown: function () {
+        document.body.removeChild(parent);
+        hammerChild.destroy();
+        hammerParent.destroy();
+    }
 
 });
 /*
-test('Tap gesture should not be recognized with unique touchend event in the session', function()
-{
-    expect(1);
+ test('Tap gesture should not be recognized with unique touchend event in the session', function()
+ {
+ expect(1);
 
-    hammerChild.add(new Hammer.Tap());
+ hammerChild.add(new Hammer.Tap());
 
-    hammerChild.on('tap', function() {
-      throw new Error('parent tap gesture should not be recognized');
-    });
+ hammerChild.on('tap', function() {
+ throw new Error('parent tap gesture should not be recognized');
+ });
 
-    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
-    ok(true);
+ testUtils.dispatchTouchEvent(child, 'end', 0, 10);
+ ok(true);
 
-});
-*/
+ });
+ */
