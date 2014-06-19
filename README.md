@@ -81,28 +81,28 @@ The source code is well documented (JSDoc), you could figure out the rest of the
 Creates a Manager instance with a default set of recognizers and returns the manager instance. The default set 
 contains `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` recognizer instances.
 
-
 ## Hammer.Manager(HTMLElement, [options])
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
  it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
  
-| Option        | Description                   |
-|---------------|-------------------------------|
-| touchAction   | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default it tries to read the style value from the element, otherwise it is set to `pan-y`. |
-| domEvents     | this let's hammer also fire domEvents. Default is `false`. |
+| Option        | Default | Description                   |
+|---------------|---------|-------------------------------|
+| touchAction   |         | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default it tries to read the style value from the element, otherwise it is set to `pan-y`. |
+| domEvents     | false   | this let's hammer also fire domEvents. |
+| enable        | true    | boolean, or an function that should return a boolean which is. |
 
-##### .destroy()
+#### .destroy()
 Unbinds all events and input events and makes the manager unusable. It does NOT unbind any domEvent listeners.
 
-##### .add(Recognizer), .get(Recognizer) and .remove(Recognizer)
+#### .add(Recognizer), .get(Recognizer) and .remove(Recognizer)
 Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being
 executed. Just like the `get` method, it returns the added `Recognizer` instance.
 
 The `get` and `remove` methods takes the event name (from a recognizer) or a recognizer instance as an argument.
 
-##### .on(events, handler) and .off(events, [handler])
+#### .on(events, handler) and .off(events, [handler])
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
 
@@ -111,11 +111,11 @@ by a space.
 Every Recognizer extends from this class. All recognizers also have the option `enable`, 
 which is a boolean value or a callback function to enable/disable the recognizer on the fly.
 
-##### .recognizeWith(otherRecognizer) and .dropRecognizeWith(otherRecognizer)
+#### .recognizeWith(otherRecognizer) and .dropRecognizeWith(otherRecognizer)
 Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
 combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
 
-##### .requireFailure(otherRecognizer) and .dropRequireFailure(otherRecognizer)
+#### .requireFailure(otherRecognizer) and .dropRequireFailure(otherRecognizer)
 Run the recognizer only when the other recognizer fails.
 
 Below is a list of all available recognizers with their options.
