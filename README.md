@@ -7,6 +7,9 @@
 > Yeah, that's how we living and you know /
 > You *CAN* touch this
 
+[(Psst, a new Hammer version is in the making, get involved!)](https://github.com/EightMedia/hammer.js/tree/2.0.x)
+
+
 ## Features
 - Under 3kb minified and gzipped!
 - [Detects Tap, DoubleTap, Swipe, Drag, Pinch, and Rotate gestures](http://rawgithub.com/EightMedia/hammer.js/master/tests/manual/events.html)
