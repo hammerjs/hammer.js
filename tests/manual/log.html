@@ -42,7 +42,7 @@
         });
 
         mc.add(new Hammer.Swipe());
-        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith('swipe');
+        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith(mc.get('swipe'));
 
         mc.add(new Hammer.Rotate());
         mc.add(new Hammer.Pinch());

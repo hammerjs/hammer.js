@@ -13,8 +13,6 @@ function Manager(element, options) {
 
     this.options = merge(options, Hammer.defaults);
 
-    this.enabled = this.options.enable;
-
     EventEmitter.call(this, element, this.options.domEvents);
 
     this.session = {};
@@ -75,15 +73,6 @@ Hammer.defaults = {
 };
 
 inherit(Manager, EventEmitter, {
-    /**
-     * enable recognizing
-     * if the argument is a function, it is triggered on every recognize cycle
-     * @param {Boolean|Function} enable
-     */
-    enable: function(enable) {
-        this.enabled = enable;
-    },
-
     /**
      * stop recognizing for this session.
      * This session will be discarded, when a new [input]start event is fired

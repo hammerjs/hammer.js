@@ -74,16 +74,15 @@ Below is a list of the available parameters for touch-action.
 | pan-x	    | panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
 | pan-y	    | panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
 
-## API
+# API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
 
-### Hammer(HTMLElement, [options])
+## Hammer(HTMLElement, [options])
 Creates a Manager instance with a default set of recognizers and returns the manager instance. The default set 
 contains `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` recognizer instances.
 
 
-
-### Hammer.Manager(HTMLElement, [options])
+## Hammer.Manager(HTMLElement, [options])
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
@@ -94,9 +93,8 @@ The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values,
 | touchAction   | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default it tries to read the style value from the element, otherwise it is set to `pan-y`. |
 | domEvents     | this let's hammer also fire domEvents. Default is `false`. |
 
-##### .enable(Boolean) and .destroy()
-When disabled, it doesn't send any input events to the recognizers. Calling the destroy method unbinds all events and 
-input events and makes the manager unusable.
+##### .destroy()
+Unbinds all events and input events and makes the manager unusable. It does NOT unbind any domEvent listeners.
 
 ##### .add(Recognizer), .get(Recognizer) and .remove(Recognizer)
 Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being
@@ -109,23 +107,21 @@ Listen to events triggered by the added recognizers, or remove the binded events
 by a space.
 
 
+## Hammer.Recognizer(options)
+Every Recognizer extends from this class. All recognizers also have the option `enable`, 
+which is a boolean value or a callback function to enable/disable the recognizer on the fly.
 
-### Hammer.Recognizer(options)
-Every Recognizer extends from this class. All recognizers also have the option `shouldRecognize`, which is callback 
-function to enable/disable the recognizer on the fly.
-
-##### .enable(Boolean)
-When disabled, it doesn't send any input events to the recognizer. The recognizer is enabled by default. 
-
-##### .recognizeWith(otherRecognizer) and .dontRecognizeWith(otherRecognizer)
+##### .recognizeWith(otherRecognizer) and .dropRecognizeWith(otherRecognizer)
 Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
 combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
+
+##### .requireFailure(otherRecognizer) and .dropRequireFailure(otherRecognizer)
+Run the recognizer only when the other recognizer fails.
 
 Below is a list of all available recognizers with their options.
 
 
-
-### Options per recognizer
+## Options per recognizer
 #### Hammer.Press(options)
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
@@ -138,7 +134,7 @@ Below is a list of all available recognizers with their options.
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | pan      | Name of the event. |
-| pointers  | 1        | Required pointers. |
+| pointers  | 1        | Required pointers. 0 for all pointers. |
 | threshold | 10       | Minimal pan distance required before recognizing. |
 | direction | DIRECTION_ALL | Direction of the panning. |
 

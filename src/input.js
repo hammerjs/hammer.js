@@ -1,6 +1,6 @@
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
-var SUPPORT_POINTER_EVENTS = typeof prefixed(window, 'PointerEvent') != TYPE_UNDEFINED;
+var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
@@ -42,7 +42,7 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if(boolFn(self.manager.enabled, self.manager)) {
+        if(boolOrFn(self.manager.options.enable, self.manager)) {
             self.handler(ev);
         }
     };

@@ -17,20 +17,16 @@ function Recognizer(options) {
     this.manager = null;
     this.options = merge(options || {}, this.defaults);
 
-    this.enabled = (typeof this.options.enable == TYPE_UNDEFINED) ? true : this.options.enable;
+    // default is enable true
+    this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
+
     this.state = STATE_POSSIBLE;
+
     this.simultaneous = {};
+    this.requireFail = {};
 }
 
 Recognizer.prototype = {
-    /**
-     * enable the recognizer
-     * if the argument is a function, it is triggered on every recognize cycle
-     * @param {Boolean|Function} enable
-     */
-    enable: function(enable) {
-        this.enabled = enable;
-    },
 
     /**
      * default emitter
@@ -46,7 +42,6 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     recognizeWith: function(otherRecognizer) {
-        otherRecognizer = this.manager.get(otherRecognizer);
         if(!this.canRecognizeWith(otherRecognizer)) {
             this.simultaneous[otherRecognizer.id] = otherRecognizer;
             otherRecognizer.recognizeWith(this);
@@ -55,15 +50,37 @@ Recognizer.prototype = {
     },
 
     /**
-     * don't recognize simultaneous with an other recognizer.
+     * drop the simultaneous link
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
-    dontRecognizeWith: function(otherRecognizer) {
-        otherRecognizer = this.manager.get(otherRecognizer);
+    dropRecognizeWith: function(otherRecognizer) {
         if(this.canRecognizeWith(otherRecognizer)) {
             delete this.simultaneous[otherRecognizer.id];
-            otherRecognizer.dontRecognizeWith(this);
+            otherRecognizer.dropRecognizeWith(this);
+        }
+        return this;
+    },
+
+    /**
+     * recognizer can only run when an other is failing
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    requireFailure: function(otherRecognizer) {
+        this.requireFail.push(otherRecognizer);
+        return this;
+    },
+
+    /**
+     * drop the requireFailureOf link
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRequireFailure: function(otherRecognizer) {
+        var index = inArray(this.requireFail, otherRecognizer);
+        if(index > -1) {
+            this.requireFail.splice(index, 1);
         }
         return this;
     },
@@ -82,12 +99,23 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        if(!boolFn(this.enabled, this, [inputData])) {
+        // require failure of other recognizers
+        var canRecognize = true;
+        for(var i = 0; i < this.requireFail.length; i++) {
+            if(this.requireFail[i].state & STATE_FAILED) {
+                canRecognize = false;
+                break;
+            }
+        }
+
+        // is is enabled?
+        if(!canRecognize || !boolOrFn(this.options.enable, this, [inputData])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
         }
 
+        // reset when we've reached the end
         if(this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
             this.state = STATE_POSSIBLE;
         }
@@ -95,7 +123,8 @@ Recognizer.prototype = {
         // get detection state
         this.state = this.test(inputData);
 
-        // call the emit for valid tests
+        // the recognizer has recognized a gesture
+        // so trigger an event
         if(this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
             this.emit(inputData);
         }

@@ -20,7 +20,8 @@ inherit(AttrRecognizer, Recognizer, {
      * @returns {Boolean} recognized
      */
     attrTest: function(input) {
-        return input.pointers.length === this.options.pointers;
+        var optionPointers = this.options.pointers;
+        return optionPointers === 0 || input.pointers.length === optionPointers;
     },
 
     test: function(input) {

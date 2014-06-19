@@ -14,7 +14,7 @@ function each(obj, iterator, context) {
 
     if(obj.forEach) {
         obj.forEach(iterator, context);
-    } else if(typeof obj.length !== TYPE_UNDEFINED) {
+    } else if(obj.length !== undefined) {
         for(i = 0, len = obj.length; i < len; i++) {
             iterator.call(context, obj[i], i, obj);
         }
@@ -35,7 +35,7 @@ function each(obj, iterator, context) {
  */
 function extend(dest, src, merge) {
     for(var key in src) {
-        if(src.hasOwnProperty(key) && (!merge || (merge && typeof dest[key] == TYPE_UNDEFINED))) {
+        if(src.hasOwnProperty(key) && (!merge || (merge && dest[key] === undefined))) {
             dest[key] = src[key];
         }
     }
@@ -102,7 +102,7 @@ function bindFn(fn, context) {
  * @param {Array} [args]
  * @returns {Boolean}
  */
-function boolFn(val, context, args) {
+function boolOrFn(val, context, args) {
     if(typeof val == TYPE_FUNCTION) {
         return val.apply(context, args);
     }

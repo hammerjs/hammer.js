@@ -1,5 +1,5 @@
 var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
-var NATIVE_TOUCH_ACTION = typeof PREFIXED_TOUCH_ACTION !== TYPE_UNDEFINED;
+var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
 function TouchAction(manager) {
     this.manager = manager;
