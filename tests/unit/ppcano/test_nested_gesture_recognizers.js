@@ -3,10 +3,11 @@ var parent,
     hammerChild,
     hammerParent;
 
+
+
 module('Nested gesture recognizers (Tap Child + Pan Parent)', {
 
   setup: function() {
-
     parent = document.createElement('div');
     child = document.createElement("div");
 
@@ -29,11 +30,10 @@ module('Nested gesture recognizers (Tap Child + Pan Parent)', {
     hammerChild.destroy();
     hammerParent.destroy();
   }
-      
+
 });
 
-test('Tap on the child', function()
-{
+test('Tap on the child', function() {
     expect(1);
 
     hammerChild.on('tap', function() {
@@ -43,8 +43,8 @@ test('Tap on the child', function()
       throw new Error('tap should not fire on parent');
     });
 
-    dispatchEvent(child, 'start', 0, 10);
-    dispatchEvent(child, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
 
 });
 
@@ -58,10 +58,10 @@ test('Panning on the child should fire parent pan and should not fire child tap 
     hammerParent.on('panend', function() {
       ok(true);
     });
-    
-    dispatchEvent(child, 'start', 10, 0);
-    dispatchEvent(child, 'move', 20, 0);
-    dispatchEvent(child, 'end', 30, 0);
+
+    testUtils.dispatchTouchEvent(child, 'start', 10, 0);
+    testUtils.dispatchTouchEvent(child, 'move', 20, 0);
+    testUtils.dispatchTouchEvent(child, 'end', 30, 0);
 
 });
 
@@ -77,29 +77,29 @@ test('Panning with one finger down on child, other on parent', function()
       ok(true);
     });
 
-    // one finger one child 
-    dispatchEvent(child, 'start', 10, 0, 0);
-    dispatchEvent(parent, 'start', 12, 0, 1);
+    // one finger one child
+    testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
+    testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
 
-    touches = [{clientX:  20, clientY: 0, identifier: 0 }, 
+    touches = [{clientX:  20, clientY: 0, identifier: 0 },
                {clientX:  20, clientY: 0, identifier: 1 }];
 
-    event = document.createEvent('Event');
+    event = document.createTouchEvent('Event');
     event.initEvent('touchmove', true, true);
     event.touches = touches;
     event.changedTouches = touches;
 
-    parent.dispatchEvent(event);
+    parent.testUtils.dispatchTouchEvent(event);
 
-    touches = [{clientX:  30, clientY: 0, identifier: 0 }, 
+    touches = [{clientX:  30, clientY: 0, identifier: 0 },
                {clientX:  30, clientY: 0, identifier: 1 }];
 
-    event = document.createEvent('Event');
+    event = document.createTouchEvent('Event');
     event.initEvent('touchend', true, true);
     event.touches = touches;
     event.changedTouches = touches;
 
-    parent.dispatchEvent(event);
+    parent.testUtils.dispatchTouchEvent(event);
 
 });
 */
@@ -108,7 +108,6 @@ var pressPeriod = 200;
 module('Nested gesture recognizers (Press Child + Pan Parent)', {
 
   setup: function() {
-
     parent = document.createElement('div');
     child = document.createElement("div");
 
@@ -131,7 +130,7 @@ module('Nested gesture recognizers (Press Child + Pan Parent)', {
     hammerChild.destroy();
     hammerParent.destroy();
   }
-      
+
 });
 
 test('Press on the child', function()
@@ -145,11 +144,11 @@ test('Press on the child', function()
       throw new Error('press should not fire on parent');
     });
 
-    dispatchEvent(child, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
 
     stop();
 
-    setTimeout(function() {  
+    setTimeout(function() {
       start();
     }, pressPeriod);
 
@@ -165,16 +164,16 @@ test("When Press is followed by Pan on the same element, both gestures are recog
     });
 
 
-    dispatchEvent(child, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     stop();
 
-    setTimeout(function() {  
+    setTimeout(function() {
       start();
 
-      dispatchEvent(child, 'move', 10, 10);
-      dispatchEvent(child, 'move', 20, 10);
-      dispatchEvent(child, 'move', 30, 10);
-      dispatchEvent(child, 'end', 30, 10);
+      testUtils.dispatchTouchEvent(child, 'move', 10, 10);
+      testUtils.dispatchTouchEvent(child, 'move', 20, 10);
+      testUtils.dispatchTouchEvent(child, 'move', 30, 10);
+      testUtils.dispatchTouchEvent(child, 'end', 30, 10);
 
     }, pressPeriod);
 

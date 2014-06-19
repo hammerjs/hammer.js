@@ -156,10 +156,10 @@ test('test add/removeEventListener', function() {
     expect(2);
 
     addEventListeners(window, "testEvent1  testEvent2  ", handleEvent);
-    triggerEvent(window, 'testEvent1');
-    triggerEvent(window, 'testEvent2');
+    testUtils.triggerDomEvent(window, 'testEvent1');
+    testUtils.triggerDomEvent(window, 'testEvent2');
 
     removeEventListeners(window, " testEvent1 testEvent2 ", handleEvent);
-    triggerEvent(window, 'testEvent1');
-    triggerEvent(window, 'testEvent2');
+    testUtils.triggerDomEvent(window, 'testEvent1');
+    testUtils.triggerDomEvent(window, 'testEvent2');
 });

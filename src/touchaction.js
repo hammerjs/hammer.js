@@ -1,15 +1,15 @@
 var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
-function TouchAction(manager) {
+function TouchAction(manager, value) {
     this.manager = manager;
+    this.set(value);
 }
 
 TouchAction.prototype = {
     set: function(value) {
         if(NATIVE_TOUCH_ACTION) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
-            return;
         }
         this.actions = splitStr(value.toLowerCase());
     },

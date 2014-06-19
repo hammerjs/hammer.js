@@ -13,7 +13,7 @@ module('Simultaenous recognition', {
   teardown: function() {
     document.body.removeChild(el);
   }
-      
+
 });
 test("should pinch and pan simultaneously be recognized when enabled", function() {
 
@@ -29,7 +29,7 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
 
     var pinch = new Hammer.Pinch({ threshold: 0, pointers: 2});
     hammer.add(pinch);
-    pinch.recognizeWith('pan');
+    pinch.recognizeWith(hammer.get('pan'));
 
     hammer.on('panend', function() {
       panCount++;
@@ -39,8 +39,9 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
     });
 
     var executeGesture = function() {
+        var event, touches;
 
-      touches = [{clientX:  0, clientY: 10, identifier: 0 }, 
+      touches = [{clientX:  0, clientY: 10, identifier: 0 },
                  {clientX:  10, clientY: 10, identifier: 1 }];
 
       event = document.createEvent('Event');
@@ -49,9 +50,9 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
       event.changedTouches = touches;
 
 
-      touches = [{clientX:  10, clientY: 20, identifier: 0 }, 
+      touches = [{clientX:  10, clientY: 20, identifier: 0 },
                  {clientX:  20, clientY: 20, identifier: 1 }];
-      
+
       event = document.createEvent('Event');
       event.initEvent('touchmove', true, true);
       event.touches = touches;
@@ -59,7 +60,7 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
 
       el.dispatchEvent(event);
 
-      touches = [{clientX:  20, clientY: 30, identifier: 0 }, 
+      touches = [{clientX:  20, clientY: 30, identifier: 0 },
                  {clientX:  40, clientY: 30, identifier: 1 }];
 
       event = document.createEvent('Event');
@@ -77,19 +78,19 @@ test("should pinch and pan simultaneously be recognized when enabled", function(
 
       el.dispatchEvent(event);
     };
-    
+
     // 2 gesture will be recognized
     executeGesture();
 
     equal(panCount, 1);
     equal(pinchCount, 1);
 
-    pinch.dontRecognizeWith('pan');
+    pinch.dropRecognizeWith(hammer.get('pan'));
 
 
     // only the pan gesture will be recognized
     executeGesture();
-    
+
     equal(panCount, 2);
     equal(pinchCount, 1);
 
@@ -118,20 +119,20 @@ test("the first gesture should block the following gestures (Tap & DoubleTap)", 
     });
 
 
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
-    tap.recognizeWith('doubletap');
+    tap.recognizeWith(hammer.get('doubletap'));
 
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 4);
     equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
@@ -162,22 +163,21 @@ test("when disabled, the first gesture should not block gestures  (Tap & DoubleT
     });
 
 
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
-  
-    hammer.get('tap').enable(false);
 
+    hammer.get('tap').options.enable = false;
 
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
-    dispatchEvent(el, 'start', 0, 10);
-    dispatchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'tap gesture should not be recognized when the recognizer is disabled');
     equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');

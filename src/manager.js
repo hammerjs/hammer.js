@@ -9,7 +9,7 @@ function Manager(element, options) {
 
     // get the touchAction style property value when option.touchAction is empty
     // otherwise the defaults.touchAction value is used
-    options.touchAction = options.touchAction || element.style.touchAction;
+    options.touchAction = options.touchAction || element.style.touchAction || undefined;
 
     this.options = merge(options, Hammer.defaults);
 
@@ -19,8 +19,7 @@ function Manager(element, options) {
     this.recognizers = [];
 
     this.input = createInputInstance(this);
-    this.touchAction = new TouchAction(this);
-    this.touchAction.set(this.options.touchAction);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
 
     toggleCssProps(this, true);
 }

@@ -26,7 +26,7 @@ module('Tap', {
     hammerChild.destroy();
     hammerParent.destroy();
   }
-      
+
 });
 /*
 test('Tap gesture should not be recognized with unique touchend event in the session', function()
@@ -39,7 +39,7 @@ test('Tap gesture should not be recognized with unique touchend event in the ses
       throw new Error('parent tap gesture should not be recognized');
     });
 
-    dispatchEvent(child, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
     ok(true);
 
 });
