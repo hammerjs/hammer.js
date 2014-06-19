@@ -27,7 +27,6 @@ function Recognizer(options) {
 }
 
 Recognizer.prototype = {
-
     /**
      * default emitter
      * @param {Object} input
@@ -42,6 +41,7 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     recognizeWith: function(otherRecognizer) {
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         if(!this.canRecognizeWith(otherRecognizer)) {
             this.simultaneous[otherRecognizer.id] = otherRecognizer;
             otherRecognizer.recognizeWith(this);
@@ -55,6 +55,7 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     dropRecognizeWith: function(otherRecognizer) {
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         if(this.canRecognizeWith(otherRecognizer)) {
             delete this.simultaneous[otherRecognizer.id];
             otherRecognizer.dropRecognizeWith(this);
@@ -68,6 +69,7 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     requireFailure: function(otherRecognizer) {
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         this.requireFail.push(otherRecognizer);
         return this;
     },
@@ -78,6 +80,7 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     dropRequireFailure: function(otherRecognizer) {
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         var index = inArray(this.requireFail, otherRecognizer);
         if(index > -1) {
             this.requireFail.splice(index, 1);
@@ -155,3 +158,17 @@ Recognizer.prototype = {
         return '';
     }
 };
+
+/**
+ * get a recognizer by name if it is bound to a manager
+ * @param {Recognizer|String} otherRecognizer
+ * @param {Recognizer} recognizer
+ * @returns {Recognizer}
+ */
+function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
+    var manager = recognizer.manager;
+    if(manager) {
+        return manager.get(otherRecognizer);
+    }
+    return otherRecognizer;
+}
