@@ -12,6 +12,7 @@ module('Simultaenous recognition', {
     },
     teardown: function () {
         document.body.removeChild(el);
+        hammer && hammer.destroy();
     }
 
 });
@@ -142,7 +143,6 @@ test("the first gesture should block the following gestures (Tap & DoubleTap)", 
 
     equal(tapCount, 4);
     equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
-
 });
 
 test("when disabled, the first gesture should not block gestures  (Tap & DoubleTap )", function () {
@@ -187,5 +187,48 @@ test("when disabled, the first gesture should not block gestures  (Tap & DoubleT
 
     equal(tapCount, 2, 'tap gesture should not be recognized when the recognizer is disabled');
     equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');
+});
+
+/*
+test("the first gesture should block the following gestures (DoubleTap & Tap)", function() {
+    expect(4);
+    var tapCount = 0,
+        doubleTapCount = 0;
+
+    hammer = new Hammer.Manager(el, {
+        touchAction: 'none'
+    });
+
+    var tap = new Hammer.Tap();
+    var doubleTap = new Hammer.Tap({event: 'doubletap', taps: 2});
+
+    hammer.add(doubleTap);
+    hammer.add(tap);
+
+    hammer.on('tap', function() {
+      tapCount++;
+    });
+    hammer.on('doubletap', function() {
+      doubleTapCount++;
+    });
+
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+
+    equal(doubleTapCount, 1, 'double tap is recognized because it is configured at the beggining');
+    equal(tapCount, 0, 'tap gesture are blocked by doubleTap');
+
+    doubleTap.recognizeWith( hammer.get('tap') );
+
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
+    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+
+    equal(doubleTapCount, 2 );
+    equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
 
 });
+*/

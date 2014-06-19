@@ -47,6 +47,10 @@ module.exports = (grunt) ->
           report: 'gzip'
           sourceMap: 'hammer.min.map'
           banner: '<%= meta.banner %>'
+          compress:
+            global_defs:
+              "DEBUG": false
+            dead_code: true
         files:
           'hammer.min.js': ['hammer.js']
 

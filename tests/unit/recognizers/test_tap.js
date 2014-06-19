@@ -43,4 +43,3 @@ test('Tap gesture should not be recognized with unique touchend event in the ses
     ok(true);
 
 });
-
