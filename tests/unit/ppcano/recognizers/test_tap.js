@@ -28,19 +28,19 @@ module('Tap', {
     }
 
 });
-/*
- test('Tap gesture should not be recognized with unique touchend event in the session', function()
- {
- expect(1);
 
- hammerChild.add(new Hammer.Tap());
+test('Tap gesture should not be recognized with unique touchend event in the session', function()
+{
+    expect(1);
 
- hammerChild.on('tap', function() {
- throw new Error('parent tap gesture should not be recognized');
- });
+    hammerChild.add(new Hammer.Tap());
 
- testUtils.dispatchTouchEvent(child, 'end', 0, 10);
- ok(true);
+    hammerParent.on('tap', function() {
+        throw new Error('parent tap gesture should not be recognized');
+    });
 
- });
- */
+    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
+    ok(true);
+
+});
+

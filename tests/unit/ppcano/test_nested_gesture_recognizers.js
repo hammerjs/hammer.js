@@ -60,46 +60,49 @@ test('Panning on the child should fire parent pan and should not fire child tap 
 
 });
 
-/* FAILING test (optional pointers validation)
- test('Panning with one finger down on child, other on parent', function()
- {
- expect(1);
+/*
+// test (optional pointers validation)
+test('Panning with one finger down on child, other on parent', function () {
+    expect(1);
 
- var event,
- touches;
+    var event,
+        touches;
 
- hammerParent.on('panend', function() {
- ok(true);
- });
+    hammerParent.on('panend', function () {
+        ok(true);
+    });
 
- // one finger one child
- testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
- testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
+    // one finger one child
+    testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
+    testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
 
- touches = [{clientX:  20, clientY: 0, identifier: 0 },
- {clientX:  20, clientY: 0, identifier: 1 }];
+    touches = [
+        {clientX: 20, clientY: 0, identifier: 0 },
+        {clientX: 20, clientY: 0, identifier: 1 }
+    ];
 
- event = document.createTouchEvent('Event');
- event.initEvent('touchmove', true, true);
- event.touches = touches;
- event.changedTouches = touches;
+    event = document.createEvent('Event');
+    event.initEvent('touchmove', true, true);
+    event.touches = touches;
+    event.changedTouches = touches;
 
- parent.testUtils.dispatchTouchEvent(event);
+    parent.dispatchEvent(event);
 
- touches = [{clientX:  30, clientY: 0, identifier: 0 },
- {clientX:  30, clientY: 0, identifier: 1 }];
+    touches = [
+        {clientX: 30, clientY: 0, identifier: 0 },
+        {clientX: 30, clientY: 0, identifier: 1 }
+    ];
 
- event = document.createTouchEvent('Event');
- event.initEvent('touchend', true, true);
- event.touches = touches;
- event.changedTouches = touches;
+    event = document.createEvent('Event');
+    event.initEvent('touchend', true, true);
+    event.touches = touches;
+    event.changedTouches = touches;
 
- parent.testUtils.dispatchTouchEvent(event);
+    parent.dispatchEvent(event);
+});
+*/
 
- });
- */
-
-var pressPeriod = 200;
+var pressPeriod = 600;
 module('Nested gesture recognizers (Press Child + Pan Parent)', {
 
     setup: function () {
