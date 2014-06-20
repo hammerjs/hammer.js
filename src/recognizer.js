@@ -114,7 +114,6 @@ Recognizer.prototype = {
         // require failure of other recognizers
         var canRecognize = true;
         for(var i = 0; i < this.requireFail.length; i++) {
-            console.log(this.requireFail[i])
             if(!(this.requireFail[i].state & STATE_FAILED)) {
                 canRecognize = false;
                 break;
