@@ -118,8 +118,9 @@
             });
 
             this.hammer.add(new Hammer.Pan({ direction: this.direction }));
+            this.hammer.add(new Hammer.Swipe({ direction: this.direction })).recognizeWith('pan');
 
-            this.hammer.on("swipe", Hammer.bindFn(this.onSwipe, this));
+            //this.hammer.on("swipe", Hammer.bindFn(this.onSwipe, this));
             this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
 
             this.show(0);
@@ -252,6 +253,9 @@
 
             inner.hammer.get('pan').requireFailure(outer.hammer.get('pan'));
             outer.hammer.get('pan').requireFailure(inner.hammer.get('pan'));
+
+            inner.hammer.get('swipe').requireFailure(outer.hammer.get('swipe'));
+            outer.hammer.get('swipe').requireFailure(inner.hammer.get('swipe'));
         });
 
     </script>

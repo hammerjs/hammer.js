@@ -13,9 +13,9 @@ inherit(PanRecognizer, AttrRecognizer, {
         direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL
     },
 
-    attrTest: function(input) {
+    directionTest: function(input) {
         var options = this.options;
-        var isNew = true;
+        var hasMoved = true;
         var distance = input.distance;
 
         // lock to axis
@@ -25,18 +25,22 @@ inherit(PanRecognizer, AttrRecognizer, {
 
             if(options.direction & DIRECTION_HORIZONTAL) {
                 input.direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-                isNew = x != this._pX;
+                hasMoved = x != this._pX;
                 distance = Math.abs(input.deltaX);
             } else {
                 input.direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
-                isNew = y != this._pY;
+                hasMoved = y != this._pY;
                 distance = Math.abs(input.deltaY);
             }
         }
+        return hasMoved && distance > options.threshold && input.direction & options.direction;
+    },
 
-        return this._super.attrTest.call(this, input) && this.state & STATE_BEGAN || (
-                !(this.state & STATE_BEGAN) && input.direction & options.direction &&
-                isNew && distance > options.threshold);
+    attrTest: function(input) {
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
+            this.state & STATE_BEGAN || (
+                !(this.state & STATE_BEGAN) && this.directionTest(input)
+            );
     },
 
     emit: function(input) {
