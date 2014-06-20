@@ -26,6 +26,15 @@ function Manager(element, options) {
 
 inherit(Manager, EventEmitter, {
     /**
+     * set options
+     * @param {String} option
+     * @param {*} val
+     */
+    set: function(option, val) {
+        this.options[option] = val;
+    },
+
+    /**
      * stop recognizing for this session.
      * This session will be discarded, when a new [input]start event is fired
      */

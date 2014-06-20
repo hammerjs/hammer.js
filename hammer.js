@@ -175,14 +175,14 @@ function bindFn(fn, context) {
 
 /**
  * let a boolean value also be a function that must return a boolean
+ * this first item in args will be used as the context
  * @param {Boolean|Function} val
- * @param {Object} [context]
  * @param {Array} [args]
  * @returns {Boolean}
  */
-function boolOrFn(val, context, args) {
+function boolOrFn(val, args) {
     if(typeof val == TYPE_FUNCTION) {
-        return val.apply(context, args);
+        return val.apply(args[0] || window, args);
     }
     return val;
 }
@@ -363,7 +363,7 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if(boolOrFn(self.manager.options.enable, self.manager)) {
+        if(boolOrFn(self.manager.options.enable, [self.manager])) {
             self.handler(ev);
         }
     };
@@ -1079,6 +1079,15 @@ function Manager(element, options) {
 
 inherit(Manager, EventEmitter, {
     /**
+     * set options
+     * @param {String} option
+     * @param {*} val
+     */
+    set: function(option, val) {
+        this.options[option] = val;
+    },
+
+    /**
      * stop recognizing for this session.
      * This session will be discarded, when a new [input]start event is fired
      */
@@ -1224,6 +1233,15 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
     /**
+     * set options
+     * @param {String} option
+     * @param {*} val
+     */
+    set: function(option, val) {
+        this.options[option] = val;
+    },
+
+    /**
      * default emitter
      * @param {Object} input
      */
@@ -1308,7 +1326,7 @@ Recognizer.prototype = {
         }
 
         // is is enabled?
-        if(!canRecognize || !boolOrFn(this.options.enable, this, [inputData])) {
+        if(!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
             this.reset();
             this.state = STATE_FAILED;
             return;

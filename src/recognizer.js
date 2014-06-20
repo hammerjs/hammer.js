@@ -28,6 +28,15 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
     /**
+     * set options
+     * @param {String} option
+     * @param {*} val
+     */
+    set: function(option, val) {
+        this.options[option] = val;
+    },
+
+    /**
      * default emitter
      * @param {Object} input
      */
@@ -112,7 +121,7 @@ Recognizer.prototype = {
         }
 
         // is is enabled?
-        if(!canRecognize || !boolOrFn(this.options.enable, this, [inputData])) {
+        if(!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
             this.reset();
             this.state = STATE_FAILED;
             return;

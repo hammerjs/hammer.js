@@ -97,14 +97,14 @@ function bindFn(fn, context) {
 
 /**
  * let a boolean value also be a function that must return a boolean
+ * this first item in args will be used as the context
  * @param {Boolean|Function} val
- * @param {Object} [context]
  * @param {Array} [args]
  * @returns {Boolean}
  */
-function boolOrFn(val, context, args) {
+function boolOrFn(val, args) {
     if(typeof val == TYPE_FUNCTION) {
-        return val.apply(context, args);
+        return val.apply(args[0] || window, args);
     }
     return val;
 }

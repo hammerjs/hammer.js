@@ -178,7 +178,7 @@ test("when disabled, the first gesture should not block gestures  (Tap & DoubleT
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
 
-    hammer.get('tap').options.enable = false;
+    hammer.get('tap').set('enable', false);
 
     testUtils.dispatchTouchEvent(el, 'start', 0, 10);
     testUtils.dispatchTouchEvent(el, 'end', 0, 10);
