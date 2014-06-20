@@ -42,8 +42,8 @@ Hammer.defaults = {
         [PinchRecognizer, null, 'rotate'],
         [PanRecognizer],
         [SwipeRecognizer, null, 'pan'],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }],
         [TapRecognizer],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
         [PressRecognizer]
     ],
 

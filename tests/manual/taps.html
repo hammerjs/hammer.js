@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title></title>
+    <style>
+        .hit {
+            width: 270px;
+            height: 150px;
+            background: silver;
+        }
+        .log {
+            width: 270px; height: 150px; background: white; border: solid 1px #ccc;
+        }
+    </style>
+</head>
+<body>
+<div style="width: 600px; margin: 0 auto;">
+
+    <div id="mc1" class="hit" style="float: left;">doubletap not recognizeWith tap</div>
+    <div id="mc2" class="hit" style="float: right;">doubletap recognizeWith tap</div>
+
+    <div style="clear: both; height: 25px;"></div>
+
+    <div id="tap" class="log" style="float: left; ">tap</div>
+    <div id="doubletap" class="log" style="float: right;">doubletap</div>
+</div>
+
+    <script src="../../hammer.min.js"></script>
+    <script>
+
+        var mc1 = new Hammer.Manager(document.getElementById('mc1'));
+        mc1.add(new Hammer.Tap());
+        mc1.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+
+        var mc2 = new Hammer.Manager(document.getElementById('mc2'));
+        mc2.add(new Hammer.Tap());
+        mc2.add(new Hammer.Tap({ event: 'doubletap', taps: 2 })).recognizeWith('tap');
+
+        mc1.on('tap', onTap);
+        mc2.on('tap', onTap);
+        mc1.on('doubletap', onDoubleTap);
+        mc2.on('doubletap', onDoubleTap);
+
+        var elTap = document.getElementById('tap');
+        var elDoubleTap = document.getElementById('doubletap');
+
+        function highlight(el) {
+            el.style.background = 'green';
+            setTimeout(function() {
+                el.style.background = 'none';
+            }, 50);
+        }
+
+        function onTap() {
+            highlight(elTap);
+        }
+
+        function onDoubleTap() {
+            highlight(elDoubleTap);
+        }
+
+
+    </script>
+</body>
+</html>

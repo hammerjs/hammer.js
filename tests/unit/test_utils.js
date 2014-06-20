@@ -83,6 +83,26 @@ test("uniqueArray", function () {
     ], "remove duplicate ids")
 });
 
+test("boolOrFn", function () {
+    equal(boolOrFn(true), true, "Passing an boolean");
+    equal(boolOrFn(false), false, "Passing an boolean");
+    equal(boolOrFn(function(){ return true; }), true, "Passing an boolean");
+    equal(boolOrFn(1), true, "Passing an integer");
+});
+
+test("hasParent", function () {
+    var parent = document.createElement('div'),
+        child = document.createElement("div");
+
+    document.body.appendChild(parent);
+    parent.appendChild(child);
+
+    equal(hasParent(child, parent), true, "Found parent");
+    equal(hasParent(parent, child), false, "Not in parent");
+
+    document.body.removeChild(parent);
+});
+
 test('each', function () {
     var object = { hi: true };
     var array = ['a', 'b', 'c'];

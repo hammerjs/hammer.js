@@ -45,8 +45,8 @@ Hammer.defaults = {
         [PinchRecognizer, null, 'rotate'],
         [PanRecognizer],
         [SwipeRecognizer, null, 'pan'],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }],
         [TapRecognizer],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
         [PressRecognizer]
     ],
 
@@ -182,7 +182,7 @@ function bindFn(fn, context) {
  */
 function boolOrFn(val, args) {
     if(typeof val == TYPE_FUNCTION) {
-        return val.apply(args[0] || window, args);
+        return val.apply(args? args[0] || window : window, args);
     }
     return val;
 }
@@ -1228,7 +1228,7 @@ function Recognizer(options) {
     this.state = STATE_POSSIBLE;
 
     this.simultaneous = {};
-    this.requireFail = {};
+    this.requireFail = [];
 }
 
 Recognizer.prototype = {

@@ -23,7 +23,7 @@ function Recognizer(options) {
     this.state = STATE_POSSIBLE;
 
     this.simultaneous = {};
-    this.requireFail = {};
+    this.requireFail = [];
 }
 
 Recognizer.prototype = {
