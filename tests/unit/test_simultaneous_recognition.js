@@ -134,7 +134,7 @@ test("the first gesture should block the following gestures (Tap & DoubleTap)", 
     equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
-    tap.recognizeWith(hammer.get('doubletap'));
+    doubleTap.recognizeWith(hammer.get('tap'));
 
     testUtils.dispatchTouchEvent(el, 'start', 0, 10);
     testUtils.dispatchTouchEvent(el, 'end', 0, 10);
@@ -189,7 +189,6 @@ test("when disabled, the first gesture should not block gestures  (Tap & DoubleT
     equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');
 });
 
-/*
 test("the first gesture should block the following gestures (DoubleTap & Tap)", function() {
     expect(4);
     var tapCount = 0,
@@ -231,4 +230,4 @@ test("the first gesture should block the following gestures (DoubleTap & Tap)", 
     equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
 
 });
-*/
+

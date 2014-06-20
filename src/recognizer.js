@@ -15,7 +15,7 @@ function Recognizer(options) {
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options || {}, this.defaults);
+    this.options = merge(options || {}, this.defaults || {});
 
     // default is enable true
     this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
@@ -32,7 +32,7 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        this.manager.emit(this.options.event + this.stateStr(), input);
+        this.manager.emit(this.options.event + stateStr(this.state), input);
     },
 
     /**
@@ -134,30 +134,30 @@ Recognizer.prototype = {
     },
 
     /**
-     * called when the gesture has been recognized and when not allowed to
-     * recognize (by the option.shouldRecognize method)
+     * called when the gesture isn't allowed to recognize
+     * like when another is being recognized or it is disabled
      * @virtual
      */
-    reset: function() { },
-
-    /**
-     * get a usable string, used as event postfix
-     * @returns {String} state
-     */
-    stateStr: function() {
-        var state = this.state;
-        if(state & STATE_CANCELLED) {
-            return 'cancel';
-        } else if(state & STATE_ENDED) {
-            return 'end';
-        } else if(state & STATE_CHANGED) {
-            return '';
-        } else if(state & STATE_BEGAN) {
-            return 'start';
-        }
-        return '';
-    }
+    reset: function() { }
 };
+
+/**
+ * get a usable string, used as event postfix
+ * @param {Const} state
+ * @returns {String} state
+ */
+function stateStr(state) {
+    if(state & STATE_CANCELLED) {
+        return 'cancel';
+    } else if(state & STATE_ENDED) {
+        return 'end';
+    } else if(state & STATE_CHANGED) {
+        return '';
+    } else if(state & STATE_BEGAN) {
+        return 'start';
+    }
+    return '';
+}
 
 /**
  * get a recognizer by name if it is bound to a manager

@@ -42,16 +42,21 @@ inherit(TapRecognizer, Recognizer, {
                 this.count += 1;
             }
 
+            // if tap count matches we have recognized it,
+            // else it has began recognizing...
             var validTapCount = (this.count % options.taps === 0);
             if(validTapCount) {
                 return STATE_RECOGNIZED;
             }
+            return STATE_BEGAN;
         }
         return STATE_FAILED;
     },
 
     emit: function(input) {
-        input.tapCount = this.count;
-        this.manager.emit(this.options.event, input);
+        if(this.state & STATE_RECOGNIZED) {
+            input.tapCount = this.count;
+            this.manager.emit(this.options.event, input);
+        }
     }
 });

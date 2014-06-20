@@ -95,7 +95,8 @@ function inputHandler(manager, eventType, input) {
     if(isFirst) {
         manager.session = {};
     }
-    // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
+    // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
     input.eventType = eventType;
 
     // compute scale, rotation etc

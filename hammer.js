@@ -29,6 +29,53 @@ function Hammer(element, options) {
 
 Hammer.VERSION = '2.0.0dev';
 
+Hammer.defaults = {
+    // when set to true, dom events are being triggered.
+    // but this is slower and unused by simple implementations, so disabled by default.
+    domEvents: false,
+
+    // default value is used when a touch-action isn't defined on the element style
+    touchAction: 'pan-y',
+
+    enable: true,
+
+    // default setup when calling Hammer()
+    recognizers: [
+        [RotateRecognizer],
+        [PinchRecognizer, null, 'rotate'],
+        [PanRecognizer],
+        [SwipeRecognizer, null, 'pan'],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }],
+        [TapRecognizer],
+        [PressRecognizer]
+    ],
+
+    // with some style attributes you can improve the experience.
+    cssProps: {
+        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+        userSelect: 'none',
+
+        // Disable the Windows Phone grippers when pressing an element.
+        touchSelect: 'none',
+
+        // Disables the default callout shown when you touch and hold a touch target.
+        // On iOS, when you touch and hold a touch target such as a link, Safari displays
+        // a callout containing information about the link. This property allows you to disable that callout.
+        touchCallout: 'none',
+
+        // Specifies whether zooming is enabled. Used by IE10>
+        contentZooming: 'none',
+
+        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+        userDrag: 'none',
+
+        // Overrides the highlight color shown when the user taps a link or a JavaScript
+        // clickable element in iOS. This property obeys the alpha value, if specified.
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
+};
+
 var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
 
 var TYPE_FUNCTION = 'function';
@@ -369,7 +416,8 @@ function inputHandler(manager, eventType, input) {
     if(isFirst) {
         manager.session = {};
     }
-    // source event is the normalized value of the events like 'touchstart, touchend, touchcancel, pointerdown'
+    // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
     input.eventType = eventType;
 
     // compute scale, rotation etc
@@ -1029,53 +1077,6 @@ function Manager(element, options) {
     toggleCssProps(this, true);
 }
 
-Hammer.defaults = {
-    // when set to true, dom events are being triggered.
-    // but this is slower and unused by simple implementations, so disabled by default.
-    domEvents: false,
-
-    // default value is used when a touch-action isn't defined on the element style
-    touchAction: 'pan-y',
-
-    enable: true,
-
-    // default setup when calling Hammer()
-    recognizers: [
-        [RotateRecognizer],
-        [PinchRecognizer, null, 'rotate'],
-        [PanRecognizer],
-        [SwipeRecognizer, null, 'pan'],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }],
-        [TapRecognizer],
-        [PressRecognizer]
-    ],
-
-    // with some style attributes you can improve the experience.
-    cssProps: {
-        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
-        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
-        userSelect: 'none',
-
-        // Disable the Windows Phone grippers when pressing an element.
-        touchSelect: 'none',
-
-        // Disables the default callout shown when you touch and hold a touch target.
-        // On iOS, when you touch and hold a touch target such as a link, Safari displays
-        // a callout containing information about the link. This property allows you to disable that callout.
-        touchCallout: 'none',
-
-        // Specifies whether zooming is enabled. Used by IE10>
-        contentZooming: 'none',
-
-        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
-        userDrag: 'none',
-
-        // Overrides the highlight color shown when the user taps a link or a JavaScript
-        // clickable element in iOS. This property obeys the alpha value, if specified.
-        tapHighlightColor: 'rgba(0,0,0,0)'
-    }
-};
-
 inherit(Manager, EventEmitter, {
     /**
      * stop recognizing for this session.
@@ -1210,7 +1211,7 @@ function Recognizer(options) {
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options || {}, this.defaults);
+    this.options = merge(options || {}, this.defaults || {});
 
     // default is enable true
     this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
@@ -1227,7 +1228,7 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        this.manager.emit(this.options.event + this.stateStr(), input);
+        this.manager.emit(this.options.event + stateStr(this.state), input);
     },
 
     /**
@@ -1329,30 +1330,30 @@ Recognizer.prototype = {
     },
 
     /**
-     * called when the gesture has been recognized and when not allowed to
-     * recognize (by the option.shouldRecognize method)
+     * called when the gesture isn't allowed to recognize
+     * like when another is being recognized or it is disabled
      * @virtual
      */
-    reset: function() { },
-
-    /**
-     * get a usable string, used as event postfix
-     * @returns {String} state
-     */
-    stateStr: function() {
-        var state = this.state;
-        if(state & STATE_CANCELLED) {
-            return 'cancel';
-        } else if(state & STATE_ENDED) {
-            return 'end';
-        } else if(state & STATE_CHANGED) {
-            return '';
-        } else if(state & STATE_BEGAN) {
-            return 'start';
-        }
-        return '';
-    }
+    reset: function() { }
 };
+
+/**
+ * get a usable string, used as event postfix
+ * @param {Const} state
+ * @returns {String} state
+ */
+function stateStr(state) {
+    if(state & STATE_CANCELLED) {
+        return 'cancel';
+    } else if(state & STATE_ENDED) {
+        return 'end';
+    } else if(state & STATE_CHANGED) {
+        return '';
+    } else if(state & STATE_BEGAN) {
+        return 'start';
+    }
+    return '';
+}
 
 /**
  * get a recognizer by name if it is bound to a manager
@@ -1616,17 +1617,22 @@ inherit(TapRecognizer, Recognizer, {
                 this.count += 1;
             }
 
+            // if tap count matches we have recognized it,
+            // else it has began recognizing...
             var validTapCount = (this.count % options.taps === 0);
             if(validTapCount) {
                 return STATE_RECOGNIZED;
             }
+            return STATE_BEGAN;
         }
         return STATE_FAILED;
     },
 
     emit: function(input) {
-        input.tapCount = this.count;
-        this.manager.emit(this.options.event, input);
+        if(this.state & STATE_RECOGNIZED) {
+            input.tapCount = this.count;
+            this.manager.emit(this.options.event, input);
+        }
     }
 });
 
