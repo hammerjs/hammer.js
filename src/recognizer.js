@@ -20,7 +20,7 @@ function Recognizer(options) {
     // default is enable true
     this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
 
-    this.state = STATE_POSSIBLE;
+    this.state = STATE_FAILED;
 
     this.simultaneous = {};
     this.requireFail = [];
@@ -114,7 +114,8 @@ Recognizer.prototype = {
         // require failure of other recognizers
         var canRecognize = true;
         for(var i = 0; i < this.requireFail.length; i++) {
-            if(this.requireFail[i].state & STATE_FAILED) {
+            console.log(this.requireFail[i])
+            if(!(this.requireFail[i].state & STATE_FAILED)) {
                 canRecognize = false;
                 break;
             }

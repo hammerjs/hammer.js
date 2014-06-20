@@ -182,7 +182,7 @@ function bindFn(fn, context) {
  */
 function boolOrFn(val, args) {
     if(typeof val == TYPE_FUNCTION) {
-        return val.apply(args? args[0] || window : window, args);
+        return val.apply(args ? args[0] || window : window, args);
     }
     return val;
 }
@@ -682,13 +682,17 @@ inherit(MouseInput, Input, {
             this.pressed = true;
         }
 
+        if(eventType & INPUT_MOVE && ev.which !== 1) {
+            eventType = INPUT_END;
+        }
+
         // mouse must be down, and mouse events are allowed (see the TouchMouse input)
         if(!this.pressed || !this.allow) {
             return;
         }
 
         // out of the window?
-        var target = ev.relatedTarget || ev.toElement;
+        var target = ev.relatedTarget || ev.toElement || ev.target;
         if(ev.type == 'mouseout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }
@@ -1225,7 +1229,7 @@ function Recognizer(options) {
     // default is enable true
     this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
 
-    this.state = STATE_POSSIBLE;
+    this.state = STATE_FAILED;
 
     this.simultaneous = {};
     this.requireFail = [];
@@ -1319,7 +1323,8 @@ Recognizer.prototype = {
         // require failure of other recognizers
         var canRecognize = true;
         for(var i = 0; i < this.requireFail.length; i++) {
-            if(this.requireFail[i].state & STATE_FAILED) {
+            console.log(this.requireFail[i])
+            if(!(this.requireFail[i].state & STATE_FAILED)) {
                 canRecognize = false;
                 break;
             }
@@ -1453,6 +1458,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     attrTest: function(input) {
         var options = this.options;
         var isNew = true;
+        var distance = input.distance;
 
         // lock to axis
         if(!(input.direction & options.direction)) {
@@ -1462,15 +1468,17 @@ inherit(PanRecognizer, AttrRecognizer, {
             if(options.direction & DIRECTION_HORIZONTAL) {
                 input.direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
                 isNew = x != this._pX;
+                distance = Math.abs(input.deltaX);
             } else {
                 input.direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
                 isNew = y != this._pY;
+                distance = Math.abs(input.deltaY);
             }
         }
 
-        return this._super.attrTest.call(this, input) &&
-            input.direction & options.direction && isNew &&
-            (input.distance > options.threshold || this.state & STATE_BEGAN);
+        return this._super.attrTest.call(this, input) && this.state & STATE_BEGAN || (
+                !(this.state & STATE_BEGAN) && input.direction & options.direction &&
+                isNew && distance > options.threshold);
     },
 
     emit: function(input) {

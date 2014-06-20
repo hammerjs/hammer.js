@@ -35,13 +35,17 @@ inherit(MouseInput, Input, {
             this.pressed = true;
         }
 
+        if(eventType & INPUT_MOVE && ev.which !== 1) {
+            eventType = INPUT_END;
+        }
+
         // mouse must be down, and mouse events are allowed (see the TouchMouse input)
         if(!this.pressed || !this.allow) {
             return;
         }
 
         // out of the window?
-        var target = ev.relatedTarget || ev.toElement;
+        var target = ev.relatedTarget || ev.toElement || ev.target;
         if(ev.type == 'mouseout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }

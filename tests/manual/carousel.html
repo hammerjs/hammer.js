@@ -113,8 +113,8 @@
             this.hammer = new Hammer.Manager(this.container, {
                 touchAction: (direction & Hammer.DIRECTION_HORIZONTAL) ? "pan-y" : "pan-x"
             });
-            this.hammer.add(new Hammer.Swipe());
-            this.hammer.add(new Hammer.Pan({ direction: this.direction })).recognizeWith('swipe');
+
+            this.hammer.add(new Hammer.Pan({ direction: this.direction }));
 
             this.hammer.on("swipe", Hammer.bindFn(this.onSwipe, this));
             this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
@@ -219,11 +219,6 @@
             onSwipe : function (ev) {
                 var index = (ev.direction & (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP)) ? 1 : -1;
                 this.show(this.currentIndex + index, 0, 150);
-
-                this.parentHammer && this.parentHammer.disable();
-
-                ev.stopImmediatePropagation();
-                ev.stopPropagation();
             },
 
             /**
@@ -235,15 +230,12 @@
                 var percent = (100 / this.containerSize) * delta;
                 var duration = 0;
 
-                this.parentHammer && this.parentHammer.disable();
-
                 if (ev.type == 'panend' || ev.type == 'pancancel') {
                     if (Math.abs(percent) > 20 && ev.type == 'panend') {
                         this.currentIndex += (percent < 0) ? 1 : -1;
                     }
                     percent = 0;
                     duration = 150;
-                    this.parentHammer && this.parentHammer.enable();
                 }
 
                 this.show(this.currentIndex, percent, duration);
@@ -252,10 +244,11 @@
 
         var outer = new HammerCarousel(document.querySelector(".panes.wrapper"), Hammer.DIRECTION_HORIZONTAL);
 
-        console.log(document.querySelectorAll(".pane .panes"));
         Hammer.each(document.querySelectorAll(".pane .panes"), function(container) {
             var inner = new HammerCarousel(container, Hammer.DIRECTION_VERTICAL);
-            inner.parentHammer = outer.hammer;
+
+            inner.hammer.get('pan').requireFailure(outer.hammer.get('pan'));
+            outer.hammer.get('pan').requireFailure(inner.hammer.get('pan'));
         });
 
     </script>
