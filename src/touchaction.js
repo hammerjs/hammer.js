@@ -8,7 +8,7 @@ function TouchAction(manager, value) {
 
 TouchAction.prototype = {
     set: function(value) {
-        if(NATIVE_TOUCH_ACTION) {
+        if (NATIVE_TOUCH_ACTION) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = splitStr(value.toLowerCase());
@@ -16,7 +16,7 @@ TouchAction.prototype = {
 
     update: function(input) {
         // not needed with native support for the touchAction property
-        if(NATIVE_TOUCH_ACTION) {
+        if (NATIVE_TOUCH_ACTION) {
             return;
         }
 
@@ -24,18 +24,18 @@ TouchAction.prototype = {
         var direction = input.direction;
 
         // if the touch action did prevented once this session
-        if(this.manager.session.prevented) {
+        if (this.manager.session.prevented) {
             srcEvent.preventDefault();
             return;
         }
 
         var actions = this.actions;
-        for(var i = 0; i < actions.length; i++) {
-            if(actions[i] == 'none') {
+        for (var i = 0; i < actions.length; i++) {
+            if (actions[i] == 'none') {
                 this.prevent(srcEvent);
-            } else if(actions[i] == 'pan-y' && direction & DIRECTION_HORIZONTAL) {
+            } else if (actions[i] == 'pan-y' && direction & DIRECTION_HORIZONTAL) {
                 this.prevent(srcEvent);
-            } else if(actions[i] == 'pan-x' && direction & DIRECTION_VERTICAL) {
+            } else if (actions[i] == 'pan-x' && direction & DIRECTION_VERTICAL) {
                 this.prevent(srcEvent);
             }
         }

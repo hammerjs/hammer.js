@@ -48,7 +48,7 @@ inherit(Manager, EventEmitter, {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        if(this.session.stopped) {
+        if (this.session.stopped) {
             return;
         }
 
@@ -59,21 +59,21 @@ inherit(Manager, EventEmitter, {
         var curRecognizer = session.curRecognizer;
 
         // reset when the last recognizer is done, or this is a new session
-        if(!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
         // we're in a active recognizer
-        for(var i = 0; i < this.recognizers.length; i++) {
+        for (var i = 0; i < this.recognizers.length; i++) {
             recognizer = this.recognizers[i];
 
-            if(!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
+            if (!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();
             }
 
-            if(!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
         }
@@ -85,13 +85,13 @@ inherit(Manager, EventEmitter, {
      * @returns {Recognizer|Null}
      */
     get: function(recognizer) {
-        if(recognizer instanceof Recognizer) {
+        if (recognizer instanceof Recognizer) {
             return recognizer;
         }
 
         var recognizers = this.recognizers;
-        for(var i = 0; i < recognizers.length; i++) {
-            if(recognizers[i].options.event == recognizer) {
+        for (var i = 0; i < recognizers.length; i++) {
+            if (recognizers[i].options.event == recognizer) {
                 return recognizers[i];
             }
         }
@@ -146,6 +146,6 @@ function toggleCssProps(manager, add) {
     });
 
     var falseFn = add && function() { return false; };
-    if(cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
-    if(cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
+    if (cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
+    if (cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
 }

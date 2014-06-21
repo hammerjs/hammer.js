@@ -42,7 +42,7 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if(boolOrFn(self.manager.options.enable, [self.manager])) {
+        if (boolOrFn(self.manager.options.enable, [self.manager])) {
             self.handler(ev);
         }
     };
@@ -65,11 +65,11 @@ Input.prototype = {
  */
 function createInputInstance(manager) {
     var Type;
-    if(SUPPORT_POINTER_EVENTS) {
+    if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
-    } else if(SUPPORT_ONLY_TOUCH) {
+    } else if (SUPPORT_ONLY_TOUCH) {
         Type = TouchInput;
-    } else if(!SUPPORT_TOUCH) {
+    } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
         Type = TouchMouseInput;
@@ -92,7 +92,7 @@ function inputHandler(manager, eventType, input) {
     input.isFirst = isFirst;
     input.isFinal = isFinal;
 
-    if(isFirst) {
+    if (isFirst) {
         manager.session = {};
     }
     // source event is the normalized value of the domEvents
@@ -116,14 +116,14 @@ function computeInputData(manager, input) {
     var pointersLength = pointers.length;
 
     // store the first input to calculate the distance and direction
-    if(!session.firstInput) {
+    if (!session.firstInput) {
         session.firstInput = simpleCloneInputData(input);
     }
 
     // to compute scale and rotation we need to store the multiple touches
-    if(pointersLength > 1 && !session.firstMultiple) {
+    if (pointersLength > 1 && !session.firstMultiple) {
         session.firstMultiple = simpleCloneInputData(input);
-    } else if(pointersLength === 1) {
+    } else if (pointersLength === 1) {
         session.firstMultiple = false;
     }
 
@@ -147,7 +147,7 @@ function computeInputData(manager, input) {
 
     // find the correct target
     var target = manager.element;
-    if(hasParent(input.srcEvent.target, target)) {
+    if (hasParent(input.srcEvent.target, target)) {
         target = input.srcEvent.target;
     }
     input.target = target;
@@ -162,13 +162,13 @@ function computeInputData(manager, input) {
  */
 function computeIntervalInputData(session, input) {
     var last = session.lastInterval;
-    if(!last) {
+    if (!last) {
         last = session.lastInterval = simpleCloneInputData(input);
     }
 
     var deltaTime = input.timeStamp - last.timeStamp;
 
-    if(deltaTime > COMPUTE_INTERVAL || !last.velocity) {
+    if (deltaTime > COMPUTE_INTERVAL || !last.velocity) {
         var deltaX = input.deltaX - last.deltaX;
         var deltaY = input.deltaY - last.deltaY;
 
@@ -192,7 +192,7 @@ function simpleCloneInputData(input) {
     // make a simple copy of the pointers because we will get a reference if we don't
     // we only need clientXY for the calculations
     var pointers = [];
-    for(var i = 0; i < input.pointers.length; i++) {
+    for (var i = 0; i < input.pointers.length; i++) {
         pointers[i] = {
             clientX: round(input.pointers[i].clientX),
             clientY: round(input.pointers[i].clientY)
@@ -217,7 +217,7 @@ function getCenter(pointers) {
     var pointersLength = pointers.length;
 
     // no need to loop when only one touch
-    if(pointersLength === 1) {
+    if (pointersLength === 1) {
         return {
             x: round(pointers[0].clientX),
             y: round(pointers[0].clientY)
@@ -225,7 +225,7 @@ function getCenter(pointers) {
     }
 
     var x = 0, y = 0;
-    for(var i = 0; i < pointersLength; i++) {
+    for (var i = 0; i < pointersLength; i++) {
         x += pointers[i].clientX;
         y += pointers[i].clientY;
     }
@@ -261,11 +261,11 @@ function getDirection(p1, p2) {
         y = p1.y - p2.y;
 
     // no direction because the positions are equal
-    if(x === y) {
+    if (x === y) {
         return DIRECTION_NONE;
     }
 
-    if(Math.abs(x) >= Math.abs(y)) {
+    if (Math.abs(x) >= Math.abs(y)) {
         return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
     return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
@@ -279,7 +279,7 @@ function getDirection(p1, p2) {
  * @return {Number} distance
  */
 function getDistance(p1, p2, props) {
-    if(!props) {
+    if (!props) {
         props = PROPS_XY;
     }
     var x = p2[props[0]] - p1[props[0]],
@@ -295,7 +295,7 @@ function getDistance(p1, p2, props) {
  * @return {Number} angle
  */
 function getAngle(p1, p2, props) {
-    if(!props) {
+    if (!props) {
         props = PROPS_XY;
     }
     var x = p2[props[0]] - p1[props[0]],

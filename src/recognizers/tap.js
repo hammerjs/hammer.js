@@ -29,14 +29,14 @@ inherit(TapRecognizer, Recognizer, {
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
-        if(input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
+        if (input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
             var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
             var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.movementBetween;
 
             this.pTime = input.timeStamp;
             this.pCenter = input.center;
 
-            if(!validMultiTap || !validInterval) {
+            if (!validMultiTap || !validInterval) {
                 this.count = 1;
             } else {
                 this.count += 1;
@@ -45,7 +45,7 @@ inherit(TapRecognizer, Recognizer, {
             // if tap count matches we have recognized it,
             // else it has began recognizing...
             var validTapCount = (this.count % options.taps === 0);
-            if(validTapCount) {
+            if (validTapCount) {
                 return STATE_RECOGNIZED;
             }
             return STATE_BEGAN;
@@ -54,7 +54,7 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function(input) {
-        if(this.state & STATE_RECOGNIZED) {
+        if (this.state & STATE_RECOGNIZED) {
             input.tapCount = this.count;
             this.manager.emit(this.options.event, input);
         }

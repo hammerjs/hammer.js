@@ -43,11 +43,11 @@ Hammer.inherit = inherit;
 Hammer.bindFn = bindFn;
 Hammer.prefixed = prefixed;
 
-if(typeof define == TYPE_FUNCTION && define.amd) {
+if (typeof define == TYPE_FUNCTION && define.amd) {
     define(function() {
         return Hammer;
     });
-} else if(typeof module != TYPE_UNDEFINED && module.exports) {
+} else if (typeof module != TYPE_UNDEFINED && module.exports) {
     module.exports = Hammer;
 } else {
     window.Hammer = Hammer;

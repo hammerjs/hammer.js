@@ -31,26 +31,26 @@ inherit(MouseInput, Input, {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
         // on start we want to have the left mouse button down
-        if(eventType & INPUT_START && ev.button === 0) {
+        if (eventType & INPUT_START && ev.button === 0) {
             this.pressed = true;
         }
 
-        if(eventType & INPUT_MOVE && ev.which !== 1) {
+        if (eventType & INPUT_MOVE && ev.which !== 1) {
             eventType = INPUT_END;
         }
 
         // mouse must be down, and mouse events are allowed (see the TouchMouse input)
-        if(!this.pressed || !this.allow) {
+        if (!this.pressed || !this.allow) {
             return;
         }
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement || ev.target;
-        if(ev.type == 'mouseout' && target.nodeName != 'HTML') {
+        if (ev.type == 'mouseout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }
 
-        if(eventType & (INPUT_END | INPUT_CANCEL)) {
+        if (eventType & (INPUT_END | INPUT_CANCEL)) {
             this.pressed = false;
         }
 

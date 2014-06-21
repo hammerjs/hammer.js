@@ -24,9 +24,9 @@ inherit(PressRecognizer, Recognizer, {
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
-        if(!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
+        if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
             this.reset();
-        } else if(input.eventType & INPUT_START) {
+        } else if (input.eventType & INPUT_START) {
             this.reset();
             this._timer = setTimeout(bindFn(this.emit, this), options.time);
         }

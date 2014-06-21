@@ -51,7 +51,7 @@ Recognizer.prototype = {
      */
     recognizeWith: function(otherRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if(!this.canRecognizeWith(otherRecognizer)) {
+        if (!this.canRecognizeWith(otherRecognizer)) {
             this.simultaneous[otherRecognizer.id] = otherRecognizer;
             otherRecognizer.recognizeWith(this);
         }
@@ -65,7 +65,7 @@ Recognizer.prototype = {
      */
     dropRecognizeWith: function(otherRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if(this.canRecognizeWith(otherRecognizer)) {
+        if (this.canRecognizeWith(otherRecognizer)) {
             delete this.simultaneous[otherRecognizer.id];
             otherRecognizer.dropRecognizeWith(this);
         }
@@ -91,7 +91,7 @@ Recognizer.prototype = {
     dropRequireFailure: function(otherRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         var index = inArray(this.requireFail, otherRecognizer);
-        if(index > -1) {
+        if (index > -1) {
             this.requireFail.splice(index, 1);
         }
         return this;
@@ -113,22 +113,22 @@ Recognizer.prototype = {
     recognize: function(inputData) {
         // require failure of other recognizers
         var canRecognize = true;
-        for(var i = 0; i < this.requireFail.length; i++) {
-            if(!(this.requireFail[i].state & STATE_FAILED)) {
+        for (var i = 0; i < this.requireFail.length; i++) {
+            if (!(this.requireFail[i].state & STATE_FAILED)) {
                 canRecognize = false;
                 break;
             }
         }
 
         // is is enabled?
-        if(!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
+        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
         }
 
         // reset when we've reached the end
-        if(this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+        if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
             this.state = STATE_POSSIBLE;
         }
 
@@ -137,7 +137,7 @@ Recognizer.prototype = {
 
         // the recognizer has recognized a gesture
         // so trigger an event
-        if(this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
+        if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
             this.emit(inputData);
         }
     },
@@ -156,13 +156,13 @@ Recognizer.prototype = {
  * @returns {String} state
  */
 function stateStr(state) {
-    if(state & STATE_CANCELLED) {
+    if (state & STATE_CANCELLED) {
         return 'cancel';
-    } else if(state & STATE_ENDED) {
+    } else if (state & STATE_ENDED) {
         return 'end';
-    } else if(state & STATE_CHANGED) {
+    } else if (state & STATE_CHANGED) {
         return '';
-    } else if(state & STATE_BEGAN) {
+    } else if (state & STATE_BEGAN) {
         return 'start';
     }
     return '';
@@ -176,7 +176,7 @@ function stateStr(state) {
  */
 function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
     var manager = recognizer.manager;
-    if(manager) {
+    if (manager) {
         return manager.get(otherRecognizer);
     }
     return otherRecognizer;

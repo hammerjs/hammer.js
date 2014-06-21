@@ -17,7 +17,7 @@ var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
 var POINTER_WINDOW_EVENTS = 'pointerout';
 
 // IE10 has prefixed support, and case-sensitive
-if(window.MSPointerEvent) {
+if (window.MSPointerEvent) {
     POINTER_ELEMENT_EVENTS = 'MSPointerDown MSPointerMove MSPointerUp MSPointerCancel';
     POINTER_WINDOW_EVENTS = 'MSPointerOut';
 }
@@ -50,21 +50,21 @@ inherit(PointerEventInput, Input, {
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement || ev.target;
-        if(eventTypeNormalized == 'pointerout' && target.nodeName != 'HTML') {
+        if (eventTypeNormalized == 'pointerout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }
 
         // start and mouse must be down
-        if(eventType & INPUT_START && (ev.button === 0 || pointerType == INPUT_TYPE_TOUCH)) {
+        if (eventType & INPUT_START && (ev.button === 0 || pointerType == INPUT_TYPE_TOUCH)) {
             store.push(ev);
-        } else if(eventType & (INPUT_END | INPUT_CANCEL)) {
+        } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         }
 
         // get index of the event in the store
         // it not found, so the pointer hasn't been down (so it's probably a hover)
         var storeIndex = inArray(store, ev.pointerId, 'pointerId');
-        if(storeIndex < 0) {
+        if (storeIndex < 0) {
             return;
         }
 
@@ -78,7 +78,7 @@ inherit(PointerEventInput, Input, {
             srcEvent: ev
         });
 
-        if(removePointer) {
+        if (removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
         }

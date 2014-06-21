@@ -16,7 +16,7 @@ function Hammer(element, options) {
      */
     each(manager.options.recognizers, function(item) {
         var recognizer = manager.add(new (item[0])(item[1]));
-        if(item[2]) {
+        if (item[2]) {
             recognizer.recognizeWith(item[2]);
         }
     });

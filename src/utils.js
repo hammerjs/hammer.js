@@ -12,14 +12,14 @@ var TYPE_UNDEFINED = 'undefined';
 function each(obj, iterator, context) {
     var i, len;
 
-    if(obj.forEach) {
+    if (obj.forEach) {
         obj.forEach(iterator, context);
-    } else if(obj.length !== undefined) {
-        for(i = 0, len = obj.length; i < len; i++) {
+    } else if (obj.length !== undefined) {
+        for (i = 0, len = obj.length; i < len; i++) {
             iterator.call(context, obj[i], i, obj);
         }
     } else {
-        for(i in obj) {
+        for (i in obj) {
             obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
         }
     }
@@ -34,8 +34,8 @@ function each(obj, iterator, context) {
  * @returns {Object} dest
  */
 function extend(dest, src, merge) {
-    for(var key in src) {
-        if(src.hasOwnProperty(key) && (!merge || (merge && dest[key] === undefined))) {
+    for (var key in src) {
+        if (src.hasOwnProperty(key) && (!merge || (merge && dest[key] === undefined))) {
             dest[key] = src[key];
         }
     }
@@ -64,7 +64,7 @@ function inherit(child, base, properties) {
         childP;
 
     // object create is supported since IE9
-    if(Object.create) {
+    if (Object.create) {
         childP = child.prototype = Object.create(baseP);
         childP.constructor = child;
     } else {
@@ -76,7 +76,7 @@ function inherit(child, base, properties) {
         childP = child.prototype = new Inherited();
     }
 
-    if(properties) {
+    if (properties) {
         extend(childP, properties);
     }
 
@@ -103,7 +103,7 @@ function bindFn(fn, context) {
  * @returns {Boolean}
  */
 function boolOrFn(val, args) {
-    if(typeof val == TYPE_FUNCTION) {
+    if (typeof val == TYPE_FUNCTION) {
         return val.apply(args ? args[0] || window : window, args);
     }
     return val;
@@ -141,8 +141,8 @@ function removeEventListeners(element, types, handler) {
  * @return {Boolean} found
  */
 function hasParent(node, parent) {
-    while(node) {
-        if(node == parent) {
+    while (node) {
+        if (node == parent) {
             return true;
         }
         node = node.parentNode;
@@ -172,11 +172,11 @@ function splitStr(str) {
  * @return {Boolean|Number} false when not found, or the index
  */
 function inArray(src, find, findByKey) {
-    if(src.indexOf && !findByKey) {
+    if (src.indexOf && !findByKey) {
         return src.indexOf(find);
     } else {
-        for(var i = 0, len = src.length; i < len; i++) {
-            if((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
+        for (var i = 0, len = src.length; i < len; i++) {
+            if ((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
                 return i;
             }
         }
@@ -202,8 +202,8 @@ function toArray(obj) {
 function uniqueArray(src, key) {
     var results = [];
     var values = [];
-    for(var i = 0, len = src.length; i < len; i++) {
-        if(inArray(values, src[i][key]) < 0) {
+    for (var i = 0, len = src.length; i < len; i++) {
+        if (inArray(values, src[i][key]) < 0) {
             results.push(src[i]);
         }
         values[i] = src[i][key];
@@ -221,11 +221,11 @@ function prefixed(obj, property) {
     var prefix, prop, i;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
-    for(i = 0; i < VENDOR_PREFIXES.length; i++) {
+    for (i = 0; i < VENDOR_PREFIXES.length; i++) {
         prefix = VENDOR_PREFIXES[i];
         prop = (prefix) ? prefix + camelProp : property;
 
-        if(prop in obj) {
+        if (prop in obj) {
             return prop;
         }
     }

@@ -42,7 +42,7 @@ EventEmitter.prototype = {
     off: function(events, handler) {
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
-            if(!handler) {
+            if (!handler) {
                 delete handlers[event];
             } else {
                 handlers[event].splice(inArray(handlers[event], handler), 1);
@@ -66,13 +66,13 @@ EventEmitter.prototype = {
      */
     emit : function(event, data) {
         // we also want to trigger dom events
-        if(this.domEvents) {
+        if (this.domEvents) {
             triggerDomEvent(event, data);
         }
 
         // no handlers, so skip it all
         var handlers = this.handlers[event];
-        if(!handlers || !handlers.length) {
+        if (!handlers || !handlers.length) {
             return;
         }
 
@@ -81,7 +81,7 @@ EventEmitter.prototype = {
             data.srcEvent.preventDefault();
         };
 
-        for(var i = 0; i < handlers.length; i++) {
+        for (var i = 0; i < handlers.length; i++) {
             handlers[i](data);
         }
     }

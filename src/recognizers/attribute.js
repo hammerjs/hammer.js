@@ -32,12 +32,12 @@ inherit(AttrRecognizer, Recognizer, {
         var isValid = this.attrTest(input);
 
         // on cancel input and we've recognized before, return STATE_CANCELLED
-        if(isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
+        if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
             return state | STATE_CANCELLED;
-        } else if(isRecognized || isValid) {
-            if(eventType & INPUT_END) {
+        } else if (isRecognized || isValid) {
+            if (eventType & INPUT_END) {
                 return state | STATE_ENDED;
-            } else if(!(state & STATE_BEGAN)) {
+            } else if (!(state & STATE_BEGAN)) {
                 return state | STATE_BEGAN;
             }
             return state | STATE_CHANGED;
