@@ -17,23 +17,26 @@ inherit(PanRecognizer, AttrRecognizer, {
         var options = this.options;
         var hasMoved = true;
         var distance = input.distance;
+        var direction = input.direction;
         var x = input.deltaX;
         var y = input.deltaY;
 
-        // lock to axis
-        if (!(input.direction & options.direction)) {
-
+        // lock to axis?
+        if (!(direction & options.direction)) {
             if (options.direction & DIRECTION_HORIZONTAL) {
-                input.direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
                 hasMoved = x != this.pX;
                 distance = Math.abs(input.deltaX);
             } else {
-                input.direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
                 hasMoved = y != this.pY;
                 distance = Math.abs(input.deltaY);
             }
         }
-        return hasMoved && distance > options.threshold && input.direction & options.direction;
+
+        input.direction = direction;
+
+        return hasMoved && distance > options.threshold && direction & options.direction;
     },
 
     attrTest: function(input) {

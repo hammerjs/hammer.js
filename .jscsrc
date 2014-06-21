@@ -1,11 +1,10 @@
 {
     "preset": "google",
-
     "excludeFiles": [
-    	"*.js",
-    	"tests/**",
-    	"docs/**",
-    	"misc/**",
-    	"node_modules/**"
-	]
+        "*.js",
+        "tests/**",
+        "docs/**",
+        "misc/**",
+        "node_modules/**"
+    ]
 }
