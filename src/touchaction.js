@@ -80,8 +80,6 @@ TouchAction.prototype = {
         var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
         var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
 
-        console.log(direction, hasPanY, DIRECTION_LEFT, actions, TOUCH_ACTION_PAN_Y);
-
         if (hasNone || (hasPanY && hasPanX) ||
             (hasPanY && direction & DIRECTION_HORIZONTAL) ||
             (hasPanX && direction & DIRECTION_VERTICAL)) {

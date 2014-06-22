@@ -7,9 +7,6 @@
 function Manager(element, options) {
     options = options || {};
 
-    // get the touchAction style property value when option.touchAction is empty
-    // otherwise the defaults.touchAction value is used
-    options.touchAction = options.touchAction || element.style.touchAction || undefined;
     this.options = merge(options, Hammer.defaults);
 
     this.handlers = {};

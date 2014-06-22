@@ -61,20 +61,18 @@ call `preventDefault` manually to fix this. You should only use this if you know
 
 ### Preferred touch-action values per gesture
 If you _do_ want to set your own value, then the table below should help you a bit...
+
 | Gesture Event | Least restrictive touch-action value  |
 |---------------|---------------------------------------|
-| press         | auto |
-| tap | auto |
-| doubletap | manipulation |
-| drag, dragup, dragdown, dragend | pan-x |
-| drag, dragleft, dragright, dragend | pan-y |
-| swipeup, swipedown | pan-x |
-| swipeleft, swiperight | pan-y |
-| transform, transformstart, transformend | pan-x pan-y |
-| rotate | pan-x pan-y |
-| pinch, pinchin, pinchout | pan-x pan-y |
-| touch | auto |
-| release | auto |
+| press         | auto                                  |
+| tap           | auto                                  |
+| multitap      | manipulation                          |
+| pan panup pandown | pan-x                             |
+| pan panleft panright | pan-y                          |
+| swipeup swipedown | pan-x                             |
+| swipeleft swiperight | pan-y                          |
+| rotate        | pan-x pan-y                           |
+| pinch pinchin pinchout | pan-x pan-y                  |
 
 # API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
@@ -87,11 +85,11 @@ contains `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` recog
 Create a Manager. This sets up the input event listeners, and sets the touch-action property for you on the element.
 
 The `touchAction` option accepts the `auto`, `pan-y`, `pan-x` and `none` values, just like the css property. By default
- it tries to read the value from the element (set by you stylesheet), and if not found it is set to `pan-y`.
+it is set to `compute`, which computes the correct touchAction property based on the added recognizers. 
  
 | Option        | Default | Description                   |
 |---------------|---------|-------------------------------|
-| touchAction   |         | accepts the `auto`, `pan-y`, `pan-x` and `none` values, and a combination of these. By default it tries to read the style value from the element, otherwise it is set to `pan-y`. |
+| touchAction   |         | accepts the `compute`, `auto`, `pan-y`, `pan-x` and `none` values. Default is `compute`. |
 | domEvents     | false   | this let's hammer also fire domEvents. |
 | enable        | true    | boolean, or an function that should return a boolean which is. |
 
