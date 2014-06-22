@@ -16,7 +16,7 @@ module('Simultaenous recognition', {
     }
 
 });
-test("should pinch and pan simultaneously be recognized when enabled", function () {
+asyncTest("should pinch and pan simultaneously be recognized when enabled", function () {
 
     expect(4);
 
@@ -39,7 +39,7 @@ test("should pinch and pan simultaneously be recognized when enabled", function 
         pinchCount++;
     });
 
-    var executeGesture = function () {
+    var executeGesture = function (cb) {
         var event, touches;
 
         touches = [
@@ -52,54 +52,63 @@ test("should pinch and pan simultaneously be recognized when enabled", function 
         event.touches = touches;
         event.changedTouches = touches;
 
+        setTimeout(function() {
+            touches = [
+                {clientX: 10, clientY: 20, identifier: 0 },
+                {clientX: 20, clientY: 20, identifier: 1 }
+            ];
 
-        touches = [
-            {clientX: 10, clientY: 20, identifier: 0 },
-            {clientX: 20, clientY: 20, identifier: 1 }
-        ];
+            event = document.createEvent('Event');
+            event.initEvent('touchmove', true, true);
+            event.touches = touches;
+            event.changedTouches = touches;
 
-        event = document.createEvent('Event');
-        event.initEvent('touchmove', true, true);
-        event.touches = touches;
-        event.changedTouches = touches;
+            el.dispatchEvent(event);
+        }, 100);
 
-        el.dispatchEvent(event);
+        setTimeout(function() {
+            start();
+            touches = [
+                {clientX: 20, clientY: 30, identifier: 0 },
+                {clientX: 40, clientY: 30, identifier: 1 }
+            ];
 
-        touches = [
-            {clientX: 20, clientY: 30, identifier: 0 },
-            {clientX: 40, clientY: 30, identifier: 1 }
-        ];
+            event = document.createEvent('Event');
+            event.initEvent('touchmove', true, true);
+            event.touches = touches;
+            event.changedTouches = touches;
 
-        event = document.createEvent('Event');
-        event.initEvent('touchmove', true, true);
-        event.touches = touches;
-        event.changedTouches = touches;
+            el.dispatchEvent(event);
 
-        el.dispatchEvent(event);
+            event = document.createEvent('Event');
+            event.initEvent('touchend', true, true);
+            event.touches = touches;
+            event.changedTouches = touches;
+
+            el.dispatchEvent(event);
+
+            cb();
+        }, 200);
 
 
-        event = document.createEvent('Event');
-        event.initEvent('touchend', true, true);
-        event.touches = touches;
-        event.changedTouches = touches;
-
-        el.dispatchEvent(event);
     };
 
     // 2 gesture will be recognized
-    executeGesture();
+    executeGesture(function() {
+        equal(panCount, 1);
+        equal(pinchCount, 1);
 
-    equal(panCount, 1);
-    equal(pinchCount, 1);
+        pinch.dropRecognizeWith(hammer.get('pan'));
+        stop();
 
-    pinch.dropRecognizeWith(hammer.get('pan'));
+        // only the pan gesture will be recognized
+        executeGesture(function() {
+            equal(panCount, 2);
+            equal(pinchCount, 1);
+        });
+    });
 
 
-    // only the pan gesture will be recognized
-    executeGesture();
-
-    equal(panCount, 2);
-    equal(pinchCount, 1);
 
 });
 

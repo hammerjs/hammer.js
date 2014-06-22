@@ -266,7 +266,7 @@ var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
 var INPUT_TYPE_KINECT = 'kinect';
 
-var COMPUTE_INTERVAL = 50;
+var COMPUTE_INTERVAL = 25;
 
 var INPUT_START = 1;
 var INPUT_MOVE = 2;
@@ -425,8 +425,7 @@ function computeIntervalInputData(session, input) {
     }
 
     var deltaTime = input.timeStamp - last.timeStamp;
-
-    if (deltaTime > COMPUTE_INTERVAL || last.velocity == undefined) {
+    if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
         var deltaX = input.deltaX - last.deltaX;
         var deltaY = input.deltaY - last.deltaY;
 
@@ -436,10 +435,10 @@ function computeIntervalInputData(session, input) {
     }
 
     var velocity = last.velocity;
-
     input.velocity = Math.max(velocity.x, velocity.y);
     input.velocityX = velocity.x;
     input.velocityY = velocity.y;
+
     input.direction = last.direction;
 }
 
