@@ -165,7 +165,7 @@ var round = Math.round;
  * @returns {Boolean} found
  */
 function inStr(str, find) {
-    return str.indexOf(find) > 1;
+    return str.indexOf(find) > -1;
 }
 
 /**
@@ -901,14 +901,12 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         // not needed with native support for the touchAction property
-        if (!NATIVE_TOUCH_ACTION) {
+        if (NATIVE_TOUCH_ACTION) {
             return;
         }
 
         var srcEvent = input.srcEvent;
         var direction = input.offsetDirection;
-
-        console.log(direction)
 
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {
@@ -920,6 +918,8 @@ TouchAction.prototype = {
         var hasNone = inStr(actions, TOUCH_ACTION_NONE);
         var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
         var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+
+        console.log(direction, hasPanY, DIRECTION_LEFT, actions, TOUCH_ACTION_PAN_Y);
 
         if (hasNone || (hasPanY && hasPanX) ||
             (hasPanY && direction & DIRECTION_HORIZONTAL) ||
@@ -1257,9 +1257,7 @@ inherit(PanRecognizer, AttrRecognizer, {
                 distance = Math.abs(input.deltaY);
             }
         }
-
         input.direction = direction;
-
         return hasMoved && distance > options.threshold && direction & options.direction;
     },
 

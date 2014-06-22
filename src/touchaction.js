@@ -62,7 +62,7 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         // not needed with native support for the touchAction property
-        if (!NATIVE_TOUCH_ACTION) {
+        if (NATIVE_TOUCH_ACTION) {
             return;
         }
 
@@ -79,6 +79,8 @@ TouchAction.prototype = {
         var hasNone = inStr(actions, TOUCH_ACTION_NONE);
         var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
         var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+
+        console.log(direction, hasPanY, DIRECTION_LEFT, actions, TOUCH_ACTION_PAN_Y);
 
         if (hasNone || (hasPanY && hasPanX) ||
             (hasPanY && direction & DIRECTION_HORIZONTAL) ||

@@ -53,6 +53,10 @@
     <p>Should prevent scrolling on vertical movement.</p>
     <div class="tester" id="pan-x"></div>
 
+    <h3>touch-action: pan-x pan-y</h3>
+    <p>Should prevent scrolling on all movement.</p>
+    <div class="tester" id="pan-x-pan-y"></div>
+
     <h3>touch-action: none</h3>
     <p>Should prevent all.</p>
     <div class="tester" id="none"></div>
@@ -62,9 +66,9 @@
         var support = Hammer.prefixed(document.body.style, 'touchAction');
         document.getElementById(support ? 'native' : 'no-native').className = 'show';
 
-        var touchActions = ['auto', 'pan-y', 'pan-x', 'none'];
+        var touchActions = ['auto', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'];
         Hammer.each(touchActions, function(touchAction) {
-            var el = document.getElementById(touchAction);
+            var el = document.getElementById(touchAction.replace(" ", "-"));
 
             var mc = Hammer(el, {
                 touchAction: touchAction

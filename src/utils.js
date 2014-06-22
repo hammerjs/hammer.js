@@ -162,7 +162,7 @@ var round = Math.round;
  * @returns {Boolean} found
  */
 function inStr(str, find) {
-    return str.indexOf(find) > 1;
+    return str.indexOf(find) > -1;
 }
 
 /**
