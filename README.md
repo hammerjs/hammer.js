@@ -68,6 +68,8 @@ horizontal.requireFailure(vertical);
 verical.requireFailure(horizontal);
 ````
 
+Removing the dependency could be done with the `dropRequireFailure()` method.
+
 ## The Touch-action property
 Chrome 35+, IE10+ and soon FireFox, support the `touch-action` property. This property tells the browser how to
 handle touches on an element. It improves the detection and experience of the gestures a lot, because it can prevent
@@ -112,9 +114,6 @@ it is set to `compute`, which computes the correct touchAction property based on
 | domEvents     | false   | this let's hammer also fire domEvents. |
 | enable        | true    | boolean, or an function that should return a boolean which is. |
 
-##### .destroy()
-Unbinds all events and input events and makes the manager unusable. It does NOT unbind any domEvent listeners.
-
 ##### .add(Recognizer), .get(Recognizer) and .remove(Recognizer)
 Add a new `Recognizer` instance to the Manager. The order of adding is also the order of the recognizers being
 executed. Just like the `get` method, it returns the added `Recognizer` instance.
@@ -124,6 +123,9 @@ The `get` and `remove` methods takes the event name (from a recognizer) or a rec
 ##### .on(events, handler) and .off(events, [handler])
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
+
+##### .destroy()
+Unbinds all events and input events and makes the manager unusable. It does NOT unbind any domEvent listeners.
 
 
 ### Hammer.Recognizer(options)
