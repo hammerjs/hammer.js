@@ -137,7 +137,6 @@ function computeInputData(manager, input) {
     input.center = center;
     input.angle = getAngle(offsetCenter, center);
     input.distance = getDistance(offsetCenter, center);
-    input.direction = getDirection(offsetCenter, center);
 
     input.timeStamp = input.srcEvent.timeStamp;
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
@@ -170,12 +169,13 @@ function computeIntervalInputData(session, input) {
 
     var deltaTime = input.timeStamp - last.timeStamp;
 
-    if (deltaTime > COMPUTE_INTERVAL || !last.velocity) {
+    if (deltaTime > COMPUTE_INTERVAL || last.velocity == undefined) {
         var deltaX = input.deltaX - last.deltaX;
         var deltaY = input.deltaY - last.deltaY;
 
         last = session.lastInterval = simpleCloneInputData(input);
         last.velocity = getVelocity(deltaTime, deltaX, deltaY);
+        last.direction = getDirection(deltaX, deltaY);
     }
 
     var velocity = last.velocity;
@@ -183,6 +183,7 @@ function computeIntervalInputData(session, input) {
     input.velocity = Math.max(velocity.x, velocity.y);
     input.velocityX = velocity.x;
     input.velocityY = velocity.y;
+    input.direction = last.direction;
 }
 
 /**
@@ -241,28 +242,24 @@ function getCenter(pointers) {
 /**
  * calculate the velocity between two points. unit is in px per ms.
  * @param {Number} deltaTime
- * @param {Number} deltaX
- * @param {Number} deltaY
+ * @param {Number} x
+ * @param {Number} y
  * @return {Object} velocity `x` and `y`
  */
-function getVelocity(deltaTime, deltaX, deltaY) {
+function getVelocity(deltaTime, x, y) {
     return {
-        x: Math.abs(deltaX / deltaTime) || 0,
-        y: Math.abs(deltaY / deltaTime) || 0
+        x: Math.abs(x / deltaTime) || 0,
+        y: Math.abs(y / deltaTime) || 0
     };
 }
 
 /**
  * get the direction between two points
- * @param {Object} p1 {x, y}
- * @param {Object} p2 {x, y}
+ * @param {Number} x
+ * @param {Number} y
  * @return {Number} direction
  */
-function getDirection(p1, p2) {
-    var x = p1.x - p2.x,
-        y = p1.y - p2.y;
-
-    // no direction because the positions are equal
+function getDirection(x, y) {
     if (x === y) {
         return DIRECTION_NONE;
     }
