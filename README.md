@@ -13,18 +13,16 @@ var mc = Hammer(myElement);
 mc.on("swipeleft swiperight", mySwipeHandler);
 ````
 
-By default it supports the `tap`, `doubletap`, `pan`, `swipe`, `press`, `pinch` and `rotate` gestures. The default
-`touch-action` property is set to `pan-y`, so horizontal scrolling is being prevented, but vertical scrolling is
-still possible.
+By default it adds the `tap`, `doubletap` and `press`, horizontal `pan` and `swipe`, and the multi-touch `pinch` and 
+`rotate` recognizers. Pinch and rotate are disabled by default, but you can enable them by calling 
+`mc.get('pinch').set('enable', true')`
 
 ### More control
 You can setup your own set of recognizers for your instance. This requires a bit more code, but it gives you more
 control and slightly better performance.
 
 ````js
-var myOptions = {
-    touchAction: 'none'
-};
+var myOptions = { };
 var mc = new Hammer.Manager(myElement, myOptions);
 
 mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL | Hammer.DIRECTION_VERTICAL }));
@@ -53,29 +51,30 @@ the recognizer instance.
 Chrome 35+, IE10+ and soon FireFox, support the `touch-action` property. This property tells the browser how to
 handle touches on an element. It improves the detection and experience of the gestures a lot, because it can prevent
 scrolling of the page without any JavaScript has to be executed, which can be too late in some cases.
+Hammer uses a fallback for this property when needed, so it is working with older browsers too.
 
-Hammer makes use of this property, and uses a fallback when needed. It is important to set this property to the
-correct value when creating an instance. By default it tries to read the value from the element,
-or it reads the settings from the recognizers and sets the correct value to support these.
+By default it sets a value based on the recognizer settings. You can overwrite this by giving the option `touchAction`
+to the Manager, or set the touchAction value with your CSS.
 
-The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `auto` it doesnt prevent any scrolling,
-and Hammer would run, but it might fail if you dont call `ev.preventDefault()` soon enough. This is not recommended!
+When you set the touchAction to `auto` it doesnt prevent any defaults, and Hammer would probably break. You have to 
+call `preventDefault` manually to fix this. You should only use this if you know what you're doing.
 
-`pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows
-vertical scrolling, and prevents horizontal scrolling so gestures are being recognized. The `none`
-value prevents all default actions, making it ideal for multi-touch gestures like pinching and rotating.
-
-### Available touch-action values
-
-| Property  | Gestures              | Description           |
-|-----------|-----------------------|-----------------------|
-| compute   | - | Hammer automatic sets the touch-action value for you based on the gesture settings. |
-| auto      | tap, doubletap        | The browser will add the normal touch interactions which it supports. |
-| none	    | pinch, rotate         | No touch interactions will be handled by the browser. |
-| pan-x	    | panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
-| pan-y	    | panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
-
-Also a combination of pan-x and pan-y is possible.
+### Preferred touch-action values per gesture
+If you _do_ want to set your own value, then the table below should help you a bit...
+| Gesture Event | Least restrictive touch-action value  |
+|---------------|---------------------------------------|
+| press         | auto |
+| tap | auto |
+| doubletap | manipulation |
+| drag, dragup, dragdown, dragend | pan-x |
+| drag, dragleft, dragright, dragend | pan-y |
+| swipeup, swipedown | pan-x |
+| swipeleft, swiperight | pan-y |
+| transform, transformstart, transformend | pan-x pan-y |
+| rotate | pan-x pan-y |
+| pinch, pinchin, pinchout | pan-x pan-y |
+| touch | auto |
+| release | auto |
 
 # API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
