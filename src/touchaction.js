@@ -69,8 +69,6 @@ TouchAction.prototype = {
         var srcEvent = input.srcEvent;
         var direction = input.offsetDirection;
 
-        console.log(direction)
-
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {
             srcEvent.preventDefault();

@@ -50,9 +50,7 @@ inherit(PanRecognizer, AttrRecognizer, {
                 distance = Math.abs(input.deltaY);
             }
         }
-
         input.direction = direction;
-
         return hasMoved && distance > options.threshold && direction & options.direction;
     },
 
