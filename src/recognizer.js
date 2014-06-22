@@ -81,7 +81,7 @@ Recognizer.prototype = {
     requireFailure: function(otherRecognizer) {
         var requireFail = this.requireFail;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (inArray(requireFail, otherRecognizer.id) === -1) {
+        if (inArray(requireFail, otherRecognizer) === -1) {
             requireFail.push(otherRecognizer);
             otherRecognizer.requireFailure(this);
         }

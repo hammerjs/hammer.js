@@ -57,13 +57,12 @@ the recognizer instance.
 
 #### Require failure of an other recognizer
 With the method `requireFailure()` you can let a recognizer require the failure of an other recognizer before recognizing.
-This could become useful when you want to nest two gestures, like pan-horizontal and pan-vertical. Once pan-horizontal is being recognized, the pan-vertical would be passed. 
+This could become useful when you want to nest two gestures, like pan-horizontal and pan-vertical.
 
 ````js
 var horizontal = new Hammer.Pan({ event: 'panh', direction: Hammer.DIRECTION_HORIZONTAL });
 var vertical = new Hammer.Pan({ event: 'panv', direction: Hammer.DIRECTION_VERTICAL });
 
-horizontal.requireFailure(vertical);
 verical.requireFailure(horizontal);
 ````
 
@@ -133,10 +132,12 @@ which is a boolean value or a callback function to enable/disable the recognizer
 
 ##### .recognizeWith(otherRecognizer) and .dropRecognizeWith(otherRecognizer)
 Run the recognizer simultaneous with the given other recognizer, in both directions. This is usable for like 
-combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. 
+combining a pan with a swipe at the end, or a pinch with the ability to rotate the target as well. Dropping the
+connection only removes the link on the recognizer, not on the other recognizer.
 
 ##### .requireFailure(otherRecognizer) and .dropRequireFailure(otherRecognizer)
-Run the recognizer only when the other recognizer fails.
+Run the recognizer only when the other recognizer fails. Dropping the connection only removes the link on the 
+recognizer, not on the other recognizer.
 
 
 ## Options per recognizer
