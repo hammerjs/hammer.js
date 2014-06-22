@@ -168,8 +168,7 @@ function computeIntervalInputData(session, input) {
     }
 
     var deltaTime = input.timeStamp - last.timeStamp;
-
-    if (deltaTime > COMPUTE_INTERVAL || last.velocity == undefined) {
+    if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
         var deltaX = input.deltaX - last.deltaX;
         var deltaY = input.deltaY - last.deltaY;
 
@@ -179,10 +178,10 @@ function computeIntervalInputData(session, input) {
     }
 
     var velocity = last.velocity;
-
     input.velocity = Math.max(velocity.x, velocity.y);
     input.velocityX = velocity.x;
     input.velocityY = velocity.y;
+
     input.direction = last.direction;
 }
 
