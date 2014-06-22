@@ -34,6 +34,9 @@ Recognizer.prototype = {
      */
     set: function(option, val) {
         this.options[option] = val;
+
+        // also update the touchAction, in case something changed about the directions/enabled state
+        this.manager && this.manager.touchAction.update();
     },
 
     /**
@@ -120,7 +123,7 @@ Recognizer.prototype = {
             }
         }
 
-        // is is enabled?
+        // is is enabled and allow recognizing?
         if (!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
             this.reset();
             this.state = STATE_FAILED;

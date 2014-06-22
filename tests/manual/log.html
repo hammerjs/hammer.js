@@ -37,11 +37,9 @@
         var log = document.querySelector("#log");
         var debug = document.querySelector("#debug");
 
-        var mc = new Hammer.Manager(el, {
-            touchAction: 'none'
-        });
+        var mc = new Hammer.Manager(el);
 
-        mc.add(new Hammer.Swipe());
+        mc.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_HORIZONTAL }));
         mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith(mc.get('swipe'));
 
         mc.add(new Hammer.Rotate());

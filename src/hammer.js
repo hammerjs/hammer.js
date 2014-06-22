@@ -31,17 +31,17 @@ Hammer.defaults = {
     // but this is slower and unused by simple implementations, so disabled by default.
     domEvents: false,
 
-    // default value is used when a touch-action isn't defined on the element style
-    touchAction: 'pan-y',
+    // this value is used when a touch-action isn't defined on the element.style
+    touchAction: TOUCH_ACTION_COMPUTE,
 
     enable: true,
 
     // default setup when calling Hammer()
     recognizers: [
-        [RotateRecognizer],
-        [PinchRecognizer, null, 'rotate'],
-        [PanRecognizer],
-        [SwipeRecognizer, null, 'pan'],
+        [RotateRecognizer, { enable: false }],
+        [PinchRecognizer, { enable: false }, 'rotate'],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }],
+        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }, 'pan'],
         [TapRecognizer],
         [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
         [PressRecognizer]

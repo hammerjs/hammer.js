@@ -14,30 +14,28 @@ module.exports = (grunt) ->
       build:
         src: [
           'src/hammer.prefix'
-          'src/hammer.js'
           'src/utils.js'
           'src/input.js'
           'src/input/*.js'
-          'src/eventemitter.js'
           'src/touchaction.js'
-          'src/manager.js'
           'src/recognizer.js'
           'src/recognizers/*.js'
+          'src/hammer.js'
+          'src/manager.js'
           'src/expose.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
 
       test: # special test build that exposes everything so it's testable
         src: [
-          'src/hammer.js'
           'src/utils.js'
           'src/input.js'
           'src/input/*.js'
-          'src/eventemitter.js'
           'src/touchaction.js'
-          'src/manager.js'
           'src/recognizer.js'
           'src/recognizers/*.js'
+          'src/hammer.js'
+          'src/manager.js'
           'src/expose.js']
         dest: 'tests/build.js'
 

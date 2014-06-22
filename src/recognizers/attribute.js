@@ -13,6 +13,11 @@ inherit(AttrRecognizer, Recognizer, {
     },
 
     /**
+     * @virtual
+     */
+    getTouchAction: function() { },
+
+    /**
      * used to check if it the recognizer receives valid input, like input.distance > 10
      * this should be overwritten
      * @virtual

@@ -156,6 +156,16 @@ function hasParent(node, parent) {
 var round = Math.round;
 
 /**
+ * small indexOf wrapper
+ * @param {String} str
+ * @param {String} find
+ * @returns {Boolean} found
+ */
+function inStr(str, find) {
+    return str.indexOf(find) > 1;
+}
+
+/**
  * split string on whitespace
  * @param {String} str
  * @returns {Array} words
@@ -194,19 +204,20 @@ function toArray(obj) {
 }
 
 /**
- * unique array with objects based on a key (like 'id')
+ * unique array with objects based on a key (like 'id') or just by the array's value
  * @param {Array} src [{id:1},{id:2},{id:1}]
- * @param {String} key
+ * @param {String} [key]
  * @returns {Array} [{id:1},{id:2}]
  */
 function uniqueArray(src, key) {
     var results = [];
     var values = [];
     for (var i = 0, len = src.length; i < len; i++) {
-        if (inArray(values, src[i][key]) < 0) {
+        var val = key ? src[i][key] : src[i];
+        if (inArray(values, val) < 0) {
             results.push(src[i]);
         }
-        values[i] = src[i][key];
+        values[i] = val;
     }
     return results;
 }

@@ -56,23 +56,26 @@ scrolling of the page without any JavaScript has to be executed, which can be to
 
 Hammer makes use of this property, and uses a fallback when needed. It is important to set this property to the
 correct value when creating an instance. By default it tries to read the value from the element,
-or it is set to `pan-y` when not found.
+or it reads the settings from the recognizers and sets the correct value to support these.
 
 The values you can use are `auto`, `pan-y`, `pan-x` and `none`. When set to `auto` it doesnt prevent any scrolling,
 and Hammer would run, but it might fail if you dont call `ev.preventDefault()` soon enough. This is not recommended!
 
 `pan-x` and `pan-y` set what direction of panning of the browser should _allow_. This means that `pan-y` allows
 vertical scrolling, and prevents horizontal scrolling so gestures are being recognized. The `none`
-value prevents all scrolling, making it ideal for multi-touch gestures like pinching and rotating.
+value prevents all default actions, making it ideal for multi-touch gestures like pinching and rotating.
 
-Below is a list of the available parameters for touch-action.
+### Available touch-action values
 
 | Property  | Gestures              | Description           |
 |-----------|-----------------------|-----------------------|
+| compute   | - | Hammer automatic sets the touch-action value for you based on the gesture settings. |
 | auto      | tap, doubletap        | The browser will add the normal touch interactions which it supports. |
 | none	    | pinch, rotate         | No touch interactions will be handled by the browser. |
 | pan-x	    | panup, pandown, swipeup, swipedown | Only horizontal scrolling will be handled by the browser. |
 | pan-y	    | panleft, panright, swipeleft, swiperight | Only vertical scrolling will be handled by the browser. |
+
+Also a combination of pan-x and pan-y is possible.
 
 # API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!

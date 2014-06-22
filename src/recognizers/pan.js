@@ -10,7 +10,24 @@ inherit(PanRecognizer, AttrRecognizer, {
         event: 'pan',
         threshold: 10,
         pointers: 1,
-        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL
+        direction: DIRECTION_ALL
+    },
+
+    getTouchAction: function() {
+        var direction = this.options.direction;
+
+        if (direction === DIRECTION_ALL) {
+            return [TOUCH_ACTION_NONE];
+        }
+
+        var actions = [];
+        if (direction & DIRECTION_HORIZONTAL) {
+            actions.push(TOUCH_ACTION_PAN_Y);
+        }
+        if (direction & DIRECTION_VERTICAL) {
+            actions.push(TOUCH_ACTION_PAN_X);
+        }
+        return actions;
     },
 
     directionTest: function(input) {

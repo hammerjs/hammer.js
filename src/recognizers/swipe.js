@@ -11,6 +11,10 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         pointers: 1
     },
 
+    getTouchAction: function() {
+        return PanRecognizer.prototype.getTouchAction.call(this);
+    },
+
     attrTest: function(input) {
         var direction = this.options.direction;
         var velocity;

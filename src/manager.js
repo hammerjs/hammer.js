@@ -10,13 +10,13 @@ function Manager(element, options) {
     // get the touchAction style property value when option.touchAction is empty
     // otherwise the defaults.touchAction value is used
     options.touchAction = options.touchAction || element.style.touchAction || undefined;
-
     this.options = merge(options, Hammer.defaults);
 
     this.handlers = {};
     this.session = {};
     this.recognizers = [];
 
+    this.element = element;
     this.input = createInputInstance(this);
     this.touchAction = new TouchAction(this, this.options.touchAction);
 
@@ -51,7 +51,7 @@ Manager.prototype = {
             return;
         }
 
-        this.touchAction.update(inputData);
+        this.touchAction.preventDefaults(inputData);
 
         var recognizer;
         var session = this.session;
@@ -105,6 +105,7 @@ Manager.prototype = {
     add: function(recognizer) {
         this.recognizers.push(recognizer);
         recognizer.manager = this;
+        this.touchAction.update();
         return recognizer;
     },
 
@@ -116,6 +117,7 @@ Manager.prototype = {
         var recognizers = this.recognizers;
         recognizer = this.get(recognizer);
         recognizers.splice(inArray(recognizers, recognizer), 1);
+        this.touchAction.update();
     },
 
     /**

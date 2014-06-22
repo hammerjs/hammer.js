@@ -13,6 +13,10 @@ inherit(PressRecognizer, Recognizer, {
         threshold: 10 // a minimal movement is ok, but keep it low
     },
 
+    getTouchAction: function() {
+        return [TOUCH_ACTION_AUTO];
+    },
+
     test: function(input) {
         var options = this.options;
 

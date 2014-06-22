@@ -1,81 +1,6 @@
 (function(window, undefined) {
   'use strict';
 
-/**
- * create an manager with a default set of recognizers
- * @param {HTMLElement} element
- * @param {Object} [options]
- * @constructor
- */
-function Hammer(element, options) {
-    options = options || {};
-    var manager = new Manager(element, options);
-
-    /**
-     * setup recognizers
-     * the defauls.recognizers contains an array like this;
-     * [ RecognizerClass, options, recognizeWith ],
-     * [ .... ]
-     */
-    each(manager.options.recognizers, function(item) {
-        var recognizer = manager.add(new (item[0])(item[1]));
-        if (item[2]) {
-            recognizer.recognizeWith(item[2]);
-        }
-    });
-
-    return manager;
-}
-
-Hammer.VERSION = '2.0.0dev';
-
-Hammer.defaults = {
-    // when set to true, dom events are being triggered.
-    // but this is slower and unused by simple implementations, so disabled by default.
-    domEvents: false,
-
-    // default value is used when a touch-action isn't defined on the element style
-    touchAction: 'pan-y',
-
-    enable: true,
-
-    // default setup when calling Hammer()
-    recognizers: [
-        [RotateRecognizer],
-        [PinchRecognizer, null, 'rotate'],
-        [PanRecognizer],
-        [SwipeRecognizer, null, 'pan'],
-        [TapRecognizer],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
-        [PressRecognizer]
-    ],
-
-    // with some style attributes you can improve the experience.
-    cssProps: {
-        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
-        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
-        userSelect: 'none',
-
-        // Disable the Windows Phone grippers when pressing an element.
-        touchSelect: 'none',
-
-        // Disables the default callout shown when you touch and hold a touch target.
-        // On iOS, when you touch and hold a touch target such as a link, Safari displays
-        // a callout containing information about the link. This property allows you to disable that callout.
-        touchCallout: 'none',
-
-        // Specifies whether zooming is enabled. Used by IE10>
-        contentZooming: 'none',
-
-        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
-        userDrag: 'none',
-
-        // Overrides the highlight color shown when the user taps a link or a JavaScript
-        // clickable element in iOS. This property obeys the alpha value, if specified.
-        tapHighlightColor: 'rgba(0,0,0,0)'
-    }
-};
-
 var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
 
 var TYPE_FUNCTION = 'function';
@@ -234,6 +159,16 @@ function hasParent(node, parent) {
 var round = Math.round;
 
 /**
+ * small indexOf wrapper
+ * @param {String} str
+ * @param {String} find
+ * @returns {Boolean} found
+ */
+function inStr(str, find) {
+    return str.indexOf(find) > 1;
+}
+
+/**
  * split string on whitespace
  * @param {String} str
  * @returns {Array} words
@@ -272,19 +207,20 @@ function toArray(obj) {
 }
 
 /**
- * unique array with objects based on a key (like 'id')
+ * unique array with objects based on a key (like 'id') or just by the array's value
  * @param {Array} src [{id:1},{id:2},{id:1}]
- * @param {String} key
+ * @param {String} [key]
  * @returns {Array} [{id:1},{id:2}]
  */
 function uniqueArray(src, key) {
     var results = [];
     var values = [];
     for (var i = 0, len = src.length; i < len; i++) {
-        if (inArray(values, src[i][key]) < 0) {
+        var val = key ? src[i][key] : src[i];
+        if (inArray(values, val) < 0) {
             results.push(src[i]);
         }
-        values[i] = src[i][key];
+        values[i] = val;
     }
     return results;
 }
@@ -328,6 +264,7 @@ var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent)
 var INPUT_TYPE_TOUCH = 'touch';
 var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
+var INPUT_TYPE_KINECT = 'kinect';
 
 var COMPUTE_INTERVAL = 50;
 
@@ -344,6 +281,7 @@ var DIRECTION_DOWN = 16;
 
 var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
 var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
 
 var PROPS_XY = ['x', 'y'];
 var PROPS_CLIENT_XY = ['clientX', 'clientY'];
@@ -718,11 +656,12 @@ var POINTER_INPUT_MAP = {
     pointerout: INPUT_CANCEL
 };
 
-// in IE10 the pointer types are defined as integers
-var IE10_POINTER_TYPE_MAP = {
+// in IE10 the pointer types is defined as an enum
+var IE10_POINTER_TYPE_ENUM = {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
-    4: INPUT_TYPE_MOUSE
+    4: INPUT_TYPE_MOUSE,
+    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
 };
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
@@ -758,7 +697,7 @@ inherit(PointerEventInput, Input, {
 
         var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
-        var pointerType = IE10_POINTER_TYPE_MAP[ev.pointerType] || ev.pointerType;
+        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement || ev.target;
@@ -901,109 +840,17 @@ inherit(TouchMouseInput, Input, {
     }
 });
 
-/**
- * Event emitter
- * @constructor
- * @param {HTMLElement} element
- * @param {Boolean} domEvents trigger domEvents (which is slower than a regular function callback)
- */
-function EventEmitter(element, domEvents) {
-    this.element = element;
-    this.domEvents = domEvents;
-
-    /**
-     * contains handlers, grouped by event name
-     * 'swipe': [Function, Function, ...],
-     * 'press': [Function, Function, ...]
-     * @type {{}}
-     */
-    this.handlers = {};
-}
-
-EventEmitter.prototype = {
-    /**
-     * bind event
-     * @param {String} events
-     * @param {Function} handler
-     * @returns {EventEmitter} this
-     */
-    on: function(events, handler) {
-        var handlers = this.handlers;
-        each(splitStr(events), function(event) {
-            handlers[event] = handlers[event] || [];
-            handlers[event].push(handler);
-        });
-        return this;
-    },
-
-    /**
-     * unbind event, leave emit blank to remove all handlers
-     * @param {String} events
-     * @param {Function} [handler]
-     * @returns {EventEmitter} this
-     */
-    off: function(events, handler) {
-        var handlers = this.handlers;
-        each(splitStr(events), function(event) {
-            if (!handler) {
-                delete handlers[event];
-            } else {
-                handlers[event].splice(inArray(handlers[event], handler), 1);
-            }
-        });
-        return this;
-    },
-
-    /**
-     * removes all events handlers
-     * it doesn't unbind dom events, that is the user own responsibility
-     */
-    destroy: function() {
-        this.handlers = {};
-    },
-
-    /**
-     * emit event to the listeners
-     * @param {String} event
-     * @param {Object} data
-     */
-    emit : function(event, data) {
-        // we also want to trigger dom events
-        if (this.domEvents) {
-            triggerDomEvent(event, data);
-        }
-
-        // no handlers, so skip it all
-        var handlers = this.handlers[event];
-        if (!handlers || !handlers.length) {
-            return;
-        }
-
-        data.type = event;
-        data.preventDefault = function() {
-            data.srcEvent.preventDefault();
-        };
-
-        for (var i = 0; i < handlers.length; i++) {
-            handlers[i](data);
-        }
-    }
-};
-
-/**
- * trigger dom event
- * @param {String} event
- * @param {Object} data
- */
-function triggerDomEvent(event, data) {
-    var gestureEvent = document.createEvent('Event');
-    gestureEvent.initEvent(event, true, true);
-    gestureEvent.gesture = data;
-    data.target.dispatchEvent(gestureEvent);
-}
-
 var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
+
+// magical touchAction value
+var TOUCH_ACTION_COMPUTE = 'compute';
+
+var TOUCH_ACTION_AUTO = 'auto';
+var TOUCH_ACTION_MANIPULATION = 'manipulation';
+var TOUCH_ACTION_NONE = 'none';
+var TOUCH_ACTION_PAN_X = 'pan-x';
+var TOUCH_ACTION_PAN_Y = 'pan-y';
 
 function TouchAction(manager, value) {
     this.manager = manager;
@@ -1011,14 +858,51 @@ function TouchAction(manager, value) {
 }
 
 TouchAction.prototype = {
+    /**
+     * set the touchAction value on the element or enable the polyfill
+     * @param {String} value
+     */
     set: function(value) {
+        // find out the touch-action by the event handlers
+        if (value == TOUCH_ACTION_COMPUTE) {
+            value = this.compute();
+        }
+
         if (NATIVE_TOUCH_ACTION) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
-        this.actions = splitStr(value.toLowerCase());
+        this.actions = value.toLowerCase();
     },
 
-    update: function(input) {
+    /**
+     * just re-set the touchAction value
+     */
+    update: function() {
+        this.set(this.manager.options.touchAction);
+    },
+
+    /**
+     * compute the value for the touchAction property based on the recognizer's settings
+     * @returns {String} value
+     */
+    compute: function() {
+        var value;
+        var actions = [];
+
+        each(this.manager.recognizers, function(recognizer) {
+            if (boolOrFn(recognizer.options.enable, recognizer)) {
+                actions = actions.concat(recognizer.getTouchAction());
+            }
+        });
+        value = uniqueArray(actions).join(' ');
+        return cleanTouchActions(value);
+    },
+
+    /**
+     * this method is called on each input cycle and provides the preventing of the browser behavior
+     * @param {Object} input
+     */
+    preventDefaults: function(input) {
         // not needed with native support for the touchAction property
         if (NATIVE_TOUCH_ACTION) {
             return;
@@ -1034,14 +918,14 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
-        for (var i = 0; i < actions.length; i++) {
-            if (actions[i] == 'none') {
-                this.prevent(srcEvent);
-            } else if (actions[i] == 'pan-y' && direction & DIRECTION_HORIZONTAL) {
-                this.prevent(srcEvent);
-            } else if (actions[i] == 'pan-x' && direction & DIRECTION_VERTICAL) {
-                this.prevent(srcEvent);
-            }
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+
+        if (hasNone || (hasPanY && hasPanX) ||
+            (hasPanY && direction & DIRECTION_HORIZONTAL) ||
+            (hasPanX && direction & DIRECTION_VERTICAL)) {
+            return this.preventSrc(srcEvent);
         }
     },
 
@@ -1049,162 +933,37 @@ TouchAction.prototype = {
      * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
      * @param {Object} srcEvent
      */
-    prevent: function(srcEvent) {
+    preventSrc: function(srcEvent) {
         this.manager.session.prevented = true;
         srcEvent.preventDefault();
     }
 };
 
 /**
- * Manager
- * @param {HTMLElement} element
- * @param {Object} [options]
- * @constructor
+ * when the touchActions are collected they are not a valid value, so we need to clean things up. *
+ * @param {String} actions
+ * @returns {*}
  */
-function Manager(element, options) {
-    options = options || {};
-
-    // get the touchAction style property value when option.touchAction is empty
-    // otherwise the defaults.touchAction value is used
-    options.touchAction = options.touchAction || element.style.touchAction || undefined;
-
-    this.options = merge(options, Hammer.defaults);
-
-    EventEmitter.call(this, element, this.options.domEvents);
-
-    this.session = {};
-    this.recognizers = [];
-
-    this.input = createInputInstance(this);
-    this.touchAction = new TouchAction(this, this.options.touchAction);
-
-    toggleCssProps(this, true);
-}
-
-inherit(Manager, EventEmitter, {
-    /**
-     * set options
-     * @param {String} option
-     * @param {*} val
-     */
-    set: function(option, val) {
-        this.options[option] = val;
-    },
-
-    /**
-     * stop recognizing for this session.
-     * This session will be discarded, when a new [input]start event is fired
-     */
-    stop: function() {
-        this.session.stopped = true;
-    },
-
-    /**
-     * run the recognizers!
-     * called by the inputHandler function
-     * @param {Object} inputData
-     */
-    recognize: function(inputData) {
-        if (this.session.stopped) {
-            return;
-        }
-
-        this.touchAction.update(inputData);
-
-        var recognizer;
-        var session = this.session;
-        var curRecognizer = session.curRecognizer;
-
-        // reset when the last recognizer is done, or this is a new session
-        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
-            curRecognizer = session.curRecognizer = null;
-        }
-
-        // we're in a active recognizer
-        for (var i = 0; i < this.recognizers.length; i++) {
-            recognizer = this.recognizers[i];
-
-            if (!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
-                recognizer.recognize(inputData);
-            } else {
-                recognizer.reset();
-            }
-
-            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
-                curRecognizer = session.curRecognizer = recognizer;
-            }
-        }
-    },
-
-    /**
-     * get a recognizer by its event name.
-     * @param {Recognizer|String} recognizer
-     * @returns {Recognizer|Null}
-     */
-    get: function(recognizer) {
-        if (recognizer instanceof Recognizer) {
-            return recognizer;
-        }
-
-        var recognizers = this.recognizers;
-        for (var i = 0; i < recognizers.length; i++) {
-            if (recognizers[i].options.event == recognizer) {
-                return recognizers[i];
-            }
-        }
-        return null;
-    },
-
-    /**
-     * add a recognizer to the manager
-     * @param {Recognizer} recognizer
-     * @returns {Recognizer}
-     */
-    add: function(recognizer) {
-        this.recognizers.push(recognizer);
-        recognizer.manager = this;
-        return recognizer;
-    },
-
-    /**
-     * remove a recognizer by name or instance
-     * @param {Recognizer|String} recognizer
-     */
-    remove: function(recognizer) {
-        var recognizers = this.recognizers;
-        recognizer = this.get(recognizer);
-        recognizers.splice(inArray(recognizers, recognizer), 1);
-    },
-
-    /**
-     * destroy the manager and unbinds all events
-     */
-    destroy: function() {
-        this._super.destroy.call(this);
-
-        toggleCssProps(this, false);
-        this.session = {};
-        this.input.destroy();
-        this.element = null;
+function cleanTouchActions(actions) {
+    // none
+    if (inStr(actions, TOUCH_ACTION_NONE)) {
+        return TOUCH_ACTION_NONE;
     }
-});
+    // pan-x and pan-y can be combined
+    if (inStr(actions, TOUCH_ACTION_PAN_X) || inStr(actions, TOUCH_ACTION_PAN_Y)) {
+        return actions.replace(/[\-\w]+/g, function(action) {
+            if (/^pan\-/.test(action)) {
+                return action;
+            }
+            return '';
+        });
+    }
+    // manipulation
+    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+        return TOUCH_ACTION_MANIPULATION;
+    }
 
-/**
- * add/remove the css properties as defined in manager.options.cssProps
- * @param {Manager} manager
- * @param {Boolean} add
- */
-function toggleCssProps(manager, add) {
-    var element = manager.element;
-    var cssProps = manager.options.cssProps;
-
-    each(cssProps, function(value, name) {
-        element.style[prefixed(element.style, name)] = add ? value : '';
-    });
-
-    var falseFn = add && function() { return false; };
-    if (cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
-    if (cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
+    return TOUCH_ACTION_AUTO;
 }
 
 var STATE_POSSIBLE = 1;
@@ -1243,6 +1002,9 @@ Recognizer.prototype = {
      */
     set: function(option, val) {
         this.options[option] = val;
+
+        // also update the touchAction, in case something changed about the directions/enabled state
+        this.manager && this.manager.touchAction.update();
     },
 
     /**
@@ -1329,7 +1091,7 @@ Recognizer.prototype = {
             }
         }
 
-        // is is enabled?
+        // is is enabled and allow recognizing?
         if (!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
             this.reset();
             this.state = STATE_FAILED;
@@ -1406,6 +1168,11 @@ inherit(AttrRecognizer, Recognizer, {
     },
 
     /**
+     * @virtual
+     */
+    getTouchAction: function() { },
+
+    /**
      * used to check if it the recognizer receives valid input, like input.distance > 10
      * this should be overwritten
      * @virtual
@@ -1451,30 +1218,50 @@ inherit(PanRecognizer, AttrRecognizer, {
         event: 'pan',
         threshold: 10,
         pointers: 1,
-        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL
+        direction: DIRECTION_ALL
+    },
+
+    getTouchAction: function() {
+        var direction = this.options.direction;
+
+        if (direction === DIRECTION_ALL) {
+            return [TOUCH_ACTION_NONE];
+        }
+
+        var actions = [];
+        if (direction & DIRECTION_HORIZONTAL) {
+            actions.push(TOUCH_ACTION_PAN_Y);
+        }
+        if (direction & DIRECTION_VERTICAL) {
+            actions.push(TOUCH_ACTION_PAN_X);
+        }
+        return actions;
     },
 
     directionTest: function(input) {
         var options = this.options;
         var hasMoved = true;
         var distance = input.distance;
+        var direction = input.direction;
         var x = input.deltaX;
         var y = input.deltaY;
 
-        // lock to axis
-        if (!(input.direction & options.direction)) {
-
+        // lock to axis?
+        if (!(direction & options.direction)) {
             if (options.direction & DIRECTION_HORIZONTAL) {
-                input.direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
                 hasMoved = x != this.pX;
                 distance = Math.abs(input.deltaX);
             } else {
-                input.direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
                 hasMoved = y != this.pY;
                 distance = Math.abs(input.deltaY);
             }
         }
-        return hasMoved && distance > options.threshold && input.direction & options.direction;
+
+        input.direction = direction;
+
+        return hasMoved && distance > options.threshold && direction & options.direction;
     },
 
     attrTest: function(input) {
@@ -1500,6 +1287,10 @@ inherit(PinchRecognizer, AttrRecognizer, {
         event: 'pinch',
         threshold: 0,
         pointers: 2
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_PAN_X, TOUCH_ACTION_PAN_Y];
     },
 
     attrTest: function(input) {
@@ -1528,6 +1319,10 @@ inherit(PressRecognizer, Recognizer, {
         pointers: 1,
         time: 500, // minimal time of the pointer to be pressed
         threshold: 10 // a minimal movement is ok, but keep it low
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_AUTO];
     },
 
     test: function(input) {
@@ -1570,6 +1365,10 @@ inherit(RotateRecognizer, AttrRecognizer, {
         pointers: 2
     },
 
+    getTouchAction: function() {
+        return [TOUCH_ACTION_NONE];
+    },
+
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
             (Math.abs(1 - input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
@@ -1587,6 +1386,10 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         velocity: 0.65,
         direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
         pointers: 1
+    },
+
+    getTouchAction: function() {
+        return PanRecognizer.prototype.getTouchAction.call(this);
     },
 
     attrTest: function(input) {
@@ -1633,6 +1436,10 @@ inherit(TapRecognizer, Recognizer, {
         movementWhile: 2 // a minimal movement is ok, but keep it low
     },
 
+    getTouchAction: function() {
+        return [TOUCH_ACTION_MANIPULATION];
+    },
+
     test: function(input) {
         var options = this.options;
 
@@ -1674,6 +1481,307 @@ inherit(TapRecognizer, Recognizer, {
     }
 });
 
+/**
+ * create an manager with a default set of recognizers
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Hammer(element, options) {
+    options = options || {};
+    var manager = new Manager(element, options);
+
+    /**
+     * setup recognizers
+     * the defauls.recognizers contains an array like this;
+     * [ RecognizerClass, options, recognizeWith ],
+     * [ .... ]
+     */
+    each(manager.options.recognizers, function(item) {
+        var recognizer = manager.add(new (item[0])(item[1]));
+        if (item[2]) {
+            recognizer.recognizeWith(item[2]);
+        }
+    });
+
+    return manager;
+}
+
+Hammer.VERSION = '2.0.0dev';
+
+Hammer.defaults = {
+    // when set to true, dom events are being triggered.
+    // but this is slower and unused by simple implementations, so disabled by default.
+    domEvents: false,
+
+    // this value is used when a touch-action isn't defined on the element.style
+    touchAction: TOUCH_ACTION_COMPUTE,
+
+    enable: true,
+
+    // default setup when calling Hammer()
+    recognizers: [
+        [RotateRecognizer, { enable: false }],
+        [PinchRecognizer, { enable: false }, 'rotate'],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }],
+        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }, 'pan'],
+        [TapRecognizer],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
+        [PressRecognizer]
+    ],
+
+    // with some style attributes you can improve the experience.
+    cssProps: {
+        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+        userSelect: 'none',
+
+        // Disable the Windows Phone grippers when pressing an element.
+        touchSelect: 'none',
+
+        // Disables the default callout shown when you touch and hold a touch target.
+        // On iOS, when you touch and hold a touch target such as a link, Safari displays
+        // a callout containing information about the link. This property allows you to disable that callout.
+        touchCallout: 'none',
+
+        // Specifies whether zooming is enabled. Used by IE10>
+        contentZooming: 'none',
+
+        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+        userDrag: 'none',
+
+        // Overrides the highlight color shown when the user taps a link or a JavaScript
+        // clickable element in iOS. This property obeys the alpha value, if specified.
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
+};
+
+/**
+ * Manager
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Manager(element, options) {
+    options = options || {};
+
+    // get the touchAction style property value when option.touchAction is empty
+    // otherwise the defaults.touchAction value is used
+    options.touchAction = options.touchAction || element.style.touchAction || undefined;
+    this.options = merge(options, Hammer.defaults);
+
+    this.handlers = {};
+    this.session = {};
+    this.recognizers = [];
+
+    this.element = element;
+    this.input = createInputInstance(this);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
+
+    toggleCssProps(this, true);
+}
+
+Manager.prototype = {
+    /**
+     * set options
+     * @param {String} option
+     * @param {*} val
+     */
+    set: function(option, val) {
+        this.options[option] = val;
+    },
+
+    /**
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired
+     */
+    stop: function() {
+        this.session.stopped = true;
+    },
+
+    /**
+     * run the recognizers!
+     * called by the inputHandler function
+     * @param {Object} inputData
+     */
+    recognize: function(inputData) {
+        if (this.session.stopped) {
+            return;
+        }
+
+        this.touchAction.preventDefaults(inputData);
+
+        var recognizer;
+        var session = this.session;
+        var curRecognizer = session.curRecognizer;
+
+        // reset when the last recognizer is done, or this is a new session
+        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+            curRecognizer = session.curRecognizer = null;
+        }
+
+        // we're in a active recognizer
+        for (var i = 0; i < this.recognizers.length; i++) {
+            recognizer = this.recognizers[i];
+
+            if (!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
+                recognizer.recognize(inputData);
+            } else {
+                recognizer.reset();
+            }
+
+            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+                curRecognizer = session.curRecognizer = recognizer;
+            }
+        }
+    },
+
+    /**
+     * get a recognizer by its event name.
+     * @param {Recognizer|String} recognizer
+     * @returns {Recognizer|Null}
+     */
+    get: function(recognizer) {
+        if (recognizer instanceof Recognizer) {
+            return recognizer;
+        }
+
+        var recognizers = this.recognizers;
+        for (var i = 0; i < recognizers.length; i++) {
+            if (recognizers[i].options.event == recognizer) {
+                return recognizers[i];
+            }
+        }
+        return null;
+    },
+
+    /**
+     * add a recognizer to the manager
+     * @param {Recognizer} recognizer
+     * @returns {Recognizer}
+     */
+    add: function(recognizer) {
+        this.recognizers.push(recognizer);
+        recognizer.manager = this;
+        this.touchAction.update();
+        return recognizer;
+    },
+
+    /**
+     * remove a recognizer by name or instance
+     * @param {Recognizer|String} recognizer
+     */
+    remove: function(recognizer) {
+        var recognizers = this.recognizers;
+        recognizer = this.get(recognizer);
+        recognizers.splice(inArray(recognizers, recognizer), 1);
+        this.touchAction.update();
+    },
+
+    /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
+        });
+        return this;
+    },
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            if (!handler) {
+                delete handlers[event];
+            } else {
+                handlers[event].splice(inArray(handlers[event], handler), 1);
+            }
+        });
+        return this;
+    },
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {Object} data
+     */
+    emit: function(event, data) {
+        // we also want to trigger dom events
+        if (this.options.domEvents) {
+            triggerDomEvent(event, data);
+        }
+
+        // no handlers, so skip it all
+        var handlers = this.handlers[event];
+        if (!handlers || !handlers.length) {
+            return;
+        }
+
+        data.type = event;
+        data.preventDefault = function() {
+            data.srcEvent.preventDefault();
+        };
+
+        for (var i = 0; i < handlers.length; i++) {
+            handlers[i](data);
+        }
+    },
+
+    /**
+     * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
+     */
+    destroy: function() {
+        toggleCssProps(this, false);
+
+        this.handlers = {};
+        this.session = {};
+        this.input.destroy();
+        this.element = null;
+    }
+};
+
+/**
+ * add/remove the css properties as defined in manager.options.cssProps
+ * @param {Manager} manager
+ * @param {Boolean} add
+ */
+function toggleCssProps(manager, add) {
+    var element = manager.element;
+    var cssProps = manager.options.cssProps;
+
+    each(cssProps, function(value, name) {
+        element.style[prefixed(element.style, name)] = add ? value : '';
+    });
+
+    var falseFn = add && function() { return false; };
+    if (cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
+    if (cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
+}
+
+/**
+ * trigger dom event
+ * @param {String} event
+ * @param {Object} data
+ */
+function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
+}
+
 Hammer.INPUT_START = INPUT_START;
 Hammer.INPUT_MOVE = INPUT_MOVE;
 Hammer.INPUT_END = INPUT_END;
@@ -1696,7 +1804,6 @@ Hammer.DIRECTION_HORIZONTAL = DIRECTION_HORIZONTAL;
 Hammer.DIRECTION_VERTICAL = DIRECTION_VERTICAL;
 Hammer.DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
 
-Hammer.EventEmitter = EventEmitter;
 Hammer.Manager = Manager;
 Hammer.Input = Input;
 Hammer.TouchAction = TouchAction;

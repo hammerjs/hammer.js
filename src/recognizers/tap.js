@@ -20,6 +20,10 @@ inherit(TapRecognizer, Recognizer, {
         movementWhile: 2 // a minimal movement is ok, but keep it low
     },
 
+    getTouchAction: function() {
+        return [TOUCH_ACTION_MANIPULATION];
+    },
+
     test: function(input) {
         var options = this.options;
 
