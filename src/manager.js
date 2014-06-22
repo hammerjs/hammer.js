@@ -13,8 +13,7 @@ function Manager(element, options) {
 
     this.options = merge(options, Hammer.defaults);
 
-    EventEmitter.call(this, element, this.options.domEvents);
-
+    this.handlers = {};
     this.session = {};
     this.recognizers = [];
 
@@ -24,7 +23,7 @@ function Manager(element, options) {
     toggleCssProps(this, true);
 }
 
-inherit(Manager, EventEmitter, {
+Manager.prototype = {
     /**
      * set options
      * @param {String} option
@@ -120,17 +119,78 @@ inherit(Manager, EventEmitter, {
     },
 
     /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
+        });
+        return this;
+    },
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            if (!handler) {
+                delete handlers[event];
+            } else {
+                handlers[event].splice(inArray(handlers[event], handler), 1);
+            }
+        });
+        return this;
+    },
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {Object} data
+     */
+    emit: function(event, data) {
+        // we also want to trigger dom events
+        if (this.options.domEvents) {
+            triggerDomEvent(event, data);
+        }
+
+        // no handlers, so skip it all
+        var handlers = this.handlers[event];
+        if (!handlers || !handlers.length) {
+            return;
+        }
+
+        data.type = event;
+        data.preventDefault = function() {
+            data.srcEvent.preventDefault();
+        };
+
+        for (var i = 0; i < handlers.length; i++) {
+            handlers[i](data);
+        }
+    },
+
+    /**
      * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        this._super.destroy.call(this);
-
         toggleCssProps(this, false);
+
+        this.handlers = {};
         this.session = {};
         this.input.destroy();
         this.element = null;
     }
-});
+};
 
 /**
  * add/remove the css properties as defined in manager.options.cssProps
@@ -148,4 +208,16 @@ function toggleCssProps(manager, add) {
     var falseFn = add && function() { return false; };
     if (cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
     if (cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
+}
+
+/**
+ * trigger dom event
+ * @param {String} event
+ * @param {Object} data
+ */
+function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
 }

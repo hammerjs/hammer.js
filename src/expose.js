@@ -20,7 +20,6 @@ Hammer.DIRECTION_HORIZONTAL = DIRECTION_HORIZONTAL;
 Hammer.DIRECTION_VERTICAL = DIRECTION_VERTICAL;
 Hammer.DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
 
-Hammer.EventEmitter = EventEmitter;
 Hammer.Manager = Manager;
 Hammer.Input = Input;
 Hammer.TouchAction = TouchAction;
