@@ -4,7 +4,7 @@
 making use of the `touch-action` css property when possible. Also support for multiple Hammer instances the same
 time, so multi-user became possible.**
 
-## How to use
+## Getting Started
 Hammer is still easy to use. Just create an instance and bind the events. By default it supports all the standard
 gestures you would expect.
 
@@ -14,8 +14,15 @@ mc.on("swipeleft swiperight", mySwipeHandler);
 ````
 
 By default it adds the `tap`, `doubletap` and `press`, horizontal `pan` and `swipe`, and the multi-touch `pinch` and 
-`rotate` recognizers. Pinch and rotate are disabled by default, but you can enable them by calling 
-`mc.get('pinch').set('enable', true')`
+`rotate` recognizers. The ppinch and rotate recognizers are disabled by default because they would make the element 
+blocking, but you can enable them by calling `mc.get('pinch').set('enable', true')`
+
+Also the viewport meta tag is recommended, it gives more control back to the webpage by disableing the 
+doubletap/pinch zoom. More recent browsers that support the touch-action property don't require this.
+
+````html
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+````
 
 ### More control
 You can setup your own set of recognizers for your instance. This requires a bit more code, but it gives you more
@@ -35,17 +42,31 @@ mc.on("quadrupletap", handleTaps);
 The example above creates an instance containing a `pan` and a `quadrupletap` gesture. The recognizer instances you
 create a being executed in the order they are added, and only one can be recognized at the time.
 
-If you want to recognize two gestures simultaneously, you can join these with the `join()` method. The example
+#### Simultaneous recognizing
+If you want to recognize two gestures simultaneously, you can use the the `recognizeWith()` method. The example
 below does this with the pinch and rotate recognizers, which will improve usability.
 
 ````js
-var pinch = mc.add(new Hammer.Pinch());
-var rotate = mc.add(new Hammer.Rotation());
+var pinch = new Hammer.Pinch();
+var rotate = new Hammer.Rotation();
+
 pinch.recognizeWith(rotate); // recognize the pinch-rotation recognizers simultaneous
 ````
 
-Now Hammer is able to run pinch and rotate the same time. You can also separate them with the `separate()` method on
+Now Hammer is able to run pinch and rotate the same time. You can also separate them with the `dropRecognizeWith()` method on
 the recognizer instance.
+
+#### Require failure of an other recognizer
+With the method `requireFailure()` you can let a recognizer require the failure of an other recognizer before recognizing.
+This could become useful when you want to nest two gestures, like pan-horizontal and pan-vertical. Once pan-horizontal is being recognized, the pan-vertical would be passed. 
+
+````js
+var horizontal = new Hammer.Pan({ event: 'panh', direction: Hammer.DIRECTION_HORIZONTAL });
+var vertical = new Hammer.Pan({ event: 'panv', direction: Hammer.DIRECTION_VERTICAL });
+
+horizontal.requireFailure(vertical);
+verical.requireFailure(horizontal);
+````
 
 ## The Touch-action property
 Chrome 35+, IE10+ and soon FireFox, support the `touch-action` property. This property tells the browser how to
