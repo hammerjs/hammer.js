@@ -6,11 +6,12 @@ var POINTER_INPUT_MAP = {
     pointerout: INPUT_CANCEL
 };
 
-// in IE10 the pointer types are defined as integers
-var IE10_POINTER_TYPE_MAP = {
+// in IE10 the pointer types is defined as an enum
+var IE10_POINTER_TYPE_ENUM = {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
-    4: INPUT_TYPE_MOUSE
+    4: INPUT_TYPE_MOUSE,
+    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
 };
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
@@ -46,7 +47,7 @@ inherit(PointerEventInput, Input, {
 
         var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
-        var pointerType = IE10_POINTER_TYPE_MAP[ev.pointerType] || ev.pointerType;
+        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
         // out of the window?
         var target = ev.relatedTarget || ev.toElement || ev.target;
