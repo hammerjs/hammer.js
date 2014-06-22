@@ -252,10 +252,7 @@
             var inner = new HammerCarousel(container, Hammer.DIRECTION_VERTICAL);
 
             inner.hammer.get('pan').requireFailure(outer.hammer.get('pan'));
-            outer.hammer.get('pan').requireFailure(inner.hammer.get('pan'));
-
             inner.hammer.get('swipe').requireFailure(outer.hammer.get('swipe'));
-            outer.hammer.get('swipe').requireFailure(inner.hammer.get('swipe'));
         });
 
     </script>

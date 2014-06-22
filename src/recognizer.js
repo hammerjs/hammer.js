@@ -53,25 +53,23 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     recognizeWith: function(otherRecognizer) {
+        var simultaneous = this.simultaneous;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (!this.canRecognizeWith(otherRecognizer)) {
-            this.simultaneous[otherRecognizer.id] = otherRecognizer;
+        if (!simultaneous[otherRecognizer.id]) {
+            simultaneous[otherRecognizer.id] = otherRecognizer;
             otherRecognizer.recognizeWith(this);
         }
         return this;
     },
 
     /**
-     * drop the simultaneous link
+     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
     dropRecognizeWith: function(otherRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (this.canRecognizeWith(otherRecognizer)) {
-            delete this.simultaneous[otherRecognizer.id];
-            otherRecognizer.dropRecognizeWith(this);
-        }
+        delete this.simultaneous[otherRecognizer.id];
         return this;
     },
 
@@ -81,13 +79,17 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     requireFailure: function(otherRecognizer) {
+        var requireFail = this.requireFail;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        this.requireFail.push(otherRecognizer);
+        if (inArray(requireFail, otherRecognizer.id) === -1) {
+            requireFail.push(otherRecognizer);
+            otherRecognizer.requireFailure(this);
+        }
         return this;
     },
 
     /**
-     * drop the requireFailureOf link
+     * drop the requireFailure link. it does not remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
