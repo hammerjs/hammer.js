@@ -5,8 +5,7 @@ making use of the `touch-action` css property when possible. Also support for mu
 time, so multi-user became possible.**
 
 ## Getting Started
-Hammer is still easy to use. Just create an instance and bind the events. By default it supports all the standard
-gestures you would expect.
+Hammer is easy to use. Just create an instance and bind the events.
 
 ````js
 var mc = Hammer(myElement);
