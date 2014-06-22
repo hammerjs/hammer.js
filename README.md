@@ -54,7 +54,7 @@ scrolling of the page without any JavaScript has to be executed, which can be to
 Hammer uses a fallback for this property when needed, so it is working with older browsers too.
 
 By default it sets a value based on the recognizer settings. You can overwrite this by giving the option `touchAction`
-to the Manager, or set the touchAction value with your CSS.
+to the Manager.
 
 When you set the touchAction to `auto` it doesnt prevent any defaults, and Hammer would probably break. You have to 
 call `preventDefault` manually to fix this. You should only use this if you know what you're doing.
