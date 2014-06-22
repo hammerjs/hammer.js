@@ -62,17 +62,15 @@ call `preventDefault` manually to fix this. You should only use this if you know
 ### Preferred touch-action values per gesture
 If you _do_ want to set your own value, then the table below should help you a bit...
 
-| Gesture Event | Least restrictive touch-action value  |
-|---------------|---------------------------------------|
-| press         | auto                                  |
-| tap           | auto                                  |
-| multitap      | manipulation                          |
-| pan panup pandown | pan-x                             |
-| pan panleft panright | pan-y                          |
-| swipeup swipedown | pan-x                             |
-| swipeleft swiperight | pan-y                          |
-| rotate        | pan-x pan-y                           |
-| pinch pinchin pinchout | pan-x pan-y                  |
+| Gesture | Least restrictive touch-action value  |
+|---------|---------------------------------------|
+| press   | auto               |
+| tap     | auto               |
+| multitap | manipulation      |
+| vertical pan/swipe | pan-x   |
+| horizontal pan/swipe | pan-y |
+| rotate  | pan-x pan-y        |
+| pinch   | pan-x pan-y        |
 
 # API
 The source code is well documented (JSDoc), you could figure out the rest of the API over there!
