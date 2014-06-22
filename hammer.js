@@ -391,14 +391,15 @@ function computeInputData(manager, input) {
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
     var center = getCenter(pointers);
 
-    input.center = center;
-    input.angle = getAngle(offsetCenter, center);
-    input.distance = getDistance(offsetCenter, center);
-
     input.timeStamp = input.srcEvent.timeStamp;
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;
+
+    input.center = center;
+    input.angle = getAngle(offsetCenter, center);
+    input.distance = getDistance(offsetCenter, center);
+    input.offsetDirection = getDirection(input.deltaX, input.deltaY);
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
@@ -426,8 +427,8 @@ function computeIntervalInputData(session, input) {
 
     var deltaTime = input.timeStamp - last.timeStamp;
     if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
-        var deltaX = input.deltaX - last.deltaX;
-        var deltaY = input.deltaY - last.deltaY;
+        var deltaX = last.deltaX - input.deltaX;
+        var deltaY = last.deltaY - input.deltaY;
 
         last = session.lastInterval = simpleCloneInputData(input);
         last.velocity = getVelocity(deltaTime, deltaX, deltaY);
@@ -521,9 +522,9 @@ function getDirection(x, y) {
     }
 
     if (Math.abs(x) >= Math.abs(y)) {
-        return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+        return x > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
     }
-    return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
+    return y > 0 ? DIRECTION_DOWN : DIRECTION_UP;
 }
 
 /**
@@ -900,12 +901,14 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         // not needed with native support for the touchAction property
-        if (NATIVE_TOUCH_ACTION) {
+        if (!NATIVE_TOUCH_ACTION) {
             return;
         }
 
         var srcEvent = input.srcEvent;
-        var direction = input.direction;
+        var direction = input.offsetDirection;
+
+        console.log(direction)
 
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {

@@ -62,12 +62,14 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         // not needed with native support for the touchAction property
-        if (NATIVE_TOUCH_ACTION) {
+        if (!NATIVE_TOUCH_ACTION) {
             return;
         }
 
         var srcEvent = input.srcEvent;
-        var direction = input.direction;
+        var direction = input.offsetDirection;
+
+        console.log(direction)
 
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {
