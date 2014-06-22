@@ -31,7 +31,7 @@ control and slightly better performance.
 var myOptions = { };
 var mc = new Hammer.Manager(myElement, myOptions);
 
-mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL | Hammer.DIRECTION_VERTICAL }));
+mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_ALL }));
 mc.add(new Hammer.Tap({ event: 'quadrupletap', taps: 4 }));
 
 mc.on("pan", handlePan);
@@ -176,6 +176,7 @@ Run the recognizer only when the other recognizer fails.
 | event     | swipe    | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | distance  | 10       | Minimal distance required before recognizing. |
+| direction | DIRECTION_ALL | Direction of the panning. |
 | velocity  | 0.65     | Minimal velocity required before recognizing, unit is in px per ms. |
 
 #### Hammer.Tap(options)
