@@ -137,8 +137,7 @@ Recognizer.prototype = {
             this.state = STATE_POSSIBLE;
         }
 
-        // get detection state
-        this.state = this.test(inputData);
+        this.state = this.process(inputData);
 
         // the recognizer has recognized a gesture
         // so trigger an event
@@ -146,6 +145,22 @@ Recognizer.prototype = {
             this.emit(inputData);
         }
     },
+
+    /**
+     * return the state of the recognizer
+     * the actual recognizing happens in this method
+     * @virtual
+     * @param {Object} inputData
+     * @returns {Const} STATE_*
+     */
+    process: function(inputData) { },
+
+    /**
+     * return the preferred touch-action
+     * @virtual
+     * @returns {Array}
+     */
+    getTouchAction: function() { },
 
     /**
      * called when the gesture isn't allowed to recognize

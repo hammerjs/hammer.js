@@ -24,7 +24,7 @@ inherit(TapRecognizer, Recognizer, {
         return [TOUCH_ACTION_MANIPULATION];
     },
 
-    test: function(input) {
+    process: function(input) {
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
