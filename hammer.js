@@ -1601,10 +1601,12 @@ Manager.prototype = {
 
     /**
      * stop recognizing for this session.
-     * This session will be discarded, when a new [input]start event is fired
+     * This session will be discarded, when a new [input]start event is fired.
+     * When forced, the recognizer cycle is stopped immediately.
+     * @param {Boolean} [force]
      */
-    stop: function() {
-        this.session.stopped = true;
+    stop: function(force) {
+        this.session.stopped = force ? 2 : 1;
     },
 
     /**
@@ -1632,7 +1634,7 @@ Manager.prototype = {
         for (var i = 0; i < this.recognizers.length; i++) {
             recognizer = this.recognizers[i];
 
-            if (!this.session.stopped && (
+            if (this.session.stopped !== 2 && (
                     !curRecognizer || recognizer == curRecognizer ||
                     recognizer.canRecognizeWith(curRecognizer))) {
                 recognizer.recognize(inputData);

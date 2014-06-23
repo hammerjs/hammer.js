@@ -122,6 +122,9 @@ The `get` and `remove` methods takes the event name (from a recognizer) or a rec
 Listen to events triggered by the added recognizers, or remove the binded events. Accepts multiple events seperated
 by a space.
 
+##### .stop([force])
+Stop recognizing for the current input session. When forced, the recognizer cycle is stopped immediately.
+
 ##### .destroy()
 Unbinds all events and input events and makes the manager unusable. It does NOT unbind any domEvent listeners.
 
