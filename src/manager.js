@@ -63,7 +63,9 @@ Manager.prototype = {
         for (var i = 0; i < this.recognizers.length; i++) {
             recognizer = this.recognizers[i];
 
-            if (!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
+            if (!this.session.stopped && (
+                    !curRecognizer || recognizer == curRecognizer ||
+                    recognizer.canRecognizeWith(curRecognizer))) {
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();

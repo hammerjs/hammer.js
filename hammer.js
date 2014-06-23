@@ -1534,8 +1534,8 @@ Hammer.defaults = {
     recognizers: [
         [RotateRecognizer, { enable: false }],
         [PinchRecognizer, { enable: false }, 'rotate'],
-        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }],
-        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }, 'pan'],
+        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, 'swipe'],
         [TapRecognizer],
         [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
         [PressRecognizer]
@@ -1632,7 +1632,9 @@ Manager.prototype = {
         for (var i = 0; i < this.recognizers.length; i++) {
             recognizer = this.recognizers[i];
 
-            if (!curRecognizer || recognizer == curRecognizer || recognizer.canRecognizeWith(curRecognizer)) {
+            if (!this.session.stopped && (
+                    !curRecognizer || recognizer == curRecognizer ||
+                    recognizer.canRecognizeWith(curRecognizer))) {
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();
