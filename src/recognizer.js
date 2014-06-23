@@ -125,8 +125,12 @@ Recognizer.prototype = {
             }
         }
 
+        // make a new copy of the inputData
+        // so we can change the inputData without messing up the other recognizers
+        var inputDataClone = extend({}, inputData);
+
         // is is enabled and allow recognizing?
-        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
+        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
@@ -137,12 +141,12 @@ Recognizer.prototype = {
             this.state = STATE_POSSIBLE;
         }
 
-        this.state = this.process(inputData);
+        this.state = this.process(inputDataClone);
 
         // the recognizer has recognized a gesture
         // so trigger an event
         if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.emit(inputData);
+            this.emit(inputDataClone);
         }
     },
 
@@ -153,7 +157,7 @@ Recognizer.prototype = {
      * @param {Object} inputData
      * @returns {Const} STATE_*
      */
-    process: function(inputData) { },
+    process: function(inputData) { }, // jshint ignore:line
 
     /**
      * return the preferred touch-action

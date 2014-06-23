@@ -1090,8 +1090,12 @@ Recognizer.prototype = {
             }
         }
 
+        // make a new copy of the inputData
+        // so we can change the inputData without messing up the other recognizers
+        var inputDataClone = extend({}, inputData);
+
         // is is enabled and allow recognizing?
-        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputData])) {
+        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
@@ -1102,15 +1106,30 @@ Recognizer.prototype = {
             this.state = STATE_POSSIBLE;
         }
 
-        // get detection state
-        this.state = this.test(inputData);
+        this.state = this.process(inputDataClone);
 
         // the recognizer has recognized a gesture
         // so trigger an event
         if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.emit(inputData);
+            this.emit(inputDataClone);
         }
     },
+
+    /**
+     * return the state of the recognizer
+     * the actual recognizing happens in this method
+     * @virtual
+     * @param {Object} inputData
+     * @returns {Const} STATE_*
+     */
+    process: function(inputData) { }, // jshint ignore:line
+
+    /**
+     * return the preferred touch-action
+     * @virtual
+     * @returns {Array}
+     */
+    getTouchAction: function() { },
 
     /**
      * called when the gesture isn't allowed to recognize
@@ -1167,11 +1186,6 @@ inherit(AttrRecognizer, Recognizer, {
     },
 
     /**
-     * @virtual
-     */
-    getTouchAction: function() { },
-
-    /**
      * used to check if it the recognizer receives valid input, like input.distance > 10
      * this should be overwritten
      * @virtual
@@ -1183,7 +1197,7 @@ inherit(AttrRecognizer, Recognizer, {
         return optionPointers === 0 || input.pointers.length === optionPointers;
     },
 
-    test: function(input) {
+    process: function(input) {
         var state = this.state;
         var eventType = input.eventType;
 
@@ -1322,7 +1336,7 @@ inherit(PressRecognizer, Recognizer, {
         return [TOUCH_ACTION_AUTO];
     },
 
-    test: function(input) {
+    process: function(input) {
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
@@ -1437,7 +1451,7 @@ inherit(TapRecognizer, Recognizer, {
         return [TOUCH_ACTION_MANIPULATION];
     },
 
-    test: function(input) {
+    process: function(input) {
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
