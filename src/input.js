@@ -265,9 +265,9 @@ function getDirection(x, y) {
     }
 
     if (Math.abs(x) >= Math.abs(y)) {
-        return x > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+        return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
-    return y > 0 ? DIRECTION_DOWN : DIRECTION_UP;
+    return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
 }
 
 /**

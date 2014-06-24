@@ -55,8 +55,6 @@ var Simulator = (function() {
             });
         }
 
-        console.log(touches);
-
         return touches;
     }
 

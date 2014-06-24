@@ -37,7 +37,7 @@ asyncTest("recognize swipe", function () {
 
     hammer = new Hammer.Manager(el);
     hammer.add(new Hammer.Swipe());
-    hammer.on('swipe swipeleft', function(ev) {
+    hammer.on('swipe swiperight', function(ev) {
         events[ev.type] = true;
     });
 
