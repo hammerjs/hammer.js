@@ -176,15 +176,14 @@ var Simulator = (function() {
 
             if (isFirst) {
                 triggerTouch(touches, element, 'start');
-                setTimeout(gestureLoop, interval);
             } else if (isLast) {
                 triggerTouch(touches, element, 'end');
-                done(touches);
+                return done();
             } else {
                 triggerTouch(touches, element, 'move');
-                setTimeout(gestureLoop, interval);
             }
 
+            setTimeout(gestureLoop, interval);
             loop++;
         }
         gestureLoop();
