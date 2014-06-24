@@ -146,7 +146,6 @@ var Simulator = (function() {
             easing: 'swing'
         });
 
-        triggerTouch(startTouches, element, 'start');
 
         function gestureLoop() {
             // calculate the radius
@@ -164,21 +163,23 @@ var Simulator = (function() {
                 posY = options.pos[1] + (options.deltaY / loops * loop) * easing,
                 rotation = options.rotation / loops * loop,
                 touches = getTouches([posX, posY], startTouches.length, radius, rotation),
+                isFirst = (loop == 1),
                 isLast = (loop == loops);
 
-
-            if (!isLast) {
-                triggerTouch(touches, element, 'move');
+            if (isFirst) {
+                triggerTouch(touches, element, 'start');
                 setTimeout(gestureLoop, interval);
-            } else {
+            } else if (isLast) {
                 triggerTouch(touches, element, 'end');
                 done(touches);
+            } else {
+                triggerTouch(touches, element, 'move');
+                setTimeout(gestureLoop, interval);
             }
 
             loop++;
         }
-
-        setTimeout(gestureLoop, interval);
+        gestureLoop();
     }
 
 
