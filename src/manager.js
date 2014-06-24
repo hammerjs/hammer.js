@@ -62,7 +62,7 @@ Manager.prototype = {
         }
 
         // we're in a active recognizer
-        for (var i = 0; i < this.recognizers.length; i++) {
+        for (var i = 0, len = this.recognizers.length; i < len; i++) {
             recognizer = this.recognizers[i];
 
             if (this.session.stopped !== 2 && (
@@ -176,7 +176,7 @@ Manager.prototype = {
             data.srcEvent.preventDefault();
         };
 
-        for (var i = 0; i < handlers.length; i++) {
+        for (var i = 0, len = handlers.length; i < len; i++) {
             handlers[i](data);
         }
     },

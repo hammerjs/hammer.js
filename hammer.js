@@ -37,9 +37,10 @@ function each(obj, iterator, context) {
  * @returns {Object} dest
  */
 function extend(dest, src, merge) {
-    for (var key in src) {
-        if (src.hasOwnProperty(key) && (!merge || (merge && dest[key] === undefined))) {
-            dest[key] = src[key];
+    var keys = Object.keys(src);
+    for (var i = 0, len = keys.length; i < len; i++) {
+        if (!merge || (merge && dest[keys[i]] === undefined)) {
+            dest[keys[i]] = src[keys[i]];
         }
     }
     return dest;
@@ -232,10 +233,10 @@ function uniqueArray(src, key) {
  * @returns {String|Undefined} prefixed
  */
 function prefixed(obj, property) {
-    var prefix, prop, i;
+    var prefix, prop;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
-    for (i = 0; i < VENDOR_PREFIXES.length; i++) {
+    for (var i = 0, len = VENDOR_PREFIXES.length; i < len; i++) {
         prefix = VENDOR_PREFIXES[i];
         prop = (prefix) ? prefix + camelProp : property;
 
@@ -1161,7 +1162,7 @@ function stateStr(state) {
 /**
  * direction cons to string
  * @param {Const} direction
- * @returns {*}
+ * @returns {String}
  */
 function directionStr(direction) {
     if (direction == DIRECTION_DOWN) {
@@ -1173,7 +1174,7 @@ function directionStr(direction) {
     } else if (direction == DIRECTION_RIGHT) {
         return 'right';
     }
-    return null;
+    return '';
 }
 
 /**
@@ -1334,7 +1335,6 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     emit: function(input) {
         this._super.emit.call(this, input);
-
         if (input.scale !== 1) {
             var inOut = input.scale < 1 ? 'in' : 'out';
             this.manager.emit(this.options.event + inOut, input);
@@ -1660,7 +1660,7 @@ Manager.prototype = {
         }
 
         // we're in a active recognizer
-        for (var i = 0; i < this.recognizers.length; i++) {
+        for (var i = 0, len = this.recognizers.length; i < len; i++) {
             recognizer = this.recognizers[i];
 
             if (this.session.stopped !== 2 && (
@@ -1774,7 +1774,7 @@ Manager.prototype = {
             data.srcEvent.preventDefault();
         };
 
-        for (var i = 0; i < handlers.length; i++) {
+        for (var i = 0, len = handlers.length; i < len; i++) {
             handlers[i](data);
         }
     },

@@ -134,19 +134,16 @@ asyncTest("recognize gestures", function () {
     // swipe + pan
     Simulator.swipe(el, { duration: 500 }, function() {
         equal(Object.keys(events).length, 4, "expect panstart pan panend swipe");
-        console.log(events);
         events = {};
 
         // pinchout
         Simulator.pinch(el, { duration: 500, scale: 2 }, function() {
             equal(Object.keys(events).length, 2, "pinchout pinch");
-            console.log(events);
             events = {};
 
             // pinchin
             Simulator.pinch(el, { duration: 500, scale: .5 }, function() {
                 equal(Object.keys(events).length, 2, "pinchin pinch");
-                console.log(events);
                 events = {};
 
                 start();

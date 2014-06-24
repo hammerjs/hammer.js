@@ -195,7 +195,7 @@ function stateStr(state) {
 /**
  * direction cons to string
  * @param {Const} direction
- * @returns {*}
+ * @returns {String}
  */
 function directionStr(direction) {
     if (direction == DIRECTION_DOWN) {
@@ -207,7 +207,7 @@ function directionStr(direction) {
     } else if (direction == DIRECTION_RIGHT) {
         return 'right';
     }
-    return null;
+    return '';
 }
 
 /**

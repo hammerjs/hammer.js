@@ -20,7 +20,6 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     emit: function(input) {
         this._super.emit.call(this, input);
-
         if (input.scale !== 1) {
             var inOut = input.scale < 1 ? 'in' : 'out';
             this.manager.emit(this.options.event + inOut, input);

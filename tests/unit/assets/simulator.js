@@ -98,15 +98,15 @@ var Simulator = (function() {
         var event = document.createEvent('Event');
         event.initEvent('touch' + type, true, true);
         event.touches = (type == 'end') ? TouchList() : touchList;
-        event.targetTouches = touchList;
+        event.targetTouches = (type == 'end') ? TouchList() : touchList;
         event.changedTouches = touchList;
         element.dispatchEvent(event);
 
-        renderTouches(touchList, type);
+        renderTouches(touchList);
     }
 
-    function renderTouches(touchList, type) {
-        touchList.forEach(function(touch, i) {
+    function renderTouches(touchList) {
+        touchList.forEach(function(touch) {
             var el = document.createElement('div');
             el.style.width = '20px';
             el.style.height = '20px';
@@ -159,10 +159,8 @@ var Simulator = (function() {
             // calculate the radius
             // this is for scaling and multiple touches
             var radius = options.radius;
-            if (options.scale < 1) {
-                radius = options.radius - (options.radius * (options.scale / loops * loop));
-            } else if (options.scale > 1) {
-                radius = options.radius * (options.scale / loops * loop);
+            if (options.scale !== 1) {
+                radius = options.radius - (options.radius * (1 - options.scale) * (1 / loops * loop));
             }
 
             // calculate new position/rotation
@@ -191,6 +189,22 @@ var Simulator = (function() {
 
 
     var gestures = {
+        press: function(element, options, done) {
+            options = merge(options, {
+                pos: [10, 10],
+                duration: 500,
+                touches: 1
+            });
+
+            var touches = getTouches(options.pos, 1);
+
+            triggerTouch(touches, element, 'start');
+            setTimeout(function() {
+                triggerTouch(touches, element, 'end');
+                setTimeout(done, 25);
+            }, options.duration);
+        },
+
         tap: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -258,6 +272,7 @@ var Simulator = (function() {
                 pos: [300, 300],
                 scale: 2,
                 duration: 250,
+                radius: 100,
                 touches: 2
             });
             var touches = getTouches(options.pos, options.touches);
@@ -283,7 +298,8 @@ var Simulator = (function() {
             options = merge(options, {
                 pos: [300, 300],
                 rotation: 180,
-                scale: 2,
+                radius: 100,
+                scale: .5,
                 duration: 250,
                 touches: 2
             });

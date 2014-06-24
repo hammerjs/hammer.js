@@ -34,9 +34,10 @@ function each(obj, iterator, context) {
  * @returns {Object} dest
  */
 function extend(dest, src, merge) {
-    for (var key in src) {
-        if (src.hasOwnProperty(key) && (!merge || (merge && dest[key] === undefined))) {
-            dest[key] = src[key];
+    var keys = Object.keys(src);
+    for (var i = 0, len = keys.length; i < len; i++) {
+        if (!merge || (merge && dest[keys[i]] === undefined)) {
+            dest[keys[i]] = src[keys[i]];
         }
     }
     return dest;
@@ -229,10 +230,10 @@ function uniqueArray(src, key) {
  * @returns {String|Undefined} prefixed
  */
 function prefixed(obj, property) {
-    var prefix, prop, i;
+    var prefix, prop;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
-    for (i = 0; i < VENDOR_PREFIXES.length; i++) {
+    for (var i = 0, len = VENDOR_PREFIXES.length; i < len; i++) {
         prefix = VENDOR_PREFIXES[i];
         prop = (prefix) ? prefix + camelProp : property;
 
