@@ -1158,6 +1158,24 @@ function stateStr(state) {
 }
 
 /**
+ * direction cons to string
+ * @param {Const} direction
+ * @returns {*}
+ */
+function directionStr(direction) {
+    if (direction == DIRECTION_DOWN) {
+        return 'down';
+    } else if (direction == DIRECTION_UP) {
+        return 'up';
+    } else if (direction == DIRECTION_LEFT) {
+        return 'left';
+    } else if (direction == DIRECTION_RIGHT) {
+        return 'right';
+    }
+    return null;
+}
+
+/**
  * get a recognizer by name if it is bound to a manager
  * @param {Recognizer|String} otherRecognizer
  * @param {Recognizer} recognizer
@@ -1285,7 +1303,11 @@ inherit(PanRecognizer, AttrRecognizer, {
         this.pY = input.deltaY;
 
         this._super.emit.call(this, input);
-        this.manager.emit(this.options.event + input.direction, input);
+
+        var direction = directionStr(input.direction);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
     }
 });
 
@@ -1421,7 +1443,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
 
     emit: function(input) {
         this.manager.emit(this.options.event, input);
-        this.manager.emit(this.options.event + input.direction, input);
+
+        var direction = directionStr(input.direction);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
     }
 });
 

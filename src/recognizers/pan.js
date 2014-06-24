@@ -64,6 +64,10 @@ inherit(PanRecognizer, AttrRecognizer, {
         this.pY = input.deltaY;
 
         this._super.emit.call(this, input);
-        this.manager.emit(this.options.event + input.direction, input);
+
+        var direction = directionStr(input.direction);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
     }
 });

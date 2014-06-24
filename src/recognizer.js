@@ -193,6 +193,24 @@ function stateStr(state) {
 }
 
 /**
+ * direction cons to string
+ * @param {Const} direction
+ * @returns {*}
+ */
+function directionStr(direction) {
+    if (direction == DIRECTION_DOWN) {
+        return 'down';
+    } else if (direction == DIRECTION_UP) {
+        return 'up';
+    } else if (direction == DIRECTION_LEFT) {
+        return 'left';
+    } else if (direction == DIRECTION_RIGHT) {
+        return 'right';
+    }
+    return null;
+}
+
+/**
  * get a recognizer by name if it is bound to a manager
  * @param {Recognizer|String} otherRecognizer
  * @param {Recognizer} recognizer
