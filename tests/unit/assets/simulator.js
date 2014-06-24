@@ -58,6 +58,18 @@ var Simulator = (function() {
         return touches;
     }
 
+    /**
+     * create new TouchList like array
+     * @returns {Array}
+     * @constructor
+     */
+    function TouchList() {
+        var touchList = [];
+        touchList.identifiedTouch = touchList.item = function(index) {
+            return this[index] || {};
+        };
+        return touchList;
+    }
 
     /**
      * trigger a touchevent
@@ -66,11 +78,7 @@ var Simulator = (function() {
      * @param type
      */
     function triggerTouch(touches, element, type) {
-        var touchList = [];
-        touchList.identifiedTouch = touchList.item = function(index) {
-            return this[index] || {};
-        };
-
+        var touchList = TouchList();
         touches.forEach(function(touch, i) {
             var x = Math.round(touch.x),
                 y = Math.round(touch.y);
@@ -89,7 +97,7 @@ var Simulator = (function() {
 
         var event = document.createEvent('Event');
         event.initEvent('touch' + type, true, true);
-        event.touches = touchList;
+        event.touches = (type == 'end') ? TouchList() : touchList;
         event.targetTouches = touchList;
         event.changedTouches = touchList;
         element.dispatchEvent(event);
