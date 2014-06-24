@@ -15,13 +15,15 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
-            (Math.abs(1 - input.scale) > this.options.threshold || this.state & STATE_BEGAN);
+            (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
     },
 
     emit: function(input) {
         this._super.emit.call(this, input);
 
-        var inOut = input.scale < 1 ? 'in' : 'out';
-        this.manager.emit(this.options.event + inOut, input);
+        if (input.scale !== 1) {
+            var inOut = input.scale < 1 ? 'in' : 'out';
+            this.manager.emit(this.options.event + inOut, input);
+        }
     }
 });

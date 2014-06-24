@@ -87,23 +87,12 @@ var Simulator = (function() {
             });
         });
 
-        if(type == 'start' || type == 'end') {
-            touchList.forEach(function(touch, i) {
-                var event = document.createEvent('Event');
-                event.initEvent('touch' + type, true, true);
-                event.touches = touchList.slice(0 ,i+1);
-                event.targetTouches = touchList.slice(0 ,i+1);
-                event.changedTouches = [touch];
-                element.dispatchEvent(event);
-            });
-        } else {
-            var event = document.createEvent('Event');
-            event.initEvent('touch' + type, true, true);
-            event.touches = touchList;
-            event.targetTouches = touchList;
-            event.changedTouches = touchList;
-            element.dispatchEvent(event);
-        }
+        var event = document.createEvent('Event');
+        event.initEvent('touch' + type, true, true);
+        event.touches = touchList;
+        event.targetTouches = touchList;
+        event.changedTouches = touchList;
+        element.dispatchEvent(event);
 
         renderTouches(touchList, type);
     }
@@ -129,7 +118,7 @@ var Simulator = (function() {
             setTimeout(function() {
                 document.body.removeChild(el);
                 el = null;
-            }, 150);
+            }, 100);
         });
     }
 
@@ -206,7 +195,7 @@ var Simulator = (function() {
             triggerTouch(touches, element, 'start');
             setTimeout(function() {
                 triggerTouch(touches, element, 'end');
-                done();
+                setTimeout(done, 25);
             }, options.duration);
         },
 
@@ -236,8 +225,8 @@ var Simulator = (function() {
                 touches: 1
             });
             var touches = getTouches(options.pos, options.touches);
-            triggerGesture(element, touches, options, function(touches) {
-                done(touches);
+            triggerGesture(element, touches, options, function() {
+                setTimeout(done, 25);
             });
         },
 
@@ -251,8 +240,8 @@ var Simulator = (function() {
                 easing: 'expo'
             });
             var touches = getTouches(options.pos, options.touches);
-            triggerGesture(element, touches, options, function(touches) {
-                done(touches);
+            triggerGesture(element, touches, options, function() {
+                setTimeout(done, 25);
             });
         },
 
@@ -264,8 +253,8 @@ var Simulator = (function() {
                 touches: 2
             });
             var touches = getTouches(options.pos, options.touches);
-            triggerGesture(element, touches, options, function(touches) {
-                done(touches);
+            triggerGesture(element, touches, options, function() {
+                setTimeout(done, 25);
             });
         },
 
@@ -277,8 +266,8 @@ var Simulator = (function() {
                 touches: 2
             });
             var touches = getTouches(options.pos, options.touches);
-            triggerGesture(element, touches, options, function(touches) {
-                done(touches);
+            triggerGesture(element, touches, options, function() {
+                setTimeout(done, 25);
             });
         },
 
@@ -291,8 +280,8 @@ var Simulator = (function() {
                 touches: 2
             });
             var touches = getTouches(options.pos, options.touches);
-            triggerGesture(element, touches, options, function(touches) {
-                done(touches);
+            triggerGesture(element, touches, options, function() {
+                setTimeout(done, 25);
             });
         }
     };

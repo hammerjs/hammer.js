@@ -15,6 +15,6 @@ inherit(RotateRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
-            (Math.abs(1 - input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+            (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
     }
 });

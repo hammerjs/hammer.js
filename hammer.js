@@ -540,6 +540,7 @@ function getDistance(p1, p2, props) {
     }
     var x = p2[props[0]] - p1[props[0]],
         y = p2[props[1]] - p1[props[1]];
+
     return Math.sqrt((x * x) + (y * y));
 }
 
@@ -1328,14 +1329,16 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
-            (Math.abs(1 - input.scale) > this.options.threshold || this.state & STATE_BEGAN);
+            (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
     },
 
     emit: function(input) {
         this._super.emit.call(this, input);
 
-        var inOut = input.scale < 1 ? 'in' : 'out';
-        this.manager.emit(this.options.event + inOut, input);
+        if (input.scale !== 1) {
+            var inOut = input.scale < 1 ? 'in' : 'out';
+            this.manager.emit(this.options.event + inOut, input);
+        }
     }
 });
 
@@ -1404,7 +1407,7 @@ inherit(RotateRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
-            (Math.abs(1 - input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+            (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
     }
 });
 
