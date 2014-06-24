@@ -1,18 +1,131 @@
-var Simulator = (function() {
+(function() {
+    var Simulator = {
+        type: 'touch',
+
+        /**
+         * set type
+         * @param type
+         */
+        setType: function(type) {
+            if(!Simulator.events[type]) {
+                throw new Error(type + " is not a valid event type.");
+            }
+            return this.type = type;
+        }
+    };
+
     // simple easing methods
     // found at the source of velocity.js
-    var easings = {
-        'linear': function(p) { return p; },
-        'swing': function(p) { return 0.5 - Math.cos(p * Math.PI) / 2; },
-        'quad': function(p) { return Math.pow(p, 2); },
-        'cubic': function(p) { return Math.pow(p, 3); },
-        'quart': function(p) { return Math.pow(p, 4); },
-        'quint': function(p) { return Math.pow(p, 5); },
-        'expo': function(p) { return Math.pow(p, 6); }
+    Simulator.easings = {
+        linear: function(p) { return p; },
+        swing: function(p) { return 0.5 - Math.cos(p * Math.PI) / 2; },
+        quad: function(p) { return Math.pow(p, 2); },
+        cubic: function(p) { return Math.pow(p, 3); },
+        quart: function(p) { return Math.pow(p, 4); },
+        quint: function(p) { return Math.pow(p, 5); },
+        expo: function(p) { return Math.pow(p, 6); }
+    };
+
+    Simulator.events = {
+        /**
+         * pointer events
+         */
+        pointer: {
+            fakeSupport: function() {
+                if(!("PointerEvent" in window)) {
+                    navigator.maxTouchPoints = 10;
+                    window.PointerEvent = function () {};
+                }
+            },
+
+            typeMap: {
+                start: 'pointerdown',
+                move: 'pointermove',
+                end: 'pointerup',
+                cancel: 'pointercancel'
+            },
+
+            trigger: function(touches, element, type) {
+                touches.forEach(function (touch, i) {
+                    var x = Math.round(touch.x),
+                        y = Math.round(touch.y);
+
+                    var event = document.createEvent('Event');
+                    event.initEvent(this.typeMap[type], true, true);
+
+                    event.getCurrentPoint = function() { return touch; }
+                    event.setPointerCapture = event.releasePointerCapture = function() { }
+
+                    event.buttons = 1;
+                    event.pageX = x;
+                    event.pageY = y;
+                    event.clientX = x;
+                    event.clientY = y;
+                    event.screenX = x;
+                    event.screenY = y;
+                    event.target = element;
+                    event.identifier = i;
+
+                    element.dispatchEvent(event);
+                }, this);
+
+                renderTouches(touches);
+            }
+        },
+
+        /**
+         * touch events
+         */
+        touch: {
+            fakeSupport: function() {
+                if(!("ontouchstart" in window)) {
+                    window.ontouchstart = function () {};
+                }
+            },
+
+            emptyTouchList: function() {
+                var touchList = [];
+                touchList.identifiedTouch = touchList.item = function(index) {
+                    return this[index] || {};
+                };
+                return touchList;
+            },
+
+            trigger: function (touches, element, type) {
+                var touchList = this.emptyTouchList();
+                touches.forEach(function (touch, i) {
+                    var x = Math.round(touch.x),
+                        y = Math.round(touch.y);
+
+                    touchList.push({
+                        pageX: x,
+                        pageY: y,
+                        clientX: x,
+                        clientY: y,
+                        screenX: x,
+                        screenY: y,
+                        target: element,
+                        identifier: i
+                    });
+                });
+
+                var event = document.createEvent('Event');
+                event.initEvent('touch' + type, true, true);
+                event.touches = (type == 'end') ? this.emptyTouchList() : touchList;
+                event.targetTouches = (type == 'end') ? this.emptyTouchList() : touchList;
+                event.changedTouches = touchList;
+                element.dispatchEvent(event);
+
+                renderTouches(touches);
+            }
+        }
     };
 
     /**
      * merge objects
+     * @param dest
+     * @param src
+     * @returns dest
      */
     function merge(dest, src) {
         dest = dest || {};
@@ -59,54 +172,13 @@ var Simulator = (function() {
     }
 
     /**
-     * create new TouchList like array
-     * @returns {Array}
-     * @constructor
-     */
-    function TouchList() {
-        var touchList = [];
-        touchList.identifiedTouch = touchList.item = function(index) {
-            return this[index] || {};
-        };
-        return touchList;
-    }
-
-    /**
-     * trigger a touchevent
+     * render the touches
      * @param touches
      * @param element
      * @param type
      */
-    function triggerTouch(touches, element, type) {
-        var touchList = TouchList();
-        touches.forEach(function(touch, i) {
-            var x = Math.round(touch.x),
-                y = Math.round(touch.y);
-
-            touchList.push({
-                pageX: x,
-                pageY: y,
-                clientX: x,
-                clientY: y,
-                screenX: x,
-                screenY: y,
-                target: element,
-                identifier: i
-            });
-        });
-
-        var event = document.createEvent('Event');
-        event.initEvent('touch' + type, true, true);
-        event.touches = (type == 'end') ? TouchList() : touchList;
-        event.targetTouches = (type == 'end') ? TouchList() : touchList;
-        event.changedTouches = touchList;
-        element.dispatchEvent(event);
-
-        renderTouches(touchList);
-    }
-
-    function renderTouches(touchList) {
-        touchList.forEach(function(touch) {
+    function renderTouches(touches) {
+        touches.forEach(function(touch) {
             var el = document.createElement('div');
             el.style.width = '20px';
             el.style.height = '20px';
@@ -118,9 +190,9 @@ var Simulator = (function() {
             el.style.border = 'solid 2px #000';
             el.style.zIndex = 2000;
 
-            el.style.transform = 'translate('+ touch.clientX +'px ,'+ touch.clientY +'px)';
-            el.style.mozTransform = 'translate('+ touch.clientX +'px ,'+ touch.clientY +'px)';
-            el.style.webkitTransform = 'translate('+ touch.clientX +'px ,'+ touch.clientY +'px)';
+            el.style.transform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
+            el.style.mozTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
+            el.style.webkitTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
 
             document.body.appendChild(el);
             setTimeout(function() {
@@ -128,6 +200,17 @@ var Simulator = (function() {
                 el = null;
             }, 100);
         });
+    }
+
+    /**
+     * trigger the touch events
+     * @param touches
+     * @param element
+     * @param type
+     * @returns {*}
+     */
+    function trigger(touches, element, type) {
+        return Simulator.events[Simulator.type].trigger(touches, element, type);
     }
 
     /**
@@ -154,7 +237,6 @@ var Simulator = (function() {
             easing: 'swing'
         });
 
-
         function gestureLoop() {
             // calculate the radius
             // this is for scaling and multiple touches
@@ -164,7 +246,7 @@ var Simulator = (function() {
             }
 
             // calculate new position/rotation
-            var easing = easings[options.easing](1 / loops * loop),
+            var easing = Simulator.easings[options.easing](1 / loops * loop),
                 posX = options.pos[0] + (options.deltaX / loops * loop) * easing,
                 posY = options.pos[1] + (options.deltaY / loops * loop) * easing,
                 rotation = options.rotation / loops * loop,
@@ -173,12 +255,12 @@ var Simulator = (function() {
                 isLast = (loop == loops);
 
             if (isFirst) {
-                triggerTouch(touches, element, 'start');
+                trigger(touches, element, 'start');
             } else if (isLast) {
-                triggerTouch(touches, element, 'end');
+                trigger(touches, element, 'end');
                 return done();
             } else {
-                triggerTouch(touches, element, 'move');
+                trigger(touches, element, 'move');
             }
 
             setTimeout(gestureLoop, interval);
@@ -187,8 +269,13 @@ var Simulator = (function() {
         gestureLoop();
     }
 
-
-    var gestures = {
+    Simulator.gestures = {
+        /**
+         * press
+         * @param element
+         * @param options
+         * @param done
+         */
         press: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -198,13 +285,19 @@ var Simulator = (function() {
 
             var touches = getTouches(options.pos, 1);
 
-            triggerTouch(touches, element, 'start');
+            trigger(touches, element, 'start');
             setTimeout(function() {
-                triggerTouch(touches, element, 'end');
+                trigger(touches, element, 'end');
                 setTimeout(done, 25);
             }, options.duration);
         },
 
+        /**
+         * tap
+         * @param element
+         * @param options
+         * @param done
+         */
         tap: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -213,14 +306,19 @@ var Simulator = (function() {
             });
 
             var touches = getTouches(options.pos, 1);
-
-            triggerTouch(touches, element, 'start');
+            trigger(touches, element, 'start');
             setTimeout(function() {
-                triggerTouch(touches, element, 'end');
+                trigger(touches, element, 'end');
                 setTimeout(done, 25);
             }, options.duration);
         },
 
+        /**
+         * double tap
+         * @param element
+         * @param options
+         * @param done
+         */
         doubleTap: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -238,6 +336,12 @@ var Simulator = (function() {
             });
         },
 
+        /**
+         * pan
+         * @param element
+         * @param options
+         * @param done
+         */
         pan: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -246,12 +350,19 @@ var Simulator = (function() {
                 duration: 250,
                 touches: 1
             });
+
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
                 setTimeout(done, 25);
             });
         },
 
+        /**
+         * swipe
+         * @param element
+         * @param options
+         * @param done
+         */
         swipe: function(element, options, done) {
             options = merge(options, {
                 pos: [10, 10],
@@ -261,12 +372,19 @@ var Simulator = (function() {
                 touches: 1,
                 easing: 'expo'
             });
+
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
                 setTimeout(done, 25);
             });
         },
 
+        /**
+         * pinch
+         * @param element
+         * @param options
+         * @param done
+         */
         pinch: function(element, options, done) {
             options = merge(options, {
                 pos: [300, 300],
@@ -275,12 +393,19 @@ var Simulator = (function() {
                 radius: 100,
                 touches: 2
             });
+
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
                 setTimeout(done, 25);
             });
         },
 
+        /**
+         * rotate
+         * @param element
+         * @param options
+         * @param done
+         */
         rotate: function(element, options, done) {
             options = merge(options, {
                 pos: [300, 300],
@@ -288,12 +413,19 @@ var Simulator = (function() {
                 duration: 250,
                 touches: 2
             });
+
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
                 setTimeout(done, 25);
             });
         },
 
+        /**
+         * combination of pinch and rotate
+         * @param element
+         * @param options
+         * @param done
+         */
         pinchRotate: function(element, options, done) {
             options = merge(options, {
                 pos: [300, 300],
@@ -303,6 +435,7 @@ var Simulator = (function() {
                 duration: 250,
                 touches: 2
             });
+
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
                 setTimeout(done, 25);
@@ -310,5 +443,5 @@ var Simulator = (function() {
         }
     };
 
-    return gestures;
+    window.Simulator = Simulator;
 })();

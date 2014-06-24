@@ -18,22 +18,21 @@
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 <script>
 
+    Simulator.setType('pointer');
+    Simulator.events.pointer.fakeSupport();
+
     var el, map;
     var container = document.getElementById('maps');
 
-    if(!("ontouchstart" in window)) {
-        alert('switch to a touchscreen or a mobile emulator.');
-    } else {
-        map = new google.maps.Map(container, {
-            zoom: 14,
-            center: new google.maps.LatLng(52.0056158, 5.8965987)
-        });
+    map = new google.maps.Map(container, {
+        zoom: 14,
+        center: new google.maps.LatLng(52.0056158, 5.8965987)
+    });
 
-        // quick dirty
-        setTimeout(function() {
-            el = container.childNodes[0].childNodes[0];
-        }, 1000)
-    }
+    // quick dirty
+    setTimeout(function() {
+        el = container.childNodes[0].childNodes[0];
+    }, 1000);
 
     console.info('Try and run some methods of the `Simulator` object on the `el` element')
 

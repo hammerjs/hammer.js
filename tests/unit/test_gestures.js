@@ -24,7 +24,7 @@ asyncTest("recognize pan", function () {
         events[ev.type] = true;
     });
 
-    Simulator.pan(el, null, function() {
+    Simulator.gestures.pan(el, null, function() {
         start();
         equal(Object.keys(events).length, 4);
     });
@@ -41,7 +41,7 @@ asyncTest("recognize swipe", function () {
         events[ev.type] = true;
     });
 
-    Simulator.swipe(el, { duration: 500 }, function() {
+    Simulator.gestures.swipe(el, { duration: 500 }, function() {
         start();
         equal(Object.keys(events).length, 2);
     });
@@ -58,7 +58,7 @@ asyncTest("recognize pinch", function () {
         events[ev.type] = true;
     });
 
-    Simulator.pinch(el, { duration: 500 }, function() {
+    Simulator.gestures.pinch(el, { duration: 500 }, function() {
         start();
         equal(Object.keys(events).length, 2); // only pinch and pinchout
     });
@@ -75,7 +75,7 @@ asyncTest("recognize rotate", function () {
         events[ev.type] = true;
     });
 
-    Simulator.rotate(el, { duration: 500 }, function() {
+    Simulator.gestures.rotate(el, { duration: 500 }, function() {
         start();
         equal(Object.keys(events).length, 1);
     });
@@ -93,7 +93,7 @@ asyncTest("recognize rotate and pinch simultaneous", function () {
         events[ev.type] = true;
     });
 
-    Simulator.pinchRotate(el, { duration: 500 }, function() {
+    Simulator.gestures.pinchRotate(el, { duration: 500 }, function() {
         start();
         equal(Object.keys(events).length, 3); // pinch pinchout and rotate
     });
@@ -111,7 +111,7 @@ asyncTest("recognize pan and swipe simultaneous", function () {
         events[ev.type] = true;
     });
 
-    Simulator.swipe(el, { duration: 500 }, function() {
+    Simulator.gestures.swipe(el, { duration: 500 }, function() {
         start();
         equal(Object.keys(events).length, 3);
     });
@@ -132,17 +132,17 @@ asyncTest("recognize gestures", function () {
     hammer.get('rotate').set('enable', true);
 
     // swipe + pan
-    Simulator.swipe(el, { duration: 500 }, function() {
+    Simulator.gestures.swipe(el, { duration: 500 }, function() {
         equal(Object.keys(events).length, 4, "expect panstart pan panend swipe");
         events = {};
 
         // pinchout
-        Simulator.pinch(el, { duration: 500, scale: 2 }, function() {
+        Simulator.gestures.pinch(el, { duration: 500, scale: 2 }, function() {
             equal(Object.keys(events).length, 2, "pinchout pinch");
             events = {};
 
             // pinchin
-            Simulator.pinch(el, { duration: 500, scale: .5 }, function() {
+            Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function() {
                 equal(Object.keys(events).length, 2, "pinchin pinch");
                 events = {};
 
