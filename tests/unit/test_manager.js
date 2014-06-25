@@ -3,7 +3,7 @@ module("eventEmitter");
 test("test the eventemitter", function () {
     expect(6);
 
-    var ee = new Manager(document.querySelector('#qunit-fixture'));
+    var ee = new Hammer.Manager(document.querySelector('#qunit-fixture'));
     var inputData = {
         target: document.body,
         srcEvent: {

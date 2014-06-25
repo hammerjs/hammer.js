@@ -26,19 +26,6 @@ module.exports = (grunt) ->
           'src/hammer.suffix']
         dest: 'hammer.js'
 
-      test: # special test build that exposes everything so it's testable
-        src: [
-          'src/utils.js'
-          'src/input.js'
-          'src/input/*.js'
-          'src/touchaction.js'
-          'src/recognizer.js'
-          'src/recognizers/*.js'
-          'src/hammer.js'
-          'src/manager.js'
-          'src/expose.js']
-        dest: 'tests/build.js'
-
     uglify:
       min:
         options:
@@ -47,6 +34,25 @@ module.exports = (grunt) ->
           banner: '<%= meta.banner %>'
         files:
           'hammer.min.js': ['hammer.js']
+       # special test build that exposes everything so it's testable
+      test:
+        options:
+          wrap: "$H"
+          comments: 'all'
+          exportAll: true
+          mangle: false
+          beautify: true
+        files:
+          'tests/build.js': [
+            'src/utils.js'
+            'src/input.js'
+            'src/input/*.js'
+            'src/touchaction.js'
+            'src/recognizer.js'
+            'src/recognizers/*.js'
+            'src/hammer.js'
+            'src/manager.js'
+            'src/expose.js']
 
     'string-replace':
       version:

@@ -1,15 +1,15 @@
 module("utils");
 test("get/set prefixed util", function () {
-    ok(_.isUndefined(prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+    ok(_.isUndefined($H.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
 
     window.webkitFakeProperty = 1337;
-    ok(prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
+    ok($H.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
 });
 
 test("fnBind", function () {
     var context = { a: true };
 
-    bindFn(function (b) {
+    $H.bindFn(function (b) {
         ok(this.a === true, "bindFn scope");
         ok(b === 123, "bindFn argument");
     }, context)(123);
@@ -25,7 +25,7 @@ test("fnBind", function () {
             Base.call(this);
         }
 
-        inherit(Child, Base, {
+        $H.inherit(Child, Base, {
             newMethod: function () {
             }
         });
@@ -51,29 +51,29 @@ test("fnBind", function () {
 })();
 
 test("toArray", function () {
-    ok(_.isArray(toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray(toArray([true, true])), 'array stays an array');
+    ok(_.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
+    ok(_.isArray($H.toArray([true, true])), 'array stays an array');
 });
 
 test("inArray", function () {
-    ok(inArray([1, 2, 3, 4, "hammer"], "hammer") === 4, "found item and returned the index");
-    ok(inArray([1, 2, 3, 4, "hammer"], "notfound") === -1, "not found an item and returned -1");
-    ok(inArray([
+    ok($H.inArray([1, 2, 3, 4, "hammer"], "hammer") === 4, "found item and returned the index");
+    ok($H.inArray([1, 2, 3, 4, "hammer"], "notfound") === -1, "not found an item and returned -1");
+    ok($H.inArray([
         {id: 2},
         {id: 24}
     ], "24", "id") === 1, "find by key and return the index");
-    ok(inArray([
+    ok($H.inArray([
         {id: 2},
         {id: 24}
     ], "22", "id") === -1, "not found by key and return -1");
 });
 
 test("splitStr", function () {
-    deepEqual(splitStr(" a  b  c d   "), ['a', 'b', 'c', 'd'], "str split valid");
+    deepEqual($H.splitStr(" a  b  c d   "), ['a', 'b', 'c', 'd'], "str split valid");
 });
 
 test("uniqueArray", function () {
-    deepEqual(uniqueArray([
+    deepEqual($H.uniqueArray([
         {id: 1},
         {id: 2},
         {id: 2}
@@ -84,10 +84,10 @@ test("uniqueArray", function () {
 });
 
 test("boolOrFn", function () {
-    equal(boolOrFn(true), true, "Passing an boolean");
-    equal(boolOrFn(false), false, "Passing an boolean");
-    equal(boolOrFn(function(){ return true; }), true, "Passing an boolean");
-    equal(boolOrFn(1), true, "Passing an integer");
+    equal($H.boolOrFn(true), true, "Passing an boolean");
+    equal($H.boolOrFn(false), false, "Passing an boolean");
+    equal($H.boolOrFn(function(){ return true; }), true, "Passing an boolean");
+    equal($H.boolOrFn(1), true, "Passing an integer");
 });
 
 test("hasParent", function () {
@@ -97,8 +97,8 @@ test("hasParent", function () {
     document.body.appendChild(parent);
     parent.appendChild(child);
 
-    equal(hasParent(child, parent), true, "Found parent");
-    equal(hasParent(parent, child), false, "Not in parent");
+    equal($H.hasParent(child, parent), true, "Found parent");
+    equal($H.hasParent(parent, child), false, "Not in parent");
 
     document.body.removeChild(parent);
 });
@@ -109,7 +109,7 @@ test('each', function () {
     var loop;
 
     loop = false;
-    each(object, function (value, key) {
+    $H.each(object, function (value, key) {
         if (key == 'hi' && value === true) {
             loop = true;
         }
@@ -117,7 +117,7 @@ test('each', function () {
     ok(loop, 'object loop');
 
     loop = 0;
-    each(array, function (value, key) {
+    $H.each(array, function (value, key) {
         if (value) {
             loop++;
         }
@@ -126,7 +126,7 @@ test('each', function () {
 
     loop = 0;
     array.forEach = null;
-    each(array, function (value, key) {
+    $H.each(array, function (value, key) {
         if (value) {
             loop++;
         }
@@ -137,7 +137,7 @@ test('each', function () {
 test('extend', function () {
     expect(2);
     deepEqual(
-        extend(
+        $H.extend(
             {a: 1, b: 3},
             {b: 2, c: 3}
         ),
@@ -146,7 +146,7 @@ test('extend', function () {
     );
 
     var src = { foo: true };
-    var dest = extend({}, src);
+    var dest = $H.extend({}, src);
     src.foo = false;
     deepEqual(dest, {foo: true}, 'Clone reference');
 });
@@ -154,7 +154,7 @@ test('extend', function () {
 test('merge', function () {
     expect(2);
     deepEqual(
-        merge(
+        $H.merge(
             {a: 1, b: 3},
             {b: 2, c: 3}
         ),
@@ -163,7 +163,7 @@ test('merge', function () {
     );
 
     var src = { foo: true };
-    var dest = merge({ foo: true }, src);
+    var dest = $H.merge({ foo: true }, src);
     src.foo = false;
     deepEqual(dest, {foo: true}, 'Clone reference');
 });
@@ -175,11 +175,11 @@ test('test add/removeEventListener', function () {
 
     expect(2);
 
-    addEventListeners(window, "testEvent1  testEvent2  ", handleEvent);
+    $H.addEventListeners(window, "testEvent1  testEvent2  ", handleEvent);
     testUtils.triggerDomEvent(window, 'testEvent1');
     testUtils.triggerDomEvent(window, 'testEvent2');
 
-    removeEventListeners(window, " testEvent1 testEvent2 ", handleEvent);
+    $H.removeEventListeners(window, " testEvent1 testEvent2 ", handleEvent);
     testUtils.triggerDomEvent(window, 'testEvent1');
     testUtils.triggerDomEvent(window, 'testEvent2');
 });
