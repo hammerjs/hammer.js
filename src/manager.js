@@ -100,12 +100,20 @@ Manager.prototype = {
 
     /**
      * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
      * @param {Recognizer} recognizer
      * @returns {Recognizer}
      */
     add: function(recognizer) {
+        // remove existing
+        var existing = this.get(recognizer.options.event);
+        if (existing) {
+            this.remove(existing);
+        }
+
         this.recognizers.push(recognizer);
         recognizer.manager = this;
+
         this.touchAction.update();
         return recognizer;
     },
@@ -118,6 +126,7 @@ Manager.prototype = {
         var recognizers = this.recognizers;
         recognizer = this.get(recognizer);
         recognizers.splice(inArray(recognizers, recognizer), 1);
+
         this.touchAction.update();
     },
 

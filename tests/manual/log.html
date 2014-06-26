@@ -45,8 +45,8 @@
         mc.add(new Hammer.Rotate());
         mc.add(new Hammer.Pinch());
 
+        mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
         mc.add(new Hammer.Tap());
-        mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 })).recognizeWith('tap');
 
         mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
 
@@ -54,6 +54,7 @@
             debug.textContent = str;
         }
         function logGesture(ev) {
+            console.log(ev.timeStamp, ev.type, ev);
             log.textContent = ev.toDirString() +"\n\n"+ (ev.gesture && ev.gesture.toDirString());
         }
 

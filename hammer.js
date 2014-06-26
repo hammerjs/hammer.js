@@ -1462,6 +1462,8 @@ function TapRecognizer() {
     this.pTime = false;
     this.pCenter = false;
 
+    this._timer = null;
+    this._input = null;
     this.count = 0;
 }
 
@@ -1471,6 +1473,7 @@ inherit(TapRecognizer, Recognizer, {
         pointers: 1,
         taps: 1,
         interval: 300, // max time between the multi-tap taps
+        delay: 0, // delay after triggering the tap. useful if you don't want to recognize a tap on each touchend
         time: 250, // max time of the pointer to be down (like finger on the screen)
         movementBetween: 10, // a multi-tap can be a bit off the initial position
         movementWhile: 2 // a minimal movement is ok, but keep it low
@@ -1481,6 +1484,7 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     process: function(input) {
+        var self = this;
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
@@ -1502,21 +1506,38 @@ inherit(TapRecognizer, Recognizer, {
                 this.count += 1;
             }
 
+            this._input = input;
+            this.reset();
+
             // if tap count matches we have recognized it,
             // else it has began recognizing...
-            var validTapCount = (this.count % options.taps === 0);
-            if (validTapCount) {
-                return STATE_RECOGNIZED;
+            var tapCount = this.count % options.taps;
+            if (tapCount === 0) {
+                if (!options.delay) {
+                    return STATE_RECOGNIZED;
+                } else {
+                    this._timer = setTimeout(function() {
+                        self.state = STATE_RECOGNIZED;
+                        self.emit();
+                    }, options.delay);
+                    return STATE_BEGAN;
+                }
             }
-            return STATE_BEGAN;
+            if (!options.delay) {
+                return STATE_BEGAN;
+            }
         }
         return STATE_FAILED;
     },
 
-    emit: function(input) {
-        if (this.state & STATE_RECOGNIZED) {
-            input.tapCount = this.count;
-            this.manager.emit(this.options.event, input);
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function() {
+        if (this.state == STATE_RECOGNIZED) {
+            this._input.tapCount = this.count;
+            this.manager.emit(this.options.event, this._input);
         }
     }
 });
@@ -1537,12 +1558,15 @@ function Hammer(element, options) {
      * [ RecognizerClass, options, recognizeWith ],
      * [ .... ]
      */
-    each(manager.options.recognizers, function(item) {
-        var recognizer = manager.add(new (item[0])(item[1]));
-        if (item[2]) {
-            recognizer.recognizeWith(item[2]);
-        }
-    });
+    var defaultRecognizers = manager.options.recognizers;
+    if (defaultRecognizers) {
+        each(defaultRecognizers, function(item) {
+            var recognizer = manager.add(new (item[0])(item[1]));
+            if (item[2]) {
+                recognizer.recognizeWith(item[2]);
+            }
+        });
+    }
 
     return manager;
 }
@@ -1698,12 +1722,20 @@ Manager.prototype = {
 
     /**
      * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
      * @param {Recognizer} recognizer
      * @returns {Recognizer}
      */
     add: function(recognizer) {
+        // remove existing
+        var existing = this.get(recognizer.options.event);
+        if (existing) {
+            this.remove(existing);
+        }
+
         this.recognizers.push(recognizer);
         recognizer.manager = this;
+
         this.touchAction.update();
         return recognizer;
     },
@@ -1716,6 +1748,7 @@ Manager.prototype = {
         var recognizers = this.recognizers;
         recognizer = this.get(recognizer);
         recognizers.splice(inArray(recognizers, recognizer), 1);
+
         this.touchAction.update();
     },
 

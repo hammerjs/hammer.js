@@ -14,12 +14,15 @@ function Hammer(element, options) {
      * [ RecognizerClass, options, recognizeWith ],
      * [ .... ]
      */
-    each(manager.options.recognizers, function(item) {
-        var recognizer = manager.add(new (item[0])(item[1]));
-        if (item[2]) {
-            recognizer.recognizeWith(item[2]);
-        }
-    });
+    var defaultRecognizers = manager.options.recognizers;
+    if (defaultRecognizers) {
+        each(defaultRecognizers, function(item) {
+            var recognizer = manager.add(new (item[0])(item[1]));
+            if (item[2]) {
+                recognizer.recognizeWith(item[2]);
+            }
+        });
+    }
 
     return manager;
 }
