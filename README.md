@@ -190,6 +190,7 @@ recognizer, not on the other recognizer.
 | pointers  | 1        | Required pointers. |
 | taps      | 1        | Amount of taps required. |
 | interval  | 300      | Maximum time between multiple taps. |
+| delay     | 0        | Delay after triggering the tap. Useful if you don't want to recognize a tap on each touchend. |
 | time      | 250      | Maximum press time. |
 | movementBetween | 10 | The maximum distance between multiple taps. |
 | movementWhile | 2    | While doing a tap some small movement is allowed. |
