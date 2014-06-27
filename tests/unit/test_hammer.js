@@ -2,7 +2,6 @@ var el, el2,
     hammer, hammer2;
 
 module('Tests', {
-
     setup: function () {
       el = document.createElement('div');
       document.body.appendChild(el);
@@ -12,15 +11,14 @@ module('Tests', {
     },
 
     teardown: function () {
-
       document.body.removeChild(el);
       document.body.removeChild(el2);
 
-      if ( hammer ) {
+      if (hammer) {
         hammer.destroy();
         hammer = null;
       }
-      if ( hammer2 ) {
+      if (hammer2) {
         hammer2.destroy();
         hammer2 = null;
       }
@@ -28,13 +26,18 @@ module('Tests', {
 });
 
 test('hammer shortcut', function () {
+    expect(2);
+
     Hammer.defaults.touchAction = 'pan-y';
     hammer = Hammer(el);
+
     ok(hammer instanceof Hammer.Manager, "returns an instance of Manager");
     ok(hammer.touchAction.actions == Hammer.defaults.touchAction, "set the default touchAction");
 });
 
 test('hammer shortcut with options', function () {
+    expect(2);
+
     hammer = Hammer(el, {
         touchAction: 'none'
     });
@@ -48,8 +51,7 @@ test('hammer shortcut with options', function () {
  *
  * This can confuse developers who read tests to use the library when doc is missing.
  */
-test('Hammer and Hammer.Manager constructors work exactly on the same way.', function()
-{
+test('Hammer and Hammer.Manager constructors work exactly on the same way.', function() {
     expect(2);
 
     hammer = new Hammer(el, {});
@@ -66,8 +68,7 @@ test('Hammer and Hammer.Manager constructors work exactly on the same way.', fun
  * - Hammer(el, {recognizers: null}).      IMO: now, it fails.
  * - Hammer(el, {recognizers: []}).  It works, but it is likely not intuitive.
  */
-test('A Hammer instance can be setup to not having default recognizers.', function()
-{
+test('A Hammer instance can be setup to not having default recognizers.', function() {
     expect(1);
 
     hammer = new Hammer(el, { recognizers: false });
@@ -79,9 +80,9 @@ test('A Hammer instance can be setup to not having default recognizers.', functi
  * recognizers, and my custom tap gesture wasn't working (I do not know exactly the reason),
  * but removing the default recognizers solved the issue.
  */
-test('Adding the same recognizer type should remove the old recognizer', function()
-{
+test('Adding the same recognizer type should remove the old recognizer', function() {
     expect(4);
+
     hammer = new Hammer(el);
 
     ok(!!hammer.get('tap'));
@@ -99,9 +100,9 @@ test('Adding the same recognizer type should remove the old recognizer', functio
  * - in this tests, it does not update input.velocity ( always 0)
  * - does not fire swipeleft or swiperight events
  */
-asyncTest('Swiping to the left should fire swipeleft event', function()
-{
+asyncTest('Swiping to the left should fire swipeleft event', function() {
     expect(2);
+
     hammer = new Hammer(el, {recognizers: []});
     hammer.add(new Hammer.Swipe({velocity: -1}));
     hammer.on('swipe swipeleft', function() {
@@ -111,5 +112,4 @@ asyncTest('Swiping to the left should fire swipeleft event', function()
     Simulator.gestures.swipe(el, {pos:[300,300], deltaY: 0, deltaX: -200}, function() {
         start();
     });
-
 });

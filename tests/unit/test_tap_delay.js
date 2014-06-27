@@ -1,5 +1,4 @@
-var el, el2,
-    hammer, hammer2;
+var el, hammer;
 
 var tripleTapCount = 0,
     doubleTapCount = 0,
@@ -35,7 +34,6 @@ module('Tap delay', {
             tripleTapCount++;
         });
     },
-
     teardown: function () {
         document.body.removeChild(el);
         hammer.destroy();

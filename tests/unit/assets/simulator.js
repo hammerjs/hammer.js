@@ -183,7 +183,7 @@
             el.style.width = '20px';
             el.style.height = '20px';
             el.style.background = 'red';
-            el.style.position = 'absolute';
+            el.style.position = 'fixed';
             el.style.top = 0;
             el.style.left = 0;
             el.style.borderRadius = '100%';

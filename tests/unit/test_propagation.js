@@ -4,7 +4,6 @@ var parent,
     hammerParent;
 
 module('Propagation (Tap in Child and Parent)', {
-
     setup: function () {
         parent = document.createElement('div');
         child = document.createElement("div");
@@ -17,14 +16,12 @@ module('Propagation (Tap in Child and Parent)', {
 
         hammerChild.add(new Hammer.Tap());
         hammerParent.add(new Hammer.Tap());
-
     },
     teardown: function () {
         document.body.removeChild(parent);
         hammerChild.destroy();
         hammerParent.destroy();
     }
-
 });
 
 test('Tap on the child, fires also the tap event to the parent', function () {
@@ -39,7 +36,6 @@ test('Tap on the child, fires also the tap event to the parent', function () {
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     testUtils.dispatchTouchEvent(child, 'end', 0, 10);
-
 });
 
 test('When tap on the child and the child stops the input event propagation, the tap event does not get fired in the parent', function () {
@@ -58,6 +54,5 @@ test('When tap on the child and the child stops the input event propagation, the
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     testUtils.dispatchTouchEvent(child, 'end', 0, 10);
-
 });
 

@@ -17,13 +17,13 @@ module('Gesture recognition', {
             .set('threshold', .1); // some threshold, since the simulator doesnt stays at scale:1 when rotating
         hammer.get('rotate').set('enable', true);
 
-        hammer.on(allGestureEvents, function(ev) {
+        hammer.on(allGestureEvents, function (ev) {
             events[ev.type] = true;
         });
 
         events = {};
-
     },
+
     teardown: function () {
         document.body.removeChild(el);
         hammer && hammer.destroy();
@@ -33,7 +33,7 @@ module('Gesture recognition', {
 asyncTest("recognize pan", function () {
     expect(1);
 
-    Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function() {
+    Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function () {
         start();
         deepEqual({
             panstart: true,
@@ -47,7 +47,7 @@ asyncTest("recognize pan", function () {
 asyncTest("recognize press", function () {
     expect(1);
 
-    Simulator.gestures.press(el, null, function() {
+    Simulator.gestures.press(el, null, function () {
         start();
         deepEqual({
             press: true
@@ -58,7 +58,7 @@ asyncTest("recognize press", function () {
 asyncTest("recognize swipe", function () {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 500 }, function() {
+    Simulator.gestures.swipe(el, { duration: 500 }, function () {
         start();
         deepEqual({
             panstart: true,
@@ -74,7 +74,7 @@ asyncTest("recognize swipe", function () {
 asyncTest("recognize pinch", function () {
     expect(1);
 
-    Simulator.gestures.pinch(el, { duration: 500, scale:.5 }, function() {
+    Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function () {
         start();
         deepEqual({
             pinch: true,
@@ -86,7 +86,7 @@ asyncTest("recognize pinch", function () {
 asyncTest("recognize rotate", function () {
     expect(1);
 
-    Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function() {
+    Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function () {
         start();
         deepEqual({
             rotate: true
@@ -97,7 +97,7 @@ asyncTest("recognize rotate", function () {
 asyncTest("recognize rotate and pinch simultaneous", function () {
     expect(1);
 
-    Simulator.gestures.pinchRotate(el, { duration: 500, scale: 2 }, function() {
+    Simulator.gestures.pinchRotate(el, { duration: 500, scale: 2 }, function () {
         start();
         deepEqual({
             rotate: true,
@@ -107,25 +107,25 @@ asyncTest("recognize rotate and pinch simultaneous", function () {
     });
 });
 
-asyncTest("dont recognize pan and swipe when moving down, when only horizontal is allowed", function () {
+asyncTest("don't recognize pan and swipe when moving down, when only horizontal is allowed", function () {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 500, deltaX: 0, deltaZ: 200 }, function() {
+    Simulator.gestures.swipe(el, { duration: 500, deltaX: 0, deltaZ: 200 }, function () {
         start();
         deepEqual({ }, events);
     });
 });
 
-asyncTest("dont recognize press when a tap has been done", function () {
+asyncTest("don't recognize press when a -invalid- tap has been done", function () {
     expect(1);
 
-    Simulator.gestures.press(el, { duration: 500 }, function() { });
+    Simulator.gestures.press(el, { duration: 500 });
 
-    setTimeout(function() {
-        Simulator.gestures.tap(el, { duration: 500 }, function() { });
+    setTimeout(function () {
+        Simulator.gestures.tap(el, { duration: 500 });
     }, 200);
 
-    setTimeout(function() {
+    setTimeout(function () {
         start();
         deepEqual({ }, events, 'no gesture has been recognized. invalid tap and invalid press.');
     }, 700);

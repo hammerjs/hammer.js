@@ -104,7 +104,6 @@ test('Panning with one finger down on child, other on parent', function () {
 
 var pressPeriod = 600;
 module('Nested gesture recognizers (Press Child + Pan Parent)', {
-
     setup: function () {
         parent = document.createElement('div');
         child = document.createElement("div");
@@ -121,14 +120,12 @@ module('Nested gesture recognizers (Press Child + Pan Parent)', {
 
         hammerChild.add(new Hammer.Press({time: pressPeriod}));
         hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
-
     },
     teardown: function () {
         document.body.removeChild(parent);
         hammerChild.destroy();
         hammerParent.destroy();
     }
-
 });
 
 test('Press on the child', function () {
@@ -151,7 +148,6 @@ test('Press on the child', function () {
 
 });
 test("When Press is followed by Pan on the same element, both gestures are recognized", function () {
-
     expect(2);
     hammerChild.on('press', function () {
         ok(true);
@@ -159,7 +155,6 @@ test("When Press is followed by Pan on the same element, both gestures are recog
     hammerParent.on('panend', function () {
         ok(true);
     });
-
 
     testUtils.dispatchTouchEvent(child, 'start', 0, 10);
     stop();
@@ -173,5 +168,4 @@ test("When Press is followed by Pan on the same element, both gestures are recog
         testUtils.dispatchTouchEvent(child, 'end', 30, 10);
 
     }, pressPeriod);
-
 });
