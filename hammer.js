@@ -777,13 +777,13 @@ inherit(TouchInput, Input, {
  */
 function normalizeTouches(ev) {
     var changedTouches = toArray(ev.changedTouches);
-    var touches = toArray(ev.touches).concat(changedTouches);
+    var targetTouches = toArray(ev.targetTouches).concat(changedTouches);
 
     return [
         // should contain all the touches, touches + changedTouches
-        uniqueArray(touches, 'identifier'),
+        uniqueArray(targetTouches, 'identifier'),
         // should contain only the touches that have changed
-        changedTouches
+        uniqueArray(changedTouches, 'identifier')
     ];
 }
 

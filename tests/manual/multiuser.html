@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title></title>
+    <style>
+
+        html, body {
+            height: 100%;;
+            margin: 0;
+            padding: 0;
+        }
+
+        #right,
+        #left {
+            width: 49%;
+            background: silver;
+            height: 100%;
+            font: 11px 'courier new';
+            white-space: pre;
+            overflow: hidden;
+        }
+
+        #left { float: left; }
+        #right { float: right; }
+
+    </style>
+</head>
+<body>
+    <div id="left"></div>
+    <div id="right"></div>
+
+    <script src="../../hammer.min.js"></script>
+    <script>
+
+        Object.prototype.toDirString = function() {
+            var output = [];
+            for(var key in this) {
+                if(this.hasOwnProperty(key)) {
+                    var value = this[key];
+                    if(Array.isArray(value)) {
+                        value = "Array("+ value.length +"):"+ value;
+                    } else if(value instanceof HTMLElement) {
+                        value = value +" ("+ value.outerHTML.substring(0, 50) +"...)";
+                    }
+                    output.push(key +": "+ value);
+                }
+            }
+            return output.join("\n")
+        };
+
+
+        function addHammer(el) {
+            var mc = new Hammer(el);
+            mc.get('pan').set('direction', Hammer.DIRECTION_ALL);
+            mc.get('swipe').set('direction', Hammer.DIRECTION_ALL);
+            mc.get('pinch').set('enable', true);
+            mc.get('rotate').set('enable', true);
+
+            mc.on("swipe pan multipan pinch rotate longpress tap doubletap", function (ev) {
+                el.innerText = ev.toDirString();
+            });
+        }
+
+        addHammer(document.querySelector("#left"));
+        addHammer(document.querySelector("#right"));
+
+
+
+    </script>
+</body>
+</html>
