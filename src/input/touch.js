@@ -40,12 +40,12 @@ inherit(TouchInput, Input, {
  */
 function normalizeTouches(ev) {
     var changedTouches = toArray(ev.changedTouches);
-    var targetTouches = toArray(ev.targetTouches).concat(changedTouches);
+    var touches = toArray(ev.touches).concat(changedTouches);
 
     return [
         // should contain all the touches, touches + changedTouches
-        uniqueArray(targetTouches, 'identifier'),
+        uniqueArray(touches, 'identifier'),
         // should contain only the touches that have changed
-        uniqueArray(changedTouches, 'identifier')
+        changedTouches
     ];
 }
