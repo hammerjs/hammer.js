@@ -370,7 +370,7 @@
                 deltaY: 150,
                 duration: 250,
                 touches: 1,
-                easing: 'expo'
+                easing: 'cubic'
             });
 
             var touches = getTouches(options.pos, options.touches);
