@@ -15,7 +15,7 @@ var testUtils = {
         var event = document.createEvent('Event');
         event.initEvent('touch' + name, true, true);
 
-        event.touches = [{
+        event.touches = event.targetTouches = [{
             clientX: x,
             clientY: y,
             identifier: identifier || 0

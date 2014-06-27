@@ -750,6 +750,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
  */
 function TouchInput() {
     this.elEvents = TOUCH_EVENTS;
+    this.targetIds = {};
 
     Input.apply(this, arguments);
 }
@@ -760,7 +761,7 @@ inherit(TouchInput, Input, {
      * @param {Object} ev
      */
     handler: function(ev) {
-        var touches = normalizeTouches(ev);
+        var touches = normalizeTouches(ev, this);
         this.callback(this.manager, TOUCH_INPUT_MAP[ev.type], {
             pointers: touches[0],
             changedPointers: touches[1],
@@ -773,58 +774,45 @@ inherit(TouchInput, Input, {
 /**
  * make sure all browsers return the same touches
  * @param {Object} ev
+ * @param {TouchInput} touchInput
  * @returns {Array} [all, changed]
  */
-function normalizeTouches(ev) {
-    //if (ev.targetTouches && ev.targetTouches.length !== ev.touches.length) {
-    //    return normalizeTargetTouches(ev);
-    //}
-
-    var changedTouches = toArray(ev.changedTouches);
-    var touches = toArray(ev.touches).concat(changedTouches);
-
-    return [
-        // should contain all the touches, touches + changedTouches
-        uniqueArray(touches, 'identifier'),
-        // should contain only the touches that have changed
-        changedTouches
-    ];
-}
-
-/**
- * when multi-user we want some more logic..
- * @param {Object} ev
- * @returns {Array} [all, changed]
- */
-/*
-function normalizeTargetTouches(ev) {
-    var targetTouches = toArray(ev.targetTouches);
-    var changedTouches = ev.changedTouches;
-    var targetChangedTouches = [];
+function normalizeTouches(ev, touchInput) {
     var i, len;
 
-    // collect all target ids
-    var targetIds = {};
-    for (i = 0, len = targetTouches.length; i < len; i++) {
-        targetIds[targetTouches[i].identifier] = true;
+    var targetIds = touchInput.targetIds;
+    var targetTouches = toArray(ev.targetTouches);
+    var changedTouches = toArray(ev.changedTouches);
+    var changedTargetTouches = [];
+
+    // collect touches
+    if (ev.type == 'touchstart') {
+        for (i = 0, len = targetTouches.length; i < len; i++) {
+            targetIds[targetTouches[i].identifier] = true;
+        }
     }
 
-    // only the changed touches on the target
+    // filter changed touches to only contain touches that exist in the collected target ids
     for (i = 0, len = changedTouches.length; i < len; i++) {
         if (targetIds[changedTouches[i].identifier]) {
-            targetChangedTouches.push(changedTouches[i]);
+            changedTargetTouches.push(changedTouches[i]);
+        }
+
+        // cleanup removed touches
+        if (ev.type == 'touchend'|| ev.type == 'touchcancel') {
+            delete targetIds[changedTouches[i].identifier];
         }
     }
 
     return [
-        // should contain all the touches, touches + changedTouches
-        // and filter out duplicate items
-        uniqueArray(targetTouches.concat(targetChangedTouches), 'identifier'),
-        // should contain only the touches that have changed
-        targetChangedTouches
+        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+        // also removed the duplicates
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier'),
+
+        // only the changed :-)
+        changedTargetTouches
     ];
 }
-*/
 
 /**
  * Combined touch and mouse input

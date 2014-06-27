@@ -51,7 +51,7 @@
 
 
         function addHammer(el) {
-            var mc = new Hammer(el, { touchAction: 'auto' });
+            var mc = new Hammer(el);
             mc.get('pan').set('direction', Hammer.DIRECTION_ALL);
             mc.get('swipe').set('direction', Hammer.DIRECTION_ALL);
             mc.get('pinch').set('enable', true);

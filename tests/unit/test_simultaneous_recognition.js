@@ -50,6 +50,7 @@ asyncTest("should pinch and pan simultaneously be recognized when enabled", func
         event = document.createEvent('Event');
         event.initEvent('touchstart', true, true);
         event.touches = touches;
+        event.targetTouches = touches;
         event.changedTouches = touches;
 
         setTimeout(function() {
@@ -61,6 +62,7 @@ asyncTest("should pinch and pan simultaneously be recognized when enabled", func
             event = document.createEvent('Event');
             event.initEvent('touchmove', true, true);
             event.touches = touches;
+            event.targetTouches = touches;
             event.changedTouches = touches;
 
             el.dispatchEvent(event);
@@ -76,6 +78,7 @@ asyncTest("should pinch and pan simultaneously be recognized when enabled", func
             event = document.createEvent('Event');
             event.initEvent('touchmove', true, true);
             event.touches = touches;
+            event.targetTouches = touches;
             event.changedTouches = touches;
 
             el.dispatchEvent(event);
@@ -83,6 +86,7 @@ asyncTest("should pinch and pan simultaneously be recognized when enabled", func
             event = document.createEvent('Event');
             event.initEvent('touchend', true, true);
             event.touches = touches;
+            event.targetTouches = touches;
             event.changedTouches = touches;
 
             el.dispatchEvent(event);
