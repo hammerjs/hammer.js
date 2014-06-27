@@ -28,6 +28,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         return this._super.attrTest.call(this, input) &&
+            direction & input.direction &&
             velocity > this.options.velocity && input.eventType & INPUT_END;
     },
 

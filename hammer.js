@@ -1031,6 +1031,7 @@ Recognizer.prototype = {
 
         // also update the touchAction, in case something changed about the directions/enabled state
         this.manager && this.manager.touchAction.update();
+        return this;
     },
 
     /**
@@ -1468,6 +1469,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         return this._super.attrTest.call(this, input) &&
+            direction & input.direction &&
             velocity > this.options.velocity && input.eventType & INPUT_END;
     },
 
