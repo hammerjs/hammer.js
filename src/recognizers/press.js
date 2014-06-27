@@ -10,7 +10,7 @@ inherit(PressRecognizer, Recognizer, {
         event: 'press',
         pointers: 1,
         time: 500, // minimal time of the pointer to be pressed
-        threshold: 10 // a minimal movement is ok, but keep it low
+        threshold: 5 // a minimal movement is ok, but keep it low
     },
 
     getTouchAction: function() {
@@ -39,9 +39,11 @@ inherit(PressRecognizer, Recognizer, {
 
     reset: function() {
         clearTimeout(this._timer);
+        this._timer = null;
     },
 
     emit: function() {
+        this._input.timeStamp = Date.now();
         this.manager.emit(this.options.event, this._input);
     }
 });

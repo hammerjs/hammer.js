@@ -27,6 +27,8 @@ module('Gesture recognition', {
     teardown: function () {
         document.body.removeChild(el);
         hammer && hammer.destroy();
+
+        events = null;
     }
 });
 
@@ -35,12 +37,12 @@ asyncTest("recognize pan", function () {
 
     Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function () {
         start();
-        deepEqual({
+        deepEqual(events, {
             panstart: true,
             pan: true,
             panright: true,
             panend: true
-        }, events);
+        });
     });
 });
 
@@ -49,25 +51,26 @@ asyncTest("recognize press", function () {
 
     Simulator.gestures.press(el, null, function () {
         start();
-        deepEqual({
+        deepEqual(events, {
             press: true
-        }, events);
+        });
     });
 });
 
 asyncTest("recognize swipe", function () {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 500 }, function () {
+    Simulator.gestures.swipe(el, { duration: 300, deltaX: 400, deltaY: 0 }, function () {
         start();
-        deepEqual({
+
+        deepEqual(events, {
             panstart: true,
             pan: true,
             panright: true,
             panend: true,
             swipe: true,
             swiperight: true
-        }, events);
+        });
     });
 });
 
@@ -76,10 +79,10 @@ asyncTest("recognize pinch", function () {
 
     Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function () {
         start();
-        deepEqual({
+        deepEqual(events, {
             pinch: true,
             pinchin: true
-        }, events);
+        });
     });
 });
 
@@ -88,9 +91,9 @@ asyncTest("recognize rotate", function () {
 
     Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function () {
         start();
-        deepEqual({
+        deepEqual(events, {
             rotate: true
-        }, events);
+        });
     });
 });
 
@@ -99,11 +102,11 @@ asyncTest("recognize rotate and pinch simultaneous", function () {
 
     Simulator.gestures.pinchRotate(el, { duration: 500, scale: 2 }, function () {
         start();
-        deepEqual({
+        deepEqual(events, {
             rotate: true,
             pinch: true,
             pinchout: true
-        }, events);
+        });
     });
 });
 
@@ -112,7 +115,7 @@ asyncTest("don't recognize pan and swipe when moving down, when only horizontal 
 
     Simulator.gestures.swipe(el, { duration: 500, deltaX: 0, deltaZ: 200 }, function () {
         start();
-        deepEqual({ }, events);
+        deepEqual(events, { });
     });
 });
 
@@ -127,6 +130,6 @@ asyncTest("don't recognize press when a -invalid- tap has been done", function (
 
     setTimeout(function () {
         start();
-        deepEqual({ }, events, 'no gesture has been recognized. invalid tap and invalid press.');
+        deepEqual(events, { }, 'no gesture has been recognized. invalid tap and invalid press.');
     }, 700);
 });

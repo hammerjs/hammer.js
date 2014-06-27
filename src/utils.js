@@ -69,7 +69,7 @@ function inherit(child, base, properties) {
         childP = child.prototype = Object.create(baseP);
         childP.constructor = child;
     } else {
-        extend(child, parent);
+        extend(child, base);
         var Inherited = function() {
             this.constructor = child;
         };

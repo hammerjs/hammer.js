@@ -72,7 +72,7 @@ function inherit(child, base, properties) {
         childP = child.prototype = Object.create(baseP);
         childP.constructor = child;
     } else {
-        extend(child, parent);
+        extend(child, base);
         var Inherited = function() {
             this.constructor = child;
         };
@@ -392,7 +392,7 @@ function computeInputData(manager, input) {
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
     var center = getCenter(pointers);
 
-    input.timeStamp = input.srcEvent.timeStamp;
+    input.timeStamp = Date.now();//input.srcEvent.timeStamp;
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;
@@ -461,7 +461,7 @@ function simpleCloneInputData(input) {
     }
 
     return {
-        timeStamp: input.srcEvent.timeStamp,
+        timeStamp: Date.now(),
         pointers: pointers,
         center: getCenter(pointers),
         deltaX: input.deltaX,
@@ -1382,7 +1382,7 @@ inherit(PressRecognizer, Recognizer, {
         event: 'press',
         pointers: 1,
         time: 500, // minimal time of the pointer to be pressed
-        threshold: 10 // a minimal movement is ok, but keep it low
+        threshold: 5 // a minimal movement is ok, but keep it low
     },
 
     getTouchAction: function() {
@@ -1411,9 +1411,11 @@ inherit(PressRecognizer, Recognizer, {
 
     reset: function() {
         clearTimeout(this._timer);
+        this._timer = null;
     },
 
     emit: function() {
+        this._input.timeStamp = Date.now();
         this.manager.emit(this.options.event, this._input);
     }
 });
