@@ -75,9 +75,8 @@
             .recognizeWith(mc.get('rotate'));
 
 
-    mc.add(new Hammer.Tap({ event: 'tripletap', taps: 3 }));
     mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
-    mc.add(new Hammer.Tap());
+    mc.add(new Hammer.Tap()).recognizeWith('doubletap');
 
     mc.on("pan", onPan);
     mc.on("swipe", onSwipe);
@@ -85,7 +84,6 @@
     mc.on("pinch", onPinch);
     mc.on("tap", onTap);
     mc.on("doubletap", onDoubleTap);
-    mc.on("tripletap", onTripleTap);
 
     mc.on("panend rotateend pinchend pancancel rotatecancel pinchcancel", resetElement);
 
@@ -170,12 +168,6 @@
 
     function onDoubleTap(ev) {
         transform.scale = transform.scale === 1 ? 1.5 : 1;
-        requestElementUpdate();
-        logEvent(ev.type);
-    }
-
-    function onTripleTap(ev) {
-        transform.rotate = !transform.rotate ? 360 : 0;
         requestElementUpdate();
         logEvent(ev.type);
     }
