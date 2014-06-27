@@ -776,6 +776,10 @@ inherit(TouchInput, Input, {
  * @returns {Array} [all, changed]
  */
 function normalizeTouches(ev) {
+    //if (ev.targetTouches && ev.targetTouches.length !== ev.touches.length) {
+    //    return normalizeTargetTouches(ev);
+    //}
+
     var changedTouches = toArray(ev.changedTouches);
     var touches = toArray(ev.touches).concat(changedTouches);
 
@@ -786,6 +790,41 @@ function normalizeTouches(ev) {
         changedTouches
     ];
 }
+
+/**
+ * when multi-user we want some more logic..
+ * @param {Object} ev
+ * @returns {Array} [all, changed]
+ */
+/*
+function normalizeTargetTouches(ev) {
+    var targetTouches = toArray(ev.targetTouches);
+    var changedTouches = ev.changedTouches;
+    var targetChangedTouches = [];
+    var i, len;
+
+    // collect all target ids
+    var targetIds = {};
+    for (i = 0, len = targetTouches.length; i < len; i++) {
+        targetIds[targetTouches[i].identifier] = true;
+    }
+
+    // only the changed touches on the target
+    for (i = 0, len = changedTouches.length; i < len; i++) {
+        if (targetIds[changedTouches[i].identifier]) {
+            targetChangedTouches.push(changedTouches[i]);
+        }
+    }
+
+    return [
+        // should contain all the touches, touches + changedTouches
+        // and filter out duplicate items
+        uniqueArray(targetTouches.concat(targetChangedTouches), 'identifier'),
+        // should contain only the touches that have changed
+        targetChangedTouches
+    ];
+}
+*/
 
 /**
  * Combined touch and mouse input
