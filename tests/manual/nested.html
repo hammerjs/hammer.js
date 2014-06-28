@@ -134,7 +134,7 @@
             this.hammer.add(new Hammer.Pan({ direction: this.direction, threshold: 10 }));
             this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
 
-            this.show(0);
+            this.show(this.currentIndex);
         }
 
 
@@ -149,13 +149,14 @@
                 showIndex = Math.max(0, Math.min(showIndex, this.panes.length - 1));
                 percent = percent || 0;
 
+                var className = this.container.className;
                 if(animate) {
-                    if(this.container.className.indexOf('animate') === -1) {
+                    if(className.indexOf('animate') === -1) {
                         this.container.className += ' animate';
                     }
                 } else {
-                    if(this.container.className.indexOf('animate') !== -1) {
-                        this.container.className = this.container.className.replace('animate', '').trim();
+                    if(className.indexOf('animate') !== -1) {
+                        this.container.className = className.replace('animate', '').trim();
                     }
                 }
 
