@@ -71,8 +71,12 @@ module.exports = (grunt) ->
         src: ['hammer.js']
 
     jscs:
-      src: ['src/**/*.js']
+      src: [
+        'src/**/*.js'
+        'tests/unit/*.js'
+      ]
       options:
+        config: "./.jscsrc"
         force: true
 
     watch:

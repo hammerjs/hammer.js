@@ -5,7 +5,7 @@ var tripleTapCount = 0,
     tapCount = 0;
 
 module('Tap delay', {
-    setup: function () {
+    setup: function() {
         el = document.createElement('div');
         document.body.appendChild(el);
 
@@ -19,28 +19,21 @@ module('Tap delay', {
         hammer.add(doubleTap);
         hammer.add(tap);
 
-
         tripleTapCount = 0;
         doubleTapCount = 0;
         tapCount = 0;
 
-        hammer.on('tap', function () {
-            tapCount++;
-        });
-        hammer.on('doubleTap', function () {
-            doubleTapCount++;
-        });
-        hammer.on('tripleTap', function () {
-            tripleTapCount++;
-        });
+        hammer.on('tap', function() { tapCount++;  });
+        hammer.on('doubleTap', function() { doubleTapCount++; });
+        hammer.on('tripleTap', function() { tripleTapCount++; });
     },
-    teardown: function () {
+    teardown: function() {
         document.body.removeChild(el);
         hammer.destroy();
     }
 });
 
-asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized', function () {
+asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized', function() {
     expect(3);
 
     testUtils.dispatchTouchEvent(el, 'start', 50, 50);
@@ -58,7 +51,7 @@ asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized
     }, 350);
 });
 
-asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized', function () {
+asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized', function() {
     expect(3);
 
     testUtils.dispatchTouchEvent(el, 'start', 50, 50);
@@ -74,7 +67,7 @@ asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized
     }, 350);
 });
 
-asyncTest('When a tap is fired, tripleTap and doubleTap should not be recognized', function () {
+asyncTest('When a tap is fired, tripleTap and doubleTap should not be recognized', function() {
     expect(3);
 
     testUtils.dispatchTouchEvent(el, 'start', 50, 50);

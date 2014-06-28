@@ -2,9 +2,7 @@
     "preset": "google",
     "excludeFiles": [
         "*.js",
-        "tests/**",
-        "docs/**",
-        "misc/**",
+        "tests/**/assets",
         "node_modules/**"
     ]
 }

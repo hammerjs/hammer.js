@@ -2,49 +2,48 @@ var el, el2,
     hammer, hammer2;
 
 module('Tests', {
-    setup: function () {
-      el = document.createElement('div');
-      document.body.appendChild(el);
+    setup: function() {
+        el = document.createElement('div');
+        document.body.appendChild(el);
 
-      el2 = document.createElement("div");
-      document.body.appendChild(el2);
+        el2 = document.createElement('div');
+        document.body.appendChild(el2);
     },
 
-    teardown: function () {
-      document.body.removeChild(el);
-      document.body.removeChild(el2);
+    teardown: function() {
+        document.body.removeChild(el);
+        document.body.removeChild(el2);
 
-      if (hammer) {
-        hammer.destroy();
-        hammer = null;
-      }
-      if (hammer2) {
-        hammer2.destroy();
-        hammer2 = null;
-      }
+        if (hammer) {
+            hammer.destroy();
+            hammer = null;
+        }
+        if (hammer2) {
+            hammer2.destroy();
+            hammer2 = null;
+        }
     }
 });
 
-test('hammer shortcut', function () {
+test('hammer shortcut', function() {
     expect(2);
 
     Hammer.defaults.touchAction = 'pan-y';
     hammer = Hammer(el);
 
-    ok(hammer instanceof Hammer.Manager, "returns an instance of Manager");
-    ok(hammer.touchAction.actions == Hammer.defaults.touchAction, "set the default touchAction");
+    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
 });
 
-test('hammer shortcut with options', function () {
+test('hammer shortcut with options', function() {
     expect(2);
 
     hammer = Hammer(el, {
         touchAction: 'none'
     });
-    ok(hammer instanceof Hammer.Manager, "returns an instance of Manager");
-    ok(hammer.touchAction.actions == 'none', "set the default touchAction");
+    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
 });
-
 
 /* Creating a hammer instance does not work on the same way
  * when using Hammer or Hammer.Manager.
@@ -74,7 +73,6 @@ test('A Hammer instance can be setup to not having default recognizers.', functi
     hammer = new Hammer(el, { recognizers: false });
     equal(0, hammer.recognizers.length);
 });
-
 
 /* The case was when I added a custom tap event which was added to the default
  * recognizers, and my custom tap gesture wasn't working (I do not know exactly the reason),
@@ -106,10 +104,10 @@ asyncTest('Swiping to the left should fire swipeleft event', function() {
     hammer = new Hammer(el, {recognizers: []});
     hammer.add(new Hammer.Swipe({velocity: -1}));
     hammer.on('swipe swipeleft', function() {
-      ok(true);
+        ok(true);
     });
 
-    Simulator.gestures.swipe(el, {pos:[300,300], deltaY: 0, deltaX: -200}, function() {
+    Simulator.gestures.swipe(el, {pos: [300, 300], deltaY: 0, deltaX: -200}, function() {
         start();
     });
 });
