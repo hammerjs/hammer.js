@@ -2,18 +2,21 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <title></title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Hammer.js</title>
     <style>
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        body {
+        .panes.wrapper {
+            max-height: 600px;
+            max-width: 800px;
             background: #666;
+            margin: 40px auto;
         }
 
         .panes {
@@ -30,7 +33,7 @@
             left: 0;
             top: 0;
             text-align: center;
-            font: bold 60px/250px Helvetica, Arial, sans-serif;
+            font: bold 60px/250px 'Open Sans', Helvetica, Arial, sans-serif;
             color: #fff;
         }
 
@@ -40,7 +43,7 @@
 <body>
 
     <div class="panes wrapper">
-        <div class="pane" style="background: #8DA35D;">
+        <div class="pane bg1">
             <div class="panes">
                 <div class="pane" style="background: rgba(0,0,0,0);">1.1</div>
                 <div class="pane" style="background: rgba(0,0,0,.2);">1.2</div>
@@ -49,7 +52,7 @@
                 <div class="pane" style="background: rgba(0,0,0,.8);">1.5</div>
             </div>
         </div>
-        <div class="pane" style="background: #5279AD;">
+        <div class="pane bg2">
             <div class="panes">
                 <div class="pane" style="background: rgba(0,0,0,0);">2.1</div>
                 <div class="pane" style="background: rgba(0,0,0,.2);">2.2</div>
@@ -58,7 +61,7 @@
                 <div class="pane" style="background: rgba(0,0,0,.8);">2.5</div>
             </div>
         </div>
-        <div class="pane" style="background: #FF8533;">
+        <div class="pane bg3">
             <div class="panes">
                 <div class="pane" style="background: rgba(0,0,0,0);">3.1</div>
                 <div class="pane" style="background: rgba(0,0,0,.2);">3.2</div>
@@ -67,7 +70,7 @@
                 <div class="pane" style="background: rgba(0,0,0,.8);">3.5</div>
             </div>
         </div>
-        <div class="pane" style="background: #FFF0D8;">
+        <div class="pane bg4">
             <div class="panes">
                 <div class="pane" style="background: rgba(0,0,0,0);">4.1</div>
                 <div class="pane" style="background: rgba(0,0,0,.2);">4.2</div>
@@ -76,7 +79,7 @@
                 <div class="pane" style="background: rgba(0,0,0,.8);">4.5</div>
             </div>
         </div>
-        <div class="pane" style="background: #0088CC;">
+        <div class="pane bg5">
             <div class="panes">
                 <div class="pane" style="background: rgba(0,0,0,0);">5.1</div>
                 <div class="pane" style="background: rgba(0,0,0,.2);">5.2</div>
@@ -87,6 +90,12 @@
         </div>
     </div>
 
+    <div class="container">
+        <h1>Nested Pan recognizers</h1>
+
+        <p>Nested recognizers are possible with some threshold and with use of <code>requireFailure()</code>.</p>
+    </div>
+
     <script src="../../hammer.js"></script>
     <script>
 
@@ -95,6 +104,10 @@
                 setTimeout(callback, 1000 / 60);
             }
         })();
+
+        function dirProp(direction, hProp, vProp) {
+            return (direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp
+        }
 
 
         /**
@@ -108,14 +121,12 @@
             this.direction = direction;
 
             this.panes = Array.prototype.slice.call(this.container.children, 0);
-            this.containerSize = this.container[(direction & Hammer.DIRECTION_HORIZONTAL) ? 'offsetWidth' : 'offsetHeight'];
+            this.containerSize = this.container[dirProp(direction, 'offsetWidth', 'offsetHeight')];
 
             this.currentIndex = 0;
 
             // setup hammer with a pan and swipe recognizer
-            this.hammer = new Hammer.Manager(this.container, {
-                touchAction: (direction & Hammer.DIRECTION_HORIZONTAL) ? "pan-y" : "pan-x"
-            });
+            this.hammer = new Hammer.Manager(this.container);
 
             this.hammer.add(new Hammer.Pan({ direction: this.direction }));
             this.hammer.add(new Hammer.Swipe({ direction: this.direction })).recognizeWith('pan');
@@ -140,6 +151,7 @@
 
                 function update() {
                     self._ticking = false;
+
                     for (var i = 0; i < self._tickPos.length; i++) {
                         var translate;
                         if(self.direction & Hammer.DIRECTION_HORIZONTAL) {
@@ -149,11 +161,14 @@
                         }
 
                         panes[i].style.transform = translate;
+                        panes[i].style.mozTransform = translate;
                         panes[i].style.webkitTransform = translate;
                     }
+
                     self._curPos = self._tickPos.slice();
                     self._tickPos = [];
                 }
+
 
                 this._tickPos = positions;
                 if(!this._ticking && !force) {
@@ -230,7 +245,7 @@
              * @param {Object} ev
              */
             onPan : function (ev) {
-                var delta = (this.direction & Hammer.DIRECTION_HORIZONTAL) ? ev.deltaX : ev.deltaY;
+                var delta = dirProp(this.direction, ev.deltaX, ev.deltaY);
                 var percent = (100 / this.containerSize) * delta;
                 var duration = 0;
 

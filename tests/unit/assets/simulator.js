@@ -116,7 +116,7 @@
                 event.changedTouches = touchList;
                 element.dispatchEvent(event);
 
-                renderTouches(touches);
+                renderTouches(touches, element);
             }
         }
     };
@@ -177,7 +177,7 @@
      * @param element
      * @param type
      */
-    function renderTouches(touches) {
+    function renderTouches(touches, element) {
         touches.forEach(function(touch) {
             var el = document.createElement('div');
             el.style.width = '20px';
@@ -188,15 +188,15 @@
             el.style.left = 0;
             el.style.borderRadius = '100%';
             el.style.border = 'solid 2px #000';
-            el.style.zIndex = 2000;
+            el.style.zIndex = 6000;
 
             el.style.transform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
             el.style.mozTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
             el.style.webkitTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
 
-            document.body.appendChild(el);
+            element.appendChild(el);
             setTimeout(function() {
-                document.body.removeChild(el);
+                element.removeChild(el);
                 el = null;
             }, 100);
         });
@@ -328,10 +328,10 @@
                 touches: 1
             });
 
-            gestures.tap(element, options, function() {
+            Simulator.gestures.tap(element, options, function() {
                 setTimeout(function() {
                     options.pos = options.pos2;
-                    gestures.tap(element, options, done);
+                    Simulator.gestures.tap(element, options, done);
                 }, options.interval);
             });
         },

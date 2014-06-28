@@ -1,22 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <title></title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Hammer.js</title>
+
     <style>
 
-        * {
-            box-sizing: border-box;
-            -moz-box-sizing: border-box;
-        }
-
         html, body {
-            background: #333;
-            font: 15px sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100%;
             overflow: hidden;
+            margin: 0;
         }
 
         .animate {
@@ -39,7 +32,7 @@
 <body>
 
 <div id="log"></div>
-<div id="hit" style="background: red; width: 150px; height: 150px;"></div>
+<div id="hit"style="background: #42d692; width: 150px; height: 150px;"></div>
 
 
 <script src="../../hammer.js"></script>
@@ -141,7 +134,7 @@
     function onSwipe(ev) {
         el.style.background = 'white';
         setTimeout(function () {
-            el.style.background = 'red';
+            el.style.background = '#42d692';
             requestElementUpdate();
         }, 300);
         requestElementUpdate();
@@ -162,7 +155,12 @@
     }
 
     function onTap(ev) {
-        el.style.background = el.style.background == 'yellow' ? 'red' : 'yellow';
+        el.style.background = '#4986e7';
+        setTimeout(function () {
+            el.style.background = '#42d692';
+            requestElementUpdate();
+        }, 100);
+        requestElementUpdate();
         logEvent(ev.type);
     }
 

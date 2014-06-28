@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Hammer.js</title>
 </head>
 <body>
-    <div style="background: silver;  padding: 30px;" id="hit">
-        <span id="target" style="display: block; background: blue; height: 60px;"></span>
+    <div class="container">
+
+        <div id="hit" class="bg1" style="padding: 30px;">
+            <span id="target" class="bg5" style="display: block; height: 100px;"></span>
+        </div>
+
+        <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
+
+        <pre id="log" style="overflow:hidden;"></pre>
+
     </div>
-
-    <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
-
-    <pre id="log" style="overflow:hidden;"></pre>
-
     <script src="../../hammer.min.js"></script>
     <script>
 

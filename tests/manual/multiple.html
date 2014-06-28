@@ -1,23 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Hammer.js</title>
     <style>
-
-        html, body {
-            height: 100%;;
-            margin: 0;
-            padding: 0;
-        }
 
         #right,
         #left {
-            width: 49%;
-            background: silver;
-            height: 100%;
-            font: 11px 'courier new';
-            white-space: pre;
+            display: block;
+            width: 50%;
+            height: 500px;
             overflow: hidden;
         }
 
@@ -27,9 +21,17 @@
     </style>
 </head>
 <body>
-    <div id="left"></div>
-    <div id="right"></div>
+    <div class="container">
+        <pre id="left" class="bg1"></pre>
+        <pre id="right" class="bg5"></pre>
 
+        <div class="clear"></div>
+
+        <h1>Multiple instances the same time</h1>
+        <p>You can run multiple instances of Hammer on your page and they will recognize each completely isolated
+            from each other. This makes it possible to build multi-user interfaces.</p>
+
+    </div>
     <script src="../../hammer.min.js"></script>
     <script>
 
@@ -57,7 +59,7 @@
             mc.get('pinch').set('enable', true);
             mc.get('rotate').set('enable', true);
 
-            mc.on("swipe pan multipan pinch rotate longpress tap doubletap", function (ev) {
+            mc.on("swipe pan press multipan pinch rotate tap doubletap", function (ev) {
                 ev.preventDefault();
                 el.innerText = ev.toDirString();
             });
@@ -65,8 +67,6 @@
 
         addHammer(document.querySelector("#left"));
         addHammer(document.querySelector("#right"));
-
-
 
     </script>
 </body>
