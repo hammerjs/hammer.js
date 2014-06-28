@@ -1,7 +1,8 @@
 var el, hammer, events;
 var allGestureEvents = [
     'tap doubletap press',
-    'pinch pinchin pinchout rotate',
+    'pinch pinchin pinchout pinchstart pinchend pinchcancel',
+    'rotate rotatestart rotateend rotatecancel',
     'panstart pan panup pandown panleft panright panend pancancel',
     'panstart pan panup pandown panleft panright panend pancancel',
     'swipe swipeleft swiperight swipeup swipedown'].join(" ");
@@ -80,7 +81,9 @@ asyncTest("recognize pinch", function () {
     Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function () {
         start();
         deepEqual(events, {
+            pinchstart: true,
             pinch: true,
+            pinchend: true,
             pinchin: true
         });
     });
@@ -92,7 +95,9 @@ asyncTest("recognize rotate", function () {
     Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function () {
         start();
         deepEqual(events, {
-            rotate: true
+            rotatestart: true,
+            rotate: true,
+            rotateend: true
         });
     });
 });
@@ -103,8 +108,12 @@ asyncTest("recognize rotate and pinch simultaneous", function () {
     Simulator.gestures.pinchRotate(el, { duration: 500, scale: 2 }, function () {
         start();
         deepEqual(events, {
+            rotatestart: true,
             rotate: true,
+            rotateend: true,
+            pinchstart: true,
             pinch: true,
+            pinchend: true,
             pinchout: true
         });
     });
