@@ -214,7 +214,7 @@ Recognized when two or more pointer are moving in a circular motion.
 - rotatecancel
 
 ### Hammer.Swipe(options)
-Recognized when the pointer is moving fast enough (velocity) distance in the allowed direction.
+Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
 
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
@@ -248,8 +248,8 @@ recognized.
 | interval  | 300      | Maximum time in ms between multiple taps. |
 | delay     | 0        | Delay in ms after emitting the tap event. |
 | time      | 250      | Maximum press time in ms. |
-| movementBetween | 10 | The maximum distance between multiple taps. |
-| movementWhile | 2    | While doing a tap some small movement is allowed. |
+| threshold | 2        | While doing a tap some small movement is allowed. |
+| posThreshold | 10    | The maximum position difference between multiple taps. |
 
 ##### Events
 - tap

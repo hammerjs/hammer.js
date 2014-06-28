@@ -102,7 +102,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 
-  # Default task(s).
+  # Default task(s)
   grunt.registerTask 'default', ['connect','watch']
   grunt.registerTask 'build', ['concat','string-replace','uglify:min','test']
   grunt.registerTask 'test', ['jshint','jscs','uglify:test','qunit']

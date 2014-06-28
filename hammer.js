@@ -1507,8 +1507,8 @@ inherit(TapRecognizer, Recognizer, {
         interval: 300, // max time between the multi-tap taps
         delay: 0, // delay after triggering the tap. useful if you don't want to recognize a tap on each touchend
         time: 250, // max time of the pointer to be down (like finger on the screen)
-        movementBetween: 10, // a multi-tap can be a bit off the initial position
-        movementWhile: 2 // a minimal movement is ok, but keep it low
+        threshold: 2, // a minimal movement is ok, but keep it low
+        posThreshold: 10 // a multi-tap can be a bit off the initial position
     },
 
     getTouchAction: function() {
@@ -1520,14 +1520,14 @@ inherit(TapRecognizer, Recognizer, {
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
-        var validMovement = input.distance < options.movementWhile;
+        var validMovement = input.distance < options.threshold;
         var validTouchTime = input.deltaTime < options.time;
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
         if (input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
             var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.movementBetween;
+            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
 
             this.pTime = input.timeStamp;
             this.pCenter = input.center;
