@@ -145,7 +145,7 @@ recognizer, not on the other recognizer.
 
 ## Options per recognizer
 
-#### Hammer.Press(options)
+### Hammer.Press(options)
 Recognized when the pointer is down for x ms without any movement.
 
 | Option    | Default  | Description       |
@@ -158,7 +158,7 @@ Recognized when the pointer is down for x ms without any movement.
 ##### Events
 - press
 
-#### Hammer.Pan(options)
+### Hammer.Pan(options)
 Recognized when the pointer is down and moved in the allowed direction.
 
 | Option    | Default  | Description       |
@@ -179,7 +179,7 @@ Recognized when the pointer is down and moved in the allowed direction.
 - panend
 - pancancel
 
-#### Hammer.Pinch(options)
+### Hammer.Pinch(options)
 Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
 
 | Option    | Default  | Description       |
@@ -197,7 +197,7 @@ Recognized when two or more pointers are moving toward (zoom-in) or away from ea
 - pinchend
 - pinchcancel
 
-#### Hammer.Rotate(options)
+### Hammer.Rotate(options)
 Recognized when two or more pointer are moving in a circular motion.
 
 | Option    | Default  | Description       |
@@ -213,7 +213,7 @@ Recognized when two or more pointer are moving in a circular motion.
 - rotateend
 - rotatecancel
 
-#### Hammer.Swipe(options)
+### Hammer.Swipe(options)
 Recognized when the pointer is moving fast enough (velocity) distance in the allowed direction.
 
 | Option    | Default  | Description       |
@@ -232,10 +232,13 @@ Recognized when the pointer is moving fast enough (velocity) distance in the all
 - swipedown
 - swipe
 
-#### Hammer.Tap(options)
+### Hammer.Tap(options)
 Recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur between the given 
 interval and position. 
 The delay option can be used to recognize multi-taps without firing a single tap.
+
+The eventData from the emitted event contains the property `tapCount`, which contains the amount of multi-taps being 
+recognized.
 
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
