@@ -108,7 +108,7 @@ it is set to `compute`, which computes the correct touchAction property based on
  
 | Option        | Default | Description                   |
 |---------------|---------|-------------------------------|
-| touchAction   |         | accepts the `compute`, `auto`, `pan-y`, `pan-x` and `none` values. Default is `compute`. |
+| touchAction   | compute | accepts the `compute`, `auto`, `pan-y`, `pan-x` and `none` values. |
 | domEvents     | false   | this let's hammer also fire domEvents. |
 | enable        | true    | boolean, or an function that should return a boolean which is. |
 
@@ -144,15 +144,23 @@ recognizer, not on the other recognizer.
 
 
 ## Options per recognizer
+
 #### Hammer.Press(options)
+Recognized when the pointer is down for x ms without any movement.
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | press    | Name of the event. |
 | pointers  | 1        | Required pointers. |
-| threshold | 10       | Minimal movement that is allowed while pressing. |
-| time      | 500      | Minimal press time. |
+| threshold | 5        | Minimal movement that is allowed while pressing. |
+| time      | 500      | Minimal press time in ms. |
+
+##### Events
+- press
 
 #### Hammer.Pan(options)
+Recognized when the pointer is down and moved in the allowed direction.
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | pan      | Name of the event. |
@@ -160,21 +168,54 @@ recognizer, not on the other recognizer.
 | threshold | 10       | Minimal pan distance required before recognizing. |
 | direction | DIRECTION_ALL | Direction of the panning. |
 
+##### Events
+- pan
+- panleft
+- panright
+- panup
+- pandown
+- panstart
+- panmove
+- panend
+- pancancel
+
 #### Hammer.Pinch(options)
+Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | pinch    | Name of the event. |
 | pointers  | 2        | Required pointers, with a minimal of 2. |
 | threshold | 0        | Minimal scale before recognizing. |
 
+##### Events
+- pinch
+- pinchin
+- pinchout
+- pinchstart
+- pinchmove
+- pinchend
+- pinchcancel
+
 #### Hammer.Rotate(options)
+Recognized when two or more pointer are moving in a circular motion.
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | rotate   | Name of the event. |
 | pointers  | 2        | Required pointers, with a minimal of 2. |
 | threshold | 0        | Minimal rotation before recognizing. |
 
+##### Events
+- rotate
+- rotatestart
+- rotatemove
+- rotateend
+- rotatecancel
+
 #### Hammer.Swipe(options)
+Recognized when the pointer is moving fast enough (velocity) distance in the allowed direction.
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
 | event     | swipe    | Name of the event. |
@@ -183,17 +224,32 @@ recognizer, not on the other recognizer.
 | direction | DIRECTION_ALL | Direction of the panning. |
 | velocity  | 0.65     | Minimal velocity required before recognizing, unit is in px per ms. |
 
+##### Events
+- swipe
+- swipeleft
+- swiperight
+- swipeup
+- swipedown
+- swipe
+
 #### Hammer.Tap(options)
+Recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur between the given 
+interval and position. 
+The delay option can be used to recognize multi-taps without firing a single tap.
+
 | Option    | Default  | Description       |
 |-----------|----------|-------------------|
-| event     | swipe    | Name of the event. |
+| event     | tap      | Name of the event. |
 | pointers  | 1        | Required pointers. |
 | taps      | 1        | Amount of taps required. |
-| interval  | 300      | Maximum time between multiple taps. |
-| delay     | 0        | Delay after triggering the tap. Useful if you don't want to recognize a tap on each touchend. |
-| time      | 250      | Maximum press time. |
+| interval  | 300      | Maximum time in ms between multiple taps. |
+| delay     | 0        | Delay in ms after emitting the tap event. |
+| time      | 250      | Maximum press time in ms. |
 | movementBetween | 10 | The maximum distance between multiple taps. |
 | movementWhile | 2    | While doing a tap some small movement is allowed. |
+
+##### Events
+- tap
 
 
 
