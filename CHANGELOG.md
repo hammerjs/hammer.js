@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.0.0
+- Full rewrite of the library.
+
 ### 1.1.3, 2014-05-20
 - Removed unused gesture handler check. See [#545](https://github.com/EightMedia/hammer.js/issues/545)
 - Changed the default value of `behavior.touchAction` from `none` to `pan-y`, for improved default behavior in IE10> and Chrome35>.
