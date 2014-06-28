@@ -13,7 +13,7 @@
         }
 
         .panes.wrapper {
-            max-height: 600px;
+            max-height: 400px;
             max-width: 800px;
             background: #666;
             margin: 40px auto;
@@ -35,6 +35,11 @@
             text-align: center;
             font: bold 60px/250px 'Open Sans', Helvetica, Arial, sans-serif;
             color: #fff;
+        }
+
+        .panes.animate > .pane {
+            transition: all .3s;
+            -webkit-transition: all .3s;
         }
 
     </style>
@@ -125,13 +130,8 @@
 
             this.currentIndex = 0;
 
-            // setup hammer with a pan and swipe recognizer
             this.hammer = new Hammer.Manager(this.container);
-
-            this.hammer.add(new Hammer.Pan({ direction: this.direction }));
-            this.hammer.add(new Hammer.Swipe({ direction: this.direction })).recognizeWith('pan');
-
-            //this.hammer.on("swipe", Hammer.bindFn(this.onSwipe, this));
+            this.hammer.add(new Hammer.Pan({ direction: this.direction, threshold: 10 }));
             this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
 
             this.show(0);
@@ -139,105 +139,40 @@
 
 
         HammerCarousel.prototype = {
-            _curPos : [],
-            _aniTimer: null,
-
-            _tickPos : [],
-            _ticking : false,
-
-            render: function(positions, force) {
-                var self = this;
-                var panes = this.panes;
-
-                function update() {
-                    self._ticking = false;
-
-                    for (var i = 0; i < self._tickPos.length; i++) {
-                        var translate;
-                        if(self.direction & Hammer.DIRECTION_HORIZONTAL) {
-                            translate = 'translate3d(' + self._tickPos[i] + 'px, 0, 0)';
-                        } else {
-                            translate = 'translate3d(0, ' + self._tickPos[i] + 'px, 0)'
-                        }
-
-                        panes[i].style.transform = translate;
-                        panes[i].style.mozTransform = translate;
-                        panes[i].style.webkitTransform = translate;
-                    }
-
-                    self._curPos = self._tickPos.slice();
-                    self._tickPos = [];
-                }
-
-
-                this._tickPos = positions;
-                if(!this._ticking && !force) {
-                    reqAnimationFrame(update);
-                } else if(force) {
-                    update();
-                }
-            },
-
-            animate: function(to, duration) {
-                var self = this;
-                var from = this._curPos.slice();
-                var end = +new Date() + duration;
-
-                var step = function() {
-                    var current = Date.now(),
-                        remaining = end - current;
-
-                    if(remaining <= 1) {
-                        self.render(to, true);
-                    } else {
-                        var rate = 1 - remaining/duration;
-                        var animPos = [];
-
-                        for (var i = 0; i < from.length; i++) {
-                            animPos[i] = from[i] + ((to[i] - from[i]) * rate);
-                        }
-
-                        self.render(animPos, true);
-                        reqAnimationFrame(step);
-                    }
-                };
-                step();
-
-                this.render(to);
-            },
-
             /**
              * show a pane
              * @param {Number} showIndex
              * @param {Number} [percent] percentage visible
-             * @param {Boolean} [duration]
+             * @param {Boolean} [animate]
              */
-            show: function(showIndex, percent, duration){
-                var paneIndex;
-
+            show: function(showIndex, percent, animate){
                 showIndex = Math.max(0, Math.min(showIndex, this.panes.length - 1));
                 percent = percent || 0;
 
-                var positions = [];
-                for (paneIndex = 0; paneIndex < this.panes.length; paneIndex++) {
-                    positions.push((this.containerSize / 100) * (((paneIndex - showIndex) * 100) + percent));
-                }
-
-                if(duration) {
-                    this.animate(positions, duration);
+                if(animate) {
+                    if(this.container.className.indexOf('animate') === -1) {
+                        this.container.className += ' animate';
+                    }
                 } else {
-                    this.render(positions);
+                    if(this.container.className.indexOf('animate') !== -1) {
+                        this.container.className = this.container.className.replace('animate', '').trim();
+                    }
                 }
-                this.currentIndex = showIndex;
-            },
 
-            /**
-             * handle swipe
-             * @param {Object} ev
-             */
-            onSwipe : function (ev) {
-                var index = (ev.direction & (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP)) ? 1 : -1;
-                this.show(this.currentIndex + index, 0, 150);
+                var paneIndex, pos, translate;
+                for (paneIndex = 0; paneIndex < this.panes.length; paneIndex++) {
+                    pos = (this.containerSize / 100) * (((paneIndex - showIndex) * 100) + percent);
+                    if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
+                        translate = 'translate3d(' + pos + 'px, 0, 0)';
+                    } else {
+                        translate = 'translate3d(0, ' + pos + 'px, 0)'
+                    }
+                     this.panes[paneIndex].style.transform = translate;
+                     this.panes[paneIndex].style.mozTransform = translate;
+                     this.panes[paneIndex].style.webkitTransform = translate;
+                }
+
+                this.currentIndex = showIndex;
             },
 
             /**
@@ -247,27 +182,31 @@
             onPan : function (ev) {
                 var delta = dirProp(this.direction, ev.deltaX, ev.deltaY);
                 var percent = (100 / this.containerSize) * delta;
-                var duration = 0;
+                var animate = false;
 
                 if (ev.type == 'panend' || ev.type == 'pancancel') {
                     if (Math.abs(percent) > 20 && ev.type == 'panend') {
                         this.currentIndex += (percent < 0) ? 1 : -1;
                     }
                     percent = 0;
-                    duration = 150;
+                    animate = true;
                 }
 
-                this.show(this.currentIndex, percent, duration);
+                this.show(this.currentIndex, percent, animate);
             }
         };
 
+        // the horizontal pane scroller
         var outer = new HammerCarousel(document.querySelector(".panes.wrapper"), Hammer.DIRECTION_HORIZONTAL);
 
+        // each pane should contain a vertical pane scroller
         Hammer.each(document.querySelectorAll(".pane .panes"), function(container) {
+            // setup the inner scroller
             var inner = new HammerCarousel(container, Hammer.DIRECTION_VERTICAL);
 
+            // only recognize the inner pan when the outer is failing.
+            // they both have a threshold of 5px
             inner.hammer.get('pan').requireFailure(outer.hammer.get('pan'));
-            inner.hammer.get('swipe').requireFailure(outer.hammer.get('swipe'));
         });
 
     </script>
