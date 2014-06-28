@@ -4,7 +4,6 @@ var allGestureEvents = [
     'pinch pinchin pinchout pinchstart pinchend pinchcancel',
     'rotate rotatestart rotateend rotatecancel',
     'panstart pan panup pandown panleft panright panend pancancel',
-    'panstart pan panup pandown panleft panright panend pancancel',
     'swipe swipeleft swiperight swipeup swipedown'].join(" ");
 
 module('Gesture recognition', {
