@@ -132,7 +132,7 @@
 
             this.hammer = new Hammer.Manager(this.container);
             this.hammer.add(new Hammer.Pan({ direction: this.direction, threshold: 10 }));
-            this.hammer.on("panstart pan panend pancancel", Hammer.bindFn(this.onPan, this));
+            this.hammer.on("panstart panmove panend pancancel", Hammer.bindFn(this.onPan, this));
 
             this.show(this.currentIndex);
         }

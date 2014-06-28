@@ -155,9 +155,9 @@
     }
 
     function onTap(ev) {
-        el.style.background = '#4986e7';
+        el.style.borderRadius = '100%';
         setTimeout(function () {
-            el.style.background = '#42d692';
+            el.style.borderRadius = '0';
             requestElementUpdate();
         }, 100);
         requestElementUpdate();

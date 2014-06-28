@@ -59,7 +59,7 @@
             mc.get('pinch').set('enable', true);
             mc.get('rotate').set('enable', true);
 
-            mc.on("swipe pan press multipan pinch rotate tap doubletap", function (ev) {
+            mc.on("swipe pan press pinch rotate tap doubletap", function (ev) {
                 ev.preventDefault();
                 el.innerText = ev.toDirString();
             });
