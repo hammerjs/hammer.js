@@ -1039,7 +1039,8 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        this.manager.emit(this.options.event + stateStr(this.state), input);
+        this.manager.emit(this.options.event, input); // simple 'eventName' events
+        this.manager.emit(this.options.event + stateStr(this.state), input); // like 'panmove' and 'panstart'
     },
 
     /**
@@ -1180,7 +1181,7 @@ function stateStr(state) {
     } else if (state & STATE_ENDED) {
         return 'end';
     } else if (state & STATE_CHANGED) {
-        return '';
+        return 'move';
     } else if (state & STATE_BEGAN) {
         return 'start';
     }
