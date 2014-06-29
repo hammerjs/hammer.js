@@ -113,26 +113,31 @@ Recognizer.prototype = {
         return !!this.simultaneous[otherRecognizer.id];
     },
 
+    hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    canEmit: function() {
+        for (var i = 0; i < this.requireFail.length; i++) {
+            if (!(this.requireFail[i].state & STATE_FAILED)) {
+                return false;
+            }
+        } 
+        return true;
+    },
+
     /**
      * update the recognizer
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        // require failure of other recognizers
-        var canRecognize = true;
-        for (var i = 0; i < this.requireFail.length; i++) {
-            if (!(this.requireFail[i].state & STATE_FAILED)) {
-                canRecognize = false;
-                break;
-            }
-        }
 
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
         var inputDataClone = extend({}, inputData);
 
         // is is enabled and allow recognizing?
-        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputDataClone])) {
+        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
