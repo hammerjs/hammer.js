@@ -1326,7 +1326,6 @@ inherit(AttrRecognizer, Recognizer, {
 
         var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
         var isValid = this.attrTest(input);
-        console.log('isValid ' +isValid);
 
         // on cancel input and we've recognized before, return STATE_CANCELLED
         if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
@@ -1603,13 +1602,6 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         } else if (direction & DIRECTION_VERTICAL) {
             velocity = input.velocityY;
         }
-
-        console.log(this._super.attrTest.call(this, input));
-
-        console.log(direction & input.direction);
-        console.log(velocity > this.options.velocity);
-        console.log(input.eventType & INPUT_END);
-        console.log('---------------------------------------------');
 
         return this._super.attrTest.call(this, input) &&
             direction & input.direction &&
