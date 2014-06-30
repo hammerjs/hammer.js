@@ -1071,7 +1071,23 @@ Recognizer.prototype = {
     },
 
     /**
-     * default emitter
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+      if ( this._canEmit() ) {
+          this.emit(input);
+      } else {
+          // should we set state to STATE_FAILED at this point?
+          this.state = STATE_FAILED;
+      }
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
      * @param {Object} input
      */
     emit: function(input) {
@@ -1143,11 +1159,11 @@ Recognizer.prototype = {
         return !!this.simultaneous[otherRecognizer.id];
     },
 
-    hasRequireFailures: function() {
+    _hasRequireFailures: function() {
         return this.requireFail.length > 0;
     },
 
-    canEmit: function() {
+    _canEmit: function() {
         for (var i = 0; i < this.requireFail.length; i++) {
             if (!(this.requireFail[i].state & STATE_FAILED)) {
                 return false;
@@ -1183,7 +1199,7 @@ Recognizer.prototype = {
         // the recognizer has recognized a gesture
         // so trigger an event
         if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.emit(inputDataClone);
+            this.tryEmit(inputDataClone);
         }
     },
 
@@ -1630,12 +1646,12 @@ inherit(TapRecognizer, Recognizer, {
                     var tapCount = this.count % options.taps;
                     if (tapCount === 0) {
 
-                        if ( !this.hasRequireFailures() ) {
+                        if ( !this._hasRequireFailures() ) {
                             return STATE_RECOGNIZED;
                         } else {
                             this._timer = setTimeout(function() {
                                 self.state = STATE_RECOGNIZED;
-                                self.emit();
+                                self.tryEmit();
                             }, 250);
                             return STATE_BEGAN;
                         }
@@ -1666,16 +1682,9 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function() {
-        // TODO: canEmit should be abstract to recognizer implementations. `tryEmit` ?
-        if ( this.canEmit() ) {
-
-            if (this.state == STATE_RECOGNIZED ) {
-                this._input.tapCount = this.count;
-                this.manager.emit(this.options.event, this._input);
-            }
-
-        } else {
-            this.state = STATE_FAILED;
+        if (this.state == STATE_RECOGNIZED ) {
+            this._input.tapCount = this.count;
+            this.manager.emit(this.options.event, this._input);
         }
     }
 });

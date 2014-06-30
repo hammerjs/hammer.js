@@ -76,12 +76,12 @@ inherit(TapRecognizer, Recognizer, {
                     var tapCount = this.count % options.taps;
                     if (tapCount === 0) {
 
-                        if ( !this.hasRequireFailures() ) {
+                        if ( !this._hasRequireFailures() ) {
                             return STATE_RECOGNIZED;
                         } else {
                             this._timer = setTimeout(function() {
                                 self.state = STATE_RECOGNIZED;
-                                self.emit();
+                                self.tryEmit();
                             }, 250);
                             return STATE_BEGAN;
                         }
@@ -112,16 +112,9 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function() {
-        // TODO: canEmit should be abstract to recognizer implementations. `tryEmit` ?
-        if ( this.canEmit() ) {
-
-            if (this.state == STATE_RECOGNIZED ) {
-                this._input.tapCount = this.count;
-                this.manager.emit(this.options.event, this._input);
-            }
-
-        } else {
-            this.state = STATE_FAILED;
+        if (this.state == STATE_RECOGNIZED ) {
+            this._input.tapCount = this.count;
+            this.manager.emit(this.options.event, this._input);
         }
     }
 });
