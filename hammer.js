@@ -1309,6 +1309,7 @@ inherit(AttrRecognizer, Recognizer, {
 
         var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
         var isValid = this.attrTest(input);
+        console.log('isValid ' +isValid);
 
         // on cancel input and we've recognized before, return STATE_CANCELLED
         if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
@@ -1475,11 +1476,16 @@ inherit(PressRecognizer, Recognizer, {
         // and we've reached an end event, so a tap is possible
         if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
             this.reset();
+            return STATE_FAILED;
         } else if (input.eventType & INPUT_START) {
             this.reset();
-            this._timer = setTimeout(bindFn(this.emit, this), options.time);
+            var self = this;
+            this._timer = setTimeout(function() {
+                self.state = STATE_RECOGNIZED;
+                self.tryEmit();
+            }, options.time);
         }
-        return STATE_FAILED;
+        return STATE_BEGAN;
     },
 
     reset: function() {
@@ -1488,8 +1494,11 @@ inherit(PressRecognizer, Recognizer, {
     },
 
     emit: function() {
-        this._input.timeStamp = Date.now();
-        this.manager.emit(this.options.event, this._input);
+
+        if (this.state == STATE_RECOGNIZED ) {
+            this._input.timeStamp = Date.now();
+            this.manager.emit(this.options.event, this._input);
+        }
     }
 });
 
@@ -1552,6 +1561,13 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         } else if (direction & DIRECTION_VERTICAL) {
             velocity = input.velocityY;
         }
+
+        console.log(this._super.attrTest.call(this, input));
+
+        console.log(direction & input.direction);
+        console.log(velocity > this.options.velocity);
+        console.log(input.eventType & INPUT_END);
+        console.log('---------------------------------------------');
 
         return this._super.attrTest.call(this, input) &&
             direction & input.direction &&
