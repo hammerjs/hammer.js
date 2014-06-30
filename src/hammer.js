@@ -6,29 +6,20 @@
  */
 function Hammer(element, options) {
     options = options || {};
-    var manager = new Manager(element, options);
-
-    /**
-     * setup recognizers
-     * the defauls.recognizers contains an array like this;
-     * [ RecognizerClass, options, recognizeWith ],
-     * [ .... ]
-     */
-    var defaultRecognizers = manager.options.recognizers;
-    if (defaultRecognizers) {
-        each(defaultRecognizers, function(item) {
-            var recognizer = manager.add(new (item[0])(item[1]));
-            if (item[2]) {
-                recognizer.recognizeWith(item[2]);
-            }
-        });
-    }
-
-    return manager;
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.setupRecognizers);
+    return new Manager(element, options);
 }
 
+/**
+ * version
+ * @type {string}
+ */
 Hammer.VERSION = '{{PKG_VERSION}}';
 
+/**
+ * default settings
+ * @type {Object}
+ */
 Hammer.defaults = {
     // when set to true, dom events are being triggered.
     // but this is slower and unused by simple implementations, so disabled by default.
@@ -37,16 +28,19 @@ Hammer.defaults = {
     // this value is used when a touch-action isn't defined on the element.style
     touchAction: TOUCH_ACTION_COMPUTE,
 
+    // default enabled state
     enable: true,
 
-    // default setup when calling Hammer()
-    recognizers: [
+    // default recognizer setup when calling Hammer()
+    // when creating a new manager these will be skipped.
+    setupRecognizers: [
+        // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
         [RotateRecognizer, { enable: false }],
-        [PinchRecognizer, { enable: false }, 'rotate'],
+        [PinchRecognizer, { enable: false }, ['rotate']],
         [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }],
-        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, 'swipe'],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, ['swipe']],
         [TapRecognizer],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, ['tap']],
         [PressRecognizer]
     ],
 

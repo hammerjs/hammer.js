@@ -49,11 +49,20 @@ function Input(manager, callback) {
         }
     };
 
-    this.elEvents && addEventListeners(this.manager.element, this.elEvents, this.domHandler);
-    this.winEvents && addEventListeners(window, this.winEvents, this.domHandler);
+    this.evEl && addEventListeners(this.manager.element, this.evEl, this.domHandler);
+    this.evWin && addEventListeners(window, this.evWin, this.domHandler);
 }
 
 Input.prototype = {
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler: function() { },
+
+    /**
+     * unbind the events
+     */
     destroy: function() {
         this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
         this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);

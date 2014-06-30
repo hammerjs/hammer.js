@@ -18,6 +18,12 @@ function Manager(element, options) {
     this.touchAction = new TouchAction(this, this.options.touchAction);
 
     toggleCssProps(this, true);
+
+    each(options.recognizers, function(item) {
+        var recognizer = this.add(new (item[0])(item[1]));
+        item[2] && each(item[2], recognizer.recognizeWith, recognizer);
+        item[3] && each(item[3], recognizer.requireFailure, recognizer);
+    }, this);
 }
 
 Manager.prototype = {

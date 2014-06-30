@@ -12,6 +12,10 @@ var TYPE_UNDEFINED = 'undefined';
 function each(obj, iterator, context) {
     var i, len;
 
+    if (!obj) {
+        return;
+    }
+
     if (obj.forEach) {
         obj.forEach(iterator, context);
     } else if (obj.length !== undefined) {
@@ -108,6 +112,16 @@ function boolOrFn(val, args) {
         return val.apply(args ? args[0] || window : window, args);
     }
     return val;
+}
+
+/**
+ * use the val2 when val1 is undefined
+ * @param {*} val1
+ * @param {*} val2
+ * @returns {*}
+ */
+function ifUndefined(val1, val2) {
+    return (val1 === undefined) ? val2 : val1;
 }
 
 /**

@@ -28,8 +28,8 @@ if (window.MSPointerEvent) {
  * @constructor
  */
 function PointerEventInput() {
-    this.elEvents = POINTER_ELEMENT_EVENTS;
-    this.winEvents = POINTER_WINDOW_EVENTS;
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
 
     Input.apply(this, arguments);
 

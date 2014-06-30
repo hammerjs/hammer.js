@@ -9,9 +9,9 @@
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
-    this._handler = bindFn(this.handler, this);
-    this.touch = new TouchInput(this.manager, this._handler);
-    this.mouse = new MouseInput(this.manager, this._handler);
+    var handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
 }
 
 inherit(TouchMouseInput, Input, {

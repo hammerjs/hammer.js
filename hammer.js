@@ -15,6 +15,10 @@ var TYPE_UNDEFINED = 'undefined';
 function each(obj, iterator, context) {
     var i, len;
 
+    if (!obj) {
+        return;
+    }
+
     if (obj.forEach) {
         obj.forEach(iterator, context);
     } else if (obj.length !== undefined) {
@@ -111,6 +115,16 @@ function boolOrFn(val, args) {
         return val.apply(args ? args[0] || window : window, args);
     }
     return val;
+}
+
+/**
+ * use the val2 when val1 is undefined
+ * @param {*} val1
+ * @param {*} val2
+ * @returns {*}
+ */
+function ifUndefined(val1, val2) {
+    return (val1 === undefined) ? val2 : val1;
 }
 
 /**
@@ -307,11 +321,20 @@ function Input(manager, callback) {
         }
     };
 
-    this.elEvents && addEventListeners(this.manager.element, this.elEvents, this.domHandler);
-    this.winEvents && addEventListeners(window, this.winEvents, this.domHandler);
+    this.evEl && addEventListeners(this.manager.element, this.evEl, this.domHandler);
+    this.evWin && addEventListeners(window, this.evWin, this.domHandler);
 }
 
 Input.prototype = {
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler: function() { },
+
+    /**
+     * unbind the events
+     */
     destroy: function() {
         this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
         this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);
@@ -597,8 +620,8 @@ var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
  * @constructor
  */
 function MouseInput() {
-    this.elEvents = MOUSE_ELEMENT_EVENTS;
-    this.winEvents = MOUSE_WINDOW_EVENTS;
+    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evWin = MOUSE_WINDOW_EVENTS;
 
     this.allow = true; // used by Input.TouchMouse to disable mouse events
     this.pressed = false; // mousedown state
@@ -677,8 +700,8 @@ if (window.MSPointerEvent) {
  * @constructor
  */
 function PointerEventInput() {
-    this.elEvents = POINTER_ELEMENT_EVENTS;
-    this.winEvents = POINTER_WINDOW_EVENTS;
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
 
     Input.apply(this, arguments);
 
@@ -749,7 +772,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @constructor
  */
 function TouchInput() {
-    this.elEvents = TOUCH_EVENTS;
+    this.evEl = TOUCH_EVENTS;
     this.targetIds = {};
 
     Input.apply(this, arguments);
@@ -825,9 +848,9 @@ function normalizeTouches(ev, touchInput) {
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
-    this._handler = bindFn(this.handler, this);
-    this.touch = new TouchInput(this.manager, this._handler);
-    this.mouse = new MouseInput(this.manager, this._handler);
+    var handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
 }
 
 inherit(TouchMouseInput, Input, {
@@ -878,6 +901,13 @@ var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
 
+/**
+ * Touch Action
+ * sets the touchAction property or uses the js alternative
+ * @param {Manager} manager
+ * @param {String} value
+ * @constructor
+ */
 function TouchAction(manager, value) {
     this.manager = manager;
     this.set(value);
@@ -1002,6 +1032,7 @@ var STATE_FAILED = 32;
 
 /**
  * Recognizer
+ * Every recognizer needs to extend from this class.
  * @constructor
  * @param {Object} options
  */
@@ -1009,10 +1040,10 @@ function Recognizer(options) {
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options || {}, this.defaults || {});
+    this.options = merge(options || {}, this.defaults);
 
     // default is enable true
-    this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
+    this.options.enable = ifUndefined(this.options.enable, true);
 
     this.state = STATE_FAILED;
 
@@ -1021,6 +1052,11 @@ function Recognizer(options) {
 }
 
 Recognizer.prototype = {
+    /**
+     * default settings
+     */
+    defaults: {},
+
     /**
      * set options
      * @param {String} option
@@ -1273,6 +1309,11 @@ inherit(AttrRecognizer, Recognizer, {
     }
 });
 
+/**
+ * Pan
+ * Recognized when the pointer is down and moved in the allowed direction.
+ * @constructor
+ */
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
 
@@ -1347,6 +1388,11 @@ inherit(PanRecognizer, AttrRecognizer, {
     }
 });
 
+/**
+ * Pinch
+ * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
+ * @constructor
+ */
 function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -1376,6 +1422,11 @@ inherit(PinchRecognizer, AttrRecognizer, {
     }
 });
 
+/**
+ * Press
+ * Recognized when the pointer is down for x ms without any movement.
+ * @constructor
+ */
 function PressRecognizer() {
     Recognizer.apply(this, arguments);
 
@@ -1426,6 +1477,11 @@ inherit(PressRecognizer, Recognizer, {
     }
 });
 
+/**
+ * Rotate
+ * Recognized when two or more pointer are moving in a circular motion.
+ * @constructor
+ */
 function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -1447,6 +1503,11 @@ inherit(RotateRecognizer, AttrRecognizer, {
     }
 });
 
+/**
+ * Swipe
+ * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
+ * @constructor
+ */
 function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -1491,6 +1552,15 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     }
 });
 
+/**
+ * Tap
+ * Recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur between the given
+ * interval and position. The delay option can be used to recognize multi-taps without firing a single tap.
+ *
+ * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
+ * multi-taps being recognized.
+ * @constructor
+ */
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
 
@@ -1618,29 +1688,20 @@ inherit(TapRecognizer, Recognizer, {
  */
 function Hammer(element, options) {
     options = options || {};
-    var manager = new Manager(element, options);
-
-    /**
-     * setup recognizers
-     * the defauls.recognizers contains an array like this;
-     * [ RecognizerClass, options, recognizeWith ],
-     * [ .... ]
-     */
-    var defaultRecognizers = manager.options.recognizers;
-    if (defaultRecognizers) {
-        each(defaultRecognizers, function(item) {
-            var recognizer = manager.add(new (item[0])(item[1]));
-            if (item[2]) {
-                recognizer.recognizeWith(item[2]);
-            }
-        });
-    }
-
-    return manager;
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.setupRecognizers);
+    return new Manager(element, options);
 }
 
+/**
+ * version
+ * @type {string}
+ */
 Hammer.VERSION = '2.0.0dev';
 
+/**
+ * default settings
+ * @type {Object}
+ */
 Hammer.defaults = {
     // when set to true, dom events are being triggered.
     // but this is slower and unused by simple implementations, so disabled by default.
@@ -1649,16 +1710,19 @@ Hammer.defaults = {
     // this value is used when a touch-action isn't defined on the element.style
     touchAction: TOUCH_ACTION_COMPUTE,
 
+    // default enabled state
     enable: true,
 
-    // default setup when calling Hammer()
-    recognizers: [
+    // default recognizer setup when calling Hammer()
+    // when creating a new manager these will be skipped.
+    setupRecognizers: [
+        // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
         [RotateRecognizer, { enable: false }],
-        [PinchRecognizer, { enable: false }, 'rotate'],
+        [PinchRecognizer, { enable: false }, ['rotate']],
         [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }],
-        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, 'swipe'],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, ['swipe']],
         [TapRecognizer],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }, 'tap'],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, ['tap']],
         [PressRecognizer]
     ],
 
@@ -1708,6 +1772,12 @@ function Manager(element, options) {
     this.touchAction = new TouchAction(this, this.options.touchAction);
 
     toggleCssProps(this, true);
+
+    each(options.recognizers, function(item) {
+        var recognizer = this.add(new (item[0])(item[1]));
+        item[2] && each(item[2], recognizer.recognizeWith, recognizer);
+        item[3] && each(item[3], recognizer.requireFailure, recognizer);
+    }, this);
 }
 
 Manager.prototype = {
