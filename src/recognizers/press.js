@@ -2,6 +2,7 @@
  * Press
  * Recognized when the pointer is down for x ms without any movement.
  * @constructor
+ * @extends Recognizer
  */
 function PressRecognizer() {
     Recognizer.apply(this, arguments);
@@ -11,6 +12,10 @@ function PressRecognizer() {
 }
 
 inherit(PressRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PressRecognizer
+     */
     defaults: {
         event: 'press',
         pointers: 1,

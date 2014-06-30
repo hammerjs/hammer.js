@@ -26,6 +26,7 @@ if (window.MSPointerEvent) {
 /**
  * Pointer events input
  * @constructor
+ * @extends Input
  */
 function PointerEventInput() {
     this.evEl = POINTER_ELEMENT_EVENTS;

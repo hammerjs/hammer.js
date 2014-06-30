@@ -11,6 +11,7 @@ var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
 /**
  * Mouse events input
  * @constructor
+ * @extends Input
  */
 function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;

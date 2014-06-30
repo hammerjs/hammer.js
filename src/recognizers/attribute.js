@@ -1,21 +1,28 @@
 /**
- * this recognizer is just used as a base for the simple
- * pan, pinch, rotate and swipe recognizers
+ * This recognizer is just used as a base for the simple attribute recognizers.
  * @constructor
+ * @extends Recognizer
  */
 function AttrRecognizer() {
     Recognizer.apply(this, arguments);
 }
 
 inherit(AttrRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof AttrRecognizer
+     */
     defaults: {
+        /**
+         * @type {Number}
+         * @default 1
+         */
         pointers: 1
     },
 
     /**
-     * used to check if it the recognizer receives valid input, like input.distance > 10
-     * this should be overwritten
-     * @virtual
+     * Used to check if it the recognizer receives valid input, like input.distance > 10.
+     * @memberof AttrRecognizer
      * @param {Object} input
      * @returns {Boolean} recognized
      */
@@ -24,6 +31,12 @@ inherit(AttrRecognizer, Recognizer, {
         return optionPointers === 0 || input.pointers.length === optionPointers;
     },
 
+    /**
+     * Process the input and return the state for the recognizer
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {*} State
+     */
     process: function(input) {
         var state = this.state;
         var eventType = input.eventType;

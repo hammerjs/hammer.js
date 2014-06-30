@@ -2,12 +2,17 @@
  * Pinch
  * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
  * @constructor
+ * @extends AttrRecognizer
  */
 function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
 inherit(PinchRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
     defaults: {
         event: 'pinch',
         threshold: 0,

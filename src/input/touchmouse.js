@@ -5,6 +5,7 @@
  * This because touch devices also emit mouse events while doing a touch.
  *
  * @constructor
+ * @extends Input
  */
 function TouchMouseInput() {
     Input.apply(this, arguments);

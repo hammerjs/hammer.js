@@ -1,11 +1,12 @@
 /**
- * Tap
- * Recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur between the given
- * interval and position. The delay option can be used to recognize multi-taps without firing a single tap.
+ * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
+ * between the given interval and position. The delay option can be used to recognize multi-taps without firing
+ * a single tap.
  *
  * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
  * multi-taps being recognized.
  * @constructor
+ * @extends Recognizer
  */
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
@@ -21,6 +22,10 @@ function TapRecognizer() {
 }
 
 inherit(TapRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
     defaults: {
         event: 'tap',
         pointers: 1,

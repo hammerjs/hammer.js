@@ -10,6 +10,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
 /**
  * Touch events input
  * @constructor
+ * @extends Input
  */
 function TouchInput() {
     this.evEl = TOUCH_EVENTS;
