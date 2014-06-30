@@ -11,13 +11,21 @@ module('Tap delay', {
 
         hammer = new Hammer(el, {recognizers: []});
 
-        var tap = new Hammer.Tap({ delay: 250 });
-        var doubleTap = new Hammer.Tap({event: 'doubleTap', delay: 250, taps: 2});
-        var tripleTap = new Hammer.Tap({event: 'tripleTap', delay: 250, taps: 3});
+        var tap = new Hammer.Tap({});
+        var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2});
+        var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3});
 
         hammer.add(tripleTap);
         hammer.add(doubleTap);
         hammer.add(tap);
+
+        tripleTap.recognizeWith(doubleTap);
+        tripleTap.recognizeWith(tap);
+        doubleTap.recognizeWith(tap);
+
+        doubleTap.requireFailure(tripleTap);
+        tap.requireFailure(tripleTap);
+        tap.requireFailure(doubleTap);
 
         tripleTapCount = 0;
         doubleTapCount = 0;
@@ -32,7 +40,6 @@ module('Tap delay', {
         hammer.destroy();
     }
 });
-
 asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized', function() {
     expect(3);
 
@@ -50,7 +57,6 @@ asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized
         equal(tapCount, 0);
     }, 350);
 });
-
 asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized', function() {
     expect(3);
 

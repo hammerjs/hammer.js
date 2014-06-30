@@ -48,7 +48,23 @@ Recognizer.prototype = {
     },
 
     /**
-     * default emitter
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+      if ( this._canEmit() ) {
+          this.emit(input);
+      } else {
+          // should we set state to STATE_FAILED at this point?
+          this.state = STATE_FAILED;
+      }
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
      * @param {Object} input
      */
     emit: function(input) {
@@ -120,26 +136,31 @@ Recognizer.prototype = {
         return !!this.simultaneous[otherRecognizer.id];
     },
 
+    _hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    _canEmit: function() {
+        for (var i = 0; i < this.requireFail.length; i++) {
+            if (!(this.requireFail[i].state & STATE_FAILED)) {
+                return false;
+            }
+        } 
+        return true;
+    },
+
     /**
      * update the recognizer
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        // require failure of other recognizers
-        var canRecognize = true;
-        for (var i = 0; i < this.requireFail.length; i++) {
-            if (!(this.requireFail[i].state & STATE_FAILED)) {
-                canRecognize = false;
-                break;
-            }
-        }
 
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
         var inputDataClone = extend({}, inputData);
 
         // is is enabled and allow recognizing?
-        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputDataClone])) {
+        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
@@ -155,7 +176,7 @@ Recognizer.prototype = {
         // the recognizer has recognized a gesture
         // so trigger an event
         if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.emit(inputDataClone);
+            this.tryEmit(inputDataClone);
         }
     },
 

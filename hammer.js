@@ -1075,7 +1075,23 @@ Recognizer.prototype = {
     },
 
     /**
-     * default emitter
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+      if ( this._canEmit() ) {
+          this.emit(input);
+      } else {
+          // should we set state to STATE_FAILED at this point?
+          this.state = STATE_FAILED;
+      }
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
      * @param {Object} input
      */
     emit: function(input) {
@@ -1147,26 +1163,31 @@ Recognizer.prototype = {
         return !!this.simultaneous[otherRecognizer.id];
     },
 
+    _hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    _canEmit: function() {
+        for (var i = 0; i < this.requireFail.length; i++) {
+            if (!(this.requireFail[i].state & STATE_FAILED)) {
+                return false;
+            }
+        } 
+        return true;
+    },
+
     /**
      * update the recognizer
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        // require failure of other recognizers
-        var canRecognize = true;
-        for (var i = 0; i < this.requireFail.length; i++) {
-            if (!(this.requireFail[i].state & STATE_FAILED)) {
-                canRecognize = false;
-                break;
-            }
-        }
 
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
         var inputDataClone = extend({}, inputData);
 
         // is is enabled and allow recognizing?
-        if (!canRecognize || !boolOrFn(this.options.enable, [this, inputDataClone])) {
+        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;
             return;
@@ -1182,7 +1203,7 @@ Recognizer.prototype = {
         // the recognizer has recognized a gesture
         // so trigger an event
         if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.emit(inputDataClone);
+            this.tryEmit(inputDataClone);
         }
     },
 
@@ -1486,11 +1507,16 @@ inherit(PressRecognizer, Recognizer, {
         // and we've reached an end event, so a tap is possible
         if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
             this.reset();
+            return STATE_FAILED;
         } else if (input.eventType & INPUT_START) {
             this.reset();
-            this._timer = setTimeout(bindFn(this.emit, this), options.time);
+            var self = this;
+            this._timer = setTimeout(function() {
+                self.state = STATE_RECOGNIZED;
+                self.tryEmit();
+            }, options.time);
         }
-        return STATE_FAILED;
+        return STATE_BEGAN;
     },
 
     reset: function() {
@@ -1499,8 +1525,11 @@ inherit(PressRecognizer, Recognizer, {
     },
 
     emit: function() {
-        this._input.timeStamp = Date.now();
-        this.manager.emit(this.options.event, this._input);
+
+        if (this.state == STATE_RECOGNIZED ) {
+            this._input.timeStamp = Date.now();
+            this.manager.emit(this.options.event, this._input);
+        }
     }
 });
 
@@ -1622,7 +1651,6 @@ inherit(TapRecognizer, Recognizer, {
         pointers: 1,
         taps: 1,
         interval: 300, // max time between the multi-tap taps
-        delay: 0, // delay after triggering the tap. useful if you don't want to recognize a tap on each touchend
         time: 250, // max time of the pointer to be down (like finger on the screen)
         threshold: 2, // a minimal movement is ok, but keep it low
         posThreshold: 10 // a multi-tap can be a bit off the initial position
@@ -1640,43 +1668,68 @@ inherit(TapRecognizer, Recognizer, {
         var validMovement = input.distance < options.threshold;
         var validTouchTime = input.deltaTime < options.time;
 
-        // we only allow little movement
-        // and we've reached an end event, so a tap is possible
-        if (input.eventType & INPUT_END && validMovement && validTouchTime && validPointers) {
-            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+        this.reset();
 
-            this.pTime = input.timeStamp;
-            this.pCenter = input.center;
+        if ( (input.eventType & INPUT_START) && (this.count === 0 ) ) {
 
-            if (!validMultiTap || !validInterval) {
-                this.count = 1;
-            } else {
-                this.count += 1;
-            }
+            return this._setupBeganState();
 
-            this._input = input;
-            this.reset();
+        } else {
 
-            // if tap count matches we have recognized it,
-            // else it has began recognizing...
-            var tapCount = this.count % options.taps;
-            if (tapCount === 0) {
-                if (!options.delay) {
-                    return STATE_RECOGNIZED;
+            // we only allow little movement
+            // and we've reached an end event, so a tap is possible
+            if ( validMovement && validTouchTime && validPointers) {
+
+                if ( input.eventType & INPUT_END ) {
+
+                    var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+                    var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+
+                    this.pTime = input.timeStamp;
+                    this.pCenter = input.center;
+
+                    if (!validMultiTap || !validInterval) {
+                        this.count = 1;
+                    } else {
+                        this.count += 1;
+                    }
+
+                    this._input = input;
+
+                    // if tap count matches we have recognized it,
+                    // else it has began recognizing...
+                    var tapCount = this.count % options.taps;
+                    if (tapCount === 0) {
+
+                        if ( !this._hasRequireFailures() ) {
+                            return STATE_RECOGNIZED;
+                        } else {
+                            this._timer = setTimeout(function() {
+                                self.state = STATE_RECOGNIZED;
+                                self.tryEmit();
+                            }, 250);
+                            return STATE_BEGAN;
+                        }
+
+                    } else {
+                        return this._setupBeganState();
+                    }
                 } else {
-                    this._timer = setTimeout(function() {
-                        self.state = STATE_RECOGNIZED;
-                        self.emit();
-                    }, options.delay);
-                    return STATE_BEGAN;
+                    return this._setupBeganState();
                 }
-            }
-            if (!options.delay) {
-                return STATE_BEGAN;
+            } else {
+                return STATE_FAILED;
             }
         }
-        return STATE_FAILED;
+    },
+
+    _setupBeganState: function() {
+        var self = this;
+        this._timer = setTimeout(function() {
+            self.state = STATE_FAILED;
+        }, 200);
+
+        return STATE_BEGAN;
     },
 
     reset: function() {
@@ -1684,7 +1737,7 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function() {
-        if (this.state == STATE_RECOGNIZED) {
+        if (this.state == STATE_RECOGNIZED ) {
             this._input.tapCount = this.count;
             this.manager.emit(this.options.event, this._input);
         }

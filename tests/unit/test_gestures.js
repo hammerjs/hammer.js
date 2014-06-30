@@ -1,3 +1,6 @@
+// TODO: this tests fails because tapRecognizer changes
+// it could be that tapRecognizer setup its BEGAN state and
+// disable the other gesture recognition
 var el, hammer, events;
 var allGestureEvents = [
         'tap doubletap press',
