@@ -19,7 +19,7 @@ function Recognizer(options) {
     this.options = merge(options || {}, this.defaults);
 
     // default is enable true
-    this.options.enable = (options.enable === undefined) ? true : options.enable;
+    this.options.enable = ifUndefined(this.options.enable, true);
 
     this.state = STATE_FAILED;
 

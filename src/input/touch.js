@@ -12,7 +12,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @constructor
  */
 function TouchInput() {
-    this.elEvents = TOUCH_EVENTS;
+    this.evEl = TOUCH_EVENTS;
     this.targetIds = {};
 
     Input.apply(this, arguments);

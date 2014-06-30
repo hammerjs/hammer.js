@@ -6,12 +6,20 @@
  */
 function Hammer(element, options) {
     options = options || {};
-    options.recognizers = Hammer.defaults.setupRecognizers;
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.setupRecognizers);
     return new Manager(element, options);
 }
 
+/**
+ * version
+ * @type {string}
+ */
 Hammer.VERSION = '{{PKG_VERSION}}';
 
+/**
+ * default settings
+ * @type {Object}
+ */
 Hammer.defaults = {
     // when set to true, dom events are being triggered.
     // but this is slower and unused by simple implementations, so disabled by default.
