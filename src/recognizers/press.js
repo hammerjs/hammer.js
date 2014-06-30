@@ -37,7 +37,10 @@ inherit(PressRecognizer, Recognizer, {
             this.reset();
         } else if (input.eventType & INPUT_START) {
             this.reset();
-            this._timer = setTimeout(bindFn(this.emit, this), options.time);
+            var self = this;
+            this._timer = setTimeout(function() {
+                self.tryEmit();
+            }, options.time);
         }
         return STATE_FAILED;
     },
