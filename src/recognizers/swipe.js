@@ -2,12 +2,17 @@
  * Swipe
  * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
  * @constructor
+ * @extends AttrRecognizer
  */
 function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
 inherit(SwipeRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof SwipeRecognizer
+     */
     defaults: {
         event: 'swipe',
         threshold: 10,

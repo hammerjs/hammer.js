@@ -258,5 +258,8 @@ recognized.
 
 ## Further notes
 Developed by [Jorik Tangelder](http://twitter.com/jorikdelaporik) in his spare time and at
-[Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands. It's recommended to listen to
-[this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.
+[Eight Media](http://www.eight.nl/) in Arnhem, the Netherlands. 
+
+Special thanks to [Pepe Cano](https://github.com/ppcano) for his contributions.
+
+It's recommended to listen to [this loop](http://soundcloud.com/eightmedia/hammerhammerhammer) while using hammer.js.

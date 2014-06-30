@@ -618,6 +618,7 @@ var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
 /**
  * Mouse events input
  * @constructor
+ * @extends Input
  */
 function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;
@@ -698,6 +699,7 @@ if (window.MSPointerEvent) {
 /**
  * Pointer events input
  * @constructor
+ * @extends Input
  */
 function PointerEventInput() {
     this.evEl = POINTER_ELEMENT_EVENTS;
@@ -770,6 +772,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
 /**
  * Touch events input
  * @constructor
+ * @extends Input
  */
 function TouchInput() {
     this.evEl = TOUCH_EVENTS;
@@ -844,6 +847,7 @@ function normalizeTouches(ev, touchInput) {
  * This because touch devices also emit mouse events while doing a touch.
  *
  * @constructor
+ * @extends Input
  */
 function TouchMouseInput() {
     Input.apply(this, arguments);
@@ -894,7 +898,6 @@ var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
 // magical touchAction value
 var TOUCH_ACTION_COMPUTE = 'compute';
-
 var TOUCH_ACTION_AUTO = 'auto';
 var TOUCH_ACTION_MANIPULATION = 'manipulation';
 var TOUCH_ACTION_NONE = 'none';
@@ -1053,7 +1056,8 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
     /**
-     * default settings
+     * @virtual
+     * @type {Object}
      */
     defaults: {},
 
@@ -1278,23 +1282,30 @@ function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
 }
 
 /**
- * this recognizer is just used as a base for the simple
- * pan, pinch, rotate and swipe recognizers
+ * This recognizer is just used as a base for the simple attribute recognizers.
  * @constructor
+ * @extends Recognizer
  */
 function AttrRecognizer() {
     Recognizer.apply(this, arguments);
 }
 
 inherit(AttrRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof AttrRecognizer
+     */
     defaults: {
+        /**
+         * @type {Number}
+         * @default 1
+         */
         pointers: 1
     },
 
     /**
-     * used to check if it the recognizer receives valid input, like input.distance > 10
-     * this should be overwritten
-     * @virtual
+     * Used to check if it the recognizer receives valid input, like input.distance > 10.
+     * @memberof AttrRecognizer
      * @param {Object} input
      * @returns {Boolean} recognized
      */
@@ -1303,6 +1314,12 @@ inherit(AttrRecognizer, Recognizer, {
         return optionPointers === 0 || input.pointers.length === optionPointers;
     },
 
+    /**
+     * Process the input and return the state for the recognizer
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {*} State
+     */
     process: function(input) {
         var state = this.state;
         var eventType = input.eventType;
@@ -1330,6 +1347,7 @@ inherit(AttrRecognizer, Recognizer, {
  * Pan
  * Recognized when the pointer is down and moved in the allowed direction.
  * @constructor
+ * @extends AttrRecognizer
  */
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
@@ -1339,6 +1357,10 @@ function PanRecognizer() {
 }
 
 inherit(PanRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PanRecognizer
+     */
     defaults: {
         event: 'pan',
         threshold: 10,
@@ -1409,12 +1431,17 @@ inherit(PanRecognizer, AttrRecognizer, {
  * Pinch
  * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
  * @constructor
+ * @extends AttrRecognizer
  */
 function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
 inherit(PinchRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
     defaults: {
         event: 'pinch',
         threshold: 0,
@@ -1443,6 +1470,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
  * Press
  * Recognized when the pointer is down for x ms without any movement.
  * @constructor
+ * @extends Recognizer
  */
 function PressRecognizer() {
     Recognizer.apply(this, arguments);
@@ -1452,6 +1480,10 @@ function PressRecognizer() {
 }
 
 inherit(PressRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PressRecognizer
+     */
     defaults: {
         event: 'press',
         pointers: 1,
@@ -1506,12 +1538,17 @@ inherit(PressRecognizer, Recognizer, {
  * Rotate
  * Recognized when two or more pointer are moving in a circular motion.
  * @constructor
+ * @extends AttrRecognizer
  */
 function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
 inherit(RotateRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof RotateRecognizer
+     */
     defaults: {
         event: 'rotate',
         threshold: 0,
@@ -1532,12 +1569,17 @@ inherit(RotateRecognizer, AttrRecognizer, {
  * Swipe
  * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
  * @constructor
+ * @extends AttrRecognizer
  */
 function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
 
 inherit(SwipeRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof SwipeRecognizer
+     */
     defaults: {
         event: 'swipe',
         threshold: 10,
@@ -1585,13 +1627,14 @@ inherit(SwipeRecognizer, AttrRecognizer, {
 });
 
 /**
- * Tap
- * Recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur between the given
- * interval and position. The delay option can be used to recognize multi-taps without firing a single tap.
+ * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
+ * between the given interval and position. The delay option can be used to recognize multi-taps without firing
+ * a single tap.
  *
  * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
  * multi-taps being recognized.
  * @constructor
+ * @extends Recognizer
  */
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
@@ -1607,6 +1650,10 @@ function TapRecognizer() {
 }
 
 inherit(TapRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
     defaults: {
         event: 'tap',
         pointers: 1,
@@ -1706,41 +1753,56 @@ inherit(TapRecognizer, Recognizer, {
 });
 
 /**
- * create an manager with a default set of recognizers
+ * Simple way to create an manager with a default set of recognizers.
  * @param {HTMLElement} element
  * @param {Object} [options]
  * @constructor
  */
 function Hammer(element, options) {
     options = options || {};
-    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.setupRecognizers);
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.easyRecognizers);
     return new Manager(element, options);
 }
 
 /**
- * version
- * @type {string}
+ * Current build version.
+ * @const {string}
  */
 Hammer.VERSION = '2.0.0dev';
 
 /**
  * default settings
- * @type {Object}
+ * @namespace
  */
 Hammer.defaults = {
-    // when set to true, dom events are being triggered.
-    // but this is slower and unused by simple implementations, so disabled by default.
+    /**
+     * set if DOM events are being triggered.
+     * But this is slower and unused by simple implementations, so disabled by default.
+     * @type {Boolean}
+     * @default false
+     */
     domEvents: false,
 
-    // this value is used when a touch-action isn't defined on the element.style
+    /**
+     * The value for the touchAction property/fallback.
+     * When set to `compute` it will magically set the correct value based on the added recognizers.
+     * @type {String}
+     * @default compute
+     */
     touchAction: TOUCH_ACTION_COMPUTE,
 
-    // default enabled state
+    /**
+     * @type {Boolean}
+     * @default true
+     */
     enable: true,
 
-    // default recognizer setup when calling Hammer()
-    // when creating a new manager these will be skipped.
-    setupRecognizers: [
+    /**
+     * Default recognizer setup when calling `Hammer()`
+     * When creating a new Manager these will be skipped.
+     * @type {Array}
+     */
+    easyRecognizers: [
         // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
         [RotateRecognizer, { enable: false }],
         [PinchRecognizer, { enable: false }, ['rotate']],
@@ -1751,28 +1813,56 @@ Hammer.defaults = {
         [PressRecognizer]
     ],
 
-    // with some style attributes you can improve the experience.
+    /**
+     * Some CSS properties can be used to improve the working of Hammer.
+     * Add them to this method and they will be set when creating a new Manager.
+     * @namespace
+     */
     cssProps: {
-        // Disables text selection to improve the dragging gesture. When the value is `none` it also sets
-        // `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+        /**
+         * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
+         * `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
         userSelect: 'none',
 
-        // Disable the Windows Phone grippers when pressing an element.
+        /**
+         * Disable the Windows Phone grippers when pressing an element.
+         * @type {String}
+         * @default 'none'
+         */
         touchSelect: 'none',
 
-        // Disables the default callout shown when you touch and hold a touch target.
-        // On iOS, when you touch and hold a touch target such as a link, Safari displays
-        // a callout containing information about the link. This property allows you to disable that callout.
+        /**
+         * Disables the default callout shown when you touch and hold a touch target.
+         * On iOS, when you touch and hold a touch target such as a link, Safari displays
+         * a callout containing information about the link. This property allows you to disable that callout.
+         * @type {String}
+         * @default 'none'
+         */
         touchCallout: 'none',
 
-        // Specifies whether zooming is enabled. Used by IE10>
+        /**
+         * Specifies whether zooming is enabled. Used by IE10>
+         * @type {String}
+         * @default 'none'
+         */
         contentZooming: 'none',
 
-        // Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+        /**
+         * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
         userDrag: 'none',
 
-        // Overrides the highlight color shown when the user taps a link or a JavaScript
-        // clickable element in iOS. This property obeys the alpha value, if specified.
+        /**
+         * Overrides the highlight color shown when the user taps a link or a JavaScript
+         * clickable element in iOS. This property obeys the alpha value, if specified.
+         * @type {String}
+         * @default 'rgba(0,0,0,0)'
+         */
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 };
@@ -2019,49 +2109,89 @@ function triggerDomEvent(event, data) {
     data.target.dispatchEvent(gestureEvent);
 }
 
-Hammer.INPUT_START = INPUT_START;
-Hammer.INPUT_MOVE = INPUT_MOVE;
-Hammer.INPUT_END = INPUT_END;
-Hammer.INPUT_CANCEL = INPUT_CANCEL;
+extend(Hammer, {
+    /** @const {Number} Hammer.INPUT_START 1 */
+    INPUT_START: INPUT_START,
+    /** @const {Number} Hammer.INPUT_MOVE 2 */
+    INPUT_MOVE: INPUT_MOVE,
+    /** @const {Number} Hammer.INPUT_END 4 */
+    INPUT_END: INPUT_END,
+    /** @const {Number} Hammer.INPUT_CANCEL 8 */
+    INPUT_CANCEL: INPUT_CANCEL,
 
-Hammer.STATE_POSSIBLE = STATE_POSSIBLE;
-Hammer.STATE_BEGAN = STATE_BEGAN;
-Hammer.STATE_CHANGED = STATE_CHANGED;
-Hammer.STATE_ENDED = STATE_ENDED;
-Hammer.STATE_RECOGNIZED = STATE_RECOGNIZED;
-Hammer.STATE_CANCELLED = STATE_CANCELLED;
-Hammer.STATE_FAILED = STATE_FAILED;
+    /** @const {Number} Hammer.STATE_POSSIBLE 1 */
+    STATE_POSSIBLE: STATE_POSSIBLE,
+    /** @const {Number} Hammer.STATE_BEGAN 2 */
+    STATE_BEGAN: STATE_BEGAN,
+    /** @const {Number} Hammer.STATE_CHANGED 4 */
+    STATE_CHANGED: STATE_CHANGED,
+    /** @const {Number} Hammer.STATE_ENDED 8 */
+    STATE_ENDED: STATE_ENDED,
+    /** @const {Number} Hammer.STATE_RECOGNIZED 8 */
+    STATE_RECOGNIZED: STATE_RECOGNIZED,
+    /** @const {Number} Hammer.STATE_CANCELLED 16 */
+    STATE_CANCELLED: STATE_CANCELLED,
+    /** @const {Number} Hammer.STATE_FAILED 32 */
+    STATE_FAILED: STATE_FAILED,
 
-Hammer.DIRECTION_NONE = DIRECTION_NONE;
-Hammer.DIRECTION_LEFT = DIRECTION_LEFT;
-Hammer.DIRECTION_RIGHT = DIRECTION_RIGHT;
-Hammer.DIRECTION_UP = DIRECTION_UP;
-Hammer.DIRECTION_DOWN = DIRECTION_DOWN;
-Hammer.DIRECTION_HORIZONTAL = DIRECTION_HORIZONTAL;
-Hammer.DIRECTION_VERTICAL = DIRECTION_VERTICAL;
-Hammer.DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+    /** @const {Number} Hammer.DIRECTION_NONE 1 */
+    DIRECTION_NONE: DIRECTION_NONE,
+    /** @const {Number} Hammer.DIRECTION_LEFT 2 */
+    DIRECTION_LEFT: DIRECTION_LEFT,
+    /** @const {Number} Hammer.DIRECTION_RIGHT 4 */
+    DIRECTION_RIGHT: DIRECTION_RIGHT,
+    /** @const {Number} Hammer.DIRECTION_UP 8 */
+    DIRECTION_UP: DIRECTION_UP,
+    /** @const {Number} Hammer.DIRECTION_DOWN 16 */
+    DIRECTION_DOWN: DIRECTION_DOWN,
+    /** @const {Number} Hammer.DIRECTION_HORIZONTAL 6 */
+    DIRECTION_HORIZONTAL: DIRECTION_HORIZONTAL,
+    /** @const {Number} Hammer.DIRECTION_VERTICAL 24 */
+    DIRECTION_VERTICAL: DIRECTION_VERTICAL,
+    /** @const {Number} Hammer.DIRECTION_ALL 30 */
+    DIRECTION_ALL: DIRECTION_ALL,
 
-Hammer.Manager = Manager;
-Hammer.Input = Input;
-Hammer.TouchAction = TouchAction;
+    /** @member {Manager} Hammer.Manager */
+    Manager: Manager,
+    /** @member {Input} Hammer.Input */
+    Input: Input,
+    /** @member {TouchAction} Hammer.TouchAction */
+    TouchAction: TouchAction,
 
-Hammer.Recognizer = Recognizer;
-Hammer.AttrRecognizer = AttrRecognizer;
-Hammer.Tap = TapRecognizer;
-Hammer.Pan = PanRecognizer;
-Hammer.Swipe = SwipeRecognizer;
-Hammer.Pinch = PinchRecognizer;
-Hammer.Rotate = RotateRecognizer;
-Hammer.Press = PressRecognizer;
+    /** @member {Recognizer} Hammer.Recognizer */
+    Recognizer: Recognizer,
+    /** @member {AttrRecognizer} Hammer.AttrRecognizer */
+    AttrRecognizer: AttrRecognizer,
+    /** @member {TapRecognizer} Hammer.Tap */
+    Tap: TapRecognizer,
+    /** @member {PanRecognizer} Hammer.Pan */
+    Pan: PanRecognizer,
+    /** @member {SwipeRecognizer} Hammer.Swipe */
+    Swipe: SwipeRecognizer,
+    /** @member {PinchRecognizer} Hammer.Pinch */
+    Pinch: PinchRecognizer,
+    /** @member {RotateRecognizer} Hammer.Rotate */
+    Rotate: RotateRecognizer,
+    /** @member {PressRecognizer} Hammer.Press */
+    Press: PressRecognizer,
 
-Hammer.on = addEventListeners;
-Hammer.off = removeEventListeners;
-Hammer.each = each;
-Hammer.merge = merge;
-Hammer.extend = extend;
-Hammer.inherit = inherit;
-Hammer.bindFn = bindFn;
-Hammer.prefixed = prefixed;
+    /** @member {addEventListeners} Hammer.on */
+    on: addEventListeners,
+    /** @member {removeEventListeners} Hammer.off */
+    off: removeEventListeners,
+    /** @member {each} Hammer.each */
+    each: each,
+    /** @member {merge} Hammer.merge */
+    merge: merge,
+    /** @member {extend} Hammer.extend */
+    extend: extend,
+    /** @member {inherit} Hammer.inherit */
+    inherit: inherit,
+    /** @member {bindFn} Hammer.bindFn */
+    bindFn: bindFn,
+    /** @member {prefixed} Hammer.prefixed */
+    prefixed: prefixed
+});
 
 if (typeof define == TYPE_FUNCTION && define.amd) {
     define(function() {

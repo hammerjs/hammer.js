@@ -29,7 +29,8 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
     /**
-     * default settings
+     * @virtual
+     * @type {Object}
      */
     defaults: {},
 

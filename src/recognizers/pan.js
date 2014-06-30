@@ -2,6 +2,7 @@
  * Pan
  * Recognized when the pointer is down and moved in the allowed direction.
  * @constructor
+ * @extends AttrRecognizer
  */
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
@@ -11,6 +12,10 @@ function PanRecognizer() {
 }
 
 inherit(PanRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PanRecognizer
+     */
     defaults: {
         event: 'pan',
         threshold: 10,
