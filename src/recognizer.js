@@ -8,6 +8,7 @@ var STATE_FAILED = 32;
 
 /**
  * Recognizer
+ * Every recognizer needs to extend from this class.
  * @constructor
  * @param {Object} options
  */
@@ -15,10 +16,10 @@ function Recognizer(options) {
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options || {}, this.defaults || {});
+    this.options = merge(options || {}, this.defaults);
 
     // default is enable true
-    this.options.enable = (this.options.enable === undefined) ? true : this.options.enable;
+    this.options.enable = (options.enable === undefined) ? true : options.enable;
 
     this.state = STATE_FAILED;
 
@@ -27,6 +28,11 @@ function Recognizer(options) {
 }
 
 Recognizer.prototype = {
+    /**
+     * default settings
+     */
+    defaults: {},
+
     /**
      * set options
      * @param {String} option

@@ -1,3 +1,8 @@
+/**
+ * Rotate
+ * Recognized when two or more pointer are moving in a circular motion.
+ * @constructor
+ */
 function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }

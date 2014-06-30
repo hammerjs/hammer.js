@@ -54,6 +54,9 @@ function Input(manager, callback) {
 }
 
 Input.prototype = {
+    /**
+     * unbind the events
+     */
     destroy: function() {
         this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
         this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);
