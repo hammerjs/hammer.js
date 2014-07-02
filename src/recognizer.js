@@ -54,12 +54,12 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     tryEmit: function(input) {
-      if ( this._canEmit() ) {
-          this.emit(input);
-      } else {
-          // should we set state to STATE_FAILED at this point?
-          this.state = STATE_FAILED;
-      }
+        if (this.canEmit()) {
+            this.emit(input);
+        } else {
+            // should we set state to STATE_FAILED at this point?
+            this.state = STATE_FAILED;
+        }
     },
 
     /**
@@ -128,6 +128,14 @@ Recognizer.prototype = {
     },
 
     /**
+     * has require failures boolean
+     * @returns {boolean}
+     */
+    hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    /**
      * if the recognizer can recognize simultaneous with an other recognizer
      * @param {Recognizer} otherRecognizer
      * @returns {Boolean}
@@ -136,16 +144,16 @@ Recognizer.prototype = {
         return !!this.simultaneous[otherRecognizer.id];
     },
 
-    _hasRequireFailures: function() {
-        return this.requireFail.length > 0;
-    },
-
-    _canEmit: function() {
+    /**
+     * can we emit?
+     * @returns {boolean}
+     */
+    canEmit: function() {
         for (var i = 0; i < this.requireFail.length; i++) {
             if (!(this.requireFail[i].state & STATE_FAILED)) {
                 return false;
             }
-        } 
+        }
         return true;
     },
 
@@ -154,7 +162,6 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
         var inputDataClone = extend({}, inputData);

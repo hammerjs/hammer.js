@@ -50,10 +50,12 @@
         mc.add(new Hammer.Rotate());
         mc.add(new Hammer.Pinch());
 
+        mc.add(new Hammer.Press());
+
         mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
         mc.add(new Hammer.Tap()).recognizeWith('tap');
 
-        mc.on("swipe pan multipan pinch rotate longpress tap doubletap", logGesture);
+        mc.on("swipe pan multipan press pinch rotate tap doubletap", logGesture);
 
         function DEBUG(str) {
             debug.textContent = str;

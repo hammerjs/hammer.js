@@ -1,10 +1,9 @@
-var el, 
-    hammer, 
-    pressPeriod = 200, 
+var el,
+    hammer,
+    pressPeriod = 200,
     pressThreshold = 20,
     pressCount = 0,
     swipeCount = 0;
-
 
 module('Require Failure ( Swipe & Press )', {
     setup: function() {
@@ -20,14 +19,16 @@ module('Require Failure ( Swipe & Press )', {
         hammer.add(press);
 
         swipe.recognizeWith(press);
-
         press.requireFailure(swipe);
-
 
         pressCount = 0;
         swipeCount = 0;
-        hammer.on('press', function() { pressCount++;  });
-        hammer.on('swipe', function() { swipeCount++;  });
+        hammer.on('press', function() {
+            pressCount++;
+        });
+        hammer.on('swipe', function() {
+            swipeCount++;
+        });
     },
     teardown: function() {
         document.body.removeChild(el);
@@ -50,14 +51,12 @@ asyncTest('When swipe does recognize the gesture, a press gesture cannot be fire
     expect(2);
 
     testUtils.dispatchTouchEvent(el, 'start', 50, 50);
-
-    testUtils.dispatchTouchEvent(el, 'move', 50+pressThreshold/4, 50);
+    testUtils.dispatchTouchEvent(el, 'move', 50 + pressThreshold / 4, 50);
 
     setTimeout(function() {
         start();
 
         ok(swipeCount > 0, 'swipe gesture should be recognizing');
         equal(pressCount, 0, 'press gesture should not be recognized because swipe gesture is recognizing');
-
     }, pressPeriod + 100);
 });

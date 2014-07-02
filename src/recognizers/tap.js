@@ -30,6 +30,7 @@ inherit(TapRecognizer, Recognizer, {
         event: 'tap',
         pointers: 1,
         taps: 1,
+        delay: 300,
         interval: 300, // max time between the multi-tap taps
         time: 250, // max time of the pointer to be down (like finger on the screen)
         threshold: 2, // a minimal movement is ok, but keep it low
@@ -50,66 +51,56 @@ inherit(TapRecognizer, Recognizer, {
 
         this.reset();
 
-        if ( (input.eventType & INPUT_START) && (this.count === 0 ) ) {
+        if ((input.eventType & INPUT_START) && (this.count === 0)) {
+            return this._setupBeganState();
+        }
+
+        // we only allow little movement
+        // and we've reached an end event, so a tap is possible
+        if (validMovement && validTouchTime && validPointers) {
+            if (input.eventType & INPUT_END) {
+                var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+                var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+
+                this.pTime = input.timeStamp;
+                this.pCenter = input.center;
+
+                if (!validMultiTap || !validInterval) {
+                    this.count = 1;
+                } else {
+                    this.count += 1;
+                }
+
+                this._input = input;
+
+                // if tap count matches we have recognized it,
+                // else it has began recognizing...
+                var tapCount = this.count % options.taps;
+                if (tapCount === 0) {
+                    if (!this.hasRequireFailures()) {
+                        return STATE_RECOGNIZED;
+                    } else {
+                        this._timer = setTimeout(function() {
+                            self.state = STATE_RECOGNIZED;
+                            self.tryEmit();
+                        }, options.delay);
+                        return STATE_BEGAN;
+                    }
+                }
+            }
 
             return this._setupBeganState();
-
-        } else {
-
-            // we only allow little movement
-            // and we've reached an end event, so a tap is possible
-            if ( validMovement && validTouchTime && validPointers) {
-
-                if ( input.eventType & INPUT_END ) {
-
-                    var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-                    var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
-
-                    this.pTime = input.timeStamp;
-                    this.pCenter = input.center;
-
-                    if (!validMultiTap || !validInterval) {
-                        this.count = 1;
-                    } else {
-                        this.count += 1;
-                    }
-
-                    this._input = input;
-
-                    // if tap count matches we have recognized it,
-                    // else it has began recognizing...
-                    var tapCount = this.count % options.taps;
-                    if (tapCount === 0) {
-
-                        if ( !this._hasRequireFailures() ) {
-                            return STATE_RECOGNIZED;
-                        } else {
-                            this._timer = setTimeout(function() {
-                                self.state = STATE_RECOGNIZED;
-                                self.tryEmit();
-                            }, 250);
-                            return STATE_BEGAN;
-                        }
-
-                    } else {
-                        return this._setupBeganState();
-                    }
-                } else {
-                    return this._setupBeganState();
-                }
-            } else {
-                return STATE_FAILED;
-            }
         }
+        return STATE_FAILED;
     },
 
     _setupBeganState: function() {
         var self = this;
         this._timer = setTimeout(function() {
             self.state = STATE_FAILED;
-        }, 200);
+        }, this.options.delay);
 
-        return STATE_BEGAN;
+        return STATE_POSSIBLE;
     },
 
     reset: function() {

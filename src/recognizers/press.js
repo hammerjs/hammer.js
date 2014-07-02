@@ -40,7 +40,6 @@ inherit(PressRecognizer, Recognizer, {
         // and we've reached an end event, so a tap is possible
         if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
             this.reset();
-            return STATE_FAILED;
         } else if (input.eventType & INPUT_START) {
             this.reset();
             var self = this;
@@ -49,7 +48,7 @@ inherit(PressRecognizer, Recognizer, {
                 self.tryEmit();
             }, options.time);
         }
-        return STATE_BEGAN;
+        return STATE_FAILED;
     },
 
     reset: function() {
@@ -58,8 +57,7 @@ inherit(PressRecognizer, Recognizer, {
     },
 
     emit: function() {
-
-        if (this.state == STATE_RECOGNIZED ) {
+        if (this.state === STATE_RECOGNIZED) {
             this._input.timeStamp = Date.now();
             this.manager.emit(this.options.event, this._input);
         }

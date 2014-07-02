@@ -1,6 +1,5 @@
-
-var el, 
-    hammer, 
+var el,
+    hammer,
     swipeCount = 0;
 
 
@@ -28,8 +27,8 @@ test('swipe can be recognized', function() {
 
     hammer.add(swipe);
 
-    hammer.on('swipe', function() { 
-      swipeCount++;  
+    hammer.on('swipe', function() {
+        swipeCount++;
     });
 
     testUtils.dispatchTouchEvent(el, 'start', 50, 50);
