@@ -21,6 +21,6 @@ npm-debug.log
 node_modules
 
 # while in development
-# hammer.js
-# hammer.min.js
-# hammer.min.map
+hammer.js
+hammer.min.js
+hammer.min.map
