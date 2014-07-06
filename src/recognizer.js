@@ -1,3 +1,30 @@
+/**
+ * Recognizer flow explained; *
+ * All recognizers have the initial state of POSSIBLE when a input session starts.
+ * The definition of a input session is from the first input until the last input, with all it's movement in it. *
+ * Example session for mouse-input: mousedown -> mousemove -> mouseup
+ *
+ * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
+ * which determines with state it should be.
+ *
+ * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
+ * POSSIBLE to give it another change on the next cycle.
+ *
+ *               Possible
+ *                  |
+ *            +-----+---------------+
+ *            |                     |
+ *      +-----+-----+               |
+ *      |           |               |
+ *   Failed      Cancelled          |
+ *                          +-------+------+
+ *                          |              |
+ *                      Recognized       Began
+ *                                         |
+ *                                      Changed
+ *                                         |
+ *                                  Ended/Recognized
+ */
 var STATE_POSSIBLE = 1;
 var STATE_BEGAN = 2;
 var STATE_CHANGED = 4;
@@ -21,7 +48,7 @@ function Recognizer(options) {
     // default is enable true
     this.options.enable = ifUndefined(this.options.enable, true);
 
-    this.state = STATE_FAILED;
+    this.state = STATE_POSSIBLE;
 
     this.simultaneous = {};
     this.requireFail = [];

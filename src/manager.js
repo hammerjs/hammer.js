@@ -1,3 +1,6 @@
+var RECOGNIZING_STOP = 1;
+var RECOGNIZING_FORCED_STOP = 2;
+
 /**
  * Manager
  * @param {HTMLElement} element
@@ -43,12 +46,13 @@ Manager.prototype = {
      * @param {Boolean} [force]
      */
     stop: function(force) {
-        this.session.stopped = force ? 2 : 1;
+        this.session.stopped = force ? RECOGNIZING_FORCED_STOP : RECOGNIZING_STOP;
     },
 
     /**
      * run the recognizers!
-     * called by the inputHandler function
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
      * @param {Object} inputData
      */
     recognize: function(inputData) {
@@ -56,29 +60,42 @@ Manager.prototype = {
             return;
         }
 
+        // run the touch-action polyfill
         this.touchAction.preventDefaults(inputData);
 
         var recognizer;
         var session = this.session;
+
+        // this holds the recognizer that is being recognized.
+        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+        // if no recognizer is detecting a thing, it is set to `null`
         var curRecognizer = session.curRecognizer;
 
-        // reset when the last recognizer is done, or this is a new session
+        // reset when the last recognizer is recognized
+        // or when we're in a new session
         if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
-        // we're in a active recognizer
         for (var i = 0, len = this.recognizers.length; i < len; i++) {
             recognizer = this.recognizers[i];
 
-            if (this.session.stopped !== 2 && (
-                    !curRecognizer || recognizer == curRecognizer ||
-                    recognizer.canRecognizeWith(curRecognizer))) {
+            // find out if we are allowed try to recognize the input for this one.
+            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+            //      that is being recognized.
+            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+            //      this can be setup with the `recognizeWith()` method on the recognizer.
+            if (this.session.stopped !== RECOGNIZING_FORCED_STOP && ( // 1
+                    !curRecognizer || recognizer == curRecognizer || // 2
+                    recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();
             }
 
+            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+            // current active recognizer. but only if we don't already have an active recognizer
             if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
@@ -201,7 +218,7 @@ Manager.prototype = {
      * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        if(this.element) {
+        if (this.element) {
             toggleCssProps(this, false);
         }
 
