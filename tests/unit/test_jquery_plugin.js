@@ -1,6 +1,6 @@
 var el, hammer, events;
 
-var jQueryPluginPath = "../../jquery.hammer.js";
+var jQueryPluginPath = '../../jquery.hammer.js';
 
 module('jQuery plugin', {
     setup: function() {
@@ -17,7 +17,7 @@ asyncTest('trigger pan with jQuery', function() {
 
     $.getScript(jQueryPluginPath, function() {
         jQuery(el).hammer();
-        jQuery(el).bind("panstart pan panmove panright panend", function(ev) {
+        jQuery(el).bind('panstart pan panmove panright panend', function(ev) {
             if (ev.gesture) {
                 events[ev.type] = true;
             }
@@ -33,7 +33,7 @@ asyncTest('trigger pan with jQuery', function() {
                 panend: true
             });
 
-            ok(jQuery(el).data("hammer") instanceof Hammer.Manager, "data attribute refers to the instance");
+            ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
         });
     });
 });
@@ -42,7 +42,7 @@ asyncTest('trigger pan without jQuery should still work', function() {
     expect(1);
 
     var hammer = Hammer(el);
-    hammer.on("panstart pan panmove panright panend", function(ev) {
+    hammer.on('panstart pan panmove panright panend', function(ev) {
         events[ev.type] = true;
     });
 

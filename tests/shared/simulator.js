@@ -14,6 +14,7 @@
         }
     };
 
+
     // simple easing methods
     // found at the source of velocity.js
     Simulator.easings = {
@@ -50,12 +51,19 @@
                     var x = Math.round(touch.x),
                         y = Math.round(touch.y);
 
+                    var eventType = this.typeMap[type];
+                        // ie10 style events
+                    var msEventType = window.MSPointerEvent && eventType.replace(/pointer([a-z])/, function(_, a) {
+                        return 'MSPointer'+ a.toUpperCase();
+                    });
+
                     var event = document.createEvent('Event');
-                    event.initEvent(this.typeMap[type], true, true);
+                    event.initEvent(msEventType || eventType, true, true);
 
-                    event.getCurrentPoint = function() { return touch; }
-                    event.setPointerCapture = event.releasePointerCapture = function() { }
+                    event.getCurrentPoint = function() { return touch; };
+                    event.setPointerCapture = event.releasePointerCapture = function() { };
 
+                    event.pointerId = i;
                     event.buttons = 1;
                     event.pageX = x;
                     event.pageY = y;
@@ -64,12 +72,13 @@
                     event.screenX = x;
                     event.screenY = y;
                     event.target = element;
+                    event.pointerType = 'touch';
                     event.identifier = i;
 
                     element.dispatchEvent(event);
                 }, this);
 
-                renderTouches(touches);
+                renderTouches(touches, element);
             }
         },
 
@@ -438,6 +447,14 @@
             });
         }
     };
+
+    // initial
+    if(window.PointerEvent || window.MSPointerEvent) {
+        Simulator.setType('pointer');
+    } else {
+        Simulator.setType('touch');
+        Simulator.events.touch.fakeSupport();
+    }
 
     window.Simulator = Simulator;
 })();

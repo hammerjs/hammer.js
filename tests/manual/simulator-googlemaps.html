@@ -8,20 +8,24 @@
 <body>
 
 <div class="container">
+    <div id="maps" style="height: 500px; margin-bottom: 20px;"></div>
 
-    <div id="hit" class="bg4" style="padding: 30px; height: 300px; position: relative;">
-    </div>
-
-    <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
-
-    <pre id="log" style="overflow:hidden;"></pre>
-
+    <h1>Gestures simulator</h1>
+    <p>Used for unit-testing Hammer.js. To test it on the Google Maps view, you should open your
+        <a href="https://developer.chrome.com/devtools/docs/mobile-emulation#emulate-touch-events">
+        Inspector and emulate a touch-screen.</a>
+        Or just open it on your touch-device.</p>
+    <p>Currently, it only triggers touchEvents.</p>
 </div>
 
 <script src="../shared/simulator.js"></script>
-<script src="../build.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 <script>
 
+    Simulator.events.touch.fakeSupport();
+
+    var el, map;
+    var container = document.getElementById('maps');
     var program = [
         ['pan', ['deltaX','deltaY']],
         ['pinch', ['scale']],
@@ -43,7 +47,7 @@
     }
 
     function gestureOption(name) {
-        var max = el.offsetWidth * .9;
+        var max = map.getDiv().offsetWidth * .9;
         switch(name) {
             case 'deltaY':
             case 'deltaX':
@@ -66,10 +70,7 @@
                 for(var i=0; i<entry[1].length; i++) {
                     options[entry[1][i]] = gestureOption(entry[1][i]);
                 }
-                setTimeout(function() {
-                    log.innerHTML = '';
-                    Simulator.gestures[entry[0]](el, options, next);
-                }, 1000);
+                Simulator.gestures[entry[0]](el, options, next);
             } else {
                 done();
             }
@@ -80,35 +81,18 @@
         walkProgram(startSimulator);
     }
 
+    (function setupGoogleMaps() {
+        map = new google.maps.Map(container, {
+            zoom: 14,
+            center: new google.maps.LatLng(51.98, 5.91)
+        });
 
-    var el = document.querySelector("#hit");
-    var log = document.querySelector("#log");
-    var debug = document.querySelector("#debug");
-
-    var mc = new Hammer(el);
-    mc.on("swipe pan multipan press pinch rotate tap doubletap", logGesture);
-
-    function logGesture(ev) {
-        log.textContent = ev.toDirString();
-    }
-
-    Object.prototype.toDirString = function() {
-        var output = [];
-        for(var key in this) {
-            if(this.hasOwnProperty(key)) {
-                var value = this[key];
-                if(Array.isArray(value)) {
-                    value = "Array("+ value.length +"):"+ value;
-                } else if(value instanceof HTMLElement) {
-                    value = value +" ("+ value.outerHTML.substring(0, 50) +"...)";
-                }
-                output.push(key +": "+ value);
-            }
-        }
-        return output.join("\n")
-    };
-
-    startSimulator();
+        // collect the target element
+        google.maps.event.addListenerOnce(map, 'idle', function(){
+            el = container.childNodes[0].childNodes[0];
+            startSimulator();
+        });
+    })();
 
 </script>
 

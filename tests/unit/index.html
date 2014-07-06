@@ -14,11 +14,13 @@
 <script src="assets/qunit.js"></script>
 <!--[if !IE]> --><script src="assets/blanket.js"></script><!-- <![endif]-->
 <script src="assets/utils.js"></script>
-<script src="../shared/simulator.js"></script>
 
+<script src="../shared/simulator.js"></script>
 <script>
+    Simulator.setType('touch');
     Simulator.events.touch.fakeSupport();
 </script>
+
 <script src="../build.js" data-cover></script>
 
 <script src="test_utils.js"></script>

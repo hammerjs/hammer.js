@@ -1,5 +1,5 @@
-var RECOGNIZING_STOP = 1;
-var RECOGNIZING_FORCED_STOP = 2;
+var STOP = 1;
+var FORCED_STOP = 2;
 
 /**
  * Manager
@@ -46,7 +46,7 @@ Manager.prototype = {
      * @param {Boolean} [force]
      */
     stop: function(force) {
-        this.session.stopped = force ? RECOGNIZING_FORCED_STOP : RECOGNIZING_STOP;
+        this.session.stopped = force ? FORCED_STOP : STOP;
     },
 
     /**
@@ -86,7 +86,7 @@ Manager.prototype = {
             //      that is being recognized.
             // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
             //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (this.session.stopped !== RECOGNIZING_FORCED_STOP && ( // 1
+            if (this.session.stopped !== FORCED_STOP && ( // 1
                     !curRecognizer || recognizer == curRecognizer || // 2
                     recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);

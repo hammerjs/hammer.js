@@ -7,6 +7,8 @@ test('get/set prefixed util', function() {
 
     window.webkitFakeProperty = 1337;
     ok($H.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
+
+    delete window.webkitFakeProperty;
 });
 
 test('fnBind', function() {
