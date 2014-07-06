@@ -448,23 +448,35 @@ function computeIntervalInputData(session, input) {
     if (!last) {
         last = session.lastInterval = simpleCloneInputData(input);
     }
-
-    var deltaTime = input.timeStamp - last.timeStamp;
+ 
+    var deltaTime = input.timeStamp - last.timeStamp,
+        velocity,
+        velocityX,
+        velocityY,
+        direction;
+ 
     if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
+ 
         var deltaX = last.deltaX - input.deltaX;
         var deltaY = last.deltaY - input.deltaY;
-
-        last = session.lastInterval = simpleCloneInputData(input);
-        last.velocity = getVelocity(deltaTime, deltaX, deltaY);
-        last.direction = getDirection(deltaX, deltaY);
+ 
+        var v = getVelocity(deltaTime, deltaX, deltaY);
+        velocityX = v.x;
+        velocityY = v.y;
+        velocity = Math.max(v.x, v.y);
+        direction = getDirection(deltaX, deltaY);
+    } else {
+        // use latest velocity info if it doesn't overtake a minimun period
+        velocity = last.velocity;
+        velocityX = last.velocityX;
+        velocityY = last.velocityY;
+        direction = last.direction;
     }
-
-    var velocity = last.velocity;
-    input.velocity = Math.max(velocity.x, velocity.y);
-    input.velocityX = velocity.x;
-    input.velocityY = velocity.y;
-
-    input.direction = last.direction;
+ 
+    input.velocity = velocity;
+    input.velocityX = velocityX;
+    input.velocityY = velocityY;
+    input.direction = direction;
 }
 
 /**
@@ -1025,6 +1037,33 @@ function cleanTouchActions(actions) {
     return TOUCH_ACTION_AUTO;
 }
 
+/**
+ * Recognizer flow explained; *
+ * All recognizers have the initial state of POSSIBLE when a input session starts.
+ * The definition of a input session is from the first input until the last input, with all it's movement in it. *
+ * Example session for mouse-input: mousedown -> mousemove -> mouseup
+ *
+ * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
+ * which determines with state it should be.
+ *
+ * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
+ * POSSIBLE to give it another change on the next cycle.
+ *
+ *               Possible
+ *                  |
+ *            +-----+---------------+
+ *            |                     |
+ *      +-----+-----+               |
+ *      |           |               |
+ *   Failed      Cancelled          |
+ *                          +-------+------+
+ *                          |              |
+ *                      Recognized       Began
+ *                                         |
+ *                                      Changed
+ *                                         |
+ *                                  Ended/Recognized
+ */
 var STATE_POSSIBLE = 1;
 var STATE_BEGAN = 2;
 var STATE_CHANGED = 4;
@@ -1048,7 +1087,7 @@ function Recognizer(options) {
     // default is enable true
     this.options.enable = ifUndefined(this.options.enable, true);
 
-    this.state = STATE_FAILED;
+    this.state = STATE_POSSIBLE;
 
     this.simultaneous = {};
     this.requireFail = [];
@@ -1855,6 +1894,9 @@ Hammer.defaults = {
     }
 };
 
+var RECOGNIZING_STOP = 1;
+var RECOGNIZING_FORCED_STOP = 2;
+
 /**
  * Manager
  * @param {HTMLElement} element
@@ -1900,12 +1942,13 @@ Manager.prototype = {
      * @param {Boolean} [force]
      */
     stop: function(force) {
-        this.session.stopped = force ? 2 : 1;
+        this.session.stopped = force ? RECOGNIZING_FORCED_STOP : RECOGNIZING_STOP;
     },
 
     /**
      * run the recognizers!
-     * called by the inputHandler function
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
      * @param {Object} inputData
      */
     recognize: function(inputData) {
@@ -1913,29 +1956,42 @@ Manager.prototype = {
             return;
         }
 
+        // run the touch-action polyfill
         this.touchAction.preventDefaults(inputData);
 
         var recognizer;
         var session = this.session;
+
+        // this holds the recognizer that is being recognized.
+        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+        // if no recognizer is detecting a thing, it is set to `null`
         var curRecognizer = session.curRecognizer;
 
-        // reset when the last recognizer is done, or this is a new session
+        // reset when the last recognizer is recognized
+        // or when we're in a new session
         if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
-        // we're in a active recognizer
         for (var i = 0, len = this.recognizers.length; i < len; i++) {
             recognizer = this.recognizers[i];
 
-            if (this.session.stopped !== 2 && (
-                    !curRecognizer || recognizer == curRecognizer ||
-                    recognizer.canRecognizeWith(curRecognizer))) {
+            // find out if we are allowed try to recognize the input for this one.
+            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+            //      that is being recognized.
+            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+            //      this can be setup with the `recognizeWith()` method on the recognizer.
+            if (this.session.stopped !== RECOGNIZING_FORCED_STOP && ( // 1
+                    !curRecognizer || recognizer == curRecognizer || // 2
+                    recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);
             } else {
                 recognizer.reset();
             }
 
+            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+            // current active recognizer. but only if we don't already have an active recognizer
             if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
@@ -2058,7 +2114,9 @@ Manager.prototype = {
      * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        toggleCssProps(this, false);
+        if (this.element) {
+            toggleCssProps(this, false);
+        }
 
         this.handlers = {};
         this.session = {};
