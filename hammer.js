@@ -449,22 +449,34 @@ function computeIntervalInputData(session, input) {
         last = session.lastInterval = simpleCloneInputData(input);
     }
 
-    var deltaTime = input.timeStamp - last.timeStamp;
+    var deltaTime = input.timeStamp - last.timeStamp,
+        velocity,
+        velocityX,
+        velocityY,
+        direction;
+
     if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
+
         var deltaX = last.deltaX - input.deltaX;
         var deltaY = last.deltaY - input.deltaY;
 
-        last = session.lastInterval = simpleCloneInputData(input);
-        last.velocity = getVelocity(deltaTime, deltaX, deltaY);
-        last.direction = getDirection(deltaX, deltaY);
+        var v = getVelocity(deltaTime, deltaX, deltaY);
+        velocityX = v.x;
+        velocityY = v.y;
+        velocity = Math.max(v.x, v.y);
+        direction = getDirection(deltaX, deltaY);
+    } else {
+        // use latest velocity info if it doesn't overtake a minimun period
+        velocity = last.velocity;
+        velocityX = last.velocityX;
+        velocityY = last.velocityY;
+        direction = last.direction;
     }
 
-    var velocity = last.velocity;
-    input.velocity = Math.max(velocity.x, velocity.y);
-    input.velocityX = velocity.x;
-    input.velocityY = velocity.y;
-
-    input.direction = last.direction;
+    input.velocity = velocity;
+    input.velocityX = velocityX;
+    input.velocityY = velocityY;
+    input.direction = direction;
 }
 
 /**
@@ -728,8 +740,6 @@ inherit(PointerEventInput, Input, {
         if (eventTypeNormalized == 'pointerout' && target.nodeName != 'HTML') {
             eventType = INPUT_MOVE;
         }
-
-        console.log(ev);
 
         // start and mouse must be down
         if (eventType & INPUT_START && (ev.button === 0 || pointerType == INPUT_TYPE_TOUCH)) {
