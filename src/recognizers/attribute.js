@@ -51,7 +51,7 @@ inherit(AttrRecognizer, Recognizer, {
             if (eventType & INPUT_END) {
                 return state | STATE_ENDED;
             } else if (!(state & STATE_BEGAN)) {
-                return state | STATE_BEGAN;
+                return STATE_BEGAN;
             }
             return state | STATE_CHANGED;
         }

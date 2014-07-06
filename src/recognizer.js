@@ -75,31 +75,6 @@ Recognizer.prototype = {
     },
 
     /**
-     * Check that all the require failure recognizers has failed,
-     * if true, it emits a gesture event,
-     * otherwise, setup the state to FAILED.
-     * @param {Object} input
-     */
-    tryEmit: function(input) {
-        if (this.canEmit()) {
-            this.emit(input);
-        } else {
-            // should we set state to STATE_FAILED at this point?
-            this.state = STATE_FAILED;
-        }
-    },
-
-    /**
-     * You should use `tryEmit` instead of `emit` directly to check
-     * that all the needed recognizers has failed before emitting.
-     * @param {Object} input
-     */
-    emit: function(input) {
-        this.manager.emit(this.options.event, input); // simple 'eventName' events
-        this.manager.emit(this.options.event + stateStr(this.state), input); // like 'panmove' and 'panstart'
-    },
-
-    /**
      * recognize simultaneous with an other recognizer.
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
@@ -172,12 +147,36 @@ Recognizer.prototype = {
     },
 
     /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
+     * @param {Object} input
+     */
+    emit: function(input) {
+        this.manager.emit(this.options.event, input); // simple 'eventName' events
+        this.manager.emit(this.options.event + stateStr(this.state), input); // like 'panmove' and 'panstart'
+    },
+
+    /**
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+        if (this.canEmit()) {
+            return this.emit(input);
+        }
+        // it's failing anyway
+        this.state = STATE_FAILED;
+    },
+
+    /**
      * can we emit?
      * @returns {boolean}
      */
     canEmit: function() {
         for (var i = 0; i < this.requireFail.length; i++) {
-            if (!(this.requireFail[i].state & STATE_FAILED)) {
+            if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
                 return false;
             }
         }
@@ -219,7 +218,7 @@ Recognizer.prototype = {
      * the actual recognizing happens in this method
      * @virtual
      * @param {Object} inputData
-     * @returns {Const} STATE_*
+     * @returns {Const} STATE
      */
     process: function(inputData) { }, // jshint ignore:line
 

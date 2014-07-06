@@ -143,7 +143,7 @@ function computeInputData(manager, input) {
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
     var center = getCenter(pointers);
 
-    input.timeStamp = Date.now();//input.srcEvent.timeStamp;
+    input.timeStamp = Date.now();
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;
@@ -184,7 +184,6 @@ function computeIntervalInputData(session, input) {
         direction;
 
     if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
-
         var deltaX = last.deltaX - input.deltaX;
         var deltaY = last.deltaY - input.deltaY;
 
@@ -194,7 +193,7 @@ function computeIntervalInputData(session, input) {
         velocity = Math.max(v.x, v.y);
         direction = getDirection(deltaX, deltaY);
     } else {
-        // use latest velocity info if it doesn't overtake a minimun period
+        // use latest velocity info if it doesn't overtake a minimum period
         velocity = last.velocity;
         velocityX = last.velocityX;
         velocityY = last.velocityY;

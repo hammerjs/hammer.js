@@ -27,9 +27,15 @@ module('Tap delay', {
         doubleTapCount = 0;
         tapCount = 0;
 
-        hammer.on('tap', function() { tapCount++;  });
-        hammer.on('doubleTap', function() { doubleTapCount++; });
-        hammer.on('tripleTap', function() { tripleTapCount++; });
+        hammer.on('tap', function() {
+            tapCount++;
+        });
+        hammer.on('doubleTap', function() {
+            doubleTapCount++;
+        });
+        hammer.on('tripleTap', function() {
+            tripleTapCount++;
+        });
     },
     teardown: function() {
         hammer.destroy();

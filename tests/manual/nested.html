@@ -206,8 +206,8 @@
             var inner = new HammerCarousel(container, Hammer.DIRECTION_VERTICAL);
 
             // only recognize the inner pan when the outer is failing.
-            // they both have a threshold of 5px
-            inner.hammer.get('pan').requireFailure(outer.hammer.get('pan'));
+            // they both have a threshold of some px
+            outer.hammer.get('pan').requireFailure(inner.hammer.get('pan'));
         });
 
     </script>

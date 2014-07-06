@@ -415,7 +415,7 @@ function computeInputData(manager, input) {
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
     var center = getCenter(pointers);
 
-    input.timeStamp = Date.now();//input.srcEvent.timeStamp;
+    input.timeStamp = Date.now();
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;
@@ -456,7 +456,6 @@ function computeIntervalInputData(session, input) {
         direction;
 
     if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
-
         var deltaX = last.deltaX - input.deltaX;
         var deltaY = last.deltaY - input.deltaY;
 
@@ -466,7 +465,7 @@ function computeIntervalInputData(session, input) {
         velocity = Math.max(v.x, v.y);
         direction = getDirection(deltaX, deltaY);
     } else {
-        // use latest velocity info if it doesn't overtake a minimun period
+        // use latest velocity info if it doesn't overtake a minimum period
         velocity = last.velocity;
         velocityX = last.velocityX;
         velocityY = last.velocityY;
@@ -1114,31 +1113,6 @@ Recognizer.prototype = {
     },
 
     /**
-     * Check that all the require failure recognizers has failed,
-     * if true, it emits a gesture event,
-     * otherwise, setup the state to FAILED.
-     * @param {Object} input
-     */
-    tryEmit: function(input) {
-        if (this.canEmit()) {
-            this.emit(input);
-        } else {
-            // should we set state to STATE_FAILED at this point?
-            this.state = STATE_FAILED;
-        }
-    },
-
-    /**
-     * You should use `tryEmit` instead of `emit` directly to check
-     * that all the needed recognizers has failed before emitting.
-     * @param {Object} input
-     */
-    emit: function(input) {
-        this.manager.emit(this.options.event, input); // simple 'eventName' events
-        this.manager.emit(this.options.event + stateStr(this.state), input); // like 'panmove' and 'panstart'
-    },
-
-    /**
      * recognize simultaneous with an other recognizer.
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
@@ -1211,12 +1185,36 @@ Recognizer.prototype = {
     },
 
     /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
+     * @param {Object} input
+     */
+    emit: function(input) {
+        this.manager.emit(this.options.event, input); // simple 'eventName' events
+        this.manager.emit(this.options.event + stateStr(this.state), input); // like 'panmove' and 'panstart'
+    },
+
+    /**
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+        if (this.canEmit()) {
+            return this.emit(input);
+        }
+        // it's failing anyway
+        this.state = STATE_FAILED;
+    },
+
+    /**
      * can we emit?
      * @returns {boolean}
      */
     canEmit: function() {
         for (var i = 0; i < this.requireFail.length; i++) {
-            if (!(this.requireFail[i].state & STATE_FAILED)) {
+            if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
                 return false;
             }
         }
@@ -1258,7 +1256,7 @@ Recognizer.prototype = {
      * the actual recognizing happens in this method
      * @virtual
      * @param {Object} inputData
-     * @returns {Const} STATE_*
+     * @returns {Const} STATE
      */
     process: function(inputData) { }, // jshint ignore:line
 
@@ -1380,7 +1378,7 @@ inherit(AttrRecognizer, Recognizer, {
             if (eventType & INPUT_END) {
                 return state | STATE_ENDED;
             } else if (!(state & STATE_BEGAN)) {
-                return state | STATE_BEGAN;
+                return STATE_BEGAN;
             }
             return state | STATE_CHANGED;
         }
@@ -1438,6 +1436,8 @@ inherit(PanRecognizer, AttrRecognizer, {
         var x = input.deltaX;
         var y = input.deltaY;
 
+
+
         // lock to axis?
         if (!(direction & options.direction)) {
             if (options.direction & DIRECTION_HORIZONTAL) {
@@ -1456,7 +1456,7 @@ inherit(PanRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         return AttrRecognizer.prototype.attrTest.call(this, input) &&
-            this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input));
+            (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
     },
 
     emit: function(input) {

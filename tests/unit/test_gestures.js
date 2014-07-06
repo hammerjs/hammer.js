@@ -3,12 +3,12 @@
 // disable the other gesture recognition
 var el, hammer, events;
 var allGestureEvents = [
-        'tap doubletap press',
-        'pinch pinchin pinchout pinchstart pinchmove pinchend pinchcancel',
-        'rotate rotatestart rotatemove rotateend rotatecancel',
-        'pan panstart panmove panup pandown panleft panright panend pancancel',
-        'swipe swipeleft swiperight swipeup swipedown'
-    ].join(' ');
+    'tap doubletap press',
+    'pinch pinchin pinchout pinchstart pinchmove pinchend pinchcancel',
+    'rotate rotatestart rotatemove rotateend rotatecancel',
+    'pan panstart panmove panup pandown panleft panright panend pancancel',
+    'swipe swipeleft swiperight swipeup swipedown'
+].join(' ');
 
 module('Gesture recognition', {
     setup: function() {
