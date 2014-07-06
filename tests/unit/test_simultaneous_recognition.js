@@ -3,11 +3,9 @@ var el,
 
 module('Simultaenous recognition', {
     setup: function() {
-        el = document.createElement('div');
-        document.body.appendChild(el);
+        el = utils.createHitArea()
     },
     teardown: function() {
-        document.body.removeChild(el);
         hammer && hammer.destroy();
     }
 });
@@ -129,20 +127,20 @@ test('the first gesture should block the following gestures (Tap & DoubleTap)', 
         doubleTapCount++;
     });
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
     doubleTap.recognizeWith(hammer.get('tap'));
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 4);
     equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
@@ -171,20 +169,20 @@ test('when disabled, the first gesture should not block gestures  (Tap & DoubleT
         doubleTapCount++;
     });
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
     equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
     hammer.get('tap').set('enable', false);
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
     equal(tapCount, 2, 'tap gesture should not be recognized when the recognizer is disabled');
     equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');
@@ -213,21 +211,24 @@ test('the first gesture should block the following gestures (DoubleTap & Tap)', 
         doubleTapCount++;
     });
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(doubleTapCount, 1, 'double tap is recognized because it is configured at the beggining');
-    equal(tapCount, 0, 'tap gesture are blocked by doubleTap');
+    equal(doubleTapCount, 1, 'double tap is recognized');
+    equal(tapCount, 1, 'tap is detected, the doubletap is only catched by the doubletap recognizer');
 
+    // doubletap and tap together
     doubleTap.recognizeWith(hammer.get('tap'));
+    doubleTapCount = 0;
+    tapCount = 0;
 
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
+    utils.dispatchTouchEvent(el, 'start', 0, 10);
+    utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(doubleTapCount, 2);
+    equal(doubleTapCount, 1);
     equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
 });

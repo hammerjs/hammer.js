@@ -8,7 +8,7 @@ module('Nested gesture recognizers (Tap Child + Pan Parent)', {
         parent = document.createElement('div');
         child = document.createElement('div');
 
-        document.body.appendChild(parent);
+        document.getElementById('qunit-fixture').appendChild(parent);
         parent.appendChild(child);
 
         hammerParent = new Hammer.Manager(parent, {
@@ -22,7 +22,6 @@ module('Nested gesture recognizers (Tap Child + Pan Parent)', {
         hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
     },
     teardown: function() {
-        document.body.removeChild(parent);
         hammerChild.destroy();
         hammerParent.destroy();
     }
@@ -38,8 +37,8 @@ test('Tap on the child', function() {
         throw new Error('tap should not fire on parent');
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
+    utils.dispatchTouchEvent(child, 'start', 0, 10);
+    utils.dispatchTouchEvent(child, 'end', 0, 10);
 });
 
 test('Panning on the child should fire parent pan and should not fire child tap event', function() {
@@ -52,9 +51,9 @@ test('Panning on the child should fire parent pan and should not fire child tap 
         ok(true);
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 10, 0);
-    testUtils.dispatchTouchEvent(child, 'move', 20, 0);
-    testUtils.dispatchTouchEvent(child, 'end', 30, 0);
+    utils.dispatchTouchEvent(child, 'start', 10, 0);
+    utils.dispatchTouchEvent(child, 'move', 20, 0);
+    utils.dispatchTouchEvent(child, 'end', 30, 0);
 
 });
 
@@ -71,8 +70,8 @@ test('Panning on the child should fire parent pan and should not fire child tap 
  });
 
  // one finger one child
- testUtils.dispatchTouchEvent(child, 'start', 10, 0, 0);
- testUtils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
+ utils.dispatchTouchEvent(child, 'start', 10, 0, 0);
+ utils.dispatchTouchEvent(parent, 'start', 12, 0, 1);
 
  touches = [
  {clientX: 20, clientY: 0, identifier: 0 },
@@ -106,7 +105,7 @@ module('Nested gesture recognizers (Press Child + Pan Parent)', {
         parent = document.createElement('div');
         child = document.createElement('div');
 
-        document.body.appendChild(parent);
+        document.getElementById('qunit-fixture').appendChild(parent);
         parent.appendChild(child);
 
         hammerParent = new Hammer.Manager(parent, {
@@ -120,7 +119,6 @@ module('Nested gesture recognizers (Press Child + Pan Parent)', {
         hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
     },
     teardown: function() {
-        document.body.removeChild(parent);
         hammerChild.destroy();
         hammerParent.destroy();
     }
@@ -136,7 +134,7 @@ test('Press on the child', function() {
         throw new Error('press should not fire on parent');
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
+    utils.dispatchTouchEvent(child, 'start', 0, 10);
 
     stop();
 
@@ -154,16 +152,16 @@ test('When Press is followed by Pan on the same element, both gestures are recog
         ok(true);
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
+    utils.dispatchTouchEvent(child, 'start', 0, 10);
     stop();
 
     setTimeout(function() {
         start();
 
-        testUtils.dispatchTouchEvent(child, 'move', 10, 10);
-        testUtils.dispatchTouchEvent(child, 'move', 20, 10);
-        testUtils.dispatchTouchEvent(child, 'move', 30, 10);
-        testUtils.dispatchTouchEvent(child, 'end', 30, 10);
+        utils.dispatchTouchEvent(child, 'move', 10, 10);
+        utils.dispatchTouchEvent(child, 'move', 20, 10);
+        utils.dispatchTouchEvent(child, 'move', 30, 10);
+        utils.dispatchTouchEvent(child, 'end', 30, 10);
 
     }, pressPeriod);
 });

@@ -100,7 +100,7 @@ inherit(TapRecognizer, Recognizer, {
             self.state = STATE_FAILED;
         }, this.options.delay);
 
-        return STATE_POSSIBLE;
+        return STATE_FAILED;
     },
 
     reset: function() {

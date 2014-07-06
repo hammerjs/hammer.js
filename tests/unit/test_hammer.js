@@ -3,17 +3,11 @@ var el, el2,
 
 module('Tests', {
     setup: function() {
-        el = document.createElement('div');
-        document.body.appendChild(el);
-
-        el2 = document.createElement('div');
-        document.body.appendChild(el2);
+        el = utils.createHitArea();
+        el2 = utils.createHitArea();
     },
 
     teardown: function() {
-        document.body.removeChild(el);
-        document.body.removeChild(el2);
-
         if (hammer) {
             hammer.destroy();
             hammer = null;

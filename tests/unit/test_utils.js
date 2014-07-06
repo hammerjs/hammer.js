@@ -1,4 +1,7 @@
 module('utils');
+
+// for the tests, all hammer properties and methods of Hammer are exposed to window.$H
+
 test('get/set prefixed util', function() {
     ok(_.isUndefined($H.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
 
@@ -178,10 +181,10 @@ test('test add/removeEventListener', function() {
     expect(2);
 
     $H.addEventListeners(window, 'testEvent1  testEvent2  ', handleEvent);
-    testUtils.triggerDomEvent(window, 'testEvent1');
-    testUtils.triggerDomEvent(window, 'testEvent2');
+    utils.triggerDomEvent(window, 'testEvent1');
+    utils.triggerDomEvent(window, 'testEvent2');
 
     $H.removeEventListeners(window, ' testEvent1 testEvent2 ', handleEvent);
-    testUtils.triggerDomEvent(window, 'testEvent1');
-    testUtils.triggerDomEvent(window, 'testEvent2');
+    utils.triggerDomEvent(window, 'testEvent1');
+    utils.triggerDomEvent(window, 'testEvent2');
 });

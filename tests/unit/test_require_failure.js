@@ -7,9 +7,7 @@ var el,
 
 module('Require Failure ( Swipe & Press )', {
     setup: function() {
-        el = document.createElement('div');
-        document.body.appendChild(el);
-
+        el = utils.createHitArea();
         hammer = new Hammer(el, {recognizers: []});
 
         var swipe = new Hammer.Swipe({threshold: 1});
@@ -31,7 +29,6 @@ module('Require Failure ( Swipe & Press )', {
         });
     },
     teardown: function() {
-        document.body.removeChild(el);
         hammer.destroy();
     }
 });
@@ -39,7 +36,7 @@ module('Require Failure ( Swipe & Press )', {
 asyncTest('When swipe does not recognize the gesture, a press gesture can be fired', function() {
     expect(1);
 
-    testUtils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
 
     setTimeout(function() {
         start();
@@ -50,13 +47,10 @@ asyncTest('When swipe does not recognize the gesture, a press gesture can be fir
 asyncTest('When swipe does recognize the gesture, a press gesture cannot be fired', function() {
     expect(2);
 
-    testUtils.dispatchTouchEvent(el, 'start', 50, 50);
-    testUtils.dispatchTouchEvent(el, 'move', 50 + pressThreshold / 4, 50);
-
-    setTimeout(function() {
+    Simulator.gestures.swipe(el, null, function() {
         start();
 
         ok(swipeCount > 0, 'swipe gesture should be recognizing');
         equal(pressCount, 0, 'press gesture should not be recognized because swipe gesture is recognizing');
-    }, pressPeriod + 100);
+    });
 });

@@ -8,7 +8,7 @@ module('Propagation (Tap in Child and Parent)', {
         parent = document.createElement('div');
         child = document.createElement('div');
 
-        document.body.appendChild(parent);
+        document.getElementById('qunit-fixture').appendChild(parent);
         parent.appendChild(child);
 
         hammerParent = new Hammer.Manager(parent);
@@ -18,7 +18,6 @@ module('Propagation (Tap in Child and Parent)', {
         hammerParent.add(new Hammer.Tap());
     },
     teardown: function() {
-        document.body.removeChild(parent);
         hammerChild.destroy();
         hammerParent.destroy();
     }
@@ -34,8 +33,8 @@ test('Tap on the child, fires also the tap event to the parent', function() {
         ok(true);
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
+    utils.dispatchTouchEvent(child, 'start', 0, 10);
+    utils.dispatchTouchEvent(child, 'end', 0, 10);
 });
 
 test('When tap on the child and the child stops the input event propagation, the tap event does not get fired in the parent', function() {
@@ -52,6 +51,6 @@ test('When tap on the child and the child stops the input event propagation, the
         ev.stopPropagation();
     });
 
-    testUtils.dispatchTouchEvent(child, 'start', 0, 10);
-    testUtils.dispatchTouchEvent(child, 'end', 0, 10);
+    utils.dispatchTouchEvent(child, 'start', 0, 10);
+    utils.dispatchTouchEvent(child, 'end', 0, 10);
 });

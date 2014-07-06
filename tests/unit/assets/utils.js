@@ -1,4 +1,4 @@
-var testUtils = {
+var utils = {
     /**
      * trigger simple dom event
      * @param obj
@@ -32,7 +32,16 @@ var testUtils = {
     },
 
     dispatchTouchEvent: function(el, name, x, y, identifier) {
-        var event = testUtils.createTouchEvent(name, x, y, identifier);
+        var event = utils.createTouchEvent(name, x, y, identifier);
         el.dispatchEvent(event);
+    },
+
+    createHitArea: function() {
+        var hitArea = document.createElement('div');
+        hitArea.style.background = '#eee';
+        hitArea.style.height = '300px';
+
+        document.getElementById('qunit-fixture').appendChild(hitArea);
+        return hitArea;
     }
 };

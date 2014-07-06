@@ -12,9 +12,7 @@ var allGestureEvents = [
 
 module('Gesture recognition', {
     setup: function() {
-        el = document.createElement('div');
-        document.body.appendChild(el);
-
+        el = utils.createHitArea();
         hammer = new Hammer(el);
         hammer.get('pinch')
             .set('enable', true)
@@ -29,7 +27,6 @@ module('Gesture recognition', {
         events = {};
     },
     teardown: function() {
-        document.body.removeChild(el);
         hammer && hammer.destroy();
         events = null;
     }
