@@ -196,7 +196,7 @@
 
             element.appendChild(el);
             setTimeout(function() {
-                element.removeChild(el);
+                el && el.parentNode && el.parentNode.removeChild(el);
                 el = null;
             }, 100);
         });
@@ -288,7 +288,7 @@
             trigger(touches, element, 'start');
             setTimeout(function() {
                 trigger(touches, element, 'end');
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             }, options.duration);
         },
 
@@ -309,7 +309,7 @@
             trigger(touches, element, 'start');
             setTimeout(function() {
                 trigger(touches, element, 'end');
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             }, options.duration);
         },
 
@@ -353,7 +353,7 @@
 
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             });
         },
 
@@ -375,7 +375,7 @@
 
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             });
         },
 
@@ -396,7 +396,7 @@
 
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             });
         },
 
@@ -416,7 +416,7 @@
 
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             });
         },
 
@@ -438,7 +438,7 @@
 
             var touches = getTouches(options.pos, options.touches);
             triggerGesture(element, touches, options, function() {
-                setTimeout(done, 25);
+                done && setTimeout(done, 25);
             });
         }
     };
