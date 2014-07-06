@@ -184,15 +184,11 @@
             el.style.height = '20px';
             el.style.background = 'red';
             el.style.position = 'fixed';
-            el.style.top = 0;
-            el.style.left = 0;
+            el.style.top = touch.x +'px';
+            el.style.left = touch.y +'px';
             el.style.borderRadius = '100%';
             el.style.border = 'solid 2px #000';
             el.style.zIndex = 6000;
-
-            el.style.transform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
-            el.style.mozTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
-            el.style.webkitTransform = 'translate('+ touch.x +'px ,'+ touch.y +'px)';
 
             element.appendChild(el);
             setTimeout(function() {
