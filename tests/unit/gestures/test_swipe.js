@@ -4,7 +4,8 @@ var el,
 
 module('Swipe Gesture', {
     setup: function() {
-        hammer = new Hammer(utils.createHitArea(), {recognizers: []});
+        el = utils.createHitArea();
+        hammer = new Hammer(el, {recognizers: []});
         swipeCount = 0;
     },
     teardown: function() {
