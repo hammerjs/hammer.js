@@ -9,11 +9,12 @@
 <div id="qunit"></div>
 <div id="qunit-fixture"></div>
 
+<script src="assets/jquery.min.js"></script>
 <script src="assets/lodash.compat.js"></script>
 <script src="assets/qunit.js"></script>
-<script src="assets/blanket.js"></script>
+<!--[if !IE]> --><script src="assets/blanket.js"></script><!-- <![endif]-->
 <script src="assets/utils.js"></script>
-<script src="assets/simulator.js"></script>
+<script src="../shared/simulator.js"></script>
 
 <script>
     Simulator.events.touch.fakeSupport();
@@ -29,6 +30,8 @@
 <script src="test_gestures.js"></script>
 <script src="test_multiple_taps.js"></script>
 <script src="test_require_failure.js"></script>
+
+<script src="test_jquery_plugin.js"></script>
 
 </body>
 </html>
