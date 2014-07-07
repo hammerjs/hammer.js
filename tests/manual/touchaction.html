@@ -8,6 +8,7 @@
     <style>
         .tester {
             margin: 20px 0;
+            padding: 10px;
             height: 200px;
             overflow: hidden;
         }
@@ -73,6 +74,10 @@
             var mc = Hammer(el, {
                 touchAction: touchAction
             });
+            mc.get('pan').set('direction', Hammer.DIRECTION_ALL);
+            mc.get('pinch').set('enable', true);
+            mc.get('rotate').set('enable', true);
+
             mc.on("pan swipe rotate pinch tap doubletap press", function(ev) {
                 el.textContent = ev.type +" "+ el.textContent;
             });
