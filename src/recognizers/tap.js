@@ -30,7 +30,6 @@ inherit(TapRecognizer, Recognizer, {
         event: 'tap',
         pointers: 1,
         taps: 1,
-        delay: 300,
         interval: 300, // max time between the multi-tap taps
         time: 250, // max time of the pointer to be down (like finger on the screen)
         threshold: 2, // a minimal movement is ok, but keep it low
@@ -83,7 +82,7 @@ inherit(TapRecognizer, Recognizer, {
                         this._timer = setTimeout(function() {
                             self.state = STATE_RECOGNIZED;
                             self.tryEmit();
-                        }, options.delay);
+                        }, options.interval);
                         return STATE_BEGAN;
                     }
                 }
@@ -98,7 +97,7 @@ inherit(TapRecognizer, Recognizer, {
         var self = this;
         this._timer = setTimeout(function() {
             self.state = STATE_FAILED;
-        }, this.options.delay);
+        }, this.options.interval);
 
         return STATE_FAILED;
     },

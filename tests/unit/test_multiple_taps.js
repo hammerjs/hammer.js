@@ -9,9 +9,9 @@ module('Tap delay', {
         el = utils.createHitArea();
         hammer = new Hammer(el, {recognizers: []});
 
-        var tap = new Hammer.Tap({ delay: 300 });
-        var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2, delay: 300 });
-        var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3, delay: 0 });
+        var tap = new Hammer.Tap();
+        var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2 });
+        var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3 });
 
         hammer.add(tripleTap);
         hammer.add(doubleTap);

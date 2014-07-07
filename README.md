@@ -246,7 +246,6 @@ recognized.
 | pointers  | 1        | Required pointers. |
 | taps      | 1        | Amount of taps required. |
 | interval  | 300      | Maximum time in ms between multiple taps. |
-| delay     | 0        | Delay in ms after emitting the tap event. |
 | time      | 250      | Maximum press time in ms. |
 | threshold | 2        | While doing a tap some small movement is allowed. |
 | posThreshold | 10    | The maximum position difference between multiple taps. |
