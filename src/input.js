@@ -44,7 +44,9 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if (boolOrFn(self.manager.options.enable, [self.manager])) {
+
+        // Why manager.options.enable called to one specific recognizer.options.enable?
+        if (self.manager.options.enable !== false) {
             self.handler(ev);
         }
     };
