@@ -125,3 +125,28 @@ test('should pass the recognizer and input parameter to the `enable` callback', 
     event = utils.createTouchEvent('start', 50, 50, 0);
     el.dispatchEvent(event);
 });
+
+test('should toggle based on other object method', function() {
+    expect(2);
+
+    var view = {
+        state: 0,
+        canRecognizeTap: function(recognizer, input) {
+            return this.state !== 0;
+        }
+    }
+
+    hammer.add(new Hammer.Tap({enable: function(rec, input) { return view.canRecognizeTap(rec, input); } }));
+    hammer.on('tap', function() {
+        counter++;
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+    equal(counter, 0);
+
+    view.state = 1;
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+    equal(counter, 1);
+});
