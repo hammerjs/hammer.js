@@ -41,7 +41,6 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     process: function(input) {
-        var self = this;
         var options = this.options;
 
         var validPointers = input.pointers.length === options.pointers;
@@ -51,54 +50,54 @@ inherit(TapRecognizer, Recognizer, {
         this.reset();
 
         if ((input.eventType & INPUT_START) && (this.count === 0)) {
-            return this._setupBeganState();
+            return this._failTimeout();
         }
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
         if (validMovement && validTouchTime && validPointers) {
-            if (input.eventType & INPUT_END) {
-                var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-                var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
-
-                this.pTime = input.timeStamp;
-                this.pCenter = input.center;
-
-                if (!validMultiTap || !validInterval) {
-                    this.count = 1;
-                } else {
-                    this.count += 1;
-                }
-
-                this._input = input;
-
-                // if tap count matches we have recognized it,
-                // else it has began recognizing...
-                var tapCount = this.count % options.taps;
-                if (tapCount === 0) {
-                    if (!this.hasRequireFailures()) {
-                        return STATE_RECOGNIZED;
-                    } else {
-                        this._timer = setTimeout(function() {
-                            self.state = STATE_RECOGNIZED;
-                            self.tryEmit();
-                        }, options.interval);
-                        return STATE_BEGAN;
-                    }
-                }
+            if (input.eventType != INPUT_END) {
+                return this._failTimeout();
             }
 
-            return this._setupBeganState();
+            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+
+            this.pTime = input.timeStamp;
+            this.pCenter = input.center;
+
+            if (!validMultiTap || !validInterval) {
+                this.count = 1;
+            } else {
+                this.count += 1;
+            }
+
+            this._input = input;
+
+            // if tap count matches we have recognized it,
+            // else it has began recognizing...
+            var tapCount = this.count % options.taps;
+            if (tapCount === 0) {
+                // no failing requirements, immediately trigger the tap event
+                // or wait as long as the multitap interval to trigger
+                if (!this.hasRequireFailures()) {
+                    return STATE_RECOGNIZED;
+                } else {
+                    this._timer = setTimeoutScope(function() {
+                        this.state = STATE_RECOGNIZED;
+                        this.tryEmit();
+                    }, options.interval, this);
+                    return STATE_BEGAN;
+                }
+            }
         }
         return STATE_FAILED;
     },
 
-    _setupBeganState: function() {
-        var self = this;
-        this._timer = setTimeout(function() {
-            self.state = STATE_FAILED;
-        }, this.options.interval);
-
+    _failTimeout: function() {
+        this._timer = setTimeoutScope(function() {
+            this.state = STATE_FAILED;
+        }, this.options.interval, this);
         return STATE_FAILED;
     },
 

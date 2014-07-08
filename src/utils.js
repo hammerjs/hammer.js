@@ -3,6 +3,20 @@ var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
 
+var round = Math.round;
+var now = Date.now;
+
+/**
+ * set a timeout with a given scope
+ * @param {Function} fn
+ * @param {Number} timeout
+ * @param {Object} context
+ * @returns {number}
+ */
+function setTimeoutScope(fn, timeout, context) {
+    return setTimeout(bindFn(fn, context), timeout);
+}
+
 /**
  * walk objects and arrays
  * @param {Object} obj
@@ -164,11 +178,6 @@ function hasParent(node, parent) {
     }
     return false;
 }
-
-/**
- * store Math.round in a var, for better minimisation
- */
-var round = Math.round;
 
 /**
  * small indexOf wrapper

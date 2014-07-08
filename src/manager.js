@@ -218,9 +218,7 @@ Manager.prototype = {
      * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        if (this.element) {
-            toggleCssProps(this, false);
-        }
+        this.element && toggleCssProps(this, false);
 
         this.handlers = {};
         this.session = {};

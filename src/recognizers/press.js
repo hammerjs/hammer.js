@@ -42,23 +42,21 @@ inherit(PressRecognizer, Recognizer, {
             this.reset();
         } else if (input.eventType & INPUT_START) {
             this.reset();
-            var self = this;
-            this._timer = setTimeout(function() {
-                self.state = STATE_RECOGNIZED;
-                self.tryEmit();
-            }, options.time);
+            this._timer = setTimeoutScope(function() {
+                this.state = STATE_RECOGNIZED;
+                this.tryEmit();
+            }, options.time, this);
         }
         return STATE_FAILED;
     },
 
     reset: function() {
         clearTimeout(this._timer);
-        this._timer = null;
     },
 
     emit: function() {
         if (this.state === STATE_RECOGNIZED) {
-            this._input.timeStamp = Date.now();
+            this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
     }

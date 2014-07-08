@@ -143,7 +143,7 @@ function computeInputData(manager, input) {
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
     var center = getCenter(pointers);
 
-    input.timeStamp = Date.now();
+    input.timeStamp = now();
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
     input.deltaX = center.x - offsetCenter.x;
     input.deltaY = center.y - offsetCenter.y;
@@ -223,7 +223,7 @@ function simpleCloneInputData(input) {
     }
 
     return {
-        timeStamp: Date.now(),
+        timeStamp: now(),
         pointers: pointers,
         center: getCenter(pointers),
         deltaX: input.deltaX,
