@@ -108,6 +108,7 @@ module.exports = (grunt) ->
 
   # Default task(s)
   grunt.registerTask 'default', ['connect','watch']
+  grunt.registerTask 'default-test', ['connect', 'uglify:test','watch']
   grunt.registerTask 'build', ['concat','string-replace','uglify:min','test']
   grunt.registerTask 'test', ['jshint','jscs','uglify:test','qunit']
   grunt.registerTask 'test-travis', ['build']
