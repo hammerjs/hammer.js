@@ -4,7 +4,7 @@ var el,
 
 module('Test recognizer enable', {
     setup: function() {
-        el = utils.createHitArea()
+        el = utils.createHitArea();
         hammer = new Hammer.Manager(el, {recognizers: []});
         counter = 0;
     },
@@ -21,6 +21,25 @@ test('should disable a recognizer through the `enable` constructor parameter', f
     });
 
     stop();
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+
+    setTimeout(function() {
+        start();
+        equal(counter, 0);
+    }, 100);
+});
+
+test('should disable recognizing when the manager is disabled.', function() {
+    expect(1);
+    hammer.set('enable', false);
+    hammer.add(new Hammer.Tap());
+    hammer.on('tap', function() {
+        counter++;
+    });
+
+    stop();
+
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
@@ -109,16 +128,19 @@ test('should accept a function parameter with `set`', function() {
     equal(counter, 2);
 });
 
-test('should pass the recognizer and input parameter to the `enable` callback', function() {
-    expect(2);
+test('should pass the recognizer and optional the input parameter to the `enable` callback', function() {
+    expect(3);
 
     var tap,
         event;
 
+    // the enable function is called initially to setup the touch-action property
+    // at that moment there isnt any input
     var canEnable = function(recognizer, input) {
         equal(recognizer, tap);
-        equal(input.srcEvent, event);
-    }
+        input && equal(input.srcEvent, event);
+        return true;
+    };
     tap = new Hammer.Tap({enable: canEnable});
     hammer.add(tap);
 
@@ -134,7 +156,7 @@ test('should toggle based on other object method', function() {
         canRecognizeTap: function(recognizer, input) {
             return this.state !== 0;
         }
-    }
+    };
 
     hammer.add(new Hammer.Tap({enable: function(rec, input) { return view.canRecognizeTap(rec, input); } }));
     hammer.on('tap', function() {
