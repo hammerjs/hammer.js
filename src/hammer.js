@@ -11,7 +11,6 @@ function Hammer(element, options) {
 }
 
 /**
- * Current build version.
  * @const {string}
  */
 Hammer.VERSION = '{{PKG_VERSION}}';
