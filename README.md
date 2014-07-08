@@ -4,6 +4,10 @@
 making use of the `touch-action` css property when possible. Also support for multiple Hammer instances the same
 time, so multi-user became possible.**
 
+## Build the source
+You can get the pre-build versions from the Hammer.js website, or do this by yourself running `npm install` and 
+`grunt build`.
+
 ## Getting Started
 Hammer is easy to use. Just create an instance and bind the events.
 
