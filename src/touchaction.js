@@ -54,7 +54,7 @@ TouchAction.prototype = {
         var actions = [];
 
         each(this.manager.recognizers, function(recognizer) {
-            if (boolOrFn(recognizer.options.enable, [recognizer])) {
+            if (recognizer.options.enable !== false) {
                 actions = actions.concat(recognizer.getTouchAction());
             }
         });

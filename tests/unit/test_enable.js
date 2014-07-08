@@ -108,3 +108,20 @@ test('should accept a function parameter with `set`', function() {
     utils.dispatchTouchEvent(el, 'end', 50, 50);
     equal(counter, 2);
 });
+
+test('should pass the recognizer and input parameter to the `enable` callback', function() {
+    expect(2);
+
+    var tap,
+        event;
+
+    var canEnable = function(recognizer, input) {
+        equal(recognizer, tap);
+        equal(input.srcEvent, event);
+    }
+    tap = new Hammer.Tap({enable: canEnable});
+    hammer.add(tap);
+
+    event = utils.createTouchEvent('start', 50, 50, 0);
+    el.dispatchEvent(event);
+});
