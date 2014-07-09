@@ -32,7 +32,7 @@ test('should disable a recognizer through the `enable` constructor parameter', f
 
 test('should disable recognizing when the manager is disabled.', function() {
     expect(1);
-    hammer.set('enable', false);
+    hammer.set({ enable: false });
     hammer.add(new Hammer.Tap());
     hammer.on('tap', function() {
         counter++;
@@ -61,7 +61,7 @@ test('should toggle a recognizer using the `set` call to the recognizer enable p
     utils.dispatchTouchEvent(el, 'end', 50, 50);
     equal(counter, 1);
 
-    hammer.get('tap').set('enable', false);
+    hammer.get('tap').set({ enable: false });
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
@@ -114,9 +114,9 @@ test('should accept a function parameter with `set`', function() {
     equal(counter, 1);
 
     var canRecognizeTap = false;
-    hammer.get('tap').set('enable', function() {
+    hammer.get('tap').set({ enable: function() {
         return canRecognizeTap;
-    });
+    }});
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);

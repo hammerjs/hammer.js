@@ -15,11 +15,13 @@ module('Gesture recognition', {
         el = utils.createHitArea();
         hammer = new Hammer(el);
         hammer.get('pinch')
-            .set('enable', true)
-            .set('threshold', .1); // some threshold, since the simulator doesnt stays at scale:1 when rotating
+            .set({ // some threshold, since the simulator doesnt stays at scale:1 when rotating
+                enable: true,
+                threshold: .1
+            });
 
         hammer.get('rotate')
-            .set('enable', true);
+            .set({ enable: true });
 
         hammer.on(allGestureEvents, function(ev) {
             events[ev.type] = true;

@@ -32,11 +32,12 @@ function Manager(element, options) {
 Manager.prototype = {
     /**
      * set options
-     * @param {String} option
-     * @param {*} val
+     * @param {Object} options
+     * @returns {Manager}
      */
-    set: function(option, val) {
-        this.options[option] = val;
+    set: function(options) {
+        extend(this.options, options);
+        return this;
     },
 
     /**

@@ -63,11 +63,11 @@ Recognizer.prototype = {
 
     /**
      * set options
-     * @param {String} option
-     * @param {*} val
+     * @param {Object} options
+     * @return {Recognizer}
      */
-    set: function(option, val) {
-        this.options[option] = val;
+    set: function(options) {
+        extend(this.options, options);
 
         // also update the touchAction, in case something changed about the directions/enabled state
         this.manager && this.manager.touchAction.update();
