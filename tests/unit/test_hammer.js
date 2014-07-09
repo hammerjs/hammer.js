@@ -48,7 +48,7 @@ test('Hammer and Hammer.Manager constructors work exactly on the same way.', fun
     expect(2);
 
     hammer = new Hammer(el, {});
-    equal(Hammer.defaults.easyRecognizers.length, hammer.recognizers.length);
+    equal(Hammer.defaults.preset.length, hammer.recognizers.length);
 
     hammer2 = new Hammer.Manager(el, {});
     equal(0, hammer2.recognizers.length);

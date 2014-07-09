@@ -6,7 +6,7 @@
  */
 function Hammer(element, options) {
     options = options || {};
-    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.easyRecognizers);
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
     return new Manager(element, options);
 }
 
@@ -47,7 +47,7 @@ Hammer.defaults = {
      * When creating a new Manager these will be skipped.
      * @type {Array}
      */
-    easyRecognizers: [
+    preset: [
         // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
         [RotateRecognizer, { enable: false }],
         [PinchRecognizer, { enable: false }, ['rotate']],
