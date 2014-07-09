@@ -65,8 +65,7 @@ module('Require Failure ( Pan & Press )', {
         var pan = new Hammer.Pan({threshold: 1});
         var press = new Hammer.Press({time: pressPeriod, threshold: pressThreshold});
 
-        hammer.add(pan);
-        hammer.add(press);
+        hammer.add([pan, press]);
 
         pan.recognizeWith(press);
         press.requireFailure(pan);

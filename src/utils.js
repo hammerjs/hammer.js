@@ -17,6 +17,14 @@ function setTimeoutScope(fn, timeout, context) {
     return setTimeout(bindFn(fn, context), timeout);
 }
 
+function invokeArrayArg(arg, fn, context) {
+    if (Array.isArray(arg)) {
+        each(arg, context[fn], context);
+        return true;
+    }
+    return false;
+}
+
 /**
  * walk objects and arrays
  * @param {Object} obj

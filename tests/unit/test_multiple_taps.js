@@ -13,15 +13,13 @@ module('Tap delay', {
         var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2 });
         var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3 });
 
-        hammer.add(tripleTap);
-        hammer.add(doubleTap);
-        hammer.add(tap);
+        hammer.add([tripleTap, doubleTap, tap]);
 
-        tripleTap.recognizeWith(doubleTap).recognizeWith(tap);
+        tripleTap.recognizeWith([doubleTap, tap]);
         doubleTap.recognizeWith(tap);
 
         doubleTap.requireFailure(tripleTap);
-        tap.requireFailure(tripleTap).requireFailure(doubleTap);
+        tap.requireFailure([tripleTap, doubleTap]);
 
         tripleTapCount = 0;
         doubleTapCount = 0;

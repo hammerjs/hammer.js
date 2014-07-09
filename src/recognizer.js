@@ -80,6 +80,10 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     recognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
+            return this;
+        }
+
         var simultaneous = this.simultaneous;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         if (!simultaneous[otherRecognizer.id]) {
@@ -95,6 +99,10 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     dropRecognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
+            return this;
+        }
+
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         delete this.simultaneous[otherRecognizer.id];
         return this;
@@ -106,6 +114,10 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     requireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
+            return this;
+        }
+
         var requireFail = this.requireFail;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         if (inArray(requireFail, otherRecognizer) === -1) {
@@ -121,6 +133,10 @@ Recognizer.prototype = {
      * @returns {Recognizer} this
      */
     dropRequireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
+            return this;
+        }
+
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         var index = inArray(this.requireFail, otherRecognizer);
         if (index > -1) {

@@ -125,9 +125,13 @@ Manager.prototype = {
      * add a recognizer to the manager
      * existing recognizers with the same event name will be removed
      * @param {Recognizer} recognizer
-     * @returns {Recognizer}
+     * @returns {Recognizer|Manager}
      */
     add: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'add', this)) {
+            return this;
+        }
+
         // remove existing
         var existing = this.get(recognizer.options.event);
         if (existing) {
@@ -144,13 +148,19 @@ Manager.prototype = {
     /**
      * remove a recognizer by name or instance
      * @param {Recognizer|String} recognizer
+     * @returns {Manager}
      */
     remove: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'remove', this)) {
+            return this;
+        }
+
         var recognizers = this.recognizers;
         recognizer = this.get(recognizer);
         recognizers.splice(inArray(recognizers, recognizer), 1);
 
         this.touchAction.update();
+        return this;
     },
 
     /**
