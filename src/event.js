@@ -74,8 +74,13 @@ var Event = Hammer.event = {
      * @param {Function} handler
      * @return onTouchHandler {Function} the core event handler
      */
-    onTouch: function onTouch(element, eventType, handler) {
+    onTouch: function onTouch(element, eventType, handler, options) {
         var self = this;
+        var opts = { mouseButtons: [0] };
+
+        if(options) {
+            opts = Utils.extend(opts, options);
+        }
 
         var onTouchHandler = function onTouchHandler(ev) {
             var srcType = ev.type.toLowerCase(),
@@ -89,7 +94,7 @@ var Event = Hammer.event = {
                 return;
 
             // mousebutton must be down
-            } else if(isMouse && eventType == EVENT_START && ev.button === 0) {
+            } else if(isMouse && eventType == EVENT_START && Utils.inArray(opts.mouseButtons, ev.button) !== false) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer && eventType == EVENT_START) {
