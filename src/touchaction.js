@@ -35,7 +35,7 @@ TouchAction.prototype = {
         if (NATIVE_TOUCH_ACTION) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
-        this.actions = value.toLowerCase();
+        this.actions = value.toLowerCase().trim();
     },
 
     /**
@@ -50,16 +50,13 @@ TouchAction.prototype = {
      * @returns {String} value
      */
     compute: function() {
-        var value;
         var actions = [];
-
         each(this.manager.recognizers, function(recognizer) {
             if (boolOrFn(recognizer.options.enable, [recognizer])) {
                 actions = actions.concat(recognizer.getTouchAction());
             }
         });
-        value = uniqueArray(actions).join(' ');
-        return cleanTouchActions(value);
+        return cleanTouchActions(actions.join(' '));
     },
 
     /**
@@ -113,15 +110,20 @@ function cleanTouchActions(actions) {
     if (inStr(actions, TOUCH_ACTION_NONE)) {
         return TOUCH_ACTION_NONE;
     }
+
+    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+
     // pan-x and pan-y can be combined
-    if (inStr(actions, TOUCH_ACTION_PAN_X) || inStr(actions, TOUCH_ACTION_PAN_Y)) {
-        return actions.replace(/[\-\w]+/g, function(action) {
-            if (/^pan\-/.test(action)) {
-                return action;
-            }
-            return '';
-        });
+    if (hasPanX && hasPanY) {
+        return TOUCH_ACTION_PAN_X + ' ' + TOUCH_ACTION_PAN_Y;
     }
+
+    // pan-x OR pan-y
+    if (hasPanX || hasPanY) {
+        return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+    }
+
     // manipulation
     if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
         return TOUCH_ACTION_MANIPULATION;

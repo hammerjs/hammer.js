@@ -20,7 +20,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
     },
 
     getTouchAction: function() {
-        return [TOUCH_ACTION_PAN_X, TOUCH_ACTION_PAN_Y];
+        return [TOUCH_ACTION_NONE];
     },
 
     attrTest: function(input) {

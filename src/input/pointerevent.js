@@ -14,13 +14,13 @@ var IE10_POINTER_TYPE_ENUM = {
     5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
 };
 
-var POINTER_ELEMENT_EVENTS = 'pointerdown pointermove pointerup pointercancel';
-var POINTER_WINDOW_EVENTS = 'pointerout';
+var POINTER_ELEMENT_EVENTS = 'pointerdown';
+var POINTER_WINDOW_EVENTS = 'pointermove pointerout pointerup pointercancel';
 
 // IE10 has prefixed support, and case-sensitive
 if (window.MSPointerEvent) {
-    POINTER_ELEMENT_EVENTS = 'MSPointerDown MSPointerMove MSPointerUp MSPointerCancel';
-    POINTER_WINDOW_EVENTS = 'MSPointerOut';
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerOut MSPointerUp MSPointerCancel';
 }
 
 /**
