@@ -1,4 +1,4 @@
-# Hammer.js 2.0 development [![Build Status](https://travis-ci.org/EightMedia/hammer.js.svg?branch=2.0.x)](https://travis-ci.org/EightMedia/hammer.js/)
+# Hammer.js 2.0 development [![Build Status](https://travis-ci.org/hammerjs/hammer.js.svg)](https://travis-ci.org/hammerjs/hammer.js/)
 
 **Completely rewritten, with reusable gesture recognizers, and better support for the recent mobile browsers by
 making use of the `touch-action` css property when possible. Also support for multiple Hammer instances the same
@@ -16,8 +16,8 @@ mc.on("swipeleft swiperight", mySwipeHandler);
 ````
 
 By default it adds the `tap`, `doubletap` and `press`, horizontal `pan` and `swipe`, and the multi-touch `pinch` and 
-`rotate` recognizers. The ppinch and rotate recognizers are disabled by default because they would make the element 
-blocking, but you can enable them by calling `mc.get('pinch').set('enable', true')`
+`rotate` recognizers. The pinch and rotate recognizers are disabled by default because they would make the element 
+blocking, but you can enable them by calling `mc.get('pinch').set({enable: true})`
 
 Also the viewport meta tag is recommended, it gives more control back to the webpage by disableing the 
 doubletap/pinch zoom. More recent browsers that support the touch-action property don't require this.

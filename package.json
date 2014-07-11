@@ -2,12 +2,12 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.0dev",
-  "homepage": "http://eightmedia.github.io/hammer.js",
+  "version": "2.0.0",
+  "homepage": "http://hammerjs.github.io/",
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/eightmedia/hammer.js/blob/master/LICENSE"
+      "url": "https://github.com/hammerjs/hammer.js/blob/master/LICENSE"
     }
   ],
   "keywords": [
@@ -20,10 +20,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/eightmedia/hammer.js.git"
+    "url": "git://github.com/hammerjs/hammer.js.git"
   },
   "bugs": {
-    "url": "https://github.com/eightmedia/hammer.js/issues"
+    "url": "https://github.com/hammerjs/hammer.js/issues"
   },
   "dependencies": {},
   "devDependencies": {
