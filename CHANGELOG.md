@@ -1,6 +1,6 @@
 # Changelog
 
-### 2.0.0
+### 2.0.0, 2014-07-11
 - Full rewrite of the library.
 
 ### 1.1.3, 2014-05-20
