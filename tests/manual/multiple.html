@@ -54,10 +54,10 @@
 
         function addHammer(el) {
             var mc = new Hammer(el);
-            mc.get('pan').set('direction', Hammer.DIRECTION_ALL);
-            mc.get('swipe').set('direction', Hammer.DIRECTION_ALL);
-            mc.get('pinch').set('enable', true);
-            mc.get('rotate').set('enable', true);
+            mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+            mc.get('pinch').set({ enable: true });
+            mc.get('rotate').set({ enable: true });
 
             mc.on("swipe pan press pinch rotate tap doubletap", function (ev) {
                 ev.preventDefault();
