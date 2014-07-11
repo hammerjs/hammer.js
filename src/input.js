@@ -95,7 +95,6 @@ function createInputInstance(manager) {
  * @param {Object} input
  */
 function inputHandler(manager, eventType, input) {
-
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
     var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
@@ -114,6 +113,7 @@ function inputHandler(manager, eventType, input) {
     // compute scale, rotation etc
     computeInputData(manager, input);
 
+    // emit secret event
     manager.emit('hammer.input', input);
 
     manager.recognize(input);
