@@ -2,12 +2,12 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "1.1.3",
-  "homepage": "http://eightmedia.github.io/hammer.js",
+  "version": "2.0.0",
+  "homepage": "http://hammerjs.github.io/",
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/eightmedia/hammer.js/blob/master/LICENSE"
+      "url": "https://github.com/hammerjs/hammer.js/blob/master/LICENSE"
     }
   ],
   "keywords": [
@@ -20,25 +20,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/eightmedia/hammer.js.git"
+    "url": "git://github.com/hammerjs/hammer.js.git"
   },
   "bugs": {
-    "url": "https://github.com/eightmedia/hammer.js/issues"
+    "url": "https://github.com/hammerjs/hammer.js/issues"
   },
   "dependencies": {},
   "devDependencies": {
     "grunt": "0.4.x",
+    "grunt-contrib-concat": "0.4.x",
     "grunt-contrib-connect": "0.7.x",
-    "grunt-contrib-concat": "0.3.x",
+    "grunt-contrib-jshint": "0.10.x",
+    "grunt-contrib-qunit": "^0.5.1",
     "grunt-contrib-uglify": "0.4.x",
-    "grunt-contrib-jshint": "0.9.x",
     "grunt-contrib-watch": "0.6.x",
-    "grunt-contrib-qunit": "0.4.x",
-    "grunt-string-replace": "^0.2.7",
-    "grunt-contrib-yuidoc": "^0.5.2",
-    "faketouches": "git://github.com/jtangelder/faketouches.js.git",
-    "underscore": "1.6.x",
-    "grunt-jscs-checker": "^0.4.1"
+    "grunt-jscs-checker": "^0.4.1",
+    "grunt-string-replace": "^0.2.7"
   },
   "main": "hammer.js",
   "engines": {

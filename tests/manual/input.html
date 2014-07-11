@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <meta name="msapplication-tap-highlight" content="no"/>
     <link rel="stylesheet" href="assets/style.css">
     <title>Hammer.js</title>
 </head>
 <body>
     <div class="container">
 
-        <div id="hit" class="bg1" style="padding: 30px;">
-            <span id="target" class="bg5" style="display: block; height: 100px;"></span>
+        <div id="hit" class="bg1" style="padding: 30px; height: 200px;">
         </div>
 
         <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
@@ -18,7 +18,7 @@
         <pre id="log" style="overflow:hidden;"></pre>
 
     </div>
-    <script src="../../hammer.min.js"></script>
+    <script src="../../hammer.js"></script>
     <script>
 
         Object.prototype.toDirString = function() {
@@ -37,33 +37,16 @@
             return output.join("\n")
         };
 
-
         var el = document.querySelector("#hit");
         var log = document.querySelector("#log");
         var debug = document.querySelector("#debug");
 
-        var mc = new Hammer.Manager(el);
+        var mc = new Hammer(el);
+        mc.get('pinch').set({ enable: true });
 
-        mc.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_HORIZONTAL }));
-        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith(mc.get('swipe'));
-
-        mc.add(new Hammer.Rotate());
-        mc.add(new Hammer.Pinch());
-
-        mc.add(new Hammer.Press());
-
-        mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
-        mc.add(new Hammer.Tap()).recognizeWith('tap');
-
-        mc.on("swipe pan multipan press pinch rotate tap doubletap", logGesture);
-
-        function DEBUG(str) {
-            debug.textContent = str;
-        }
-        function logGesture(ev) {
-            console.log(ev.timeStamp, ev.type, ev);
-            log.textContent = ev.toDirString();
-        }
+        mc.on("hammer.input", function(ev) {
+            debug.innerHTML = ev.srcEvent.type +" "+ ev.eventType +" "+ ev.isFinal;
+        });
 
     </script>
 </body>

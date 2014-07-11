@@ -1,0 +1,107 @@
+var el, el2,
+    hammer, hammer2;
+
+module('Tests', {
+    setup: function() {
+        el = utils.createHitArea();
+        el2 = utils.createHitArea();
+    },
+
+    teardown: function() {
+        if (hammer) {
+            hammer.destroy();
+            hammer = null;
+        }
+        if (hammer2) {
+            hammer2.destroy();
+            hammer2 = null;
+        }
+    }
+});
+
+test('hammer shortcut', function() {
+    expect(2);
+
+    Hammer.defaults.touchAction = 'pan-y';
+    hammer = Hammer(el);
+
+    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
+});
+
+test('hammer shortcut with options', function() {
+    expect(2);
+
+    hammer = Hammer(el, {
+        touchAction: 'none'
+    });
+    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
+});
+
+/* Creating a hammer instance does not work on the same way
+ * when using Hammer or Hammer.Manager.
+ *
+ * This can confuse developers who read tests to use the library when doc is missing.
+ */
+test('Hammer and Hammer.Manager constructors work exactly on the same way.', function() {
+    expect(2);
+
+    hammer = new Hammer(el, {});
+    equal(Hammer.defaults.preset.length, hammer.recognizers.length);
+
+    hammer2 = new Hammer.Manager(el, {});
+    equal(0, hammer2.recognizers.length);
+});
+
+/* DOC to disable default recognizers should be added.
+ *
+ * - Hammer(el).      IMO: Currently, well done.
+ * - Hammer(el, {}) . IMO: should disable default recognizers
+ * - Hammer(el, {recognizers: null}).      IMO: now, it fails.
+ * - Hammer(el, {recognizers: []}).  It works, but it is likely not intuitive.
+ */
+test('A Hammer instance can be setup to not having default recognizers.', function() {
+    expect(1);
+
+    hammer = new Hammer(el, { recognizers: false });
+    equal(0, hammer.recognizers.length);
+});
+
+/* The case was when I added a custom tap event which was added to the default
+ * recognizers, and my custom tap gesture wasn't working (I do not know exactly the reason),
+ * but removing the default recognizers solved the issue.
+ */
+test('Adding the same recognizer type should remove the old recognizer', function() {
+    expect(4);
+
+    hammer = new Hammer(el);
+
+    ok(!!hammer.get('tap'));
+    equal(7, hammer.recognizers.length);
+
+    var newTap = new Hammer.Tap({time: 1337});
+    hammer.add(newTap);
+
+    equal(7, hammer.recognizers.length);
+    equal(1337, hammer.get('tap').options.time);
+});
+
+/*
+ * Swipe gesture:
+ * - in this tests, it does not update input.velocity ( always 0)
+ * - does not fire swipeleft or swiperight events
+ */
+asyncTest('Swiping to the left should fire swipeleft event', function() {
+    expect(2);
+
+    hammer = new Hammer(el, {recognizers: []});
+    hammer.add(new Hammer.Swipe({velocity: -1}));
+    hammer.on('swipe swipeleft', function() {
+        ok(true);
+    });
+
+    Simulator.gestures.swipe(el, {pos: [300, 300], deltaY: 0, deltaX: -200}, function() {
+        start();
+    });
+});

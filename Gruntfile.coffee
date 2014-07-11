@@ -11,32 +11,48 @@ module.exports = (grunt) ->
  * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
     concat:
-      options:
-        separator: '\n\n'
       build:
-        options:
-          banner: '<%= meta.banner %>'
         src: [
           'src/hammer.prefix'
-          'src/setup.js'
           'src/utils.js'
-          'src/event.js'
-          'src/pointerevent.js'
-          'src/detection.js'
-          'src/instance.js'
-          'src/gestures/*.js'
-          'src/export.js'
+          'src/input.js'
+          'src/input/*.js'
+          'src/touchaction.js'
+          'src/recognizer.js'
+          'src/recognizers/*.js'
+          'src/hammer.js'
+          'src/manager.js'
+          'src/expose.js'
           'src/hammer.suffix']
         dest: 'hammer.js'
 
     uglify:
-      options:
-        report: 'gzip'
-        sourceMap: 'hammer.min.map'
-        banner: '<%= meta.banner %>'
-      build:
+      min:
+        options:
+          report: 'gzip'
+          sourceMap: 'hammer.min.map'
+          banner: '<%= meta.banner %>'
         files:
           'hammer.min.js': ['hammer.js']
+       # special test build that exposes everything so it's testable
+      test:
+        options:
+          wrap: "$H"
+          comments: 'all'
+          exportAll: true
+          mangle: false
+          beautify: true
+        files:
+          'tests/build.js': [
+            'src/utils.js'
+            'src/input.js'
+            'src/input/*.js'
+            'src/touchaction.js'
+            'src/recognizer.js'
+            'src/recognizers/*.js'
+            'src/hammer.js'
+            'src/manager.js'
+            'src/expose.js']
 
     'string-replace':
       version:
@@ -52,11 +68,15 @@ module.exports = (grunt) ->
       options:
         jshintrc: true
       build:
-        src: ['hammer.js', 'plugins/*.js']
+        src: ['hammer.js']
 
     jscs:
-      src: ['src/**/*.js', 'plugins/**/*.js']
+      src: [
+        'src/**/*.js'
+        'tests/unit/*.js'
+      ]
       options:
+        config: "./.jscsrc"
         force: true
 
     watch:
@@ -73,33 +93,22 @@ module.exports = (grunt) ->
           port: 8000
 
     qunit:
-      all: ['tests/unit/**/*.html']
+      all: ['tests/unit/index.html']
 
-    yuidoc:
-      build:
-        name: '<%= pkg.title %>'
-        description: '<%= pkg.description %>'
-        version: '<%= pkg.version %>'
-        url: '<%= pkg.homepage %>'
-        options:
-          linkNatives: true
-          paths: 'src/'
-          outdir: 'docs/'
-          themedir: 'misc/docstheme/'
 
   # Load tasks
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-  grunt.loadNpmTasks 'grunt-contrib-qunit'
-  grunt.loadNpmTasks 'grunt-contrib-yuidoc'
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 
-  # Default task(s).
+  # Default task(s)
   grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'build', ['concat','string-replace','uglify','yuidoc','test']
-  grunt.registerTask 'test', ['jshint','jscs','qunit']
+  grunt.registerTask 'default-test', ['connect', 'uglify:test','watch']
+  grunt.registerTask 'build', ['concat','string-replace','uglify:min','test']
+  grunt.registerTask 'test', ['jshint','jscs','uglify:test','qunit']
   grunt.registerTask 'test-travis', ['build']
