@@ -193,7 +193,7 @@ function computeIntervalInputData(session, input) {
         var v = getVelocity(deltaTime, deltaX, deltaY);
         velocityX = v.x;
         velocityY = v.y;
-        velocity = Math.max(v.x, v.y);
+        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
         direction = getDirection(deltaX, deltaY);
     } else {
         // use latest velocity info if it doesn't overtake a minimum period
@@ -271,8 +271,8 @@ function getCenter(pointers) {
  */
 function getVelocity(deltaTime, x, y) {
     return {
-        x: abs(x / deltaTime) || 0,
-        y: abs(y / deltaTime) || 0
+        x: x / deltaTime || 0,
+        y: y / deltaTime || 0
     };
 }
 
