@@ -271,8 +271,8 @@ function getCenter(pointers) {
  */
 function getVelocity(deltaTime, x, y) {
     return {
-        x: Math.abs(x / deltaTime) || 0,
-        y: Math.abs(y / deltaTime) || 0
+        x: abs(x / deltaTime) || 0,
+        y: abs(y / deltaTime) || 0
     };
 }
 
@@ -287,7 +287,7 @@ function getDirection(x, y) {
         return DIRECTION_NONE;
     }
 
-    if (Math.abs(x) >= Math.abs(y)) {
+    if (abs(x) >= abs(y)) {
         return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
     return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;

@@ -5,6 +5,7 @@ var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
 
 var round = Math.round;
+var abs = Math.abs;
 var now = Date.now;
 
 /**
