@@ -1,4 +1,5 @@
 var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
+var TEST_ELEMENT = document.createElement('div');
 
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';

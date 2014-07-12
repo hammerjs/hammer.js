@@ -1,4 +1,4 @@
-var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
+var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
 // magical touchAction value
