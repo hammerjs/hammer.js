@@ -20,40 +20,29 @@ test('fnBind', function() {
     }, context)(123);
 });
 
-(function() {
-    function testInherit() {
-        function Base() {
-            this.name = true;
-        }
-
-        function Child() {
-            Base.call(this);
-        }
-
-        $H.inherit(Child, Base, {
-            newMethod: function() {
-            }
-        });
-
-        var inst = new Child();
-
-        ok(inst.name == true, 'child has extended from base');
-        ok(inst.newMethod, 'child has a new method');
-        ok(Child.prototype.newMethod, 'child has a new prototype method');
-        ok(inst instanceof Child, 'is instanceof Child');
-        ok(inst instanceof Base, 'is instanceof Base');
-        ok(inst._super === Base.prototype, '_super is ref to prototype of Base');
+test('Inherit objects', function() {
+    function Base() {
+        this.name = true;
     }
 
-    test('Inherit objects', testInherit);
+    function Child() {
+        Base.call(this);
+    }
 
-    test('Inherit objects without Object.create', function() {
-        Object.backupCreate = Object.create;
-        Object.create = null;
-        testInherit();
-        Object.create = Object.backupCreate;
+    $H.inherit(Child, Base, {
+        newMethod: function() {
+        }
     });
-})();
+
+    var inst = new Child();
+
+    ok(inst.name == true, 'child has extended from base');
+    ok(inst.newMethod, 'child has a new method');
+    ok(Child.prototype.newMethod, 'child has a new prototype method');
+    ok(inst instanceof Child, 'is instanceof Child');
+    ok(inst instanceof Base, 'is instanceof Base');
+    ok(inst._super === Base.prototype, '_super is ref to prototype of Base');
+});
 
 test('toArray', function() {
     ok(_.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');

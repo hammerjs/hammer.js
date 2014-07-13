@@ -101,24 +101,13 @@ function inherit(child, base, properties) {
     var baseP = base.prototype,
         childP;
 
-    // object create is supported since IE9
-    if (Object.create) {
-        childP = child.prototype = Object.create(baseP);
-        childP.constructor = child;
-    } else {
-        extend(child, base);
-        var Inherited = function() {
-            this.constructor = child;
-        };
-        Inherited.prototype = baseP;
-        childP = child.prototype = new Inherited();
-    }
+    childP = child.prototype = Object.create(baseP);
+    childP.constructor = child;
+    childP._super = baseP;
 
     if (properties) {
         extend(childP, properties);
     }
-
-    childP._super = baseP;
 }
 
 /**
