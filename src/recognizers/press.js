@@ -46,6 +46,8 @@ inherit(PressRecognizer, Recognizer, {
                 this.state = STATE_RECOGNIZED;
                 this.tryEmit();
             }, options.time, this);
+        } else if (input.eventType & INPUT_END) {
+            return STATE_RECOGNIZED;
         }
         return STATE_FAILED;
     },
@@ -54,8 +56,14 @@ inherit(PressRecognizer, Recognizer, {
         clearTimeout(this._timer);
     },
 
-    emit: function() {
-        if (this.state === STATE_RECOGNIZED) {
+    emit: function(input) {
+        if (this.state !== STATE_RECOGNIZED) {
+            return;
+        }
+
+        if (input && (input.eventType & INPUT_END)) {
+            this.manager.emit(this.options.event + 'up', input);
+        } else {
             this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
