@@ -109,5 +109,12 @@ Hammer.defaults = {
          * @default 'rgba(0,0,0,0)'
          */
         tapHighlightColor: 'rgba(0,0,0,0)'
-    }
+    },
+
+    /**
+     * Overrides the window to act in.
+     * @type {Object}
+     * @default Global window
+     */
+    window: window
 };

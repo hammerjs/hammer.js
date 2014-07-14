@@ -50,7 +50,7 @@ function Input(manager, callback) {
     };
 
     this.evEl && addEventListeners(this.manager.element, this.evEl, this.domHandler);
-    this.evWin && addEventListeners(window, this.evWin, this.domHandler);
+    this.evWin && addEventListeners(this.manager.options.window, this.evWin, this.domHandler);
 }
 
 Input.prototype = {
@@ -65,7 +65,7 @@ Input.prototype = {
      */
     destroy: function() {
         this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
-        this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);
+        this.winEvents && removeEventListeners(this.manager.options.window, this.winEvents, this.domHandler);
     }
 };
 
