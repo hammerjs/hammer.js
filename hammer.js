@@ -2,11 +2,13 @@
   'use strict';
 
 var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
+var TEST_ELEMENT = document.createElement('div');
 
 var TYPE_FUNCTION = 'function';
 var TYPE_UNDEFINED = 'undefined';
 
 var round = Math.round;
+var abs = Math.abs;
 var now = Date.now;
 
 /**
@@ -102,24 +104,13 @@ function inherit(child, base, properties) {
     var baseP = base.prototype,
         childP;
 
-    // object create is supported since IE9
-    if (Object.create) {
-        childP = child.prototype = Object.create(baseP);
-        childP.constructor = child;
-    } else {
-        extend(child, base);
-        var Inherited = function() {
-            this.constructor = child;
-        };
-        Inherited.prototype = baseP;
-        childP = child.prototype = new Inherited();
-    }
+    childP = child.prototype = Object.create(baseP);
+    childP.constructor = child;
+    childP._super = baseP;
 
     if (properties) {
         extend(childP, properties);
     }
-
-    childP._super = baseP;
 }
 
 /**
@@ -491,7 +482,7 @@ function computeIntervalInputData(session, input) {
         var v = getVelocity(deltaTime, deltaX, deltaY);
         velocityX = v.x;
         velocityY = v.y;
-        velocity = Math.max(v.x, v.y);
+        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
         direction = getDirection(deltaX, deltaY);
     } else {
         // use latest velocity info if it doesn't overtake a minimum period
@@ -569,8 +560,8 @@ function getCenter(pointers) {
  */
 function getVelocity(deltaTime, x, y) {
     return {
-        x: Math.abs(x / deltaTime) || 0,
-        y: Math.abs(y / deltaTime) || 0
+        x: x / deltaTime || 0,
+        y: y / deltaTime || 0
     };
 }
 
@@ -585,7 +576,7 @@ function getDirection(x, y) {
         return DIRECTION_NONE;
     }
 
-    if (Math.abs(x) >= Math.abs(y)) {
+    if (abs(x) >= abs(y)) {
         return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
     return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
@@ -933,7 +924,7 @@ inherit(TouchMouseInput, Input, {
     }
 });
 
-var PREFIXED_TOUCH_ACTION = prefixed(document.body.style, 'touchAction');
+var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
 // magical touchAction value
@@ -1604,6 +1595,8 @@ inherit(PressRecognizer, Recognizer, {
                 this.state = STATE_RECOGNIZED;
                 this.tryEmit();
             }, options.time, this);
+        } else if (input.eventType & INPUT_END) {
+            return STATE_RECOGNIZED;
         }
         return STATE_FAILED;
     },
@@ -1612,8 +1605,14 @@ inherit(PressRecognizer, Recognizer, {
         clearTimeout(this._timer);
     },
 
-    emit: function() {
-        if (this.state === STATE_RECOGNIZED) {
+    emit: function(input) {
+        if (this.state !== STATE_RECOGNIZED) {
+            return;
+        }
+
+        if (input && (input.eventType & INPUT_END)) {
+            this.manager.emit(this.options.event + 'up', input);
+        } else {
             this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
@@ -1692,7 +1691,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
 
         return this._super.attrTest.call(this, input) &&
             direction & input.direction &&
-            velocity > this.options.velocity && input.eventType & INPUT_END;
+            abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
     },
 
     emit: function(input) {
@@ -1835,7 +1834,7 @@ function Hammer(element, options) {
 /**
  * @const {string}
  */
-Hammer.VERSION = '2.0.0';
+Hammer.VERSION = '2.0.1';
 
 /**
  * default settings

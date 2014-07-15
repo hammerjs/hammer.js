@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.0.1, 2014-07-15
+- Fix issue when no document.body is available
+- Added pressup event for the press recognizer
+- Removed alternative for Object.create
+
 ### 2.0.0, 2014-07-11
 - Full rewrite of the library.
 
