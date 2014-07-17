@@ -51,5 +51,5 @@ if (typeof define == TYPE_FUNCTION && define.amd) {
 } else if (typeof module != TYPE_UNDEFINED && module.exports) {
     module.exports = Hammer;
 } else {
-    window.Hammer = Hammer;
+    window[exportName] = Hammer;
 }

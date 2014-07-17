@@ -1,2 +1,2 @@
-(function(window, undefined) {
+(function(window, document, exportName, undefined) {
   'use strict';
