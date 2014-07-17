@@ -1,5 +1,9 @@
 # Changelog
 
+### dev
+- Improved mouse input
+- Added the export name (`Hammer`) as an argument to the wrapper.
+
 ### 2.0.1, 2014-07-15
 - Fix issue when no document.body is available
 - Added pressup event for the press recognizer
