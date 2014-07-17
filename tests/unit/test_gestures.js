@@ -3,7 +3,7 @@
 // disable the other gesture recognition
 var el, hammer, events;
 var allGestureEvents = [
-    'tap doubletap press pressup',
+    'tap doubletap press',
     'pinch pinchin pinchout pinchstart pinchmove pinchend pinchcancel',
     'rotate rotatestart rotatemove rotateend rotatecancel',
     'pan panstart panmove panup pandown panleft panright panend pancancel',
@@ -55,8 +55,7 @@ asyncTest('recognize press', function() {
     Simulator.gestures.press(el, null, function() {
         start();
         deepEqual(events, {
-            press: true,
-            pressup: true
+            press: true
         });
     });
 });
