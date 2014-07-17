@@ -42,6 +42,9 @@ module.exports = (grunt) ->
           exportAll: true
           mangle: false
           beautify: true
+          compress:
+            global_defs:
+              exportName: 'Hammer'
         files:
           'tests/build.js': [
             'src/utils.js'
