@@ -1,12 +1,11 @@
 var MOUSE_INPUT_MAP = {
     mousedown: INPUT_START,
     mousemove: INPUT_MOVE,
-    mouseup: INPUT_END,
-    mouseout: INPUT_CANCEL
+    mouseup: INPUT_END
 };
 
 var MOUSE_ELEMENT_EVENTS = 'mousedown';
-var MOUSE_WINDOW_EVENTS = 'mousemove mouseout mouseup';
+var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
 
 /**
  * Mouse events input
@@ -45,13 +44,7 @@ inherit(MouseInput, Input, {
             return;
         }
 
-        // out of the window?
-        var target = ev.relatedTarget || ev.toElement || ev.target;
-        if (ev.type == 'mouseout' && target.nodeName != 'HTML') {
-            eventType = INPUT_MOVE;
-        }
-
-        if (eventType & (INPUT_END | INPUT_CANCEL)) {
+        if (eventType & INPUT_END) {
             this.pressed = false;
         }
 
