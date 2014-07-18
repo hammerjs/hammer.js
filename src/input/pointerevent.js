@@ -15,12 +15,12 @@ var IE10_POINTER_TYPE_ENUM = {
 };
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown';
-var POINTER_WINDOW_EVENTS = 'pointermove pointerout pointerup pointercancel';
+var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
 
 // IE10 has prefixed support, and case-sensitive
 if (window.MSPointerEvent) {
     POINTER_ELEMENT_EVENTS = 'MSPointerDown';
-    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerOut MSPointerUp MSPointerCancel';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
 }
 
 /**
@@ -50,14 +50,10 @@ inherit(PointerEventInput, Input, {
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
         var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
-        // out of the window?
-        var target = ev.relatedTarget || ev.toElement || ev.target;
-        if (eventTypeNormalized == 'pointerout' && target.nodeName != 'HTML') {
-            eventType = INPUT_MOVE;
-        }
+        var isTouch = (pointerType == INPUT_TYPE_TOUCH);
 
         // start and mouse must be down
-        if (eventType & INPUT_START && (ev.button === 0 || pointerType == INPUT_TYPE_TOUCH)) {
+        if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
             store.push(ev);
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;

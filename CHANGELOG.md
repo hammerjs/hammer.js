@@ -1,7 +1,7 @@
 # Changelog
 
 ### dev
-- Improved mouse input
+- Improved mouse and pointer-events input, now able to move outside the window.
 - Added the export name (`Hammer`) as an argument to the wrapper.
 
 ### 2.0.1, 2014-07-15
