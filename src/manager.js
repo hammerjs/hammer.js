@@ -245,9 +245,7 @@ Manager.prototype = {
  */
 function toggleCssProps(manager, add) {
     var element = manager.element;
-    var cssProps = manager.options.cssProps;
-
-    each(cssProps, function(value, name) {
+    each(manager.options.cssProps, function(value, name) {
         element.style[prefixed(element.style, name)] = add ? value : '';
     });
 }
