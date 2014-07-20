@@ -44,12 +44,12 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if (boolOrFn(self.manager.options.enable, [self.manager])) {
+        if (boolOrFn(manager.options.enable, [manager])) {
             self.handler(ev);
         }
     };
 
-    this.evEl && addEventListeners(this.manager.element, this.evEl, this.domHandler);
+    this.evEl && addEventListeners(manager.element, this.evEl, this.domHandler);
     this.evWin && addEventListeners(window, this.evWin, this.domHandler);
 }
 

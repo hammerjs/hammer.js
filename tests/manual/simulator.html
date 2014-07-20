@@ -86,6 +86,8 @@
     var debug = document.querySelector("#debug");
 
     var mc = new Hammer(el);
+    mc.get('pinch').set({ enable: true, threshold:.1 });
+    mc.get('rotate').set({ enable: true });
     mc.on("swipe pan multipan press pinch rotate tap doubletap", logGesture);
 
     function logGesture(ev) {

@@ -53,7 +53,7 @@
 
 
         function addHammer(el) {
-            var mc = new Hammer(el);
+            var mc = new Hammer(el, { multiUser: true });
             mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
             mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
             mc.get('pinch').set({ enable: true });

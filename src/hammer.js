@@ -65,8 +65,7 @@ Hammer.defaults = {
      */
     cssProps: {
         /**
-         * Disables text selection to improve the dragging gesture. When the value is `none` it also sets
-         * `onselectstart=false` for IE9 on the element. Mainly for desktop browsers.
+         * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
          * @type {String}
          * @default 'none'
          */

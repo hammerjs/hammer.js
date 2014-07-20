@@ -27,7 +27,7 @@ inherit(MouseInput, Input, {
      * handle mouse events
      * @param {Object} ev
      */
-    handler: function(ev) {
+    handler: function MEhandler(ev) {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
         // on start we want to have the left mouse button down

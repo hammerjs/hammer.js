@@ -57,7 +57,8 @@ Manager.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
-        if (this.session.stopped) {
+        var session = this.session;
+        if (session.stopped) {
             return;
         }
 
@@ -65,7 +66,7 @@ Manager.prototype = {
         this.touchAction.preventDefaults(inputData);
 
         var recognizer;
-        var session = this.session;
+        var recognizers = this.recognizers;
 
         // this holds the recognizer that is being recognized.
         // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
@@ -78,8 +79,8 @@ Manager.prototype = {
             curRecognizer = session.curRecognizer = null;
         }
 
-        for (var i = 0, len = this.recognizers.length; i < len; i++) {
-            recognizer = this.recognizers[i];
+        for (var i = 0, len = recognizers.length; i < len; i++) {
+            recognizer = recognizers[i];
 
             // find out if we are allowed try to recognize the input for this one.
             // 1.   allow if the session is NOT forced stopped (see the .stop() method)
@@ -87,7 +88,7 @@ Manager.prototype = {
             //      that is being recognized.
             // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
             //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (this.session.stopped !== FORCED_STOP && ( // 1
+            if (session.stopped !== FORCED_STOP && ( // 1
                     !curRecognizer || recognizer == curRecognizer || // 2
                     recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);

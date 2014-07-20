@@ -50,14 +50,14 @@ inherit(TapRecognizer, Recognizer, {
         this.reset();
 
         if ((input.eventType & INPUT_START) && (this.count === 0)) {
-            return this._failTimeout();
+            return this.failTimeout();
         }
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
         if (validMovement && validTouchTime && validPointers) {
             if (input.eventType != INPUT_END) {
-                return this._failTimeout();
+                return this.failTimeout();
             }
 
             var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
@@ -83,7 +83,7 @@ inherit(TapRecognizer, Recognizer, {
                 if (!this.hasRequireFailures()) {
                     return STATE_RECOGNIZED;
                 } else {
-                    this._timer = setTimeoutScope(function() {
+                    this._timer = setTimeoutContext(function() {
                         this.state = STATE_RECOGNIZED;
                         this.tryEmit();
                     }, options.interval, this);
@@ -94,8 +94,8 @@ inherit(TapRecognizer, Recognizer, {
         return STATE_FAILED;
     },
 
-    _failTimeout: function() {
-        this._timer = setTimeoutScope(function() {
+    failTimeout: function() {
+        this._timer = setTimeoutContext(function() {
             this.state = STATE_FAILED;
         }, this.options.interval, this);
         return STATE_FAILED;

@@ -4,7 +4,7 @@ var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 // magical touchAction value
 var TOUCH_ACTION_COMPUTE = 'compute';
 var TOUCH_ACTION_AUTO = 'auto';
-var TOUCH_ACTION_MANIPULATION = 'manipulation';
+var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
 var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';

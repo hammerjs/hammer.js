@@ -42,7 +42,7 @@ inherit(PointerEventInput, Input, {
      * handle mouse events
      * @param {Object} ev
      */
-    handler: function(ev) {
+    handler: function PEhandler(ev) {
         var store = this.store;
         var removePointer = false;
 
