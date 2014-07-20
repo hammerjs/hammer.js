@@ -250,10 +250,6 @@ function toggleCssProps(manager, add) {
     each(cssProps, function(value, name) {
         element.style[prefixed(element.style, name)] = add ? value : '';
     });
-
-    var falseFn = add && function() { return false; };
-    if (cssProps.userSelect == 'none') { element.onselectstart = falseFn; }
-    if (cssProps.userDrag == 'none') { element.ondragstart = falseFn; }
 }
 
 /**
