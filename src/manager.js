@@ -210,7 +210,7 @@ Manager.prototype = {
         }
 
         // no handlers, so skip it all
-        var handlers = this.handlers[event];
+        var handlers = this.handlers[event] && this.handlers[event].slice();
         if (!handlers || !handlers.length) {
             return;
         }
