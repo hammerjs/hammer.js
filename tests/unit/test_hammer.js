@@ -96,12 +96,28 @@ asyncTest('Swiping to the left should fire swipeleft event', function() {
     expect(2);
 
     hammer = new Hammer(el, {recognizers: []});
-    hammer.add(new Hammer.Swipe({velocity: -1}));
+    hammer.add(new Hammer.Swipe());
     hammer.on('swipe swipeleft', function() {
         ok(true);
     });
 
     Simulator.gestures.swipe(el, {pos: [300, 300], deltaY: 0, deltaX: -200}, function() {
+        start();
+    });
+});
+
+/*
+ * Input target change
+ */
+asyncTest('Should detect input while on other element', function() {
+    expect(1);
+
+    hammer = new Hammer(el, { inputTarget: document.body });
+    hammer.on('tap', function() {
+        ok(true);
+    });
+
+    Simulator.gestures.tap(document.body, null, function() {
         start();
     });
 });

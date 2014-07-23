@@ -11,6 +11,7 @@ function Manager(element, options) {
     options = options || {};
 
     this.options = merge(options, Hammer.defaults);
+    this.options.inputTarget = this.options.inputTarget || element;
 
     this.handlers = {};
     this.session = {};

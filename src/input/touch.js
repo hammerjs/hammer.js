@@ -5,7 +5,7 @@ var TOUCH_INPUT_MAP = {
     touchcancel: INPUT_CANCEL
 };
 
-var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
+var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
@@ -13,7 +13,7 @@ var TOUCH_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @extends Input
  */
 function TouchInput() {
-    this.evEl = TOUCH_EVENTS;
+    this.evTarget = TOUCH_TARGET_EVENTS;
     this.targetIds = {};
 
     Input.apply(this, arguments);

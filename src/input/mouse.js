@@ -4,7 +4,7 @@ var MOUSE_INPUT_MAP = {
     mouseup: INPUT_END
 };
 
-var MOUSE_ELEMENT_EVENTS = 'mousedown';
+var MOUSE_TARGET_EVENTS = 'mousedown';
 var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
 
 /**
@@ -13,7 +13,7 @@ var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
  * @extends Input
  */
 function MouseInput() {
-    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evTarget = MOUSE_TARGET_EVENTS;
     this.evWin = MOUSE_WINDOW_EVENTS;
 
     this.allow = true; // used by Input.TouchMouse to disable mouse events

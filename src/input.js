@@ -40,6 +40,7 @@ function Input(manager, callback) {
     var self = this;
     this.manager = manager;
     this.callback = callback;
+    this.target = manager.options.inputTarget;
 
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
@@ -49,7 +50,7 @@ function Input(manager, callback) {
         }
     };
 
-    this.evEl && addEventListeners(manager.element, this.evEl, this.domHandler);
+    this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && addEventListeners(window, this.evWin, this.domHandler);
 }
 
@@ -64,8 +65,8 @@ Input.prototype = {
      * unbind the events
      */
     destroy: function() {
-        this.elEvents && removeEventListeners(this.manager.element, this.elEvents, this.domHandler);
-        this.winEvents && removeEventListeners(window, this.winEvents, this.domHandler);
+        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && removeEventListeners(window, this.evWin, this.domHandler);
     }
 };
 
