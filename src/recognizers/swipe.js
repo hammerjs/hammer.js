@@ -43,11 +43,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     },
 
     emit: function(input) {
-        this.manager.emit(this.options.event, input);
-
         var direction = directionStr(input.direction);
         if (direction) {
             this.manager.emit(this.options.event + direction, input);
         }
+
+        this.manager.emit(this.options.event, input);
     }
 });
