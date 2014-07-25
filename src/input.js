@@ -101,8 +101,8 @@ function inputHandler(manager, eventType, input) {
     var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
     var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
 
-    input.isFirst = isFirst;
-    input.isFinal = isFinal;
+    input.isFirst = !!isFirst;
+    input.isFinal = !!isFinal;
 
     if (isFirst) {
         manager.session = {};
@@ -118,6 +118,7 @@ function inputHandler(manager, eventType, input) {
     manager.emit('hammer.input', input);
 
     manager.recognize(input);
+    manager.session.prevInput = input;
 }
 
 /**
@@ -145,14 +146,13 @@ function computeInputData(manager, input) {
     var firstInput = session.firstInput;
     var firstMultiple = session.firstMultiple;
     var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
-    var center = getCenter(pointers);
 
+    var center = input.center = getCenter(pointers);
     input.timeStamp = now();
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
-    input.deltaX = center.x - offsetCenter.x;
-    input.deltaY = center.y - offsetCenter.y;
 
-    input.center = center;
+    computeDeltaXY(session, input);
+
     input.angle = getAngle(offsetCenter, center);
     input.distance = getDistance(offsetCenter, center);
     input.offsetDirection = getDirection(input.deltaX, input.deltaY);
@@ -168,6 +168,28 @@ function computeInputData(manager, input) {
     input.target = target;
 
     computeIntervalInputData(session, input);
+}
+
+function computeDeltaXY(session, input) {
+    var center = input.center;
+    var offset = session.offsetDelta;
+    var prevDelta = session.prevDelta;
+    var prevInput = session.prevInput || {};
+
+    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+        prevDelta = session.prevDelta = {
+            x: prevInput.deltaX || 0,
+            y: prevInput.deltaY || 0
+        };
+
+        offset = session.offsetDelta = {
+            x: center.x,
+            y: center.y
+        };
+    }
+
+    input.deltaX = prevDelta.x + (center.x - offset.x);
+    input.deltaY = prevDelta.y + (center.y - offset.y);
 }
 
 /**

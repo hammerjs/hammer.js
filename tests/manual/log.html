@@ -42,19 +42,7 @@
         var log = document.querySelector("#log");
         var debug = document.querySelector("#debug");
 
-        var mc = new Hammer.Manager(el);
-
-        mc.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_HORIZONTAL }));
-        mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL })).recognizeWith(mc.get('swipe'));
-
-        mc.add(new Hammer.Rotate());
-        mc.add(new Hammer.Pinch());
-
-        mc.add(new Hammer.Press());
-
-        mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
-        mc.add(new Hammer.Tap()).recognizeWith('tap');
-
+        var mc = new Hammer(el);
         mc.on("swipe pan multipan press pressup pinch rotate tap doubletap", logGesture);
 
         function DEBUG(str) {
