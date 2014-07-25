@@ -15,6 +15,7 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
 
     var panCount = 0,
         pinchCount = 0;
+
     hammer = new Hammer.Manager(el, {
         touchAction: 'none'
     });
@@ -63,7 +64,6 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
         }, 100);
 
         setTimeout(function() {
-            start();
             touches = [
                 {clientX: 20, clientY: 30, identifier: 0 },
                 {clientX: 40, clientY: 30, identifier: 1 }
@@ -93,12 +93,13 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
         equal(pinchCount, 1);
 
         pinch.dropRecognizeWith(hammer.get('pan'));
-        stop();
 
         // only the pan gesture will be recognized
         executeGesture(function() {
             equal(panCount, 2);
             equal(pinchCount, 1);
+
+            start();
         });
     });
 });
