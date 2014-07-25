@@ -46,9 +46,15 @@ inherit(TouchInput, Input, {
 function normalizeTouches(ev, touchInput, type) {
     var i, len;
     var targetIds = touchInput.targetIds;
+    var allTouches = toArray(ev.touches);
     var targetTouches = toArray(ev.targetTouches);
     var changedTouches = toArray(ev.changedTouches);
     var changedTargetTouches = [];
+
+    // when there is only one touch, the process can be simplified
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        return [allTouches, allTouches];
+    }
 
     // collect touches
     if (type === INPUT_START) {
