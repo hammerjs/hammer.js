@@ -143,16 +143,27 @@
         logEvent(ev.type);
     }
 
+    var initScale = 1;
     function onPinch(ev) {
+        if(ev.type == 'pinchstart') {
+            initScale = transform.scale || 1;
+        }
+
         el.className = '';
-        transform.scale = ev.scale;
+        transform.scale = initScale * ev.scale;
 
         requestElementUpdate();
         logEvent(ev.type);
     }
+
+    var initRotate = 0;
     function onRotate(ev) {
+        if(ev.type == 'rotatestart') {
+            initRotate = transform.rotation || 0;
+        }
+
         el.className = '';
-        transform.rotate = ev.rotation;
+        transform.rotate = initRotate + ev.rotation;
         requestElementUpdate();
         logEvent(ev.type);
     }
