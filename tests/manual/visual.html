@@ -155,7 +155,7 @@
     var initRotate = 0;
     function onRotate(ev) {
         if(ev.type == 'rotatestart') {
-            initRotate = transform.rotation || 0;
+            initRotate = transform.rotate || 0;
         }
 
         el.className = '';
