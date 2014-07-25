@@ -2,7 +2,7 @@
 
 **Completely rewritten, with reusable gesture recognizers, and better support for the recent mobile browsers by
 making use of the `touch-action` css property when possible. Also support for multiple Hammer instances the same
-time, so multi-user became possible.**
+time, so multi-user (or massive multi touch) became possible.**
 
 You can get the pre-build versions from the [Hammer.js website](http://hammerjs.github.io), 
 or do this by yourself running `npm install -g grunt-cli && npm install && grunt build`.
