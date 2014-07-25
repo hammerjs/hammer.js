@@ -2126,7 +2126,9 @@ Manager.prototype = {
             if (!handler) {
                 delete handlers[event];
             } else {
-                handlers[event].splice(inArray(handlers[event], handler), 1);
+                if (typeof handlers[event] !== 'undefined') {
+                    handlers[event].splice(inArray(handlers[event], handler), 1);
+                }
             }
         });
         return this;
