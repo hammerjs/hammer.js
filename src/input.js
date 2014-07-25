@@ -172,8 +172,8 @@ function computeInputData(manager, input) {
 
 function computeDeltaXY(session, input) {
     var center = input.center;
-    var offset = session.offsetDelta;
-    var prevDelta = session.prevDelta;
+    var offset = session.offsetDelta || {};
+    var prevDelta = session.prevDelta || {};
     var prevInput = session.prevInput || {};
 
     if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
