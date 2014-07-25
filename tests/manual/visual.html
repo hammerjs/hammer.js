@@ -140,16 +140,6 @@
         logEvent(ev.type);
     }
 
-    function onSwipe(ev) {
-        el.style.background = 'white';
-        setTimeout(function () {
-            el.style.background = '#42d692';
-            requestElementUpdate();
-        }, 300);
-        requestElementUpdate();
-        logEvent(ev.type);
-    }
-
     var initScale = 1;
     function onPinch(ev) {
         if(ev.type == 'pinchstart') {
@@ -176,9 +166,23 @@
         logEvent(ev.type);
     }
 
+    function onSwipe(ev) {
+        var angle = 50;
+        transform.ry = (ev.direction & Hammer.DIRECTION_HORIZONTAL) ? 1 : 0;
+        transform.rx = (ev.direction & Hammer.DIRECTION_VERTICAL) ? 1 : 0;
+        transform.angle = (ev.direction & (Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_UP)) ? angle : -angle;
+
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            resetElement();
+        }, 300);
+        requestElementUpdate();
+        logEvent(ev.type);
+    }
+
     function onTap(ev) {
         transform.rx = 1;
-        transform.angle = 30;
+        transform.angle = 25;
 
         clearTimeout(timer);
         timer = setTimeout(function () {
@@ -189,7 +193,7 @@
     }
 
     function onDoubleTap(ev) {
-        transform.ry = 1;
+        transform.rx = 1;
         transform.angle = 80;
 
         clearTimeout(timer);
