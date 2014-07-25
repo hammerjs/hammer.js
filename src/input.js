@@ -40,6 +40,7 @@ function Input(manager, callback) {
     var self = this;
     this.manager = manager;
     this.callback = callback;
+    this.element = manager.element;
     this.target = manager.options.inputTarget;
 
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
@@ -50,6 +51,7 @@ function Input(manager, callback) {
         }
     };
 
+    this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
     this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && addEventListeners(window, this.evWin, this.domHandler);
 }
@@ -65,6 +67,7 @@ Input.prototype = {
      * unbind the events
      */
     destroy: function() {
+        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
         this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
         this.evWin && removeEventListeners(window, this.evWin, this.domHandler);
     }
@@ -107,6 +110,7 @@ function inputHandler(manager, eventType, input) {
     if (isFirst) {
         manager.session = {};
     }
+
     // source event is the normalized value of the domEvents
     // like 'touchstart, mouseup, pointerdown'
     input.eventType = eventType;

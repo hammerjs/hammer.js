@@ -15,6 +15,7 @@
     "unused": true,
     "camelcase": true,
     "indent": 4,
+    "validthis": true,
     "globals": {
         "define": false
     }

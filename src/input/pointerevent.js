@@ -14,12 +14,12 @@ var IE10_POINTER_TYPE_ENUM = {
     5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
 };
 
-var POINTER_TARGET_EVENTS = 'pointerdown';
+var POINTER_ELEMENT_EVENTS = 'pointerdown';
 var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
 
 // IE10 has prefixed support, and case-sensitive
 if (window.MSPointerEvent) {
-    POINTER_TARGET_EVENTS = 'MSPointerDown';
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
     POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
 }
 
@@ -29,7 +29,7 @@ if (window.MSPointerEvent) {
  * @extends Input
  */
 function PointerEventInput() {
-    this.evTarget = POINTER_TARGET_EVENTS;
+    this.evEl = POINTER_ELEMENT_EVENTS;
     this.evWin = POINTER_WINDOW_EVENTS;
 
     Input.apply(this, arguments);

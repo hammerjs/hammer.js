@@ -26,7 +26,11 @@ inherit(TouchInput, Input, {
      */
     handler: function TEhandler(ev) {
         var type = TOUCH_INPUT_MAP[ev.type];
-        var touches = normalizeTouches(ev, this, type);
+        var touches = getTouches.call(this, ev, type);
+        if (!touches) {
+            return;
+        }
+
         this.callback(this.manager, type, {
             pointers: touches[0],
             changedPointers: touches[1],
@@ -37,15 +41,14 @@ inherit(TouchInput, Input, {
 });
 
 /**
- * make sure all browsers return the same touches
+ * @this {TouchInput}
  * @param {Object} ev
- * @param {TouchInput} touchInput
  * @param {Number} type flag
- * @returns {Array} [all, changed]
+ * @returns {undefined|Array} [all, changed]
  */
-function normalizeTouches(ev, touchInput, type) {
+function getTouches(ev, type) {
     var allTouches = toArray(ev.touches);
-    var targetIds = touchInput.targetIds;
+    var targetIds = this.targetIds;
 
     // when there is only one touch, the process can be simplified
     if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
@@ -75,6 +78,10 @@ function normalizeTouches(ev, touchInput, type) {
         if (type & (INPUT_END | INPUT_CANCEL)) {
             delete targetIds[changedTouches[i].identifier];
         }
+    }
+
+    if (!changedTargetTouches.length) {
+        return;
     }
 
     return [
