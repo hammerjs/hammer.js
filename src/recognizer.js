@@ -172,7 +172,7 @@ Recognizer.prototype = {
         var state = this.state;
 
         function emit(withState) {
-             self.manager.emit(self.options.event + (withState ? stateStr(state) : ''), input);
+            self.manager.emit(self.options.event + (withState ? stateStr(state) : ''), input);
         }
 
         // 'panstart' and 'panmove'
