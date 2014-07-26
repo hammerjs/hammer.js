@@ -37,6 +37,7 @@ Hammer.defaults = {
     touchAction: TOUCH_ACTION_COMPUTE,
 
     /**
+     * EXPERIMENTAL FEATURE
      * Change the parent input target element.
      * If Null, then it is being set the to main element.
      * @type {Null|EventTarget}
