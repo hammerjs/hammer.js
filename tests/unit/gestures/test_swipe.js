@@ -25,8 +25,5 @@ test('swipe can be recognized', function() {
 
     stop();
 
-    utils.dispatchTouchEvent(el, 'start', 50, 50);
-    utils.dispatchTouchEvent(el, 'move', 60, 50);
-    utils.dispatchTouchEvent(el, 'move', 70, 50);
-    utils.dispatchTouchEvent(el, 'end', 70, 50);
+    Simulator.gestures.swipe(el);
 });

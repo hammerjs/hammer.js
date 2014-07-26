@@ -155,14 +155,16 @@ function computeInputData(manager, input) {
     input.timeStamp = now();
     input.deltaTime = input.timeStamp - firstInput.timeStamp;
 
-    computeDeltaXY(session, input);
-
     input.angle = getAngle(offsetCenter, center);
     input.distance = getDistance(offsetCenter, center);
+
+    computeDeltaXY(session, input);
     input.offsetDirection = getDirection(input.deltaX, input.deltaY);
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+
+    computeIntervalInputData(session, input);
 
     // find the correct target
     var target = manager.element;
@@ -170,8 +172,6 @@ function computeInputData(manager, input) {
         target = input.srcEvent.target;
     }
     input.target = target;
-
-    computeIntervalInputData(session, input);
 }
 
 function computeDeltaXY(session, input) {
@@ -202,18 +202,11 @@ function computeDeltaXY(session, input) {
  * @param {Object} input
  */
 function computeIntervalInputData(session, input) {
-    var last = session.lastInterval;
-    if (!last) {
-        last = session.lastInterval = simpleCloneInputData(input);
-    }
+    var last = session.lastInterval || input,
+        deltaTime = input.timeStamp - last.timeStamp,
+        velocity, velocityX, velocityY, direction;
 
-    var deltaTime = input.timeStamp - last.timeStamp,
-        velocity,
-        velocityX,
-        velocityY,
-        direction;
-
-    if (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined) {
+    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
         var deltaX = last.deltaX - input.deltaX;
         var deltaY = last.deltaY - input.deltaY;
 
@@ -222,6 +215,8 @@ function computeIntervalInputData(session, input) {
         velocityY = v.y;
         velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
         direction = getDirection(deltaX, deltaY);
+
+        session.lastInterval = input;
     } else {
         // use latest velocity info if it doesn't overtake a minimum period
         velocity = last.velocity;
