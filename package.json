@@ -27,6 +27,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+	"hammer-simulator": "git://github.com/hammerjs/simulator#master",
+	"hammer-jquery": "git://github.com/hammerjs/jquery.hammer.js#master",
     "grunt": "0.4.x",
     "grunt-contrib-concat": "0.4.x",
     "grunt-contrib-connect": "0.7.x",
