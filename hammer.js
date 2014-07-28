@@ -1,4 +1,4 @@
-/*! Hammer.JS - v1.1.3 - 2014-05-22
+/*! Hammer.JS - v1.1.3 - 2014-07-28
  * http://eightmedia.github.io/hammer.js
  *
  * Copyright (c) 2014 Jorik Tangelder <j.tangelder@gmail.com>;
@@ -611,7 +611,7 @@ var Utils = Hammer.utils = {
      */
     toCamelCase: function toCamelCase(str) {
         return str.replace(/[_-]([a-z])/g, function(s) {
-            return s[1].toUpperCase();
+            return s.charAt(1).toUpperCase();
         });
     }
 };
@@ -693,8 +693,13 @@ var Event = Hammer.event = {
      * @param {Function} handler
      * @return onTouchHandler {Function} the core event handler
      */
-    onTouch: function onTouch(element, eventType, handler) {
+    onTouch: function onTouch(element, eventType, handler, options) {
         var self = this;
+        var opts = { mouseButtons: [0] };
+
+        if(options) {
+            opts = Utils.extend(opts, options);
+        }
 
         var onTouchHandler = function onTouchHandler(ev) {
             var srcType = ev.type.toLowerCase(),
@@ -708,11 +713,11 @@ var Event = Hammer.event = {
                 return;
 
             // mousebutton must be down
-            } else if(isMouse && eventType == EVENT_START && ev.button === 0) {
+            } else if(isMouse && eventType == EVENT_START && Utils.inArray(opts.mouseButtons, ev.button) !== false) {
                 self.preventMouseEvents = false;
                 self.shouldDetect = true;
             } else if(isPointer && eventType == EVENT_START) {
-                self.shouldDetect = (ev.buttons === 1 || PointerEvent.matchType(POINTER_TOUCH, ev));
+                self.shouldDetect = ((ev.buttons & (1 | 2 | 4)) !== 0 || PointerEvent.matchType(POINTER_TOUCH, ev));
             // just a valid start event, but no mouse
             } else if(!isMouse && eventType == EVENT_START) {
                 self.preventMouseEvents = true;
@@ -1319,7 +1324,7 @@ Hammer.Instance = function(element, options) {
         } else if(ev.eventType == EVENT_TOUCH) {
             Detection.detect(ev);
         }
-    });
+    }, this.options);
 
     /**
      * keep a list of user event handlers which needs to be removed when calling 'dispose'

@@ -456,7 +456,7 @@ var Utils = Hammer.utils = {
      */
     toCamelCase: function toCamelCase(str) {
         return str.replace(/[_-]([a-z])/g, function(s) {
-            return s[1].toUpperCase();
+            return s.charAt(1).toUpperCase();
         });
     }
 };
