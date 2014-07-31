@@ -51,7 +51,7 @@ function Input(manager, callback) {
         }
     };
 
-    this.initialize();
+    this.init();
 
 }
 
@@ -65,7 +65,7 @@ Input.prototype = {
     /**
      * bind the events
      */
-    initialize: function() {
+    init: function() {
         this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
         this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
         this.evWin && addEventListeners(window, this.evWin, this.domHandler);
