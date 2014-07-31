@@ -38,6 +38,17 @@ Manager.prototype = {
      */
     set: function(options) {
         extend(this.options, options);
+
+        //Options that need a little more setup
+        if ( options.touchAction) {
+            this.touchAction.set( options.touchAction);
+        }
+        if ( options.inputTarget) {
+            //Clean up existing event listeners and reinitialize
+            this.input.destroy();
+            this.input.target = options.inputTarget;
+            this.input.initialize();
+        }
         return this;
     },
 

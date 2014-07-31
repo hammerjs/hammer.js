@@ -51,9 +51,8 @@ function Input(manager, callback) {
         }
     };
 
-    this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
-    this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
-    this.evWin && addEventListeners(window, this.evWin, this.domHandler);
+    this.initialize();
+
 }
 
 Input.prototype = {
@@ -62,6 +61,15 @@ Input.prototype = {
      * @virtual
      */
     handler: function() { },
+
+    /**
+     * bind the events
+     */
+    initialize: function() {
+        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && addEventListeners(window, this.evWin, this.domHandler);
+    },
 
     /**
      * unbind the events
