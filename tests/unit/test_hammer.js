@@ -121,3 +121,25 @@ asyncTest('Should detect input while on other element', function() {
         start();
     });
 });
+
+/* Hammer.Manager constructor accepts a "recognizers" option in which each
+ * element is an array representation of a Recognizer.
+ */
+test('Hammer.Manager accepts recognizers as arrays.', function() {
+    expect(4);
+
+    hammer = new Hammer.Manager(el, {
+        recognizers: [
+            [Hammer.Swipe],
+            [Hammer.Pinch],
+            [Hammer.Rotate],
+            [Hammer.Pan, { direction: Hammer.DIRECTION_UP }, ['swipe', 'pinch'], ['rotate']]
+        ]
+    });
+    equal(4, hammer.recognizers.length);
+
+    var recognizerActual = hammer.recognizers[3];
+    equal(recognizerActual.options.direction, Hammer.DIRECTION_UP);
+    equal(2, Object.keys(recognizerActual.simultaneous).length);
+    equal(1, recognizerActual.requireFail.length);
+});
