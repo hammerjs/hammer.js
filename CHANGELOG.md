@@ -1,5 +1,9 @@
 # Changelog
 
+### 2.0.3 dev
+- Manager.set fixes. #628
+- Fix requireFailure() call in Manager.options.recognizers. #631
+
 ### 2.0.2, 2014-07-26
 - Improved mouse and pointer-events input, now able to move outside the window.
 - Added the export name (`Hammer`) as an argument to the wrapper.
