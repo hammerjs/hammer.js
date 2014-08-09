@@ -232,6 +232,10 @@ Manager.prototype = {
             data.srcEvent.preventDefault();
         };
 
+        data.stopPropagation = function() {
+            data.srcEvent.stopPropagation();
+        };
+
         for (var i = 0, len = handlers.length; i < len; i++) {
             handlers[i](data);
         }
