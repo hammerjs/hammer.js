@@ -91,7 +91,7 @@ function createInputInstance(manager) {
     var Type;
     var inputClass = manager.options.inputClass;
 
-    if(inputClass) {
+    if (inputClass) {
         Type = inputClass;
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
