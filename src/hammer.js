@@ -37,7 +37,13 @@ Hammer.defaults = {
     touchAction: TOUCH_ACTION_COMPUTE,
 
     /**
-     * EXPERIMENTAL FEATURE
+     * @type {Boolean}
+     * @default true
+     */
+    enable: true,
+
+    /**
+     * EXPERIMENTAL FEATURE -- can be removed/changed
      * Change the parent input target element.
      * If Null, then it is being set the to main element.
      * @type {Null|EventTarget}
@@ -46,10 +52,11 @@ Hammer.defaults = {
     inputTarget: null,
 
     /**
-     * @type {Boolean}
-     * @default true
+     * force an input class
+     * @type {Null|Function}
+     * @default null
      */
-    enable: true,
+    inputClass: null,
 
     /**
      * Default recognizer setup when calling `Hammer()`
