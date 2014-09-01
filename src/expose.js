@@ -25,6 +25,11 @@ extend(Hammer, {
     Input: Input,
     TouchAction: TouchAction,
 
+    TouchInput: TouchInput,
+    MouseInput: MouseInput,
+    PointerEventInput: PointerEventInput,
+    TouchMouseInput: TouchMouseInput,
+
     Recognizer: Recognizer,
     AttrRecognizer: AttrRecognizer,
     Tap: TapRecognizer,

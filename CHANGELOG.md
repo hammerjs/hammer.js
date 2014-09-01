@@ -5,6 +5,8 @@
 - Fix requireFailure() call in Manager.options.recognizers. 
 - Make DIRECTION_ALL for pan and swipe gestures less blocking.
 - Fix Swipe recognizer threshold option.
+- Expose the Input classes.
+- Added the option `inputClass` to set the used input handler.
 
 ### 2.0.2, 2014-07-26
 - Improved mouse and pointer-events input, now able to move outside the window.
