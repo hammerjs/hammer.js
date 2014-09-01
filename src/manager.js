@@ -91,7 +91,8 @@ Manager.prototype = {
             curRecognizer = session.curRecognizer = null;
         }
 
-        for (var i = 0, len = recognizers.length; i < len; i++) {
+        var i = 0;
+        while (i < recognizers.length) {
             recognizer = recognizers[i];
 
             // find out if we are allowed try to recognize the input for this one.
@@ -113,6 +114,7 @@ Manager.prototype = {
             if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
+            i++;
         }
     },
 
@@ -232,8 +234,10 @@ Manager.prototype = {
             data.srcEvent.preventDefault();
         };
 
-        for (var i = 0, len = handlers.length; i < len; i++) {
+        var i = 0;
+        while (i < handlers.length) {
             handlers[i](data);
+            i++;
         }
     },
 

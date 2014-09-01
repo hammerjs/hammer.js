@@ -56,20 +56,23 @@ function getTouches(ev, type) {
         return [allTouches, allTouches];
     }
 
-    var i, len;
-    var targetTouches = toArray(ev.targetTouches);
-    var changedTouches = toArray(ev.changedTouches);
-    var changedTargetTouches = [];
+    var i,
+        targetTouches = toArray(ev.targetTouches),
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [];
 
     // collect touches
     if (type === INPUT_START) {
-        for (i = 0, len = targetTouches.length; i < len; i++) {
+        i = 0;
+        while (i < targetTouches.length) {
             targetIds[targetTouches[i].identifier] = true;
+            i++;
         }
     }
 
     // filter changed touches to only contain touches that exist in the collected target ids
-    for (i = 0, len = changedTouches.length; i < len; i++) {
+    i = 0;
+    while (i < changedTouches.length) {
         if (targetIds[changedTouches[i].identifier]) {
             changedTargetTouches.push(changedTouches[i]);
         }
@@ -78,6 +81,7 @@ function getTouches(ev, type) {
         if (type & (INPUT_END | INPUT_CANCEL)) {
             delete targetIds[changedTouches[i].identifier];
         }
+        i++;
     }
 
     if (!changedTargetTouches.length) {

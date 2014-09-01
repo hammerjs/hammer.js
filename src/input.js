@@ -253,11 +253,13 @@ function simpleCloneInputData(input) {
     // make a simple copy of the pointers because we will get a reference if we don't
     // we only need clientXY for the calculations
     var pointers = [];
-    for (var i = 0; i < input.pointers.length; i++) {
+    var i = 0;
+    while (i < input.pointers.length) {
         pointers[i] = {
             clientX: round(input.pointers[i].clientX),
             clientY: round(input.pointers[i].clientY)
         };
+        i++;
     }
 
     return {
@@ -285,10 +287,13 @@ function getCenter(pointers) {
         };
     }
 
-    var x = 0, y = 0;
-    for (var i = 0; i < pointersLength; i++) {
+    var x = 0,
+        y = 0,
+        i = 0;
+    while (i < pointersLength) {
         x += pointers[i].clientX;
         y += pointers[i].clientY;
+        i++;
     }
 
     return {

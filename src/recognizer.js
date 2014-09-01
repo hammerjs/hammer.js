@@ -207,10 +207,12 @@ Recognizer.prototype = {
      * @returns {boolean}
      */
     canEmit: function() {
-        for (var i = 0; i < this.requireFail.length; i++) {
+        var i = 0;
+        while (i < this.requireFail.length) {
             if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
                 return false;
             }
+            i++;
         }
         return true;
     },
