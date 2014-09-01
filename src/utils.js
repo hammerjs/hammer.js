@@ -147,25 +147,25 @@ function ifUndefined(val1, val2) {
 
 /**
  * addEventListener with multiple events at once
- * @param {HTMLElement} element
+ * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
  */
-function addEventListeners(element, types, handler) {
+function addEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        element.addEventListener(type, handler, false);
+        target.addEventListener(type, handler, false);
     });
 }
 
 /**
  * removeEventListener with multiple events at once
- * @param {HTMLElement} element
+ * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
  */
-function removeEventListeners(element, types, handler) {
+function removeEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        element.removeEventListener(type, handler, false);
+        target.removeEventListener(type, handler, false);
     });
 }
 
@@ -293,4 +293,14 @@ function prefixed(obj, property) {
 var _uniqueId = 1;
 function uniqueId() {
     return _uniqueId++;
+}
+
+/**
+ * get the window object of an element
+ * @param {HTMLElement} element
+ * @returns {DocumentView|Window}
+ */
+function getWindowForElement(element) {
+    var doc = element.ownerDocument;
+    return (doc.defaultView || doc.parentWindow);
 }
