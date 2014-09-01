@@ -1,8 +1,10 @@
 # Changelog
 
 ### 2.0.3 dev
-- Manager.set fixes. 
+- Manager.set improvements. 
 - Fix requireFailure() call in Manager.options.recognizers. 
+- Make DIRECTION_ALL for pan and swipe gestures less blocking.
+- Fix Swipe recognizer treshold option.
 
 ### 2.0.2, 2014-07-26
 - Improved mouse and pointer-events input, now able to move outside the window.

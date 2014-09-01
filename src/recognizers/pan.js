@@ -25,11 +25,6 @@ inherit(PanRecognizer, AttrRecognizer, {
 
     getTouchAction: function() {
         var direction = this.options.direction;
-
-        if (direction === DIRECTION_ALL) {
-            return [TOUCH_ACTION_NONE];
-        }
-
         var actions = [];
         if (direction & DIRECTION_HORIZONTAL) {
             actions.push(TOUCH_ACTION_PAN_Y);
