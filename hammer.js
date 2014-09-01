@@ -351,9 +351,8 @@ function Input(manager, callback) {
         }
     };
 
-    this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
-    this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
-    this.evWin && addEventListeners(window, this.evWin, this.domHandler);
+    this.init();
+
 }
 
 Input.prototype = {
@@ -362,6 +361,15 @@ Input.prototype = {
      * @virtual
      */
     handler: function() { },
+
+    /**
+     * bind the events
+     */
+    init: function() {
+        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && addEventListeners(window, this.evWin, this.domHandler);
+    },
 
     /**
      * unbind the events
@@ -725,7 +733,7 @@ inherit(MouseInput, Input, {
             pointerType: INPUT_TYPE_MOUSE,
             srcEvent: ev
         });
-    },
+    }
 });
 
 var POINTER_INPUT_MAP = {
@@ -2019,7 +2027,7 @@ function Manager(element, options) {
     each(options.recognizers, function(item) {
         var recognizer = this.add(new (item[0])(item[1]));
         item[2] && recognizer.recognizeWith(item[2]);
-        item[3] && recognizer.requireFailure(item[2]);
+        item[3] && recognizer.requireFailure(item[3]);
     }, this);
 }
 
@@ -2031,6 +2039,17 @@ Manager.prototype = {
      */
     set: function(options) {
         extend(this.options, options);
+
+        // Options that need a little more setup
+        if (options.touchAction) {
+            this.touchAction.update();
+        }
+        if (options.inputTarget) {
+            // Clean up existing event listeners and reinitialize
+            this.input.destroy();
+            this.input.target = options.inputTarget;
+            this.input.init();
+        }
         return this;
     },
 
@@ -2212,6 +2231,10 @@ Manager.prototype = {
         data.type = event;
         data.preventDefault = function() {
             data.srcEvent.preventDefault();
+        };
+
+        data.stopPropagation = function() {
+            data.srcEvent.stopPropagation();
         };
 
         for (var i = 0, len = handlers.length; i < len; i++) {
