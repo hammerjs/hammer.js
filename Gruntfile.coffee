@@ -7,7 +7,7 @@ module.exports = (grunt) ->
 /*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n
  * <%= pkg.homepage %>\n
  *\n
- * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <<%= pkg.author.email %>>;\n
+ * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n
  * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
 
     concat:
