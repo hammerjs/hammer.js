@@ -1,6 +1,6 @@
 # Changelog
 
-### 2.0.3 dev
+### 2.0.3, 2014-09-10
 - Manager.set improvements. 
 - Fix requireFailure() call in Manager.options.recognizers. 
 - Make DIRECTION_ALL for pan and swipe gestures less blocking.
