@@ -92,10 +92,61 @@ asyncTest('recognize pinch', function() {
     });
 });
 
+asyncTest('recognize children multitouch pinch', function() {
+    expect(1);
+
+    var el1 = utils.createHitArea(el),
+        el2 = utils.createHitArea(el);
+
+    Simulator.gestures.pinch([el1, el2], { duration: 500, scale: .5 }, function() {
+        start();
+        deepEqual(events, {
+            pinch: true,
+            pinchstart: true,
+            pinchmove: true,
+            pinchend: true,
+            pinchin: true
+        });
+    });
+});
+
+asyncTest('recognize parent-child multitouch pinch', function() {
+    expect(1);
+
+    var el1 = utils.createHitArea(el);
+
+    Simulator.gestures.pinch([el, el1], { duration: 100, scale: .5 }, function() {
+        start();
+        deepEqual(events, {
+            pinch: true,
+            pinchstart: true,
+            pinchmove: true,
+            pinchend: true,
+            pinchin: true
+        });
+    });
+});
+
 asyncTest('recognize rotate', function() {
     expect(1);
 
     Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function() {
+        start();
+        deepEqual(events, {
+            rotate: true,
+            rotatestart: true,
+            rotatemove: true,
+            rotateend: true
+        });
+    });
+});
+
+asyncTest('recognize multitouch rotate', function() {
+    expect(1);
+
+    var el1 = utils.createHitArea(el);
+
+    Simulator.gestures.rotate([el, el1], { duration: 500, scale: 1 }, function() {
         start();
         deepEqual(events, {
             rotate: true,
