@@ -57,9 +57,15 @@ function getTouches(ev, type) {
     }
 
     var i,
-        targetTouches = toArray(ev.targetTouches),
+        targetTouches,
         changedTouches = toArray(ev.changedTouches),
-        changedTargetTouches = [];
+        changedTargetTouches = [],
+        target = this.target;
+
+    // get target touches from touches
+    targetTouches = allTouches.filter(function(touch) {
+        return hasParent(touch.target, target);
+    });
 
     // collect touches
     if (type === INPUT_START) {
