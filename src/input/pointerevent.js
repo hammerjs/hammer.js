@@ -52,16 +52,20 @@ inherit(PointerEventInput, Input, {
 
         var isTouch = (pointerType == INPUT_TYPE_TOUCH);
 
+        // get index of the event in the store
+        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
+
         // start and mouse must be down
         if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
-            store.push(ev);
+            if (storeIndex < 0) {
+                store.push(ev);
+                storeIndex = store.length - 1;
+            }
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         }
 
-        // get index of the event in the store
         // it not found, so the pointer hasn't been down (so it's probably a hover)
-        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
         if (storeIndex < 0) {
             return;
         }
