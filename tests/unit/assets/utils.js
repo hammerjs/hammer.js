@@ -36,12 +36,15 @@ var utils = {
         el.dispatchEvent(event);
     },
 
-    createHitArea: function() {
+    createHitArea: function(parent) {
+        if (parent == null) {
+            parent = document.getElementById('qunit-fixture')
+        }
         var hitArea = document.createElement('div');
         hitArea.style.background = '#eee';
         hitArea.style.height = '300px';
 
-        document.getElementById('qunit-fixture').appendChild(hitArea);
+        parent.appendChild(hitArea);
         return hitArea;
     }
 };
