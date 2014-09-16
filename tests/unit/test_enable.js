@@ -129,23 +129,20 @@ test('should accept a function parameter with `set`', function() {
 });
 
 test('should pass the recognizer and optional the input parameter to the `enable` callback', function() {
-    expect(3);
+    expect(2);
 
-    var tap,
-        event;
+    var tap;
 
     // the enable function is called initially to setup the touch-action property
     // at that moment there isnt any input
     var canEnable = function(recognizer, input) {
         equal(recognizer, tap);
-        input && equal(input.srcEvent, event);
         return true;
     };
     tap = new Hammer.Tap({enable: canEnable});
     hammer.add(tap);
 
-    event = utils.createTouchEvent('start', 50, 50, 0);
-    el.dispatchEvent(event);
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
 });
 
 test('should toggle based on other object method', function() {
