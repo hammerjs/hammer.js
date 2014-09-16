@@ -5,7 +5,8 @@ var TOUCH_INPUT_MAP = {
     touchcancel: INPUT_CANCEL
 };
 
-var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+var TOUCH_TARGET_EVENTS = 'touchstart';
+var TOUCH_WINDOW_EVENTS = 'touchmove touchend touchcancel';
 
 /**
  * Touch events input
@@ -14,6 +15,8 @@ var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
  */
 function TouchInput() {
     this.evTarget = TOUCH_TARGET_EVENTS;
+    this.evWin = TOUCH_WINDOW_EVENTS;
+    this.started = false;
 
     Input.apply(this, arguments);
 }
@@ -21,7 +24,22 @@ function TouchInput() {
 inherit(TouchInput, Input, {
     handler: function TEhandler(ev) {
         var type = TOUCH_INPUT_MAP[ev.type];
-        var touches = getTouches.call(this, ev, type);
+
+        // should we handle the touch events?
+        if (type === INPUT_START) {
+            this.started = true;
+        }
+
+        if (!this.started) {
+            return;
+        }
+
+        var touches = normalizeTouches.call(this, ev, type);
+
+        // when done, reset the started state
+        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+            this.started = false;
+        }
 
         this.callback(this.manager, type, {
             pointers: touches[0],
@@ -38,7 +56,7 @@ inherit(TouchInput, Input, {
  * @param {Number} type flag
  * @returns {undefined|Array} [all, changed]
  */
-function getTouches(ev, type) {
+function normalizeTouches(ev, type) {
     var all = toArray(ev.touches);
     var changed = toArray(ev.changedTouches);
 
