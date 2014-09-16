@@ -6,7 +6,7 @@ var TOUCH_INPUT_MAP = {
 };
 
 var TOUCH_TARGET_EVENTS = 'touchstart';
-var TOUCH_WINDOW_EVENTS = 'touchmove touchend touchcancel';
+var TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
@@ -60,7 +60,7 @@ function normalizeTouches(ev, type) {
     var all = toArray(ev.touches);
     var changed = toArray(ev.changedTouches);
 
-    if (type !== INPUT_MOVE) {
+    if (type & (INPUT_END | INPUT_CANCEL)) {
         all = uniqueArray(all.concat(changed), 'identifier', true);
     }
 
