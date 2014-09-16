@@ -9,14 +9,12 @@
 </head>
 <body>
     <div class="container">
-
         <div id="hit" class="bg1" style="padding: 30px; height: 200px;">
         </div>
 
         <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
 
         <pre id="log" style="overflow:hidden;"></pre>
-
     </div>
     <script src="../../hammer.js"></script>
     <script>
@@ -45,7 +43,7 @@
         mc.get('pinch').set({ enable: true });
 
         mc.on("hammer.input", function(ev) {
-            debug.innerHTML = ev.srcEvent.type +" "+ ev.eventType +" "+ ev.isFinal;
+            debug.innerHTML = [ev.srcEvent.type, ev.pointers.length, ev.isFinal, ev.deltaX, ev.deltaY].join("<br>");
         });
 
     </script>

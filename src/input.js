@@ -96,7 +96,7 @@ function createInputInstance(manager) {
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
     } else if (SUPPORT_ONLY_TOUCH) {
-        Type = TouchInput;
+        Type = MultiTouchInput;
     } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
@@ -287,9 +287,7 @@ function getCenter(pointers) {
         };
     }
 
-    var x = 0,
-        y = 0,
-        i = 0;
+    var x = 0, y = 0, i = 0;
     while (i < pointersLength) {
         x += pointers[i].clientX;
         y += pointers[i].clientY;

@@ -417,7 +417,7 @@ function createInputInstance(manager) {
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
     } else if (SUPPORT_ONLY_TOUCH) {
-        Type = TouchInput;
+        Type = MultiTouchInput;
     } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
@@ -608,9 +608,7 @@ function getCenter(pointers) {
         };
     }
 
-    var x = 0,
-        y = 0,
-        i = 0;
+    var x = 0, y = 0, i = 0;
     while (i < pointersLength) {
         x += pointers[i].clientX;
         y += pointers[i].clientY;
@@ -767,6 +765,105 @@ inherit(MouseInput, Input, {
     }
 });
 
+var MULTI_TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var MULTI_TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Multi-user touch events input
+ * @constructor
+ * @extends Input
+ */
+function MultiTouchInput() {
+    this.evTarget = MULTI_TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
+
+    Input.apply(this, arguments);
+}
+
+inherit(MultiTouchInput, Input, {
+    handler: function MTEhandler(ev) {
+        var type = MULTI_TOUCH_INPUT_MAP[ev.type];
+        var touches = getMultiTouches.call(this, ev, type);
+        if (!touches) {
+            return;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function getMultiTouches(ev, type) {
+    var allTouches = toArray(ev.touches);
+    var targetIds = this.targetIds;
+
+    // when there is only one touch, the process can be simplified
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        targetIds[allTouches[0].identifier] = true;
+        return [allTouches, allTouches];
+    }
+
+    var i,
+        targetTouches,
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [],
+        target = this.target;
+
+    // get target touches from touches
+    targetTouches = allTouches.filter(function(touch) {
+        return hasParent(touch.target, target);
+    });
+
+    // collect touches
+    if (type === INPUT_START) {
+        i = 0;
+        while (i < targetTouches.length) {
+            targetIds[targetTouches[i].identifier] = true;
+            i++;
+        }
+    }
+
+    // filter changed touches to only contain touches that exist in the collected target ids
+    i = 0;
+    while (i < changedTouches.length) {
+        if (targetIds[changedTouches[i].identifier]) {
+            changedTargetTouches.push(changedTouches[i]);
+        }
+
+        // cleanup removed touches
+        if (type & (INPUT_END | INPUT_CANCEL)) {
+            delete targetIds[changedTouches[i].identifier];
+        }
+        i++;
+    }
+
+    if (!changedTargetTouches.length) {
+        return;
+    }
+
+    return [
+        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        changedTargetTouches
+    ];
+}
+
 var POINTER_INPUT_MAP = {
     pointerdown: INPUT_START,
     pointermove: INPUT_MOVE,
@@ -821,16 +918,20 @@ inherit(PointerEventInput, Input, {
 
         var isTouch = (pointerType == INPUT_TYPE_TOUCH);
 
+        // get index of the event in the store
+        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
+
         // start and mouse must be down
         if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
-            store.push(ev);
+            if (storeIndex < 0) {
+                store.push(ev);
+                storeIndex = store.length - 1;
+            }
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         }
 
-        // get index of the event in the store
         // it not found, so the pointer hasn't been down (so it's probably a hover)
-        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
         if (storeIndex < 0) {
             return;
         }
@@ -868,22 +969,14 @@ var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
  */
 function TouchInput() {
     this.evTarget = TOUCH_TARGET_EVENTS;
-    this.targetIds = {};
 
     Input.apply(this, arguments);
 }
 
 inherit(TouchInput, Input, {
-    /**
-     * handle touch events
-     * @param {Object} ev
-     */
     handler: function TEhandler(ev) {
         var type = TOUCH_INPUT_MAP[ev.type];
         var touches = getTouches.call(this, ev, type);
-        if (!touches) {
-            return;
-        }
 
         this.callback(this.manager, type, {
             pointers: touches[0],
@@ -901,52 +994,14 @@ inherit(TouchInput, Input, {
  * @returns {undefined|Array} [all, changed]
  */
 function getTouches(ev, type) {
-    var allTouches = toArray(ev.touches);
-    var targetIds = this.targetIds;
+    var all = toArray(ev.touches);
+    var changed = toArray(ev.changedTouches);
 
-    // when there is only one touch, the process can be simplified
-    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
-        targetIds[allTouches[0].identifier] = true;
-        return [allTouches, allTouches];
+    if (type !== INPUT_MOVE) {
+        all = uniqueArray(all.concat(changed), 'identifier', true);
     }
 
-    var i,
-        targetTouches = toArray(ev.targetTouches),
-        changedTouches = toArray(ev.changedTouches),
-        changedTargetTouches = [];
-
-    // collect touches
-    if (type === INPUT_START) {
-        i = 0;
-        while (i < targetTouches.length) {
-            targetIds[targetTouches[i].identifier] = true;
-            i++;
-        }
-    }
-
-    // filter changed touches to only contain touches that exist in the collected target ids
-    i = 0;
-    while (i < changedTouches.length) {
-        if (targetIds[changedTouches[i].identifier]) {
-            changedTargetTouches.push(changedTouches[i]);
-        }
-
-        // cleanup removed touches
-        if (type & (INPUT_END | INPUT_CANCEL)) {
-            delete targetIds[changedTouches[i].identifier];
-        }
-        i++;
-    }
-
-    if (!changedTargetTouches.length) {
-        return;
-    }
-
-    return [
-        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
-        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
-        changedTargetTouches
-    ];
+    return [all, changed];
 }
 
 /**
@@ -2348,6 +2403,7 @@ extend(Hammer, {
     TouchAction: TouchAction,
 
     TouchInput: TouchInput,
+    MultiTouchInput: MultiTouchInput,
     MouseInput: MouseInput,
     PointerEventInput: PointerEventInput,
     TouchMouseInput: TouchMouseInput,
