@@ -2,13 +2,19 @@ module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON 'package.json'
 
-    meta:
-      banner: '
+    usebanner:
+      taskName:
+        options:
+          position: 'top'
+          banner: '
 /*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n
  * <%= pkg.homepage %>\n
  *\n
  * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n
- * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */\n\n'
+ * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */'
+          linebreak: true
+        files:
+          src: ['./hammer.js','./hammer.min.js']
 
     concat:
       build:
@@ -31,7 +37,6 @@ module.exports = (grunt) ->
         options:
           report: 'gzip'
           sourceMap: 'hammer.min.map'
-          banner: '<%= meta.banner %>'
         files:
           'hammer.min.js': ['hammer.js']
        # special test build that exposes everything so it's testable
@@ -107,11 +112,12 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-string-replace'
+  grunt.loadNpmTasks 'grunt-banner'
   grunt.loadNpmTasks 'grunt-jscs-checker'
 
   # Default task(s)
-  grunt.registerTask 'default', ['connect','watch']
-  grunt.registerTask 'default-test', ['connect', 'uglify:test','watch']
-  grunt.registerTask 'build', ['concat','string-replace','uglify:min','test']
-  grunt.registerTask 'test', ['jshint','jscs','uglify:test','qunit']
+  grunt.registerTask 'default', ['connect', 'watch']
+  grunt.registerTask 'default-test', ['connect', 'uglify:test', 'watch']
+  grunt.registerTask 'build', ['concat', 'string-replace', 'uglify:min', 'usebanner', 'test']
+  grunt.registerTask 'test', ['jshint', 'jscs', 'uglify:test', 'qunit']
   grunt.registerTask 'test-travis', ['build']

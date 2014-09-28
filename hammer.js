@@ -1,3 +1,8 @@
+/*! Hammer.JS - v2.0.4 - 2014-09-28
+ * http://hammerjs.github.io/
+ *
+ * Copyright (c) 2014 Jorik Tangelder;
+ * Licensed under the MIT license */
 (function(window, document, exportName, undefined) {
   'use strict';
 
@@ -417,7 +422,7 @@ function createInputInstance(manager) {
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
     } else if (SUPPORT_ONLY_TOUCH) {
-        Type = MultiTouchInput;
+        Type = TouchInput;
     } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
@@ -765,105 +770,6 @@ inherit(MouseInput, Input, {
     }
 });
 
-var MULTI_TOUCH_INPUT_MAP = {
-    touchstart: INPUT_START,
-    touchmove: INPUT_MOVE,
-    touchend: INPUT_END,
-    touchcancel: INPUT_CANCEL
-};
-
-var MULTI_TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
-
-/**
- * Multi-user touch events input
- * @constructor
- * @extends Input
- */
-function MultiTouchInput() {
-    this.evTarget = MULTI_TOUCH_TARGET_EVENTS;
-    this.targetIds = {};
-
-    Input.apply(this, arguments);
-}
-
-inherit(MultiTouchInput, Input, {
-    handler: function MTEhandler(ev) {
-        var type = MULTI_TOUCH_INPUT_MAP[ev.type];
-        var touches = getMultiTouches.call(this, ev, type);
-        if (!touches) {
-            return;
-        }
-
-        this.callback(this.manager, type, {
-            pointers: touches[0],
-            changedPointers: touches[1],
-            pointerType: INPUT_TYPE_TOUCH,
-            srcEvent: ev
-        });
-    }
-});
-
-/**
- * @this {TouchInput}
- * @param {Object} ev
- * @param {Number} type flag
- * @returns {undefined|Array} [all, changed]
- */
-function getMultiTouches(ev, type) {
-    var allTouches = toArray(ev.touches);
-    var targetIds = this.targetIds;
-
-    // when there is only one touch, the process can be simplified
-    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
-        targetIds[allTouches[0].identifier] = true;
-        return [allTouches, allTouches];
-    }
-
-    var i,
-        targetTouches,
-        changedTouches = toArray(ev.changedTouches),
-        changedTargetTouches = [],
-        target = this.target;
-
-    // get target touches from touches
-    targetTouches = allTouches.filter(function(touch) {
-        return hasParent(touch.target, target);
-    });
-
-    // collect touches
-    if (type === INPUT_START) {
-        i = 0;
-        while (i < targetTouches.length) {
-            targetIds[targetTouches[i].identifier] = true;
-            i++;
-        }
-    }
-
-    // filter changed touches to only contain touches that exist in the collected target ids
-    i = 0;
-    while (i < changedTouches.length) {
-        if (targetIds[changedTouches[i].identifier]) {
-            changedTargetTouches.push(changedTouches[i]);
-        }
-
-        // cleanup removed touches
-        if (type & (INPUT_END | INPUT_CANCEL)) {
-            delete targetIds[changedTouches[i].identifier];
-        }
-        i++;
-    }
-
-    if (!changedTargetTouches.length) {
-        return;
-    }
-
-    return [
-        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
-        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
-        changedTargetTouches
-    ];
-}
-
 var POINTER_INPUT_MAP = {
     pointerdown: INPUT_START,
     pointermove: INPUT_MOVE,
@@ -953,6 +859,75 @@ inherit(PointerEventInput, Input, {
     }
 });
 
+var SINGLE_TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
+var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Touch events input
+ * @constructor
+ * @extends Input
+ */
+function SingleTouchInput() {
+    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+    this.started = false;
+
+    Input.apply(this, arguments);
+}
+
+inherit(SingleTouchInput, Input, {
+    handler: function TEhandler(ev) {
+        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
+
+        // should we handle the touch events?
+        if (type === INPUT_START) {
+            this.started = true;
+        }
+
+        if (!this.started) {
+            return;
+        }
+
+        var touches = normalizeSingleTouches.call(this, ev, type);
+
+        // when done, reset the started state
+        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+            this.started = false;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function normalizeSingleTouches(ev, type) {
+    var all = toArray(ev.touches);
+    var changed = toArray(ev.changedTouches);
+
+    if (type & (INPUT_END | INPUT_CANCEL)) {
+        all = uniqueArray(all.concat(changed), 'identifier', true);
+    }
+
+    return [all, changed];
+}
+
 var TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
@@ -963,20 +938,24 @@ var TOUCH_INPUT_MAP = {
 var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
- * Touch events input
+ * Multi-user touch events input
  * @constructor
  * @extends Input
  */
 function TouchInput() {
     this.evTarget = TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
 
     Input.apply(this, arguments);
 }
 
 inherit(TouchInput, Input, {
-    handler: function TEhandler(ev) {
+    handler: function MTEhandler(ev) {
         var type = TOUCH_INPUT_MAP[ev.type];
         var touches = getTouches.call(this, ev, type);
+        if (!touches) {
+            return;
+        }
 
         this.callback(this.manager, type, {
             pointers: touches[0],
@@ -994,14 +973,58 @@ inherit(TouchInput, Input, {
  * @returns {undefined|Array} [all, changed]
  */
 function getTouches(ev, type) {
-    var all = toArray(ev.touches);
-    var changed = toArray(ev.changedTouches);
+    var allTouches = toArray(ev.touches);
+    var targetIds = this.targetIds;
 
-    if (type !== INPUT_MOVE) {
-        all = uniqueArray(all.concat(changed), 'identifier', true);
+    // when there is only one touch, the process can be simplified
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        targetIds[allTouches[0].identifier] = true;
+        return [allTouches, allTouches];
     }
 
-    return [all, changed];
+    var i,
+        targetTouches,
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [],
+        target = this.target;
+
+    // get target touches from touches
+    targetTouches = allTouches.filter(function(touch) {
+        return hasParent(touch.target, target);
+    });
+
+    // collect touches
+    if (type === INPUT_START) {
+        i = 0;
+        while (i < targetTouches.length) {
+            targetIds[targetTouches[i].identifier] = true;
+            i++;
+        }
+    }
+
+    // filter changed touches to only contain touches that exist in the collected target ids
+    i = 0;
+    while (i < changedTouches.length) {
+        if (targetIds[changedTouches[i].identifier]) {
+            changedTargetTouches.push(changedTouches[i]);
+        }
+
+        // cleanup removed touches
+        if (type & (INPUT_END | INPUT_CANCEL)) {
+            delete targetIds[changedTouches[i].identifier];
+        }
+        i++;
+    }
+
+    if (!changedTargetTouches.length) {
+        return;
+    }
+
+    return [
+        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        changedTargetTouches
+    ];
 }
 
 /**
@@ -1980,7 +2003,7 @@ function Hammer(element, options) {
 /**
  * @const {string}
  */
-Hammer.VERSION = '2.0.3';
+Hammer.VERSION = '2.0.4';
 
 /**
  * default settings
@@ -2403,10 +2426,10 @@ extend(Hammer, {
     TouchAction: TouchAction,
 
     TouchInput: TouchInput,
-    MultiTouchInput: MultiTouchInput,
     MouseInput: MouseInput,
     PointerEventInput: PointerEventInput,
     TouchMouseInput: TouchMouseInput,
+    SingleTouchInput: SingleTouchInput,
 
     Recognizer: Recognizer,
     AttrRecognizer: AttrRecognizer,
