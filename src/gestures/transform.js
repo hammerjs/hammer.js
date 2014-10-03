@@ -22,6 +22,10 @@
  * @param {Object} ev
  */
 /**
+ * @event pinch
+ * @param {Object} ev
+ */
+/**
  * @event pinchin
  * @param {Object} ev
  */
