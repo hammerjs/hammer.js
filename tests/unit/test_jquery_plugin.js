@@ -1,6 +1,6 @@
 var el, hammer, events;
 
-var jQueryPluginPath = '../../node_modules/hammer-jquery/jquery.hammer.js';
+var jQueryPluginPath = '../../node_modules/jquery-hammerjs/jquery.hammer.js';
 
 module('jQuery plugin', {
     setup: function() {
