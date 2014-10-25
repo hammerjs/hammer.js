@@ -312,6 +312,6 @@ function uniqueId() {
  * @returns {DocumentView|Window}
  */
 function getWindowForElement(element) {
-    var doc = element.ownerDocument;
-    return (doc.defaultView || doc.parentWindow);
+    var doc = element.ownerDocument || element;
+    return (doc.defaultView || doc.parentWindow || window);
 }
