@@ -81,7 +81,6 @@ module.exports = (grunt) ->
     jscs:
       src: [
         'src/**/*.js'
-        'tests/unit/*.js'
       ]
       options:
         config: "./.jscsrc"
@@ -113,7 +112,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-connect'
   grunt.loadNpmTasks 'grunt-string-replace'
   grunt.loadNpmTasks 'grunt-banner'
-  grunt.loadNpmTasks 'grunt-jscs-checker'
+  grunt.loadNpmTasks 'grunt-jscs'
 
   # Default task(s)
   grunt.registerTask 'default', ['connect', 'watch']
