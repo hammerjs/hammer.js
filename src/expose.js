@@ -50,7 +50,7 @@ extend(Hammer, {
     prefixed: prefixed
 });
 
-if (typeof define == TYPE_FUNCTION && define.amd) {
+if (typeof define === 'function' && define.amd) {
     define(function() {
         return Hammer;
     });
