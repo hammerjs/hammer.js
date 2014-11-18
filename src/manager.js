@@ -140,7 +140,7 @@ Manager.prototype = {
     /**
      * add a recognizer to the manager
      * existing recognizers with the same event name will be removed
-     * @param {Recognizer} recognizer
+     * @param {Recognizer|Recognizer[]} recognizer
      * @returns {Recognizer|Manager}
      */
     add: function(recognizer) {
@@ -163,7 +163,7 @@ Manager.prototype = {
 
     /**
      * remove a recognizer by name or instance
-     * @param {Recognizer|String} recognizer
+     * @param {Recognizer|Recognizer[]|String|String[]} recognizer
      * @returns {Manager}
      */
     remove: function(recognizer) {
