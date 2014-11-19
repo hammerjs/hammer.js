@@ -19,7 +19,7 @@ module.exports = (grunt) ->
     concat:
       build:
         src: [
-          'src/hammer.prefix'
+          'src/hammer.prefix.js'
           'src/utils.js'
           'src/input.js'
           'src/input/*.js'
@@ -29,7 +29,7 @@ module.exports = (grunt) ->
           'src/hammer.js'
           'src/manager.js'
           'src/expose.js'
-          'src/hammer.suffix']
+          'src/hammer.suffix.js']
         dest: 'hammer.js'
 
     uglify:
