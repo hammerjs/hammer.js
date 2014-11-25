@@ -27,10 +27,10 @@ inherit(PanRecognizer, AttrRecognizer, {
         var direction = this.options.direction;
         var actions = [];
         if (direction & DIRECTION_HORIZONTAL) {
-            actions.push(TOUCH_ACTION_PAN_Y);
+            actions.push(TOUCH_ACTION_PAN_X);
         }
         if (direction & DIRECTION_VERTICAL) {
-            actions.push(TOUCH_ACTION_PAN_X);
+            actions.push(TOUCH_ACTION_PAN_Y);
         }
         return actions;
     },
