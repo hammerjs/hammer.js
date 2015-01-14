@@ -268,7 +268,24 @@ Recognizer.prototype = {
      * like when another is being recognized or it is disabled
      * @virtual
      */
-    reset: function() { }
+    reset: function() { },
+
+    /**
+     * called when
+     * @param  {Event|string} event Event or event type
+     * @return {Boolean}            True if the Recognizer could trigger an event with this name
+     */
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+           event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return this.options.type === event;
+        } else {
+            return false;
+        }
+    }
 };
 
 /**

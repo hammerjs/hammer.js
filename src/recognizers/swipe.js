@@ -50,5 +50,21 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         this.manager.emit(this.options.event, input);
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.type + directionStr(DIRECTION_RIGHT));
+        } else {
+            return false;
+        }
     }
 });

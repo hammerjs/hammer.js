@@ -66,5 +66,18 @@ inherit(PressRecognizer, Recognizer, {
             this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + 'up');
+        } else {
+            return false;
+        }
     }
 });

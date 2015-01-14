@@ -34,5 +34,23 @@ inherit(PinchRecognizer, AttrRecognizer, {
             var inOut = input.scale < 1 ? 'in' : 'out';
             this.manager.emit(this.options.event + inOut, input);
         }
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + 'out') ||
+                   event === (this.options.type + 'in') ||
+                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.type + stateStr(STATE_ENDED)) ||
+                   event === (this.options.type + stateStr(STATE_CANCELLED));
+        } else {
+            return false;
+        }
     }
 });

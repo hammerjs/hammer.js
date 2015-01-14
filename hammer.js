@@ -1,7 +1,7 @@
-/*! Hammer.JS - v2.0.4 - 2014-09-28
+/*! Hammer.JS - v2.0.4 - 2015-01-14
  * http://hammerjs.github.io/
  *
- * Copyright (c) 2014 Jorik Tangelder;
+ * Copyright (c) 2015 Jorik Tangelder;
  * Licensed under the MIT license */
 (function(window, document, exportName, undefined) {
   'use strict';
@@ -320,8 +320,8 @@ function uniqueId() {
  * @returns {DocumentView|Window}
  */
 function getWindowForElement(element) {
-    var doc = element.ownerDocument;
-    return (doc.defaultView || doc.parentWindow);
+    var doc = element.ownerDocument || element;
+    return (doc.defaultView || doc.parentWindow || window);
 }
 
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
@@ -1114,7 +1114,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION) {
+        if (NATIVE_TOUCH_ACTION && this.manager.element.style) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value.toLowerCase().trim();
@@ -1484,7 +1484,24 @@ Recognizer.prototype = {
      * like when another is being recognized or it is disabled
      * @virtual
      */
-    reset: function() { }
+    reset: function() { },
+
+    /**
+     * called when
+     * @param  {Event|string} event Event or event type
+     * @return {Boolean}            True if the Recognizer could trigger an event with this name
+     */
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+           event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return this.options.type === event;
+        } else {
+            return false;
+        }
+    }
 };
 
 /**
@@ -1674,6 +1691,26 @@ inherit(PanRecognizer, AttrRecognizer, {
         }
 
         this._super.emit.call(this, input);
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.type + directionStr(DIRECTION_RIGHT)) ||
+                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.type + stateStr(STATE_ENDED)) ||
+                   event === (this.options.type + stateStr(STATE_CANCELLED));
+        } else {
+            return false;
+        }
     }
 });
 
@@ -1712,6 +1749,24 @@ inherit(PinchRecognizer, AttrRecognizer, {
         if (input.scale !== 1) {
             var inOut = input.scale < 1 ? 'in' : 'out';
             this.manager.emit(this.options.event + inOut, input);
+        }
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + 'out') ||
+                   event === (this.options.type + 'in') ||
+                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.type + stateStr(STATE_ENDED)) ||
+                   event === (this.options.type + stateStr(STATE_CANCELLED));
+        } else {
+            return false;
         }
     }
 });
@@ -1784,6 +1839,19 @@ inherit(PressRecognizer, Recognizer, {
             this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + 'up');
+        } else {
+            return false;
+        }
     }
 });
 
@@ -1815,6 +1883,22 @@ inherit(RotateRecognizer, AttrRecognizer, {
     attrTest: function(input) {
         return this._super.attrTest.call(this, input) &&
             (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.type + stateStr(STATE_ENDED)) ||
+                   event === (this.options.type + stateStr(STATE_CANCELLED));
+        } else {
+            return false;
+        }
     }
 });
 
@@ -1870,6 +1954,22 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         this.manager.emit(this.options.event, input);
+    },
+
+    respondsToEvent: function(event) {
+        if (typeof event === 'object' && event.hasOwnProperty('type')) {
+            event = event.type;
+        }
+
+        if (typeof event === 'string') {
+            return event === this.options.type ||
+                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.type + directionStr(DIRECTION_RIGHT));
+        } else {
+            return false;
+        }
     }
 });
 
@@ -1981,7 +2081,7 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function() {
-        if (this.state == STATE_RECOGNIZED ) {
+        if (this.state == STATE_RECOGNIZED) {
             this._input.tapCount = this.count;
             this.manager.emit(this.options.event, this._input);
         }
@@ -2055,12 +2155,12 @@ Hammer.defaults = {
      */
     preset: [
         // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
-        [RotateRecognizer, { enable: false }],
-        [PinchRecognizer, { enable: false }, ['rotate']],
-        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }],
-        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, ['swipe']],
+        [RotateRecognizer, {enable: false}],
+        [PinchRecognizer, {enable: false}, ['rotate']],
+        [SwipeRecognizer, {direction: DIRECTION_HORIZONTAL}],
+        [PanRecognizer, {direction: DIRECTION_HORIZONTAL}, ['swipe']],
         [TapRecognizer],
-        [TapRecognizer, { event: 'doubletap', taps: 2 }, ['tap']],
+        [TapRecognizer, {event: 'doubletap', taps: 2}, ['tap']],
         [PressRecognizer]
     ],
 
@@ -2249,10 +2349,11 @@ Manager.prototype = {
 
         var recognizers = this.recognizers;
         for (var i = 0; i < recognizers.length; i++) {
-            if (recognizers[i].options.event == recognizer) {
+            if (recognizers[i].respondsToEvent(recognizer)) {
                 return recognizers[i];
             }
         }
+
         return null;
     },
 
@@ -2381,6 +2482,9 @@ Manager.prototype = {
  */
 function toggleCssProps(manager, add) {
     var element = manager.element;
+    if (!element.style) {
+        return;
+    }
     each(manager.options.cssProps, function(value, name) {
         element.style[prefixed(element.style, name)] = add ? value : '';
     });

@@ -130,10 +130,11 @@ Manager.prototype = {
 
         var recognizers = this.recognizers;
         for (var i = 0; i < recognizers.length; i++) {
-            if (recognizers[i].options.event == recognizer) {
+            if (recognizers[i].respondsToEvent(recognizer)) {
                 return recognizers[i];
             }
         }
+
         return null;
     },
 
