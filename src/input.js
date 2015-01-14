@@ -46,7 +46,7 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if (ev instanceof TouchEvent && boolOrFn(manager.options.enable, [manager])) {
+        if (boolOrFn(manager.options.enable, [manager])) {
             self.handler(ev);
         }
     };

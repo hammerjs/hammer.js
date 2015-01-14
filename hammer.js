@@ -372,7 +372,7 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if (ev instanceof TouchEvent && boolOrFn(manager.options.enable, [manager])) {
+        if (boolOrFn(manager.options.enable, [manager])) {
             self.handler(ev);
         }
     };
@@ -2007,9 +2007,9 @@ inherit(TapRecognizer, Recognizer, {
         event: 'tap',
         pointers: 1,
         taps: 1,
-        interval: 499, // max time between the multi-tap taps
-        time: 499, // max time of the pointer to be down (like finger on the screen)
-        threshold: 10, // a minimal movement is ok, but keep it low
+        interval: 300, // max time between the multi-tap taps
+        time: 250, // max time of the pointer to be down (like finger on the screen)
+        threshold: 2, // a minimal movement is ok, but keep it low
         posThreshold: 10 // a multi-tap can be a bit off the initial position
     },
 

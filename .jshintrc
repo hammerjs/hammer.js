@@ -17,7 +17,6 @@
     "indent": 4,
     "validthis": true,
     "globals": {
-        "define": false,
-        "TouchEvent": true
+        "define": false
     }
 }
