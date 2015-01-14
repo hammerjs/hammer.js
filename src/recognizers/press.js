@@ -74,8 +74,8 @@ inherit(PressRecognizer, Recognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + 'up');
+            return event === this.options.event ||
+                   event === (this.options.event + 'up');
         } else {
             return false;
         }

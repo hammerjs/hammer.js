@@ -1493,11 +1493,11 @@ Recognizer.prototype = {
      */
     respondsToEvent: function(event) {
         if (typeof event === 'object' && event.hasOwnProperty('type')) {
-           event = event.type;
+            event = event.type;
         }
 
         if (typeof event === 'string') {
-            return this.options.type === event;
+            return this.options.event === event;
         } else {
             return false;
         }
@@ -1699,15 +1699,15 @@ inherit(PanRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
-                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
-                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
-                   event === (this.options.type + directionStr(DIRECTION_RIGHT)) ||
-                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
-                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
-                   event === (this.options.type + stateStr(STATE_ENDED)) ||
-                   event === (this.options.type + stateStr(STATE_CANCELLED));
+            return event === this.options.event ||
+                   event === (this.options.event + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.event + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.event + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.event + directionStr(DIRECTION_RIGHT)) ||
+                   event === (this.options.event + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.event + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.event + stateStr(STATE_ENDED)) ||
+                   event === (this.options.event + stateStr(STATE_CANCELLED));
         } else {
             return false;
         }
@@ -1758,13 +1758,13 @@ inherit(PinchRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + 'out') ||
-                   event === (this.options.type + 'in') ||
-                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
-                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
-                   event === (this.options.type + stateStr(STATE_ENDED)) ||
-                   event === (this.options.type + stateStr(STATE_CANCELLED));
+            return event === this.options.event ||
+                   event === (this.options.event + 'out') ||
+                   event === (this.options.event + 'in') ||
+                   event === (this.options.event + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.event + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.event + stateStr(STATE_ENDED)) ||
+                   event === (this.options.event + stateStr(STATE_CANCELLED));
         } else {
             return false;
         }
@@ -1847,8 +1847,8 @@ inherit(PressRecognizer, Recognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + 'up');
+            return event === this.options.event ||
+                   event === (this.options.event + 'up');
         } else {
             return false;
         }
@@ -1891,11 +1891,11 @@ inherit(RotateRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
-                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
-                   event === (this.options.type + stateStr(STATE_ENDED)) ||
-                   event === (this.options.type + stateStr(STATE_CANCELLED));
+            return event === this.options.event ||
+                   event === (this.options.event + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.event + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.event + stateStr(STATE_ENDED)) ||
+                   event === (this.options.event + stateStr(STATE_CANCELLED));
         } else {
             return false;
         }
@@ -1962,11 +1962,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
-                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
-                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
-                   event === (this.options.type + directionStr(DIRECTION_RIGHT));
+            return event === this.options.event ||
+                   event === (this.options.event + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.event + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.event + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.event + directionStr(DIRECTION_RIGHT));
         } else {
             return false;
         }

@@ -34,11 +34,11 @@ inherit(RotateRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + stateStr(STATE_BEGAN)) ||
-                   event === (this.options.type + stateStr(STATE_CHANGED)) ||
-                   event === (this.options.type + stateStr(STATE_ENDED)) ||
-                   event === (this.options.type + stateStr(STATE_CANCELLED));
+            return event === this.options.event ||
+                   event === (this.options.event + stateStr(STATE_BEGAN)) ||
+                   event === (this.options.event + stateStr(STATE_CHANGED)) ||
+                   event === (this.options.event + stateStr(STATE_ENDED)) ||
+                   event === (this.options.event + stateStr(STATE_CANCELLED));
         } else {
             return false;
         }

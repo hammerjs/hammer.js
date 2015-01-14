@@ -277,11 +277,11 @@ Recognizer.prototype = {
      */
     respondsToEvent: function(event) {
         if (typeof event === 'object' && event.hasOwnProperty('type')) {
-           event = event.type;
+            event = event.type;
         }
 
         if (typeof event === 'string') {
-            return this.options.type === event;
+            return this.options.event === event;
         } else {
             return false;
         }

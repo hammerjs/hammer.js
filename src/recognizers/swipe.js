@@ -58,11 +58,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         }
 
         if (typeof event === 'string') {
-            return event === this.options.type ||
-                   event === (this.options.type + directionStr(DIRECTION_DOWN)) ||
-                   event === (this.options.type + directionStr(DIRECTION_UP)) ||
-                   event === (this.options.type + directionStr(DIRECTION_LEFT)) ||
-                   event === (this.options.type + directionStr(DIRECTION_RIGHT));
+            return event === this.options.event ||
+                   event === (this.options.event + directionStr(DIRECTION_DOWN)) ||
+                   event === (this.options.event + directionStr(DIRECTION_UP)) ||
+                   event === (this.options.event + directionStr(DIRECTION_LEFT)) ||
+                   event === (this.options.event + directionStr(DIRECTION_RIGHT));
         } else {
             return false;
         }
