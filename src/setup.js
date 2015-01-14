@@ -17,9 +17,9 @@
  * @param {Object} [options={}]
  * @return {Hammer.Instance}
  */
-var Hammer = function Hammer(element, options) {
+function Hammer(element, options) {
     return new Hammer.Instance(element, options || {});
-};
+}
 
 /**
  * version, as defined in package.json
