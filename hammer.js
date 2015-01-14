@@ -1487,9 +1487,11 @@ Recognizer.prototype = {
     reset: function() { },
 
     /**
-     * called when
-     * @param  {Event|string} event Event or event type
-     * @return {Boolean}            True if the Recognizer could trigger an event with this name
+     * return a boolean value indicating if this recognizer is capable
+     * of emitting an event with the given name.
+     * @param  {Event|string} event Event or event name
+     * @return {Boolean}            True if the Recognizer could trigger
+     *                              an event with this name
      */
     respondsToEvent: function(event) {
         if (typeof event === 'object' && event.hasOwnProperty('type')) {
