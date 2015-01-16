@@ -205,8 +205,10 @@ function computeDeltaXY(session, input) {
         };
     }
 
-    input.deltaX = prevDelta.x + (center.x - offset.x);
-    input.deltaY = prevDelta.y + (center.y - offset.y);
+    input.deltaX = (center.x - offset.x) - prevDelta.x;
+    input.deltaY = (center.y - offset.y) - prevDelta.y;
+    prevDelta.x = (center.x - offset.x);
+    prevDelta.y = (center.y - offset.y);
 }
 
 /**
