@@ -1,6 +1,6 @@
 # Changelog
 
-### 2.0.4, development
+### 2.0.4, 2014-09-28
 - Fix IE pointer issue. [#665](https://github.com/hammerjs/hammer.js/pull/665)
 - Fix multi-touch at different elements. [#668](https://github.com/hammerjs/hammer.js/pull/668)
 - Added experimental [single-user Touch input handler](src/input/singletouch.js). This to improve performance/ux when only a single user has to be supported. Plans are to release 2.1 with this as default, and a settings to enable the multi-user handler.

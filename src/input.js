@@ -96,7 +96,7 @@ function createInputInstance(manager) {
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
     } else if (SUPPORT_ONLY_TOUCH) {
-        Type = MultiTouchInput;
+        Type = TouchInput;
     } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
