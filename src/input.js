@@ -178,6 +178,8 @@ function computeInputData(manager, input) {
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
 
     computeIntervalInputData(session, input);
+    
+    input.element = manager.element;
 
     // find the correct target
     var target = manager.element;
