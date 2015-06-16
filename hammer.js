@@ -583,30 +583,61 @@ var Event = Hammer.event = {
 
     var bindDomOnTouch = function bindDomOnTouch(ev) {
       var srcEventType = ev.type.toLowerCase();
+      var isTouch=Utils.inStr(srcEventType, 'touch');
+      var isPointer=!isTouch && Utils.inStr(srcEventType, 'pointer');
+      var isMouse=!isTouch && !isPointer && Utils.inStr(srcEventType, 'mouse');
+      var et=eventType; // allows inline chanegs of eventType which is defined in onTouch
+      var mouseBtn;
+                
+      if(isMouse)
+      {
+        var e=window.event || ev; // button state in IE is ok only in window.event
+        if ('buttons' in e) {
+            mouseBtn=e.buttons;
+        } else if ('which' in e) {
+            mouseBtn=e.which;
+        } else {
+            mouseBtn=e.button;
+        }      
+      }
 
       // onmouseup, but when touchend has been fired we do nothing.
       // this is for touchdevices which also fire a mouseup on touchend
-      if(Utils.inStr(srcEventType, 'mouse') && touch_triggered) {
+      if(isMouse && touch_triggered) {
         return;
       }
 
       // mousebutton must be down or a touch event
-      else if(Utils.inStr(srcEventType, 'touch') ||   // touch events are always on screen
-        Utils.inStr(srcEventType, 'pointerdown') || // pointerevents touch
-        (Utils.inStr(srcEventType, 'mouse') && ev.which === 1)   // mouse is pressed
+      else if(isTouch ||   // touch events are always on screen
+        (isPointer && Utils.inStr(srcEventType, 'down')) || // pointerevents touch
+        (isMouse && mouseBtn === 1)   // mouse is pressed
         ) {
         should_detect = true;
       }
 
       // mouse isn't pressed
-      else if(Utils.inStr(srcEventType, 'mouse') && !ev.which) {
-        should_detect = false;
+      else {
+        if((isMouse && !mouseBtn) 
+         ||(isPointer && ('buttons' in ev) && (!ev.buttons)
+                      && Utils.inStr(srcEventType, 'move') 
+                      && PointerEvent.matchType(POINTER_MOUSE, ev) 
+                       
+            )) 
+        {        
+          if(last_move_event) { 
+            // IE>=9 does not firing end events on scrollbars, 
+            // simulate end event when move occured without button down
+            et = EVENT_END;  
+            srcEventType=srcEventType.replace('move','up'); 
+            should_detect = true;
+          }
+          else should_detect = false;
+        }
       }
-
 
       // we are in a touch event, set the touch triggered bool to true,
       // this for the conflicts that may occur on ios and android
-      if(Utils.inStr(srcEventType, 'touch') || Utils.inStr(srcEventType, 'pointer')) {
+      if(isTouch || isPointer) {
         touch_triggered = true;
       }
 
@@ -617,11 +648,11 @@ var Event = Hammer.event = {
       // and we are now handling a mouse event, we stop that to prevent conflicts
       if(should_detect) {
         // update pointerevent
-        if(Hammer.HAS_POINTEREVENTS && eventType != EVENT_END) {
-          count_touches = PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && et != EVENT_END) {
+          count_touches = PointerEvent.updatePointer(et, ev);
         }
         // touch
-        else if(Utils.inStr(srcEventType, 'touch')) {
+        else if(isTouch) {
           count_touches = ev.touches.length;
         }
         // mouse
@@ -632,12 +663,12 @@ var Event = Hammer.event = {
 
         // if we are in a end event, but when we remove one touch and
         // we still have enough, set eventType to move
-        if(count_touches > 0 && eventType == EVENT_END) {
-          eventType = EVENT_MOVE;
+        if(count_touches > 0 && et == EVENT_END) {
+          et = EVENT_MOVE;
         }
         // no touches, force the end event
         else if(!count_touches) {
-          eventType = EVENT_END;
+          et = EVENT_END;
         }
 
         // store the last move event
@@ -647,13 +678,13 @@ var Event = Hammer.event = {
 
 
         // trigger the handler
-        handler.call(Detection, self.collectEventData(element, eventType,
-                                  self.getTouchList(last_move_event, eventType),
+        handler.call(Detection, self.collectEventData(element, et,
+                                  self.getTouchList(last_move_event, et),
                                   ev) );
 
         // remove pointerevent from list
-        if(Hammer.HAS_POINTEREVENTS && eventType == EVENT_END) {
-          count_touches = PointerEvent.updatePointer(eventType, ev);
+        if(Hammer.HAS_POINTEREVENTS && et == EVENT_END) {
+          count_touches = PointerEvent.updatePointer(et, ev);
         }
       }
 
@@ -832,9 +863,10 @@ var PointerEvent = Hammer.PointerEvent = {
     var pt = ev.pointerType
       , types = {};
 
-    types[POINTER_MOUSE] = (pt === POINTER_MOUSE);
-    types[POINTER_TOUCH] = (pt === POINTER_TOUCH);
-    types[POINTER_PEN] = (pt === POINTER_PEN);
+    types[POINTER_MOUSE] = (pt === (ev.MSPOINTER_TYPE_MOUSE || POINTER_MOUSE));
+    types[POINTER_TOUCH] = (pt === (ev.MSPOINTER_TYPE_TOUCH || POINTER_TOUCH));
+    types[POINTER_PEN] = (pt === (ev.MSPOINTER_TYPE_PEN || POINTER_PEN)); 
+    
     return types[pointerType];
   },
 
