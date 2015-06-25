@@ -40,10 +40,13 @@ var STATE_FAILED = 32;
  * @param {Object} options
  */
 function Recognizer(options) {
+    // make sure, options are copied over to a new object to prevent leaking it outside
+    options = extend({}, options || {});
+
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options || {}, this.defaults);
+    this.options = merge(options, this.defaults);
 
     // default is enable true
     this.options.enable = ifUndefined(this.options.enable, true);
