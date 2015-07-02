@@ -171,20 +171,24 @@ Recognizer.prototype = {
         var self = this;
         var state = this.state;
 
-        function emit(withState) {
-            self.manager.emit(self.options.event + (withState ? stateStr(state) : ''), input);
+        function emit(event) {
+            self.manager.emit(event, input);
         }
 
         // 'panstart' and 'panmove'
         if (state < STATE_ENDED) {
-            emit(true);
+            emit(self.options.event + stateStr(state));
         }
 
-        emit(); // simple 'eventName' events
+        emit(self.options.event); // simple 'eventName' events
+
+        if (input.additionalEvent) { // additional event(panleft, panright, pinchin, pinchout...)
+            emit(input.additionalEvent);
+        }
 
         // panend and pancancel
         if (state >= STATE_ENDED) {
-            emit(true);
+            emit(self.options.event + stateStr(state));
         }
     },
 
