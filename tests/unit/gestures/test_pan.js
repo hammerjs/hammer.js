@@ -34,3 +34,30 @@ test('`panstart` and `panmove` should be recognized', function() {
 
     equal(panMoveCount, 1);
 });
+
+asyncTest('Pan event flow should be start -> left -> end', function() {
+    expect(1);
+    var pan = new Hammer.Pan({threshold: 1});
+    hammer.add(pan);
+
+    var eventflow = "";
+    var isCalledPanleft = false;
+    hammer.on('panstart', function() {
+        eventflow += "start";
+    });
+    hammer.on('panleft', function() {
+        if(!isCalledPanleft){
+            isCalledPanleft = true;
+            eventflow += "left";
+        }
+    });
+    hammer.on('panend', function() {
+        eventflow += "end";
+        isCalledPanleft = true;
+    });
+
+    Simulator.gestures.pan(el, { deltaX: -100, deltaY: 0 }, function() {
+        equal(eventflow,"startleftend");
+        start();
+    });
+});
