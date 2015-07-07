@@ -122,7 +122,6 @@ Recognizer.prototype = {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
         if (inArray(requireFail, otherRecognizer) === -1) {
             requireFail.push(otherRecognizer);
-            otherRecognizer.requireFailure(this);
         }
         return this;
     },
