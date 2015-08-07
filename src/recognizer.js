@@ -76,7 +76,7 @@ Recognizer.prototype = {
 
     /**
      * recognize simultaneous with an other recognizer.
-     * @param {Recognizer} otherRecognizer
+     * @param {Recognizer|Recognizer[]} otherRecognizer
      * @returns {Recognizer} this
      */
     recognizeWith: function(otherRecognizer) {
@@ -95,7 +95,7 @@ Recognizer.prototype = {
 
     /**
      * drop the simultaneous link. it doesnt remove the link on the other recognizer.
-     * @param {Recognizer} otherRecognizer
+     * @param {Recognizer|Recognizer[]} otherRecognizer
      * @returns {Recognizer} this
      */
     dropRecognizeWith: function(otherRecognizer) {
@@ -110,7 +110,7 @@ Recognizer.prototype = {
 
     /**
      * recognizer can only run when an other is failing
-     * @param {Recognizer} otherRecognizer
+     * @param {Recognizer|Recognizer[]} otherRecognizer
      * @returns {Recognizer} this
      */
     requireFailure: function(otherRecognizer) {
@@ -129,7 +129,7 @@ Recognizer.prototype = {
 
     /**
      * drop the requireFailure link. it does not remove the link on the other recognizer.
-     * @param {Recognizer} otherRecognizer
+     * @param {Recognizer|Recognizer[]} otherRecognizer
      * @returns {Recognizer} this
      */
     dropRequireFailure: function(otherRecognizer) {

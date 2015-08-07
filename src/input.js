@@ -9,7 +9,7 @@ var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
 var INPUT_TYPE_KINECT = 'kinect';
 
-var COMPUTE_INTERVAL = 25;
+var COMPUTE_INTERVAL = 60;
 
 var INPUT_START = 1;
 var INPUT_MOVE = 2;
