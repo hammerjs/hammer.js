@@ -4,6 +4,11 @@ node_js:
 
 before_script:
   - npm install -g grunt-cli
+  # Install meteor
+  - curl https://install.meteor.com | /bin/sh
+  # Install spacejam, Meteor's CI helper
+  - npm install -g spacejam
 
 script:
   - grunt test-travis
+  - grunt meteor-test
