@@ -80,7 +80,9 @@ module.exports = (grunt) ->
 
     jscs:
       src: [
-        'src/**/*.js'
+        'src/**/*.js',
+        '!src/hammer.prefix.js',
+        '!src/hammer.suffix.js'
       ]
       options:
         config: "./.jscsrc"
