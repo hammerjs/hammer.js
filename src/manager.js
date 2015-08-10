@@ -8,7 +8,9 @@ var FORCED_STOP = 2;
  * @constructor
  */
 function Manager(element, options) {
-    options = options || {};
+
+    // make sure, options are copied over to a new object to prevent leaking it outside
+    options = extend({}, options || {});
 
     this.options = merge(options, Hammer.defaults);
     this.options.inputTarget = this.options.inputTarget || element;
