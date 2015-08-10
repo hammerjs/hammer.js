@@ -203,12 +203,10 @@ Manager.prototype = {
     off: function(events, handler) {
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
-            if (typeof handlers[event] !== 'undefined') {
-                if (!handler) {
-                    delete handlers[event];
-                } else {
-                    handlers[event].splice(inArray(handlers[event], handler), 1);
-                }
+            if (!handler) {
+                delete handlers[event];
+            } else {
+                handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
             }
         });
         return this;
