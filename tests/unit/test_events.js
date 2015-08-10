@@ -47,3 +47,15 @@ test('test the eventemitter', function() {
     ee.emit('testEvent2', inputData); // doenst trigger a thing
     ee.emit('testEvent3', inputData); // doenst trigger a thing
 });
+
+/*
+ * Hammer.Manager.off method : exception handling
+ */
+test("When Hammer.Manager didn't attach an event, 'off' method is ignored", function() {
+    var count = 0;
+    hammer = new Hammer(el, { inputTarget: document.body });
+    hammer.off("swipeleft", function(e) {
+        count++;
+    });
+    ok(true, "nothing");
+});
