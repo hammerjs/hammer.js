@@ -37,7 +37,7 @@ module('Gesture recognition', {
 asyncTest('recognize pan', function() {
     expect(1);
 
-    Simulator.gestures.pan(el, { deltaX: 100, deltaY: 0 }, function() {
+    Simulator.gestures.pan(el, { duration: 500, deltaX: 100, deltaY: 0 }, function() {
         start();
         deepEqual(events, {
             pan: true,
@@ -179,22 +179,30 @@ asyncTest('recognize rotate and pinch simultaneous', function() {
 asyncTest('don\'t recognize pan and swipe when moving down, when only horizontal is allowed', function() {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 500, deltaX: 0, deltaZ: 200 }, function() {
+    Simulator.gestures.swipe(el, { duration: 250, deltaX: 0, deltaZ: 200 }, function() {
         start();
         deepEqual(events, { });
     });
 });
 
-asyncTest('don\'t recognize press when a -invalid- tap has been done', function() {
+asyncTest('don\'t recognize press if duration is too short.', function() {
     expect(1);
 
-    Simulator.gestures.press(el, { duration: 500 });
-    setTimeout(function() {
-        Simulator.gestures.tap(el, { duration: 500 });
-    }, 200);
+    Simulator.gestures.press(el, { duration: 240 });
 
     setTimeout(function() {
         start();
-        deepEqual(events, { }, 'no gesture has been recognized. invalid tap and invalid press.');
-    }, 700);
+        deepEqual(events, { tap: true }, 'Tap gesture has been recognized.');
+    }, 275);
+});
+
+asyncTest('don\'t recognize tap if duration is too long.', function() {
+    expect(1);
+
+    Simulator.gestures.tap(el, { duration: 255 });
+
+    setTimeout(function() {
+        start();
+        deepEqual(events, { press: true }, 'Press gesture has been recognized.');
+    }, 275);
 });

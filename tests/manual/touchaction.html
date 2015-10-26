@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="assets/style.css">
     <title>Hammer.js</title>
 
@@ -47,7 +47,7 @@
         <div class="tester azure" id="auto"></div>
 
         <h2>touch-action: pan-y</h2>
-        <p>Should prevent scrolling on horizontal movement. This is set by default when creating an Hammer instance.</p>
+        <p>Should prevent scrolling on horizontal movement. This is set by default when creating a Hammer instance.</p>
         <div class="tester azure" id="pan-y"></div>
 
         <h2>touch-action: pan-x</h2>
@@ -55,7 +55,7 @@
         <div class="tester azure" id="pan-x"></div>
 
         <h2>touch-action: pan-x pan-y</h2>
-        <p>Should prevent scrolling on all movement.</p>
+        <p>Should <strong>not</strong> prevent any scrolling on any movement. Horizontal and vertical scrolling handled by the browser directly.</p>
         <div class="tester azure" id="pan-x-pan-y"></div>
 
         <h2>touch-action: none</h2>
