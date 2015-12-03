@@ -143,3 +143,17 @@ test('Hammer.Manager accepts recognizers as arrays.', function() {
     equal(2, Object.keys(recognizerActual.simultaneous).length);
     equal(1, recognizerActual.requireFail.length);
 });
+
+/*
+ * Removing a recognizer which cannot be found would errantly remove the last recognizer in the
+ * manager's list.
+ */
+test('Remove non-existent recognizer.', function() {
+    expect(1);
+
+    hammer = new Hammer(el, {recognizers: []});
+    hammer.add(new Hammer.Swipe());
+    hammer.remove('tap');
+
+    equal(1, hammer.recognizers.length);
+});
