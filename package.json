@@ -37,7 +37,7 @@
   },
   "main": "hammer.js",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=5.3.0"
   },
   "scripts": {
     "test": "grunt test"
