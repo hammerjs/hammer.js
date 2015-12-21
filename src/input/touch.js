@@ -91,8 +91,7 @@ function getTouches(ev, type) {
     }
 
     return [
-        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
-        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        targetTouches,
         changedTargetTouches
     ];
 }
