@@ -34,7 +34,7 @@ mc.on('rotate', function(e) {
 
 ## Contributing
 
-Read the [contributing guidelines]('./CONTRIBUTING.md).
+Read the [contributing guidelines](./CONTRIBUTING.md).
 
 For PRs.
 
