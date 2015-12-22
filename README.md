@@ -10,7 +10,7 @@
 
 Visit [hammerjs.github.io](http://hammerjs.github.io) for detailed documentation.
 
-```
+```js
 // get a reference to an element
 var stage = document.getElementById('stage');
 
