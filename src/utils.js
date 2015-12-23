@@ -68,30 +68,14 @@ function each(obj, iterator, context) {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean} [merge]
  * @returns {Object} dest
  */
-function extend(dest, src, merge) {
+function extend(dest, src) {
     var keys = Object.keys(src);
-    var i = 0;
-    while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
-            dest[keys[i]] = src[keys[i]];
-        }
-        i++;
+    for (var i = 0; i < keys.length; i++) {
+        dest[keys[i]] = src[keys[i]];
     }
     return dest;
-}
-
-/**
- * merge the values from src in the dest.
- * means that properties that exist in dest will not be overwritten by src
- * @param {Object} dest
- * @param {Object} src
- * @returns {Object} dest
- */
-function merge(dest, src) {
-    return extend(dest, src, true);
 }
 
 /**
