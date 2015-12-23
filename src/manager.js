@@ -8,9 +8,7 @@ var FORCED_STOP = 2;
  * @constructor
  */
 function Manager(element, options) {
-    var defaultOptions = extend({}, Hammer.defaults);
-    var newOptions = extend({}, options || {});
-    this.options = extend(defaultOptions, newOptions);
+    this.options = assign({}, Hammer.defaults, options || {});
 
     this.options.inputTarget = this.options.inputTarget || element;
 
@@ -38,7 +36,7 @@ Manager.prototype = {
      * @returns {Manager}
      */
     set: function(options) {
-        extend(this.options, options);
+        assign(this.options, options);
 
         // Options that need a little more setup
         if (options.touchAction) {
