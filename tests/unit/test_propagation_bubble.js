@@ -3,7 +3,7 @@ var parent,
     hammerChild,
     hammerParent;
 
-module('Propagation (Tap in Child and Parent)', {
+module('Propagation:Bubble (Tap in Child and Parent)', {
     setup: function() {
         parent = document.createElement('div');
         child = document.createElement('div');

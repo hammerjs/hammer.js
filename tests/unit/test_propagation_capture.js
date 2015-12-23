@@ -3,7 +3,7 @@ var parent,
     hammerChild,
     hammerParent;
 
-module('Propagation (Tap in Child and Parent)', {
+module('Propagation:Capture (Tap in Child and Parent)', {
     setup: function() {
         parent = document.createElement('div');
         child = document.createElement('div');
@@ -11,8 +11,12 @@ module('Propagation (Tap in Child and Parent)', {
         document.getElementById('qunit-fixture').appendChild(parent);
         parent.appendChild(child);
 
-        hammerParent = new Hammer.Manager(parent);
-        hammerChild = new Hammer.Manager(child);
+        hammerParent = new Hammer.Manager(parent, {
+            useCapture: true
+        });
+        hammerChild = new Hammer.Manager(child, {
+            useCapture: true
+        });
 
         hammerChild.add(new Hammer.Tap());
         hammerParent.add(new Hammer.Tap());
