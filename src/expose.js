@@ -1,4 +1,4 @@
-extend(Hammer, {
+assign(Hammer, {
     INPUT_START: INPUT_START,
     INPUT_MOVE: INPUT_MOVE,
     INPUT_END: INPUT_END,
@@ -45,6 +45,7 @@ extend(Hammer, {
     each: each,
     merge: merge,
     extend: extend,
+    assign: assign,
     inherit: inherit,
     bindFn: bindFn,
     prefixed: prefixed

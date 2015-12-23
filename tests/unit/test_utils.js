@@ -130,10 +130,10 @@ test('each', function() {
     ok(loop == 3, 'array loop without Array.forEach');
 });
 
-test('extend', function() {
+test('assign', function() {
     expect(2);
     deepEqual(
-        $H.extend(
+        $H.assign(
             {a: 1, b: 3},
             {b: 2, c: 3}
         ),
@@ -142,24 +142,7 @@ test('extend', function() {
     );
 
     var src = { foo: true };
-    var dest = $H.extend({}, src);
-    src.foo = false;
-    deepEqual(dest, {foo: true}, 'Clone reference');
-});
-
-test('merge', function() {
-    expect(2);
-    deepEqual(
-        $H.merge(
-            {a: 1, b: 3},
-            {b: 2, c: 3}
-        ),
-        {a: 1, b: 3, c: 3},
-        'Simple extend'
-    );
-
-    var src = { foo: true };
-    var dest = $H.merge({ foo: true }, src);
+    var dest = $H.assign({}, src);
     src.foo = false;
     deepEqual(dest, {foo: true}, 'Clone reference');
 });

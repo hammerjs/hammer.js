@@ -40,13 +40,11 @@ var STATE_FAILED = 32;
  * @param {Object} options
  */
 function Recognizer(options) {
-    // make sure, options are copied over to a new object to prevent leaking it outside
-    options = extend({}, options || {});
+    this.options = assign({}, this.defaults, options || {});
 
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options, this.defaults);
 
     // default is enable true
     this.options.enable = ifUndefined(this.options.enable, true);
@@ -70,7 +68,7 @@ Recognizer.prototype = {
      * @return {Recognizer}
      */
     set: function(options) {
-        extend(this.options, options);
+        assign(this.options, options);
 
         // also update the touchAction, in case something changed about the directions/enabled state
         this.manager && this.manager.touchAction.update();
@@ -231,7 +229,7 @@ Recognizer.prototype = {
     recognize: function(inputData) {
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
-        var inputDataClone = extend({}, inputData);
+        var inputDataClone = assign({}, inputData);
 
         // is is enabled and allow recognizing?
         if (!boolOrFn(this.options.enable, [this, inputDataClone])) {

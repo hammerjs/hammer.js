@@ -64,14 +64,68 @@ function each(obj, iterator, context) {
 }
 
 /**
+ * wrap a method with a deprecation warning and stack trace
+ * @param {Function} method
+ * @param {String} name
+ * @param {String} message
+ * @returns {Function} A new function wrapping the supplied method.
+ */
+function deprecate(method, name, message) {
+    var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
+    return function() {
+        var e = new Error('get-stack-trace');
+        var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+            .replace(/^\s+at\s+/gm, '')
+            .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@') : 'Unknown Stack Trace';
+
+        var log = window.console && (window.console.warn || window.console.log);
+        if (log) {
+            log.call(window.console, deprecationMessage, stack);
+        }
+        return method.apply(this, arguments);
+    };
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param {Object} target
+ * @param {...Object} objects_to_assign
+ * @returns {Object} target
+ */
+var assign;
+if (typeof Object.assign !== 'function') {
+    assign = function assign(target) {
+        if (target === undefined || target === null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        var output = Object(target);
+        for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source !== undefined && source !== null) {
+                for (var nextKey in source) {
+                    if (source.hasOwnProperty(nextKey)) {
+                        output[nextKey] = source[nextKey];
+                    }
+                }
+            }
+        }
+        return output;
+    };
+} else {
+    assign = Object.assign;
+}
+
+/**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean} [merge]
+ * @param {Boolean=false} [merge]
  * @returns {Object} dest
  */
-function extend(dest, src, merge) {
+var extend = deprecate(function extend(dest, src, merge) {
     var keys = Object.keys(src);
     var i = 0;
     while (i < keys.length) {
@@ -81,7 +135,7 @@ function extend(dest, src, merge) {
         i++;
     }
     return dest;
-}
+}, 'extend', 'Use `assign`.');
 
 /**
  * merge the values from src in the dest.
@@ -90,9 +144,9 @@ function extend(dest, src, merge) {
  * @param {Object} src
  * @returns {Object} dest
  */
-function merge(dest, src) {
+var merge = deprecate(function merge(dest, src) {
     return extend(dest, src, true);
-}
+}, 'merge', 'Use `assign`.');
 
 /**
  * simple class inheritance
@@ -109,7 +163,7 @@ function inherit(child, base, properties) {
     childP._super = baseP;
 
     if (properties) {
-        extend(childP, properties);
+        assign(childP, properties);
     }
 }
 
