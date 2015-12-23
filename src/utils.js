@@ -39,7 +39,7 @@ function invokeArrayArg(arg, fn, context) {
  * walk objects and arrays
  * @param {Object} obj
  * @param {Function} iterator
- * @param {Object} context
+ * @param {Object=null} [context]
  */
 function each(obj, iterator, context) {
     var i;
@@ -154,10 +154,11 @@ function ifUndefined(val1, val2) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean} useCapture
  */
-function addEventListeners(target, types, handler) {
+function addEventListeners(target, types, handler, useCapture) {
     each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, false);
+        target.addEventListener(type, handler, useCapture);
     });
 }
 
@@ -166,10 +167,11 @@ function addEventListeners(target, types, handler) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean} useCapture
  */
-function removeEventListeners(target, types, handler) {
+function removeEventListeners(target, types, handler, useCapture) {
     each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, false);
+        target.removeEventListener(type, handler, useCapture);
     });
 }
 
