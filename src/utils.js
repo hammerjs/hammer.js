@@ -83,7 +83,7 @@ function deprecate(method, name, message) {
             log.call(window.console, deprecationMessage, stack);
         }
         return method.apply(this, arguments);
-    }
+    };
 }
 
 /**
@@ -96,7 +96,6 @@ function deprecate(method, name, message) {
 var assign;
 if (typeof Object.assign !== 'function') {
     assign = function assign(target) {
-        'use strict';
         if (target === undefined || target === null) {
             throw new TypeError('Cannot convert undefined or null to object');
         }
@@ -113,7 +112,7 @@ if (typeof Object.assign !== 'function') {
             }
         }
         return output;
-    }
+    };
 } else {
     assign = Object.assign;
 }
