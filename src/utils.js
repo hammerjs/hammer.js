@@ -39,7 +39,7 @@ function invokeArrayArg(arg, fn, context) {
  * walk objects and arrays
  * @param {Object} obj
  * @param {Function} iterator
- * @param {Object} context
+ * @param {Object=null} [context]
  */
 function each(obj, iterator, context) {
     var i;
@@ -68,30 +68,14 @@ function each(obj, iterator, context) {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean} [merge]
  * @returns {Object} dest
  */
-function extend(dest, src, merge) {
+function extend(dest, src) {
     var keys = Object.keys(src);
-    var i = 0;
-    while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
-            dest[keys[i]] = src[keys[i]];
-        }
-        i++;
+    for (var i = 0; i < keys.length; i++) {
+        dest[keys[i]] = src[keys[i]];
     }
     return dest;
-}
-
-/**
- * merge the values from src in the dest.
- * means that properties that exist in dest will not be overwritten by src
- * @param {Object} dest
- * @param {Object} src
- * @returns {Object} dest
- */
-function merge(dest, src) {
-    return extend(dest, src, true);
 }
 
 /**
@@ -154,10 +138,11 @@ function ifUndefined(val1, val2) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean} useCapture
  */
-function addEventListeners(target, types, handler) {
+function addEventListeners(target, types, handler, useCapture) {
     each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, false);
+        target.addEventListener(type, handler, useCapture);
     });
 }
 
@@ -166,10 +151,11 @@ function addEventListeners(target, types, handler) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean} useCapture
  */
-function removeEventListeners(target, types, handler) {
+function removeEventListeners(target, types, handler, useCapture) {
     each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, false);
+        target.removeEventListener(type, handler, useCapture);
     });
 }
 

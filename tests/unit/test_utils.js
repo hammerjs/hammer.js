@@ -147,23 +147,6 @@ test('extend', function() {
     deepEqual(dest, {foo: true}, 'Clone reference');
 });
 
-test('merge', function() {
-    expect(2);
-    deepEqual(
-        $H.merge(
-            {a: 1, b: 3},
-            {b: 2, c: 3}
-        ),
-        {a: 1, b: 3, c: 3},
-        'Simple extend'
-    );
-
-    var src = { foo: true };
-    var dest = $H.merge({ foo: true }, src);
-    src.foo = false;
-    deepEqual(dest, {foo: true}, 'Clone reference');
-});
-
 test('test add/removeEventListener', function() {
     function handleEvent() {
         ok(true, 'triggered event');

@@ -124,5 +124,27 @@ Hammer.defaults = {
          * @default 'rgba(0,0,0,0)'
          */
         tapHighlightColor: 'rgba(0,0,0,0)'
-    }
+    },
+
+    /**
+     * set to `true` to  have Hammer.Manager's event handlers trigger during the `capture`
+     * event phase instead of the `bubble` event phase.
+     *
+     * This tends to be faster and more reliable than traditional bubbling.
+     *
+     * @type {Boolean}
+     * @default false
+     */
+    useCapture: false,
+
+    /**
+     * set to `true` to have a Hammer.Manager's event handlers attach to the window
+     * instead of the element supplied to the Manager when `useCapture` is also `true`.
+     *
+     * This also tends to be faster and more reliable than traditional bubbling.
+     *
+     * @type {Boolean}
+     * @default false
+     */
+    useCaptureOnRoot: false
 };
