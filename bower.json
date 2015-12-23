@@ -4,6 +4,7 @@
     "ignore": [
         "tests",
         "src",
+        ".bowerrc",
         ".gitignore",
         ".jscsrc",
         ".jshintrc",
