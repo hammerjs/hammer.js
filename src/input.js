@@ -70,14 +70,14 @@ Input.prototype = {
     init: function() {
         if (this.evEl) {
             addEventListeners(
-                this.useCaptureOnRoot ? getWindowForElement(this.element) : this.element,
+                this.useCapture && this.useCaptureOnRoot ? getWindowForElement(this.element) : this.element,
                 this.evEl,
                 this.domHandler,
                 this.useCapture);
         }
         if (this.evTarget) {
             addEventListeners(
-                this.useCaptureOnRoot ? getWindowForElement(this.target) : this.target,
+                this.useCapture && this.useCaptureOnRoot ? getWindowForElement(this.target) : this.target,
                 this.evTarget,
                 this.domHandler,
                 this.useCapture);
