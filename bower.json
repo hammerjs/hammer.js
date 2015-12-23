@@ -3,6 +3,13 @@
     "main": "hammer.js",
     "ignore": [
         "tests",
-        "src"
+        "src",
+        ".gitignore",
+        ".jscsrc",
+        ".jshintrc",
+        ".travis.yml",
+        "component.json",
+        "Gruntfile.coffee",
+        "package.json"
     ]
 }
