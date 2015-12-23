@@ -43,7 +43,7 @@ extend(Hammer, {
     on: addEventListeners,
     off: removeEventListeners,
     each: each,
-    merge: merge,
+    merge: extend,
     extend: extend,
     inherit: inherit,
     bindFn: bindFn,

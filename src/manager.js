@@ -8,8 +8,9 @@ var FORCED_STOP = 2;
  * @constructor
  */
 function Manager(element, options) {
-    var newOptions = options ? extend({}, options) : {};
-    this.options = merge(newOptions, Hammer.defaults);
+    var defaultOptions = extend({}, Hammer.defaults);
+    var newOptions = extend({}, options || {});
+    this.options = extend(defaultOptions, newOptions);
 
     this.options.inputTarget = this.options.inputTarget || element;
 
