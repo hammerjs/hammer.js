@@ -43,6 +43,7 @@ function Input(manager, callback) {
     this.element = manager.element;
     this.target = manager.options.inputTarget;
     this.useCapture = manager.options.useCapture || false;
+    this.useCaptureOnRoot = manager.options.useCaptureOnRoot || false;
 
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
@@ -67,8 +68,8 @@ Input.prototype = {
      * bind the events
      */
     init: function() {
-        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler, this.useCapture);
-        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler, this.useCapture);
+        this.evEl && addEventListeners(this.useCaptureOnRoot ? getWindowForElement(this.element) : this.element, this.evEl, this.domHandler, this.useCapture);
+        this.evTarget && addEventListeners(this.useCaptureOnRoot ? getWindowForElement(this.target) : this.target, this.evTarget, this.domHandler, this.useCapture);
         this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler, this.useCapture);
     },
 
@@ -76,8 +77,8 @@ Input.prototype = {
      * unbind the events
      */
     destroy: function() {
-        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler, this.useCapture);
-        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler, this.useCapture);
+        this.evEl && removeEventListeners(this.useCaptureOnRoot ? getWindowForElement(this.element) : this.element, this.evEl, this.domHandler, this.useCapture);
+        this.evTarget && removeEventListeners(this.useCaptureOnRoot ? getWindowForElement(this.target) : this.target, this.evTarget, this.domHandler, this.useCapture);
         this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler, this.useCapture);
     }
 };
