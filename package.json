@@ -2,7 +2,7 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.5",
+  "version": "2.0.4",
   "homepage": "http://hammerjs.github.io/",
   "license": "MIT",
   "keywords": [
@@ -13,6 +13,16 @@
     "name": "Jorik Tangelder",
     "email": "j.tangelder@gmail.com"
   },
+  "contributors": [
+    {
+      "name": "Alexander Schmitz",
+      "email": "arschmitz@gmail.com"
+    },
+    {
+      "name": "Chris Thoburn",
+      "email": ""
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/hammerjs/hammer.js.git"
@@ -22,6 +32,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "changelogplease": "^1.2.0",
+    "git-tags": "^0.2.4",
     "grunt": "0.4.x",
     "grunt-banner": "^0.2.3",
     "grunt-contrib-concat": "0.4.x",
@@ -32,8 +44,8 @@
     "grunt-contrib-watch": "0.6.x",
     "grunt-jscs": "^0.8.0",
     "grunt-string-replace": "^0.2.7",
-    "jquery-hammerjs": "2.0.x",
-    "hammer-simulator": "git://github.com/hammerjs/simulator#master"
+    "hammer-simulator": "git://github.com/hammerjs/simulator#master",
+    "jquery-hammerjs": "2.0.x"
   },
   "main": "hammer.js",
   "engines": {
