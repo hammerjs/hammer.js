@@ -185,7 +185,7 @@ function computeInputData(manager, input) {
     input.maxPointers = !session.prevInput ? input.pointers.length : ((input.pointers.length >
         session.prevInput.maxPointers) ? input.pointers.length : session.prevInput.maxPointers);
 
-    computeIntervalInputData(session, input);
+    computeIntervalInputData(session, input, manager.options.computeInterval);
 
     // find the correct target
     var target = manager.element;
@@ -222,12 +222,12 @@ function computeDeltaXY(session, input) {
  * @param {Object} session
  * @param {Object} input
  */
-function computeIntervalInputData(session, input) {
+function computeIntervalInputData(session, input, computeInterval) {
     var last = session.lastInterval || input,
         deltaTime = input.timeStamp - last.timeStamp,
         velocity, velocityX, velocityY, direction;
 
-    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
+    if (input.eventType != INPUT_CANCEL && (deltaTime > computeInterval || last.velocity === undefined)) {
         var deltaX = input.deltaX - last.deltaX;
         var deltaY = input.deltaY - last.deltaY;
 
