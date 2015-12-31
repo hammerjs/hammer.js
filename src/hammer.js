@@ -20,6 +20,15 @@ Hammer.VERSION = '{{PKG_VERSION}}';
  * @namespace
  */
 Hammer.defaults = {
+
+    /**
+     * The minimum interval (in ms) between two events for them to be considered as separate.
+     * Increasing this may improve event detection correctness on lower-end browsers.
+     * @type {Integer}     
+     * @default 25
+     */
+    computeInterval: COMPUTE_INTERVAL,
+
     /**
      * set if DOM events are being triggered.
      * But this is slower and unused by simple implementations, so disabled by default.

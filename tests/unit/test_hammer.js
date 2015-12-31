@@ -157,3 +157,13 @@ test('Remove non-existent recognizer.', function() {
 
     equal(1, hammer.recognizers.length);
 });
+
+test('Can set the computeInterval as an option', function() {
+    hammer = new Hammer(el);
+
+    equal(25, hammer.options.computeInterval);
+
+    hammer = new Hammer(el, {computeInterval: 100});
+
+    equal(100, hammer.options.computeInterval);
+});
