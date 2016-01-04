@@ -157,3 +157,23 @@ test('Remove non-existent recognizer.', function() {
 
     equal(1, hammer.recognizers.length);
 });
+
+test('check whether touch-action style is removed', function() {
+    var originalTouchActionStyle = 'manipulation';
+    // for not support browsers like phantomjs,...
+    if (!Hammer.NATIVE_TOUCH_ACTION) {
+        Hammer.PREFIXED_TOUCH_ACTION = 'touchAction';
+    }
+    el.style[Hammer.PREFIXED_TOUCH_ACTION] = originalTouchActionStyle;
+
+    Hammer.defaults.touchAction = 'pan-y';
+    hammer = Hammer(el);
+
+    if (Hammer.NATIVE_TOUCH_ACTION) {
+        notEqual(originalTouchActionStyle, el.style[Hammer.PREFIXED_TOUCH_ACTION]);
+    }
+
+    hammer.destroy();
+    hammer = null;
+    equal(originalTouchActionStyle, el.style[Hammer.PREFIXED_TOUCH_ACTION], "returns original touch-action style.");
+});
