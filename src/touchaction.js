@@ -18,6 +18,7 @@ var TOUCH_ACTION_PAN_Y = 'pan-y';
  */
 function TouchAction(manager, value) {
     this.manager = manager;
+    this.orginalTouchActionStyle = this.canApplyStyle() ? this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] : '';
     this.set(value);
 }
 
@@ -32,8 +33,8 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element.style) {
-            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+        if (this.canApplyStyle()) {
+            this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value.toLowerCase().trim();
     },
@@ -65,7 +66,7 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         // not needed with native support for the touchAction property
-        if (NATIVE_TOUCH_ACTION) {
+        if (Hammer.NATIVE_TOUCH_ACTION) {
             return;
         }
 
@@ -114,6 +115,24 @@ TouchAction.prototype = {
     preventSrc: function(srcEvent) {
         this.manager.session.prevented = true;
         srcEvent.preventDefault();
+    },
+
+    /**
+     * Used to check if touch action property is applicable to element
+     * @memberof TouchAction
+     * @returns {Boolean} applicable
+     */
+    canApplyStyle: function() {
+        return !!(Hammer.NATIVE_TOUCH_ACTION && this.manager.element.style);
+    },
+
+    /**
+     * restore touch-action style value
+     */
+    destroy: function() {
+        if (this.canApplyStyle()) {
+            this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] = this.orginalTouchActionStyle;
+        }
     }
 };
 
