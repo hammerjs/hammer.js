@@ -122,7 +122,7 @@ if (typeof Object.assign !== 'function') {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean=false} [merge]
+ * @param {Boolean} [merge=false]
  * @returns {Object} dest
  */
 var extend = deprecate(function extend(dest, src, merge) {
