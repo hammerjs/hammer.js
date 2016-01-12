@@ -2,7 +2,7 @@
  * http://hammerjs.github.io/
  *
  * Copyright (c) 2015 Jorik Tangelder;
- * Licensed under the  license */
+ * Licensed under the MIT license */
 (function(window, document, exportName, undefined) {
   'use strict';
 
