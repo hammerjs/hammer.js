@@ -157,3 +157,31 @@ test('Remove non-existent recognizer.', function() {
 
     equal(1, hammer.recognizers.length);
 });
+
+test('check whether Hammer.defaults.cssProps is restored', function() {
+    var beforeCssProps = {
+        userSelect: 'text',
+        touchSelect: 'grippers',
+        touchCallout: 'default',
+        contentZooming: 'chained',
+        userDrag: 'element',
+        tapHighlightColor: 'rgba(0, 1, 0, 0)'
+    };
+    var prop;
+    Hammer.each(Hammer.defaults.cssProps, function(value, name) {
+        prop = Hammer.prefixed(el.style, name);
+        if (prop) {
+            el.style[prop] = beforeCssProps[name];
+        }
+    });
+
+    hammer = Hammer(el);
+    hammer.destroy();
+    hammer = null;
+    Hammer.each(Hammer.defaults.cssProps, function(value, name) {
+        prop = Hammer.prefixed(el.style, name);
+        if (prop) {
+            equal(el.style[prop], beforeCssProps[name], "check if " + name + " is restored");
+        }
+    });
+});
