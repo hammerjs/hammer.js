@@ -193,6 +193,9 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     on: function(events, handler) {
+        if(events === undefined) return;
+        if(handler === undefined) return;
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             handlers[event] = handlers[event] || [];
@@ -208,6 +211,8 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     off: function(events, handler) {
+        if(events === undefined) return;
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             if (!handler) {
