@@ -76,7 +76,9 @@ function getTouches(ev, type) {
     i = 0;
     while (i < changedTouches.length) {
         if (targetIds[changedTouches[i].identifier]) {
-            changedTargetTouches.push(changedTouches[i]);
+            if (!(type & (INPUT_END | INPUT_CANCEL))) {
+                changedTargetTouches.push(changedTouches[i]);
+            }
         }
 
         // cleanup removed touches
