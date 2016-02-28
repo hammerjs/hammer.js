@@ -113,8 +113,9 @@ function createInputInstance(manager) {
  */
 function inputHandler(manager, eventType, input) {
     var changedPointersLen = input.changedPointers.length;
-    var isFirst = (eventType & INPUT_START && (changedPointersLen === 0));
-    var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (changedPointersLen === 0));
+    var pointerLen = input.pointers.length;
+    var isFirst = (eventType & INPUT_START && (changedPointersLen - pointerLen === -1));
+    var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (changedPointersLen - pointerLen === -1));
 
     input.isFirst = !!isFirst;
     input.isFinal = !!isFinal;

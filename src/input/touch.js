@@ -56,6 +56,7 @@ function getTouches(ev, type) {
         targetTouches,
         changedTouches = toArray(ev.changedTouches),
         changedTargetTouches = [],
+        activeTouches = [],
         target = this.target;
 
     // get target touches from touches
@@ -76,14 +77,15 @@ function getTouches(ev, type) {
     i = 0;
     while (i < changedTouches.length) {
         if (targetIds[changedTouches[i].identifier]) {
-            if (!(type & (INPUT_END | INPUT_CANCEL))) {
-                changedTargetTouches.push(changedTouches[i]);
-            }
+            changedTargetTouches.push(changedTouches[i]);
+            activeTouches.push(changedTouches[i]);
+
         }
 
         // cleanup removed touches
         if (type & (INPUT_END | INPUT_CANCEL)) {
             delete targetIds[changedTouches[i].identifier];
+            activeTouches.pop();
         }
         i++;
     }
@@ -95,6 +97,6 @@ function getTouches(ev, type) {
     return [
         // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
         uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
-        changedTargetTouches
+        activeTouches
     ];
 }
