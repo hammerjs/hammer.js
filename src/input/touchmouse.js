@@ -35,7 +35,7 @@ inherit(TouchMouseInput, Input, {
         }
 
         // reset the allowMouse when we're done
-        if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
+        if (isMouse && inputEvent & (INPUT_END | INPUT_CANCEL)) {
             this.mouse.allow = true;
         }
 
