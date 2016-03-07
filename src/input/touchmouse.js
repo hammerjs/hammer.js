@@ -31,12 +31,11 @@ inherit(TouchMouseInput, Input, {
         if (isTouch) {
             this.mouse.allow = false;
         } else if (isMouse && !this.mouse.allow) {
+            // reset the allowMouse when we're done
+            if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
+                this.mouse.allow = true;
+            }
             return;
-        }
-
-        // reset the allowMouse when we're done
-        if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
-            this.mouse.allow = true;
         }
 
         this.callback(manager, inputEvent, inputData);
