@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <title>Hammer.js</title>
+    <style>
+        body, .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        #out {
+            white-space:pre;
+            border: 1px solid #666;
+            margin-top: 20px;
+            background: #ddd;
+            height: 110px;
+            text-align: center;
+            font: 20px/25px Helvetica, Arial, sans-serif;
+            padding:30px;
+        }
+        #wrapper {background:#ccf; height:100px; position:relative;}
+        .dragger {width:10px; height:10px; position:absolute; top:30px; left: 30px; background:#c00;}
+        .dragger.big {width:30px; height:30px;}
+    </style>
+</head>
+<body>
+
+    <div id="stage">
+        <div id="wrapper">
+            <div id="dragger_1" class="dragger"></div>
+            <div id="dragger_2" class="dragger" style="left:60px;"></div>
+            <div id="dragger_3" class="dragger big" style="left:90px;"></div>
+        </div>
+    </div>
+
+    <div id="out"></div>
+
+    <script src="../../hammer.js"></script>
+    <script>
+        var stage = document.getElementById('stage');
+        var out = document.getElementById('out');
+
+        var mc = new Hammer(stage);
+        mc.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold:12 });
+        mc.on('panstart', function(e) {
+            out.textContent = e.type +'\n Event.Target ID="' + e.target.id + '"\n Event.srcEvent.target ID="' + e.srcEvent.target.id + '"\n(Expected: ID="' + getActualDragStartElement(e).id + '")';
+        });
+        mc.on('panend', function() {
+            out.textContent = '';
+        });
+
+        function getActualDragStartElement(e) {
+            var pointer = e.pointers[0] || e.srcEvent;
+            return document.elementFromPoint(pointer.clientX - e.deltaX, pointer.clientY - e.deltaY);
+        }
+    </script>
+</body>
+</html>
