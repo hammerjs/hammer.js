@@ -40,7 +40,7 @@
     "grunt-contrib-connect": "0.7.x",
     "grunt-contrib-jshint": "0.10.x",
     "grunt-contrib-qunit": "^0.5.1",
-    "grunt-contrib-uglify": "0.4.x",
+    "grunt-contrib-uglify": "0.7.x",
     "grunt-contrib-watch": "0.6.x",
     "grunt-jscs": "^0.8.0",
     "grunt-string-replace": "^0.2.7",
