@@ -6,6 +6,9 @@
  */
 function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);
+
+    this.firstSrcEvent = null;
+    this.firstTarget = null;
 }
 
 inherit(SwipeRecognizer, AttrRecognizer, {
@@ -36,6 +39,12 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         } else if (direction & DIRECTION_VERTICAL) {
             velocity = input.overallVelocityY;
         }
+        // Save the initial target element. If the threshold is greater than
+        // the element itself, the pointer will land on a different element.
+        if (input.isFirst) {
+            this.firstSrcEvent = input.srcEvent;
+            this.firstTarget = input.target;
+        }
 
         return this._super.attrTest.call(this, input) &&
             direction & input.offsetDirection &&
@@ -49,6 +58,8 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         if (direction) {
             this.manager.emit(this.options.event + direction, input);
         }
+        input.srcEvent = this.firstSrcEvent;
+        input.target = this.firstTarget;
 
         this.manager.emit(this.options.event, input);
     }
