@@ -276,6 +276,10 @@ Recognizer.prototype = {
     reset: function() { }
 };
 
+Object.defineProperty(Recognizer.prototype, 'constructor', {
+    value: Recognizer
+});
+
 /**
  * get a usable string, used as event postfix
  * @param {Const} state
