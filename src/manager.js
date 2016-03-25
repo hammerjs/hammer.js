@@ -70,6 +70,7 @@ Manager.prototype = {
     recognize: function(inputData) {
         var session = this.session;
         if (session.stopped) {
+            session.curRecognizer.state = STATE_ENDED;
             return;
         }
 
