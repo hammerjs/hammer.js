@@ -16,7 +16,6 @@ function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;
     this.evWin = MOUSE_WINDOW_EVENTS;
 
-    this.allow = true; // used by Input.TouchMouse to disable mouse events
     this.pressed = false; // mousedown state
 
     Input.apply(this, arguments);
@@ -39,8 +38,8 @@ inherit(MouseInput, Input, {
             eventType = INPUT_END;
         }
 
-        // mouse must be down, and mouse events are allowed (see the TouchMouse input)
-        if (!this.pressed || !this.allow) {
+        // mouse must be down
+        if (!this.pressed) {
             return;
         }
 
