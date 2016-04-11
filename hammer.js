@@ -1,7 +1,7 @@
-/*! Hammer.JS - v2.0.6 - 2016-04-11
+/*! Hammer.JS - v2.0.6 - 2015-12-23
  * http://hammerjs.github.io/
  *
- * Copyright (c) 2016 Jorik Tangelder;
+ * Copyright (c) 2015 Jorik Tangelder;
  * Licensed under the  license */
 (function(window, document, exportName, undefined) {
   'use strict';
@@ -130,7 +130,7 @@ if (typeof Object.assign !== 'function') {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean} [merge=false]
+ * @param {Boolean=false} [merge]
  * @returns {Object} dest
  */
 var extend = deprecate(function extend(dest, src, merge) {
@@ -791,6 +791,7 @@ function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;
     this.evWin = MOUSE_WINDOW_EVENTS;
 
+    this.allow = true; // used by Input.TouchMouse to disable mouse events
     this.pressed = false; // mousedown state
 
     Input.apply(this, arguments);
@@ -804,17 +805,17 @@ inherit(MouseInput, Input, {
     handler: function MEhandler(ev) {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
-        // on start we want to have any mouse button down
-        if (eventType & INPUT_START && ev.button >= 0 && ev.button <= 2) {
+        // on start we want to have the left mouse button down
+        if (eventType & INPUT_START && ev.button === 0) {
             this.pressed = true;
         }
 
-        if (eventType & INPUT_MOVE && !ev.which) {
+        if (eventType & INPUT_MOVE && ev.which !== 1) {
             eventType = INPUT_END;
         }
 
-        // mouse must be down
-        if (!this.pressed) {
+        // mouse must be down, and mouse events are allowed (see the TouchMouse input)
+        if (!this.pressed || !this.allow) {
             return;
         }
 
@@ -1097,19 +1098,12 @@ function getTouches(ev, type) {
  * @constructor
  * @extends Input
  */
-
-var DEDUP_TIMEOUT = 2500;
-var DEDUP_DISTANCE = 25;
-
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
     var handler = bindFn(this.handler, this);
     this.touch = new TouchInput(this.manager, handler);
     this.mouse = new MouseInput(this.manager, handler);
-
-    this.primaryTouch = null;
-    this.lastTouches = [];
 }
 
 inherit(TouchMouseInput, Input, {
@@ -1123,15 +1117,17 @@ inherit(TouchMouseInput, Input, {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
-        if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+        // when we're in a touch event, so  block all upcoming mouse events
+        // most mobile browser also emit mouseevents, right after touchstart
+        if (isTouch) {
+            this.mouse.allow = false;
+        } else if (isMouse && !this.mouse.allow) {
             return;
         }
 
-        // when we're in a touch event, record touches to  de-dupe synthetic mouse event
-        if (isTouch) {
-            recordTouches.call(this, inputEvent, inputData);
-        } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
-            return;
+        // reset the allowMouse when we're done
+        if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
+            this.mouse.allow = true;
         }
 
         this.callback(manager, inputEvent, inputData);
@@ -1145,44 +1141,6 @@ inherit(TouchMouseInput, Input, {
         this.mouse.destroy();
     }
 });
-
-function recordTouches(eventType, eventData) {
-    if (eventType & INPUT_START) {
-        this.primaryTouch = eventData.changedPointers[0].identifier;
-        setLastTouch.call(this, eventData);
-    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
-        setLastTouch.call(this, eventData);
-    }
-}
-
-function setLastTouch(eventData) {
-    var touch = eventData.changedPointers[0];
-
-    if (touch.identifier === this.primaryTouch) {
-        var lastTouch = {x: touch.clientX, y: touch.clientY};
-        this.lastTouches.push(lastTouch);
-        var lts = this.lastTouches;
-        var removeLastTouch = function() {
-            var i = lts.indexOf(lastTouch);
-            if (i > -1) {
-                lts.splice(i, 1);
-            }
-        };
-        setTimeout(removeLastTouch, DEDUP_TIMEOUT);
-    }
-}
-
-function isSyntheticEvent(eventData) {
-    var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
-    for (var i = 0; i < this.lastTouches.length; i++) {
-        var t = this.lastTouches[i];
-        var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
-        if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
-            return true;
-        }
-    }
-    return false;
-}
 
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
