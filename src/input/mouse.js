@@ -29,12 +29,12 @@ inherit(MouseInput, Input, {
     handler: function MEhandler(ev) {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
-        // on start we want to have the left mouse button down
-        if (eventType & INPUT_START && ev.button === 0) {
+        // on start we want to have any mouse button down
+        if (eventType & INPUT_START && ev.button >= 0 && ev.button <= 2) {
             this.pressed = true;
         }
 
-        if (eventType & INPUT_MOVE && ev.which !== 1) {
+        if (eventType & INPUT_MOVE && !ev.which) {
             eventType = INPUT_END;
         }
 
