@@ -21,6 +21,9 @@ assign(Hammer, {
     DIRECTION_VERTICAL: DIRECTION_VERTICAL,
     DIRECTION_ALL: DIRECTION_ALL,
 
+    PREFIXED_TOUCH_ACTION: PREFIXED_TOUCH_ACTION,
+    NATIVE_TOUCH_ACTION: NATIVE_TOUCH_ACTION,
+
     Manager: Manager,
     Input: Input,
     TouchAction: TouchAction,

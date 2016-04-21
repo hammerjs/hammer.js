@@ -257,6 +257,7 @@ Manager.prototype = {
 
         this.handlers = {};
         this.session = {};
+        this.touchAction.destroy();
         this.input.destroy();
         this.element = null;
     }
