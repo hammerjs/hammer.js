@@ -1,5 +1,7 @@
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
-var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
+var NATIVE_TOUCH_ACTION = window.CSS && window.CSS.supports ? 
+    window.CSS.supports('touch-action', 'none') : // ios 9.3 doesn't support the none value
+    PREFIXED_TOUCH_ACTION !== undefined;
 
 // magical touchAction value
 var TOUCH_ACTION_COMPUTE = 'compute';
