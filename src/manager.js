@@ -15,6 +15,7 @@ function Manager(element, options) {
     this.handlers = {};
     this.session = {};
     this.recognizers = [];
+    this.oldCssProps = {};
 
     this.element = element;
     this.input = createInputInstance(this);
@@ -272,9 +273,19 @@ function toggleCssProps(manager, add) {
     if (!element.style) {
         return;
     }
+    var prop;
     each(manager.options.cssProps, function(value, name) {
-        element.style[prefixed(element.style, name)] = add ? value : '';
+        prop = prefixed(element.style, name);
+        if (add) {
+            manager.oldCssProps[prop] = element.style[prop];
+            element.style[prop] = value;
+        } else {
+            element.style[prop] = manager.oldCssProps[prop] || '';
+        }
     });
+    if (!add) {
+        manager.oldCssProps = {};
+    }
 }
 
 /**
