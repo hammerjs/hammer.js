@@ -9,6 +9,8 @@ function PanRecognizer() {
 
     this.pX = null;
     this.pY = null;
+    this.firstSrcEvent = null;
+    this.firstTarget = null;
 }
 
 inherit(PanRecognizer, AttrRecognizer, {
@@ -60,6 +62,12 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     attrTest: function(input) {
+        // Save the initial target element. If the threshold is greater than
+        // the element itself, the pointer will land on a different element.
+        if (input.isFirst) {
+            this.firstSrcEvent = input.srcEvent;
+            this.firstTarget = input.target;
+        }
         return AttrRecognizer.prototype.attrTest.call(this, input) &&
             (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
     },
@@ -68,6 +76,9 @@ inherit(PanRecognizer, AttrRecognizer, {
 
         this.pX = input.deltaX;
         this.pY = input.deltaY;
+
+        input.srcEvent = this.firstSrcEvent;
+        input.target = this.firstTarget;
 
         var direction = directionStr(input.direction);
 
