@@ -3,14 +3,14 @@ var gittags = require( "git-tags" ).get( function( error, tags ) {
 	if ( error ) {
 		throw error
 	}
-	console.log( tags[ 1 ] + ".." + tags[ 0 ] );
+	console.log( tags[ 2 ] + ".." + tags[ 0 ] );
 	var exclude = [ "Merge", "Whitespace", "Fixup", "Cleanup", "Formatting", "Ignore" ];
 	changelog( {
 		ticketUrl: "https://github.com/hammerjs/hammer.js/issues/{id}",
 		commitUrl: "https://github.com/hammerjs/hammerjs/commit/{id}",
 		sort: false,
 		repo: "./",
-		committish: tags[ 1 ] + ".." + tags[ 0 ]
+		committish: tags[ 2 ] + ".." + tags[ 0 ]
 	}, function( error, log ) {
 		if ( error ) {
 			throw error;
