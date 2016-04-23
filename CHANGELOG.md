@@ -1,8 +1,10 @@
 # Changelog
+
 ### 2.0.8, 2016-04-22
+
 ##### Manager
 - Added check to ensure that the required parameters are present ([#908](https://github.com/hammerjs/hammer.js/issues/908), [085d3a8](https://github.com/hammer.js/hammerjs/commit/085d3a87eab8674c45e9d3a14c4ca44ad7b97e26))
-- Fixed restoration of Hammer.defaults.cssProps on destory ([#904](https://github.com/hammerjs/hammer.js/issues/904), [7d0e60f](https://github.com/hammer.js/hammerjs/commit/7d0e60f6743517db3c05a38e966fb9fb5052fa03))
+- Fixed restoration of Hammer.defaults.cssProps on destory ([#904theregttr5ki](https://github.com/hammerjs/hammer.js/issues/904), [7d0e60f](https://github.com/hammer.js/hammerjs/commit/7d0e60f6743517db3c05a38e966fb9fb5052fa03))
 
 ##### Input
 - Fixed de-duping of mouse events on mouse touch combo devices ([#917](https://github.com/hammer.js/hammer.js/issues/917), [#863](https://github.com/hammerjs/hammer.js/issues/863), [bfeb89a](https://github.com/hammerjs/hammerjs/commit/bfeb89a77f778c527f771150d1e9687bd318ce8d))
