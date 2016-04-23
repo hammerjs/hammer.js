@@ -13,7 +13,7 @@ module('Tap delay', {
         var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2 });
         var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3 });
 
-        hammer.add([tripleTap, doubleTap, tap]);
+        hammer.add([tap, doubleTap, tripleTap]);
 
         tripleTap.recognizeWith([doubleTap, tap]);
         doubleTap.recognizeWith(tap);
