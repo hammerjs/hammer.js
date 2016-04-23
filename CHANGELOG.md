@@ -1,5 +1,8 @@
 # Changelog
-
+### 2.0.8, 2016-04-22
+ - Touch Action fix for iOS 9.3 ( Scroll isn't disable on drag events with iOS 9.3 ) Fixes #952 ; Closes #955
+### 2.0.7, 2016-04-21
+ - Fixes deduping of Mouse Events on Surface (Edge/Windows 10???) Fixes #917; Fixes #863; Closes #951
 ### 2.0.6, 2015-12-23
 - Add Assign method and deprecate merge and extend ([#895](https://github.com/hammerjs/hammer.js/pull/895)[fc01eae](https://github.com/hammerjs/hammer.js/commit/fc01eaea678acc430c664eb374555fbe3d403bdd))
 - Expose Hammer on window or self if either is defined to avoid issues when AMD is present but not used. ( [356f795](https://github.com/hammerjs/hammer.js/commit/356f7955b01f3679c29d6c45931679256b45036e))
