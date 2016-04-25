@@ -8,7 +8,7 @@ var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
 var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
-var TOUCH_ACTION_MAP = getTouchActionProps();
+var TOUCH_ACTION_MAP = NATIVE_TOUCH_ACTION ? getTouchActionProps() : false;
 
 /**
  * Touch Action
@@ -19,6 +19,7 @@ var TOUCH_ACTION_MAP = getTouchActionProps();
  */
 function TouchAction(manager, value) {
     this.manager = manager;
+    this.orginalTouchActionStyle = this.canApplyStyle() ? this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] : '';
     this.set(value);
 }
 
@@ -33,8 +34,8 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
-            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+        if (this.canApplyStyle() && TOUCH_ACTION_MAP[value]) {
+            this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value.toLowerCase().trim();
     },
@@ -110,6 +111,24 @@ TouchAction.prototype = {
     preventSrc: function(srcEvent) {
         this.manager.session.prevented = true;
         srcEvent.preventDefault();
+    },
+
+    /**
+     * Used to check if touch action property is applicable to element
+     * @memberof TouchAction
+     * @returns {Boolean} applicable
+     */
+    canApplyStyle: function() {
+        return !!(Hammer.NATIVE_TOUCH_ACTION && this.manager.element.style);
+    },
+
+    /**
+     * restore touch-action style value
+     */
+    destroy: function() {
+        if (this.canApplyStyle()) {
+            this.manager.element.style[Hammer.PREFIXED_TOUCH_ACTION] = this.orginalTouchActionStyle;
+        }
     }
 };
 
@@ -149,9 +168,6 @@ function cleanTouchActions(actions) {
 }
 
 function getTouchActionProps() {
-    if (!NATIVE_TOUCH_ACTION) {
-        return false;
-    }
     var touchMap = {};
     var cssSupports = window.CSS && window.CSS.supports;
     ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
