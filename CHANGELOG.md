@@ -1,5 +1,17 @@
 # Changelog
 
+### 2.0.8, 2016-04-22
+
+##### Manager
+- Added check to ensure that the required parameters are present ([#908](https://github.com/hammerjs/hammer.js/issues/908), [085d3a8](https://github.com/hammer.js/hammerjs/commit/085d3a87eab8674c45e9d3a14c4ca44ad7b97e26))
+- Fixed restoration of Hammer.defaults.cssProps on destory ([#904theregttr5ki](https://github.com/hammerjs/hammer.js/issues/904), [7d0e60f](https://github.com/hammer.js/hammerjs/commit/7d0e60f6743517db3c05a38e966fb9fb5052fa03))
+
+##### Input
+- Fixed de-duping of mouse events on mouse touch combo devices ([#917](https://github.com/hammer.js/hammer.js/issues/917), [#863](https://github.com/hammerjs/hammer.js/issues/863), [bfeb89a](https://github.com/hammerjs/hammerjs/commit/bfeb89a77f778c527f771150d1e9687bd318ce8d))
+
+##### Touch-action
+- Added support map for specific values of touch-action ([#952](https://github.com/hammer.js/hammer.js/issues/952), [fbe9fd7](https://github.com/hammerjs/hammer.js/commit/fbe9fd775fe8cb3d43faa9428bfa56b61b16edc7))
+
 ### 2.0.6, 2015-12-23
 - Add Assign method and deprecate merge and extend ([#895](https://github.com/hammerjs/hammer.js/pull/895)[fc01eae](https://github.com/hammerjs/hammer.js/commit/fc01eaea678acc430c664eb374555fbe3d403bdd))
 - Expose Hammer on window or self if either is defined to avoid issues when AMD is present but not used. ( [356f795](https://github.com/hammerjs/hammer.js/commit/356f7955b01f3679c29d6c45931679256b45036e))

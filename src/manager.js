@@ -15,6 +15,7 @@ function Manager(element, options) {
     this.handlers = {};
     this.session = {};
     this.recognizers = [];
+    this.oldCssProps = {};
 
     this.element = element;
     this.input = createInputInstance(this);
@@ -193,6 +194,13 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     on: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+        if (handler === undefined) {
+            return;
+        }
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             handlers[event] = handlers[event] || [];
@@ -208,6 +216,10 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     off: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             if (!handler) {
@@ -273,9 +285,19 @@ function toggleCssProps(manager, add) {
     if (!element.style) {
         return;
     }
+    var prop;
     each(manager.options.cssProps, function(value, name) {
-        element.style[prefixed(element.style, name)] = add ? value : '';
+        prop = prefixed(element.style, name);
+        if (add) {
+            manager.oldCssProps[prop] = element.style[prop];
+            element.style[prop] = value;
+        } else {
+            element.style[prop] = manager.oldCssProps[prop] || '';
+        }
     });
+    if (!add) {
+        manager.oldCssProps = {};
+    }
 }
 
 /**

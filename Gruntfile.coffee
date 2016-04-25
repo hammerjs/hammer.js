@@ -11,7 +11,7 @@ module.exports = (grunt) ->
  * <%= pkg.homepage %>\n
  *\n
  * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n
- * Licensed under the <%= _.pluck(pkg.licenses, "type").join(", ") %> license */'
+ * Licensed under the <%= pkg.license %> license */'
           linebreak: true
         files:
           src: ['./hammer.js','./hammer.min.js']
