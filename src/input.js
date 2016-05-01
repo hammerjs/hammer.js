@@ -1,3 +1,5 @@
+import {boolOrFn,addEventListeners,removeEventListeners} from './utils'
+
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
 var SUPPORT_TOUCH = ('ontouchstart' in window);
@@ -392,3 +394,5 @@ function getRotation(start, end) {
 function getScale(start, end) {
     return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
 }
+
+export {Input}

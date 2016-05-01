@@ -186,7 +186,7 @@ function bindFn(fn, context) {
  * @param {Array} [args]
  * @returns {Boolean}
  */
-function boolOrFn(val, args) {
+export function boolOrFn(val, args) {
     if (typeof val == TYPE_FUNCTION) {
         return val.apply(args ? args[0] || undefined : undefined, args);
     }
@@ -369,3 +369,6 @@ function getWindowForElement(element) {
     var doc = element.ownerDocument || element;
     return (doc.defaultView || doc.parentWindow || window);
 }
+
+export {boolOrFn,addEventListeners,removeEventListeners,inherit}
+export {assign}
