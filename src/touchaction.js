@@ -1,3 +1,5 @@
+import {prefixed,TEST_ELEMENT,boolOrFn,inStr} from './utils'
+
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
@@ -162,3 +164,5 @@ function getTouchActionProps() {
     });
     return touchMap;
 }
+
+export {TouchAction,cleanTouchActions,getTouchActionProps}
