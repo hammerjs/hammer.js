@@ -1,4 +1,4 @@
-import {boolOrFn,addEventListeners,removeEventListeners,getWindowForElement,prefixed,hasParent,abs,round} from './utils';
+import {boolOrFn,addEventListeners,removeEventListeners,getWindowForElement,prefixed,hasParent,abs,round,now} from './utils';
 import {PointerEventInput} from './input/pointerevent'
 import {TouchInput} from './input/touch'
 import {MouseInput} from './input/mouse'
