@@ -1,3 +1,6 @@
+import {inherit,toArray,hasParent,uniqueArray} from '../utils'
+import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL} from '../input'
+
 var TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
@@ -96,3 +99,5 @@ function getTouches(ev, type) {
         changedTargetTouches
     ];
 }
+
+export {TouchInput,getTouches}
