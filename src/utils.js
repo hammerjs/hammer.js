@@ -186,7 +186,7 @@ function bindFn(fn, context) {
  * @param {Array} [args]
  * @returns {Boolean}
  */
-export function boolOrFn(val, args) {
+function boolOrFn(val, args) {
     if (typeof val == TYPE_FUNCTION) {
         return val.apply(args ? args[0] || undefined : undefined, args);
     }
@@ -370,5 +370,6 @@ function getWindowForElement(element) {
     return (doc.defaultView || doc.parentWindow || window);
 }
 
-export {boolOrFn,addEventListeners,removeEventListeners,inherit}
-export {assign}
+export {setTimeoutContext,invokeArrayArg,each,deprecate,inherit,bindFn,boolOrFn,ifUndefined,addEventListeners,removeEventListeners,hasParent,inStr,splitStr,inArray,toArray,uniqueArray,prefixed,uniqueId,getWindowForElement}
+
+export {VENDOR_PREFIXES,TEST_ELEMENT,TYPE_FUNCTION,round,abs,now,assign,extend,merge,_uniqueId}
