@@ -8,6 +8,12 @@
  * @extends Input
  */
 
+import {Input,INPUT_TYPE_TOUCH,INPUT_TYPE_MOUSE,INPUT_START,INPUT_END,INPUT_CANCEL} from '../input'
+import {bindFn,inherit} from '../utils'
+import {TouchInput} from 'touch'
+import {MouseInput} from 'mouse'
+
+
 var DEDUP_TIMEOUT = 2500;
 var DEDUP_DISTANCE = 25;
 
@@ -93,3 +99,5 @@ function isSyntheticEvent(eventData) {
     }
     return false;
 }
+
+export {TouchMouseInput,recordTouches,setLastTouch,isSyntheticEvent}
