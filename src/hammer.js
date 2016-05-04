@@ -4,6 +4,18 @@
  * @param {Object} [options]
  * @constructor
  */
+
+import {ifUndefined} from './utils'
+import {DIRECTION_HORIZONTAL} from './input'
+import {TOUCH_ACTION_COMPUTE} from './touchaction'
+import {RotateRecognizer} from 'recognizers/rotate'
+import {PinchRecognizer} from 'recognizers/pinch'
+import {PanRecognizer} from 'recognizers/pan'
+import {SwipeRecognizer} from 'recognizers/swipe'
+import {TapRecognizer} from 'recognizers/tap'
+import {PressRecognizer} from 'recognizers/press'
+
+
 function Hammer(element, options) {
     options = options || {};
     options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
@@ -126,3 +138,5 @@ Hammer.defaults = {
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 };
+
+export {Hammer}
