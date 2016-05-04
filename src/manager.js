@@ -1,3 +1,10 @@
+
+import {assign,each,invokeArrayArg,inArray,each,splitStr,prefixed} from './utils'
+import {Hammer} from './hammer'
+import {createInputInstance} from './input'
+import {TouchAction} from './touchaction'
+import {STATE_RECOGNIZED,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,Recognizer} from './recognizer'
+
 var STOP = 1;
 var FORCED_STOP = 2;
 
@@ -310,3 +317,5 @@ function triggerDomEvent(event, data) {
     gestureEvent.gesture = data;
     data.target.dispatchEvent(gestureEvent);
 }
+
+export {Manager,toggleCssProps,triggerDomEvent}
