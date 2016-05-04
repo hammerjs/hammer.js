@@ -4,6 +4,13 @@
  * @constructor
  * @extends AttrRecognizer
  */
+
+import {inherit} from '../utils';
+import {AttrRecognizer} from './attribute'
+import {TOUCH_ACTION_NONE} from '../touchaction'
+import {STATE_BEGAN} from '../recognizer'
+
+
 function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -28,3 +35,5 @@ inherit(RotateRecognizer, AttrRecognizer, {
             (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
     }
 });
+
+export {RotateRecognizer}

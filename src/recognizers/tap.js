@@ -8,6 +8,12 @@
  * @constructor
  * @extends Recognizer
  */
+import {Recognizer,STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizer'
+import {inherit,setTimeoutContext} from '../utils'
+import {TOUCH_ACTION_MANIPULATION} from '../touchaction'
+import {INPUT_START,INPUT_END,getDistance} from '../input'
+
+
 function TapRecognizer() {
     Recognizer.apply(this, arguments);
 
@@ -112,3 +118,5 @@ inherit(TapRecognizer, Recognizer, {
         }
     }
 });
+
+export {TapRecognizer}

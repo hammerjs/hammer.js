@@ -4,6 +4,12 @@
  * @constructor
  * @extends Recognizer
  */
+import {inherit,setTimeoutContext,now} from '../utils'
+import {Recognizer} from '../recognizer'
+import {TOUCH_ACTION_AUTO} from '../touchaction'
+import {STATE_RECOGNIZED,STATE_FAILED} from '../recognizer'
+import {INPUT_START,INPUT_END,INPUT_CANCEL} from '../input'
+
 function PressRecognizer() {
     Recognizer.apply(this, arguments);
 
@@ -68,3 +74,5 @@ inherit(PressRecognizer, Recognizer, {
         }
     }
 });
+
+export {PressRecognizer}

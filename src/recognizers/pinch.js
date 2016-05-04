@@ -4,6 +4,12 @@
  * @constructor
  * @extends AttrRecognizer
  */
+
+import {inherit} from '../utils'
+import {AttrRecognizer} from './attribute'
+import {TOUCH_ACTION_NONE} from '../touchaction'
+import {STATE_BEGAN} from '../recognizer'
+
 function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -36,3 +42,5 @@ inherit(PinchRecognizer, AttrRecognizer, {
         this._super.emit.call(this, input);
     }
 });
+
+export {PinchRecognizer}
