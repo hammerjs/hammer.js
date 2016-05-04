@@ -4,6 +4,12 @@
  * @constructor
  * @extends AttrRecognizer
  */
+import {inherit} from '../utils'
+import {AttrRecognizer} from './attribute'
+import {DIRECTION_ALL,DIRECTION_VERTICAL,DIRECTION_HORIZONTAL,DIRECTION_NONE,DIRECTION_UP,DIRECTION_DOWN,DIRECTION_LEFT,DIRECTION_RIGHT} from '../input'
+import {STATE_BEGAN} from '../recognizer'
+import {TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y} from '../touchaction'
+
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
 
@@ -77,3 +83,5 @@ inherit(PanRecognizer, AttrRecognizer, {
         this._super.emit.call(this, input);
     }
 });
+
+export {PanRecognizer}
