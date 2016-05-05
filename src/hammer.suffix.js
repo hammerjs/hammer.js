@@ -1,1 +1,1 @@
-})(window, document, 'Hammer');
+} ) );
