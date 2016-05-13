@@ -6,7 +6,11 @@ import babel from 'rollup-plugin-babel';
 
 export default {
     entry: 'src/main.js',
-    format: 'cjs',
-    plugins: [ json(), babel() ],
-    dest: 'bundle.js'
+    format: 'es6',
+    // moduleName: 'HAMMER',
+    plugins: [ babel({exclude: 'node_modules/**'}) ],
+    dest: 'bundle.js',
+    intro: " (function(window, document, exportName, undefined) { \n'use strict' ",
+    outro: "})(window, document, 'Hammer');"
+
 };

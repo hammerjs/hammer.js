@@ -1,3 +1,9 @@
+import {AttrRecognizer} from './attribute'
+import {inherit,abs} from '../utils'
+import {directionStr} from '../recognizer'
+import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,INPUT_END} from '../input'
+import {PanRecognizer} from './pan'
+
 /**
  * Swipe
  * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
@@ -5,11 +11,6 @@
  * @extends AttrRecognizer
  */
 
-import {AttrRecognizer} from './attribute'
-import {inherit,abs} from '../utils'
-import {directionStr} from '../recognizer'
-import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,INPUT_END} from '../input'
-import {PanRecognizer} from './pan'
 
 function SwipeRecognizer() {
     AttrRecognizer.apply(this, arguments);

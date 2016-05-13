@@ -1,5 +1,7 @@
-import {inherit,toArray,hasParent,uniqueArray} from '../utils'
-import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL} from '../input'
+import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from "../input"
+import {inherit,toArray,hasParent,uniqueArray} from "../utils"
+
+
 
 var TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,

@@ -1,5 +1,5 @@
 
-import {assign,each,invokeArrayArg,inArray,each,splitStr,prefixed} from './utils'
+import {assign,each,invokeArrayArg,inArray,splitStr,prefixed} from './utils'
 import {Hammer} from './hammer'
 import {createInputInstance} from './input'
 import {TouchAction} from './touchaction'

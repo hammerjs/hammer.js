@@ -1,5 +1,6 @@
-import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_TYPE_MOUSE} from '../input'
 import {inherit} from '../utils'
+import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_TYPE_MOUSE} from '../input'
+
 
 var MOUSE_INPUT_MAP = {
     mousedown: INPUT_START,

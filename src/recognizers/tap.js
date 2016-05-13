@@ -1,3 +1,7 @@
+import {Recognizer,STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizer'
+import {inherit,setTimeoutContext} from '../utils'
+import {TOUCH_ACTION_MANIPULATION} from '../touchaction'
+import {INPUT_START,INPUT_END,getDistance} from '../input'
 /**
  * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
  * between the given interval and position. The delay option can be used to recognize multi-taps without firing
@@ -8,10 +12,7 @@
  * @constructor
  * @extends Recognizer
  */
-import {Recognizer,STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizer'
-import {inherit,setTimeoutContext} from '../utils'
-import {TOUCH_ACTION_MANIPULATION} from '../touchaction'
-import {INPUT_START,INPUT_END,getDistance} from '../input'
+
 
 
 function TapRecognizer() {

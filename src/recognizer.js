@@ -1,3 +1,7 @@
+import {assign,uniqueId,ifUndefined,invokeArrayArg,inArray,boolOrFn} from './utils'
+import {DIRECTION_UP,DIRECTION_DOWN,DIRECTION_LEFT,DIRECTION_RIGHT} from './input'
+
+
 /**
  * Recognizer flow explained; *
  * All recognizers have the initial state of POSSIBLE when a input session starts.
@@ -26,8 +30,6 @@
  *                                  Ended/Recognized
  */
 
-import {assign,uniqueId,_uniqueId,ifUndefined,invokeArrayArg,inArray,boolOrFn} from './utils'
-import {DIRECTION_UP,DIRECTION_DOWN,DIRECTION_LEFT,DIRECTION_RIGHT} from './input'
 
 var STATE_POSSIBLE = 1;
 var STATE_BEGAN = 2;
