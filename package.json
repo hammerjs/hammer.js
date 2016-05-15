@@ -32,6 +32,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.1.1",
     "changelogplease": "^1.2.0",
     "git-tags": "^0.2.4",
     "grunt": "0.4.x",
@@ -45,7 +46,9 @@
     "grunt-jscs": "^0.8.0",
     "grunt-string-replace": "^0.2.7",
     "hammer-simulator": "git://github.com/hammerjs/simulator#master",
-    "jquery-hammerjs": "2.0.x"
+    "jquery-hammerjs": "2.0.x",
+    "rollup": "^0.26.1",
+    "rollup-plugin-babel": "^2.4.0"
   },
   "main": "hammer.js",
   "engines": {

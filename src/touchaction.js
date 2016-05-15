@@ -1,3 +1,6 @@
+import {prefixed,TEST_ELEMENT,boolOrFn,inStr,each} from './utils'
+import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL} from './input'
+
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
@@ -162,3 +165,6 @@ function getTouchActionProps() {
     });
     return touchMap;
 }
+
+export {TouchAction,cleanTouchActions,getTouchActionProps}
+export {TOUCH_ACTION_AUTO,TOUCH_ACTION_NONE,TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y,TOUCH_ACTION_COMPUTE,TOUCH_ACTION_MANIPULATION}

@@ -369,3 +369,7 @@ function getWindowForElement(element) {
     var doc = element.ownerDocument || element;
     return (doc.defaultView || doc.parentWindow || window);
 }
+
+export {setTimeoutContext,invokeArrayArg,each,deprecate,inherit,bindFn,boolOrFn,ifUndefined,addEventListeners,removeEventListeners,hasParent,inStr,splitStr,inArray,toArray,uniqueArray,prefixed,uniqueId,getWindowForElement}
+
+export {VENDOR_PREFIXES,TEST_ELEMENT,TYPE_FUNCTION,round,abs,now,assign,extend,merge,_uniqueId}

@@ -1,9 +1,17 @@
+import {inherit} from '../utils';
+import {AttrRecognizer} from './attribute'
+import {TOUCH_ACTION_NONE} from '../touchaction'
+import {STATE_BEGAN} from '../recognizer'
 /**
  * Rotate
  * Recognized when two or more pointer are moving in a circular motion.
  * @constructor
  * @extends AttrRecognizer
  */
+
+
+
+
 function RotateRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -28,3 +36,5 @@ inherit(RotateRecognizer, AttrRecognizer, {
             (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
     }
 });
+
+export {RotateRecognizer}

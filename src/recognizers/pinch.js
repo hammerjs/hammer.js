@@ -1,9 +1,15 @@
+import {inherit} from '../utils'
+import {AttrRecognizer} from './attribute'
+import {TOUCH_ACTION_NONE} from '../touchaction'
+import {STATE_BEGAN} from '../recognizer'
+
 /**
  * Pinch
  * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
  * @constructor
  * @extends AttrRecognizer
  */
+
 function PinchRecognizer() {
     AttrRecognizer.apply(this, arguments);
 }
@@ -36,3 +42,5 @@ inherit(PinchRecognizer, AttrRecognizer, {
         this._super.emit.call(this, input);
     }
 });
+
+export {PinchRecognizer}

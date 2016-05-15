@@ -1,3 +1,9 @@
+import {boolOrFn,addEventListeners,removeEventListeners,getWindowForElement,prefixed,hasParent,abs,round,now} from './utils';
+import {PointerEventInput} from './input/pointerevent'
+import {TouchInput} from './input/touch'
+import {MouseInput} from './input/mouse'
+import {TouchMouseInput} from './input/touchmouse'
+
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
 var SUPPORT_TOUCH = ('ontouchstart' in window);
@@ -111,6 +117,9 @@ function createInputInstance(manager) {
  * @param {String} eventType
  * @param {Object} input
  */
+
+//@@@@ have a look at changedPointers and pointers, might throw errors@@@@
+
 function inputHandler(manager, eventType, input) {
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
@@ -392,3 +401,9 @@ function getRotation(start, end) {
 function getScale(start, end) {
     return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
 }
+
+//exported functions
+export {Input,createInputInstance,inputHandler,computeInputData,computeDeltaXY,computeIntervalInputData,simpleCloneInputData,getCenter,getVelocity,getDirection,getDistance,getAngle,getRotation,getScale}
+
+//exported variables
+export {MOBILE_REGEX,SUPPORT_TOUCH,SUPPORT_POINTER_EVENTS,SUPPORT_ONLY_TOUCH,INPUT_TYPE_TOUCH,INPUT_TYPE_PEN,INPUT_TYPE_MOUSE,INPUT_TYPE_KINECT,COMPUTE_INTERVAL,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,DIRECTION_NONE,DIRECTION_ALL,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN,DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,PROPS_XY,PROPS_CLIENT_XY}

@@ -1,3 +1,6 @@
+import {inherit,inArray} from '../utils'
+import {Input,INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH,INPUT_TYPE_PEN,INPUT_TYPE_MOUSE,INPUT_TYPE_KINECT} from '../input'
+
 var POINTER_INPUT_MAP = {
     pointerdown: INPUT_START,
     pointermove: INPUT_MOVE,
@@ -86,3 +89,5 @@ inherit(PointerEventInput, Input, {
         }
     }
 });
+
+export {PointerEventInput}

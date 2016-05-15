@@ -1,3 +1,6 @@
+import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,Input,INPUT_TYPE_TOUCH} from '../input'
+import {inherit,toArray,uniqueArray} from '../utils'
+
 var SINGLE_TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
@@ -66,3 +69,5 @@ function normalizeSingleTouches(ev, type) {
 
     return [all, changed];
 }
+
+export {SingleTouchInput,normalizeSingleTouches}

@@ -1,3 +1,7 @@
+import {assign,uniqueId,ifUndefined,invokeArrayArg,inArray,boolOrFn} from './utils'
+import {DIRECTION_UP,DIRECTION_DOWN,DIRECTION_LEFT,DIRECTION_RIGHT} from './input'
+
+
 /**
  * Recognizer flow explained; *
  * All recognizers have the initial state of POSSIBLE when a input session starts.
@@ -25,6 +29,8 @@
  *                                         |
  *                                  Ended/Recognized
  */
+
+
 var STATE_POSSIBLE = 1;
 var STATE_BEGAN = 2;
 var STATE_CHANGED = 4;
@@ -95,7 +101,7 @@ Recognizer.prototype = {
     },
 
     /**
-     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
+     * drop the simultaneous link. it doesn't remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
      * @returns {Recognizer} this
      */
@@ -325,3 +331,6 @@ function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
     }
     return otherRecognizer;
 }
+
+export {Recognizer,stateStr,directionStr,getRecognizerByNameIfManager}
+export {STATE_POSSIBLE,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,STATE_RECOGNIZED,STATE_CANCELLED,STATE_FAILED}
