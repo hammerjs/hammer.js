@@ -1,1 +1,1 @@
-})(window, document, 'Hammer');
+})(typeof window !== "undefined" ? window : this, 'Hammer');

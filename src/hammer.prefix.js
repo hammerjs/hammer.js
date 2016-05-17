@@ -1,2 +1,4 @@
-(function(window, document, exportName, undefined) {
+(function(window, exportName, undefined) {
   'use strict';
+
+  var document = window.document;
