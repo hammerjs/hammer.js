@@ -1,1 +1,1 @@
-})(typeof window !== "undefined" ? window : this, 'Hammer');
+})(typeof window !== 'undefined' ? window : this, 'Hammer');
