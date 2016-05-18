@@ -34,7 +34,7 @@ inherit(MouseInput, Input, {
             this.pressed = true;
         }
 
-        if (eventType & INPUT_MOVE && ev.which !== 1) {
+        if (eventType & INPUT_MOVE && ev.button !== 0) {
             eventType = INPUT_END;
         }
 
