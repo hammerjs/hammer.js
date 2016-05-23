@@ -1,0 +1,16 @@
+/bower_components
+/config/ember-try.js
+/dist
+/tests
+/tmp
+**/.gitkeep
+.bowerrc
+.editorconfig
+.ember-cli
+.gitignore
+.jshintrc
+.watchmanconfig
+.travis.yml
+bower.json
+ember-cli-build.js
+testem.js
