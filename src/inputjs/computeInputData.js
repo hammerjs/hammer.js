@@ -2,6 +2,20 @@
  * 
  * Created by arjun on 19/05/16.
  */
+import {now} from '../utilsjs/utilsConsts';
+import {abs} from '../utilsjs/utilsConsts';
+import {hasParent} from '../utilsjs/hasParent';
+import {simpleCloneInputData} from './simpleCloneInputData';
+import {getCenter} from './getCenter';
+import {getDistance} from './getDistance';
+import {getAngle} from './getAngle';
+import {getDirection} from './getDirection';
+import {computeDeltaXY} from './computeDeltaXY';
+import {getVelocity} from './getVelocity';
+import {getScale} from './getScale';
+import {getRotation} from './getRotation';
+import {computeIntervalInputData} from './computeIntervalInputData';
+
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
@@ -59,3 +73,5 @@ function computeInputData(manager, input) {
     }
     input.target = target;
 }
+
+export {computeInputData};
