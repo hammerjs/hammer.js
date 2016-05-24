@@ -1,3 +1,10 @@
+import {Input} from '../inputjs/inputConstructor'
+import {inherit} from '../utilsjs/inherit';
+import {bindFn} from '../utilsjs/bindFn';
+import {TouchInput} from './touch';
+import {MouseInput} from './mouse';
+import {INPUT_START,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH,INPUT_TYPE_MOUSE} from '../inputjs/inputConsts'
+
 /**
  * Combined touch and mouse input
  *
@@ -93,3 +100,5 @@ function isSyntheticEvent(eventData) {
     }
     return false;
 }
+
+export {TouchMouseInput}
