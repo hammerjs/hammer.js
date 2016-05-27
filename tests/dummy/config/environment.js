@@ -3,6 +3,7 @@
 module.exports = function(environment) {
   var ENV = {
     modulePrefix: 'dummy',
+    podModulePrefix: 'dummy/routes',
     environment: environment,
     rootURL: '/',
     locationType: 'auto',
