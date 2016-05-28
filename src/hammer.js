@@ -1,3 +1,14 @@
+import {ifUndefined} from './utilsjs/ifUndefined';
+import {TOUCH_ACTION_COMPUTE} from './touchactionjs/touchactionConsts';
+import {DIRECTION_HORIZONTAL} from './inputjs/inputConsts'
+import {RotateRecognizer} from './recognizers/rotate';
+import {PinchRecognizer} from './recognizers/pinch';
+import {SwipeRecognizer} from './recognizers/swipe';
+import {PanRecognizer} from './recognizers/pan';
+import {TapRecognizer} from './recognizers/tap';
+import {PressRecognizer} from './recognizers/press';
+import {Manager} from './manager';
+
 /**
  * Simple way to create a manager with a default set of recognizers.
  * @param {HTMLElement} element
@@ -126,3 +137,5 @@ Hammer.defaults = {
         tapHighlightColor: 'rgba(0,0,0,0)'
     }
 };
+
+export {Hammer};

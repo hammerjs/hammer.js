@@ -1,3 +1,11 @@
+import {AttrRecognizer} from '../recognizers/attribute';
+import {inherit} from '../utilsjs/inherit';
+import {abs} from '../utilsjs/utilsConsts';
+import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL} from '../inputjs/inputConsts';
+import {PanRecognizer} from './pan';
+import {INPUT_END} from '../inputjs/inputConsts';
+import {directionStr} from '../recognizerjs/directionStr';
+
 /**
  * Swipe
  * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
@@ -53,3 +61,5 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         this.manager.emit(this.options.event, input);
     }
 });
+
+export {SwipeRecognizer};

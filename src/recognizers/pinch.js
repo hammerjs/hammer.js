@@ -1,3 +1,7 @@
+import {AttrRecognizer} from './attribute';
+import {inherit} from '../utilsjs/inherit';
+import {TOUCH_ACTION_NONE} from '../touchactionjs/touchactionConsts';
+import {STATE_BEGAN} from '../recognizerjs/recognizerConsts'
 /**
  * Pinch
  * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
@@ -36,3 +40,5 @@ inherit(PinchRecognizer, AttrRecognizer, {
         this._super.emit.call(this, input);
     }
 });
+
+export {PinchRecognizer};

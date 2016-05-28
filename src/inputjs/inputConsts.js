@@ -1,6 +1,7 @@
 /**
  * Created by arjun on 19/05/16.
  */
+import {prefixed} from '../utilsjs/prefixed'
 
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
