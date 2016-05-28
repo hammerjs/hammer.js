@@ -1,4 +1,16 @@
 /**
+ * Created by arjun on 25/05/16.
+ */
+import {STATE_POSSIBLE,STATE_ENDED,STATE_FAILED,STATE_RECOGNIZED,STATE_CANCELLED,STATE_BEGAN,STATE_CHANGED} from './recognizerConsts'
+import {assign} from '../utilsjs/assign';
+import {uniqueId} from '../utilsjs/uniqueId';
+import {ifUndefined} from '../utilsjs/ifUndefined';
+import {invokeArrayArg} from '../utilsjs/invokeArrayArg';
+import {inArray} from '../utilsjs/inArray';
+import {boolOrFn} from '../utilsjs/boolOrFn';
+import {getRecognizerByNameIfManager} from './getRecognizerByNameIfManager'
+import {stateStr} from './stateStr'
+/**
  * Recognizer flow explained; *
  * All recognizers have the initial state of POSSIBLE when a input session starts.
  * The definition of a input session is from the first input until the last input, with all it's movement in it. *
@@ -25,13 +37,6 @@
  *                                         |
  *                                  Ended/Recognized
  */
-var STATE_POSSIBLE = 1;
-var STATE_BEGAN = 2;
-var STATE_CHANGED = 4;
-var STATE_ENDED = 8;
-var STATE_RECOGNIZED = STATE_ENDED;
-var STATE_CANCELLED = 16;
-var STATE_FAILED = 32;
 
 /**
  * Recognizer
@@ -257,7 +262,7 @@ Recognizer.prototype = {
      * the actual recognizing happens in this method
      * @virtual
      * @param {Object} inputData
-     * @returns {Const} STATE
+     * @returns {constant} STATE
      */
     process: function(inputData) { }, // jshint ignore:line
 
@@ -276,52 +281,4 @@ Recognizer.prototype = {
     reset: function() { }
 };
 
-/**
- * get a usable string, used as event postfix
- * @param {Const} state
- * @returns {String} state
- */
-function stateStr(state) {
-    if (state & STATE_CANCELLED) {
-        return 'cancel';
-    } else if (state & STATE_ENDED) {
-        return 'end';
-    } else if (state & STATE_CHANGED) {
-        return 'move';
-    } else if (state & STATE_BEGAN) {
-        return 'start';
-    }
-    return '';
-}
-
-/**
- * direction cons to string
- * @param {Const} direction
- * @returns {String}
- */
-function directionStr(direction) {
-    if (direction == DIRECTION_DOWN) {
-        return 'down';
-    } else if (direction == DIRECTION_UP) {
-        return 'up';
-    } else if (direction == DIRECTION_LEFT) {
-        return 'left';
-    } else if (direction == DIRECTION_RIGHT) {
-        return 'right';
-    }
-    return '';
-}
-
-/**
- * get a recognizer by name if it is bound to a manager
- * @param {Recognizer|String} otherRecognizer
- * @param {Recognizer} recognizer
- * @returns {Recognizer}
- */
-function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
-    var manager = recognizer.manager;
-    if (manager) {
-        return manager.get(otherRecognizer);
-    }
-    return otherRecognizer;
-}
+export {Recognizer} ;

@@ -1,3 +1,11 @@
+import {Recognizer} from '../recognizerjs/recognizerConstructor';
+import {STATE_RECOGNIZED,STATE_FAILED} from '../recognizerjs/recognizerConsts';
+import {inherit} from '../utilsjs/inherit';
+import {now} from '../utilsjs/utilsConsts';
+import {setTimeoutContext} from '../utilsjs/setTimeoutContext';
+import {TOUCH_ACTION_AUTO} from '../touchactionjs/touchactionConsts';
+import {INPUT_START,INPUT_END,INPUT_CANCEL} from '../inputjs/inputConsts'
+
 /**
  * Press
  * Recognized when the pointer is down for x ms without any movement.
@@ -68,3 +76,5 @@ inherit(PressRecognizer, Recognizer, {
         }
     }
 });
+
+export {PressRecognizer};

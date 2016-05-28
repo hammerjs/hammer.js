@@ -1,7 +1,7 @@
 /**
  * Created by arjun on 19/05/16.
  */
-
+import {each} from './each';
 /**
  * if the argument is an array, we want to execute the fn on each entry
  * if it aint an array we don't want to do a thing.

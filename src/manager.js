@@ -1,3 +1,16 @@
+import {assign} from './utilsjs/assign';
+import {Hammer} from './hammer';
+import {TouchAction} from './touchactionjs/touchActionConstructor';
+import {createInputInstance} from './inputjs/createInputInstance';
+import {each} from './utilsjs/each';
+import {inArray} from './utilsjs/inArray';
+import {invokeArrayArg} from './utilsjs/invokeArrayArg';
+import {splitStr} from './utilsjs/splitStr';
+import {prefixed} from './utilsjs/prefixed';
+import {Recognizer} from './recognizerjs/recognizerConstructor';
+import {STATE_BEGAN,STATE_ENDED,STATE_CHANGED,STATE_RECOGNIZED} from './recognizerjs/recognizerConsts';
+
+
 var STOP = 1;
 var FORCED_STOP = 2;
 
@@ -310,3 +323,5 @@ function triggerDomEvent(event, data) {
     gestureEvent.gesture = data;
     data.target.dispatchEvent(gestureEvent);
 }
+
+export {Manager}
