@@ -1,10 +1,39 @@
-import { TouchStream, MouseStream } from './streams/stream';
+import { availableInputs } from './detection';
+
+const assign = Object.assign;
+const DEFAULT_OPTIONS = {
+  inputs: availableInputs()
+};
+
+
+
 
 export default class Manager {
 
-  constructor(rootElement) {
+  constructor(rootElement, options) {
     this.rootElement = rootElement || window;
-    this._setup();
+    this.layers = new WeakMap();
+
+    this.inputs = {};
+    this.options = assign({}, DEFAULT_OPTIONS, options || {});
+
+    for (let { name, InputClass } of this.options.inputs) {
+      this.registerInput(name, InputClass);
+    }
+
+  }
+
+  registerInput(name, InputClass) {
+    this.inputs[name] = new InputClass(this.rootElement);
+  }
+
+  unregisterInput(name) {
+    let input = this.inputs[name];
+
+    if (input) {
+      this.inputs[name] = null;
+      input.destroy();
+    }
   }
 
   register(layer) {
@@ -48,16 +77,6 @@ export default class Manager {
     } while (element = element.parentNode);
 
     return null;
-  }
-
-
-  private _setup() {
-    this.layers = new WeakMap();
-
-    this.streams = {
-      touch: new TouchStream(this.rootElement),
-      mouse: new MouseStream(this.rootElement)
-    };
   }
 
   private _teardown() {
