@@ -130,7 +130,7 @@ module.exports = function(app) {
   });
 
   itemsRouter.post('/', function(req, res) {
-    res.status(201).send(store.createRecord(req.body););
+    res.status(201).send(store.createRecord(req.body));
   });
 
   itemsRouter.get('/:id', function(req, res) {
