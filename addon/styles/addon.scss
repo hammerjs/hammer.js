@@ -1,0 +1,59 @@
+@mixin off() {
+  pointer-events: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: none;
+}
+
+.gesture-no-touch {
+  @include off();
+
+  * {
+    @include off();
+  }
+}
+
+@mixin fillBlock($position: absolute) {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: $position;
+  display: block;
+}
+
+@mixin willChange($start: 0) {
+  will-change: transform;
+  transform: translateX($start);
+}
+
+history-outlet {
+  @include fillBlock('relative');
+
+  left {
+    @include fillBlock();
+    z-index: 0;
+    willChange(-20%);
+  }
+
+  right {
+    @include fillBlock();
+    z-index: 0;
+    willChange(80%);
+  }
+
+  main {
+    @include fillBlock();
+    z-index: 1;
+    willChange();
+  }
+
+  outlet {
+    @include fillBlock();
+    z-index: 1;
+    willChange();
+  }
+
+  fps {
+    @include fillBlock();
+  }
+}
