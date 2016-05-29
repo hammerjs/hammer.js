@@ -1,4 +1,4 @@
-import { TouchStream, MouseStream } from './stream';
+import { TouchStream, MouseStream } from './streams/stream';
 
 export default class Manager {
 
