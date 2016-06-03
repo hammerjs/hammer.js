@@ -1,6 +1,3 @@
-/**
- * Created by arjun on 19/05/16.
- */
 import {INPUT_START,INPUT_END,INPUT_CANCEL} from './inputConsts';
 import {computeInputData} from './computeInputData';
 
@@ -37,4 +34,4 @@ function inputHandler(manager, eventType, input) {
     manager.session.prevInput = input;
 }
 
-export {inputHandler}
+export {inputHandler};

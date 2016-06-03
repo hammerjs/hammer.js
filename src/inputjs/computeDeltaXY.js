@@ -1,7 +1,4 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {INPUT_START,INPUT_END} from './inputConsts'
+import {INPUT_START,INPUT_END} from './inputConsts';
 
 function computeDeltaXY(session, input) {
     var center = input.center;

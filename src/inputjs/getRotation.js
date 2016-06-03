@@ -1,8 +1,6 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {getAngle} from './getAngle'
-import {PROPS_CLIENT_XY} from './inputConsts'
+import {getAngle} from './getAngle';
+import {PROPS_CLIENT_XY} from './inputConsts';
+
 /**
  * calculate the rotation degrees between two pointersets
  * @param {Array} start array of pointers

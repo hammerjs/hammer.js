@@ -1,11 +1,8 @@
-/**
- * 
- * Created by arjun on 18/05/16.
- */
 import {boolOrFn} from './../utilsjs/boolOrFn';
 import {addEventListeners} from './../utilsjs/addEventListeners';
 import {removeEventListeners} from './../utilsjs/removeEventListeners';
 import {getWindowForElement} from './../utilsjs/getWindowForElement';
+
 /**
  * create new input type manager
  * @param {Manager} manager
@@ -58,4 +55,4 @@ Input.prototype = {
     }
 };
 
-export {Input}
+export {Input};

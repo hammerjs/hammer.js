@@ -1,7 +1,5 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {round} from '../utilsjs/utilsConsts'
+import {round} from '../utilsjs/utilsConsts';
+
 /**
  * get the center of all the pointers
  * @param {Array} pointers

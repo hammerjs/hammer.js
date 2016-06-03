@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 20/05/16.
- */
-
-/**
  * calculate the velocity between two points. unit is in px per ms.
  * @param {Number} deltaTime
  * @param {Number} x

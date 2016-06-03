@@ -1,8 +1,6 @@
-/**
- * Created by arjun on 20/05/16.
- */
 import {now,round} from '../utilsjs/utilsConsts';
 import {getCenter} from './getCenter';
+
 /**
  * create a simple clone from the input used for storage of firstInput and firstMultiple
  * @param {Object} input

@@ -1,7 +1,3 @@
-/**
- * 
- * Created by arjun on 20/05/16.
- */
 import {PROPS_CLIENT_XY} from './inputConsts';
 import {getDistance} from './getDistance';
 /**

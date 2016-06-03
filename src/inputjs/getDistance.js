@@ -1,7 +1,5 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {PROPS_XY} from './inputConsts'
+import {PROPS_XY} from './inputConsts';
+
 /**
  * calculate the absolute distance between two points
  * @param {Object} p1 {x, y}

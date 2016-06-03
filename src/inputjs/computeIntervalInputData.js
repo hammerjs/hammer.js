@@ -1,10 +1,7 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {INPUT_CANCEL,COMPUTE_INTERVAL} from './inputConsts'
-import {abs} from '../utilsjs/utilsConsts'
-import {getVelocity} from './getVelocity'
-import {getDirection} from './getDirection'
+import {INPUT_CANCEL,COMPUTE_INTERVAL} from './inputConsts';
+import {abs} from '../utilsjs/utilsConsts';
+import {getVelocity} from './getVelocity';
+import {getDirection} from './getDirection';
 /**
  * velocity is calculated every x ms
  * @param {Object} session
