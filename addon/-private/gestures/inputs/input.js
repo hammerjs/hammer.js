@@ -1,14 +1,19 @@
 import Stream from '../streams/stream';
 import StreamEvent from '../streams/stream-event';
 
-export default class input {
+export default class Input {
 
-  constructor(element) {
+  constructor(element, manager) {
     this.element = element;
     this.streams = [];
     this.attached = false;
+    this.handler = null;
+    this.handlerStack = [];
+    this.streaming = false;
+    this.hasPointer = false;
 
     this._handlers = { start: null, update: null, end: null, interrupt: null };
+    this.manager = manager;
   }
 
   _bind(name) {
@@ -19,35 +24,83 @@ export default class input {
 
   start(event) {
     let stream = new Stream();
+    const { streams } = this;
 
-    this.streams.push(stream);
-    stream.open({
+    // splice existing streams
+    for (let s of streams) {
+      s.split();
+    }
+
+    this.streaming = true;
+    this.hasPointer = true;
+
+    streams.push(stream);
+    let streamEvent = stream.open({
+      x: event.clientX,
+      y: event.clientY,
       event
     });
+
+    if (this.handler) {
+      this.handlerStack.push(this.handler);
+      this.handler = null;
+    }
+
+    this.manager.recognize(this, streams, streamEvent);
   }
 
   update(event) {
-    let [stream] = this.streams;
+    if (!this.streaming) {
+      return;
+    }
 
-    stream.push({
+    let { streams } = this;
+    let [stream] = streams;
+
+    let streamEvent = stream.push({
+      x: event.clientX,
+      y: event.clientY,
       event
     });
+
+    if (this.handler) {
+      this.handler.recognize(this, this.streams, streamEvent);
+    } else {
+      this.manager.recognize(this, this.streams, streamEvent);
+    }
+  }
+
+  _close(event) {
+    let { streams } = this;
+    let stream = streams.pop();
+
+    this.streaming = false;
+
+    let streamEvent = stream.close({
+      x: event.clientX,
+      y: event.clientY,
+      event
+    });
+
+    if (this.handler) {
+      this.handler.recognize(this, this.streams, streamEvent);
+      this.handler = null;
+    } else {
+      this.manager.recognize(this, this.streams, streamEvent);
+    }
   }
 
   end(event) {
-    let [stream] = this.streams;
-
-    stream.close({
-      event
-    });
+    if (this.hasPointer) {
+      this._close(event);
+      this.hasPointer = false;
+    }
   }
 
   interrupt(event) {
-    let [stream] = this.streams;
-
-    stream.close({
-      event
-    });
+    if (this.hasPointer) {
+      this._close(event);
+    }
   }
 
   attach() {
@@ -56,6 +109,14 @@ export default class input {
 
   deattach() {
     throw new Error('Interface Method Not Implemented');
+  }
+
+  destroy() {
+    this.deattach();
+    this.manager = null;
+    this.element = null;
+    this.streams = null;
+    this.handler = null;
   }
 
 }

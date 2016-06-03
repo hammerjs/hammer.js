@@ -1,10 +1,11 @@
-/* global performance */
+/* global Math, performance */
 
-class StreamEvent {
+export default class StreamEvent {
 
-  constructor(name, options, event, prev) {
+  constructor(name, info, prev) {
     this.name = name;
-    this.source = event;
+    this.element = info.event.target;
+    this.source = info.event;
     this.silenced = false;
     this.prev = prev;
 
@@ -13,16 +14,16 @@ class StreamEvent {
     this.dT = prev ? this.time - prev.time : 0;
 
     // current position (clientX/Y)
-    this.x = options.x;
-    this.y = options.y;
+    this.x = info.x;
+    this.y = info.y;
 
     // deltas off of origin event
-    this.totalX = options.x - options.originX;
-    this.totalY = options.y - options.originY;
+    this.totalX = info.x - info.originX;
+    this.totalY = info.y - info.originY;
 
     // deltas off of last event
-    this.dX = prev ? options.x - prev.x : 0;
-    this.dY = prev ? options.y - prev.y : 0;
+    this.dX = prev ? info.x - prev.x : 0;
+    this.dY = prev ? info.y - prev.y : 0;
 
     // prediction values
     this.acceleration = 0;

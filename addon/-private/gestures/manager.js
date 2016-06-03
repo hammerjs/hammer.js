@@ -5,8 +5,7 @@ const DEFAULT_OPTIONS = {
   inputs: availableInputs()
 };
 
-
-
+const HANDLER_SYMBOL = Symbol('element-gesture-handler');
 
 export default class Manager {
 
@@ -24,7 +23,18 @@ export default class Manager {
   }
 
   registerInput(name, InputClass) {
-    this.inputs[name] = new InputClass(this.rootElement);
+    this.inputs[name] = new InputClass(this.rootElement, this);
+  }
+
+  recognize(input, streams, streamEvent) {
+    let layer = this._findParentLayer(streamEvent.element);
+
+    while (layer) {
+      if (layer.recognize(input, streams, streamEvent)) {
+        break;
+      }
+      layer = layer.parent;
+    }
   }
 
   unregisterInput(name) {
@@ -36,7 +46,7 @@ export default class Manager {
     }
   }
 
-  register(layer) {
+  registerLayer(layer) {
     this.layers.set(layer.element, layer);
     layer.parent = this._findParentLayer(layer.element);
 
@@ -47,7 +57,7 @@ export default class Manager {
     }
   }
 
-  forget(layer) {
+  forgetLayer(layer) {
     this.layers.delete(layer.element);
 
     // join parent/child
@@ -65,7 +75,7 @@ export default class Manager {
     }
   }
 
-  private _findParentLayer(element) {
+  _findParentLayer(element) {
     do {
       if (element.hasAttribute('gesture-layer')) {
         let layer = this.layers.get(element);
@@ -79,7 +89,7 @@ export default class Manager {
     return null;
   }
 
-  private _teardown() {
+  _teardown() {
     this.streams.touch.destroy();
     this.streams.mouse.destroy();
 

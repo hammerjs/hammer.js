@@ -44,7 +44,7 @@ Store.prototype.serializeOne = function serializeOne(record) {
 };
 
 Store.prototype.normalizeOne = function normalizeOne(record) {
-  var values = record.data.attributes;
+  var values = record.data && record.data.attributes ? record.data.attributes : {};
 
   delete values.id;
 
@@ -93,7 +93,7 @@ Store.prototype.findAll = function findAll() {
 };
 
 Store.prototype.deleteRecord = function deleteRecord(id) {
-  let record = this._recordMap[id];
+  var record = this._recordMap[id];
 
   if (!record || record.__deleted) {
     throw new Error(500);

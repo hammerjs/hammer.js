@@ -4,7 +4,6 @@ import Layer from 'history/-private/gestures/layer';
 import VerticalPan from 'history/-private/gestures/recognizers/vertical-pan';
 
 const {
-  computed,
   inject,
   Component
   } = Ember;
@@ -19,6 +18,26 @@ export default Component.extend({
 
   gestures: inject.service('gesture-recognition'),
 
+  pan() {
+    console.log('pan!');
+  },
+
+  panStart() {
+    console.log('pan start');
+  },
+
+  panLeft() {
+    console.log('pan left');
+  },
+
+  panRight() {
+    console.log('pan right');
+  },
+
+  panEnd() {
+    console.log('pan end');
+  },
+
   willInsertElement() {
     this._left = this.element.children[0];
     this._main = this.element.children[1];
@@ -27,7 +46,13 @@ export default Component.extend({
   },
 
   setupLayer() {
-
+    this.layer = new Layer(this.element);
+    this.layer.addRecognizer(new VerticalPan());
+    this.layer.on('*', ({name, event}) => {
+      if (this[name]) {
+        this[name](event);
+      }
+    });
   },
 
   didInsertElement() {
@@ -36,7 +61,7 @@ export default Component.extend({
 
   init() {
     this._super();
-    this.layer = new Layer(this.element);
+    this.setupLayer();
   }
 
 });
