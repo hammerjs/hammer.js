@@ -219,7 +219,7 @@ function ifUndefined(val1, val2) {
  */
 function addEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, false);
+        target.addEventListener(type, handler, { passive: true });
     });
 }
 
@@ -231,7 +231,7 @@ function addEventListeners(target, types, handler) {
  */
 function removeEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, false);
+        target.removeEventListener(type, handler, { passive: true });
     });
 }
 
