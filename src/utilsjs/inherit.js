@@ -1,7 +1,4 @@
-/**
- * Created by arjun on 19/05/16.
- */
-import {assign} from './assign'
+import {assign} from './assign';
 /**
  * simple class inheritance
  * @param {Function} child
@@ -21,4 +18,4 @@ function inherit(child, base, properties) {
     }
 }
 
-export {inherit}
+export {inherit};

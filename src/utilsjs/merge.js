@@ -1,9 +1,5 @@
-/**
- * Created by arjun on 19/05/16.
- */
-
-import {deprecate} from './deprecate'
-import {extend} from './extend'
+import {deprecate} from './deprecate';
+import {extend} from './extend';
 /**
  * merge the values from src in the dest.
  * means that properties that exist in dest will not be overwritten by src

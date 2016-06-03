@@ -1,6 +1,3 @@
-/**
- * Created by arjun on 20/05/16.
- */
 import {VENDOR_PREFIXES} from './utilsConsts';
 /**
  * get the prefixed property

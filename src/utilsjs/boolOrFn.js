@@ -1,7 +1,4 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {TYPE_FUNCTION} from './utilsConsts'
+import {TYPE_FUNCTION} from './utilsConsts';
 /**
  * let a boolean value also be a function that must return a boolean
  * this first item in args will be used as the context

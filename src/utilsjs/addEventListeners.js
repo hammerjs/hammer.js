@@ -1,6 +1,3 @@
-/**
- * Created by arjun on 20/05/16.
- */
 import {each} from './each';
 import {splitStr} from './splitStr';
 /**

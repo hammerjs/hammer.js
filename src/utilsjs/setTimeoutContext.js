@@ -1,6 +1,3 @@
-/**
- * Created by arjun on 19/05/16.
- */
 import {bindFn} from './bindFn';
 /**
  * set a timeout with a given scope

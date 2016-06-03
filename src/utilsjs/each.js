@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 19/05/16.
- */
-
-/**
  * walk objects and arrays
  * @param {Object} obj
  * @param {Function} iterator
@@ -30,4 +26,4 @@ function each(obj, iterator, context) {
     }
 }
 
-export {each}
+export {each};

@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 20/05/16.
- */
-
-/**
  * find if a array contains the object using indexOf or a simple polyFill
  * @param {Array} src
  * @param {String} find
