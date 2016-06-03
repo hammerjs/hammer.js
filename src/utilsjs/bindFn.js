@@ -1,9 +1,4 @@
 /**
- *
- * Created by arjun on 20/05/16.
- */
-
-/**
  * simple function bind
  * @param {Function} fn
  * @param {Object} context
@@ -15,4 +10,4 @@ function bindFn(fn, context) {
     };
 }
 
-export {bindFn}
+export {bindFn};

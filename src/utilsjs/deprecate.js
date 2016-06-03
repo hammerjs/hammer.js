@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 19/05/16.
- */
-
-/**
  * wrap a method with a deprecation warning and stack trace
  * @param {Function} method
  * @param {String} name

@@ -1,6 +1,3 @@
-/**
- * Created by arjun on 20/05/16.
- */
 import {inArray} from './inArray';
 /**
  * unique array with objects based on a key (like 'id') or just by the array's value

@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 25/05/16.
- */
-
-/**
  * use the val2 when val1 is undefined
  * @param {*} val1
  * @param {*} val2

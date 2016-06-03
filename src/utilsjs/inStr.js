@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 20/05/16.
- */
-
-/**
  * small indexOf wrapper
  * @param {String} str
  * @param {String} find

@@ -1,8 +1,4 @@
 /**
- * Created by arjun on 19/05/16.
- */
-
-/**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} target
@@ -33,4 +29,4 @@ if (typeof Object.assign !== 'function') {
     assign = Object.assign;
 }
 
-export {assign}
+export {assign};

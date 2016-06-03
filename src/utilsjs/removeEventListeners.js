@@ -1,9 +1,5 @@
-/**
- * 
- * Created by arjun on 20/05/16.
- */
-import {each} from './each'
-import {splitStr} from './splitStr'
+import {each} from './each';
+import {splitStr} from './splitStr';
 /**
  * removeEventListener with multiple events at once
  * @param {EventTarget} target

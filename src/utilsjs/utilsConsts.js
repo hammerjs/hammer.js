@@ -1,7 +1,3 @@
-/**
- * Created by arjun on 19/05/16.
- */
-
 var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
 var TEST_ELEMENT = document.createElement('div');
 
@@ -11,4 +7,4 @@ var round = Math.round;
 var abs = Math.abs;
 var now = Date.now;
 
-export {VENDOR_PREFIXES,TEST_ELEMENT,TYPE_FUNCTION,round,abs,now}
+export {VENDOR_PREFIXES,TEST_ELEMENT,TYPE_FUNCTION,round,abs,now};
