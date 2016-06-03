@@ -1,7 +1,5 @@
-/**
- * Created by arjun on 20/05/16.
- */
-import {PROPS_XY} from './inputConsts'
+import {PROPS_XY} from './inputConsts';
+
 /**
  * calculate the angle between two coordinates
  * @param {Object} p1

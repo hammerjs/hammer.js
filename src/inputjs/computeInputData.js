@@ -1,7 +1,3 @@
-/**
- * 
- * Created by arjun on 19/05/16.
- */
 import {now} from '../utilsjs/utilsConsts';
 import {abs} from '../utilsjs/utilsConsts';
 import {hasParent} from '../utilsjs/hasParent';
@@ -15,7 +11,6 @@ import {getVelocity} from './getVelocity';
 import {getScale} from './getScale';
 import {getRotation} from './getRotation';
 import {computeIntervalInputData} from './computeIntervalInputData';
-
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc

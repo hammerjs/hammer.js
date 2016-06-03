@@ -1,8 +1,6 @@
-/**
- * Created by arjun on 20/05/16.
- */
 import {abs} from '../utilsjs/utilsConsts';
 import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from './inputConsts';
+
 /**
  * get the direction between two points
  * @param {Number} x
