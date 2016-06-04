@@ -10,7 +10,6 @@ import {prefixed} from './utilsjs/prefixed';
 import {Recognizer} from './recognizerjs/recognizerConstructor';
 import {STATE_BEGAN,STATE_ENDED,STATE_CHANGED,STATE_RECOGNIZED} from './recognizerjs/recognizerConsts';
 
-
 var STOP = 1;
 var FORCED_STOP = 2;
 
@@ -114,7 +113,7 @@ Manager.prototype = {
             //      that is being recognized.
             // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
             //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (session.stopped !== FORCED_STOP && ( // 1
+            if (session.stopped !== FORCED_STOP && (// 1
                     !curRecognizer || recognizer == curRecognizer || // 2
                     recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);
@@ -324,4 +323,4 @@ function triggerDomEvent(event, data) {
     data.target.dispatchEvent(gestureEvent);
 }
 
-export {Manager}
+export {Manager};

@@ -1,6 +1,7 @@
-import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_TYPE_MOUSE} from '../inputjs/inputConsts'
+import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_TYPE_MOUSE} from '../inputjs/inputConsts';
 import {Input} from '../inputjs/inputConstructor';
 import {inherit} from '../utilsjs/inherit';
+
 var MOUSE_INPUT_MAP = {
     mousedown: INPUT_START,
     mousemove: INPUT_MOVE,

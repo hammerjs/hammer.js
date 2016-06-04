@@ -1,15 +1,13 @@
-/**
- * Created by arjun on 25/05/16.
- */
-import {STATE_POSSIBLE,STATE_ENDED,STATE_FAILED,STATE_RECOGNIZED,STATE_CANCELLED,STATE_BEGAN,STATE_CHANGED} from './recognizerConsts'
+import {STATE_POSSIBLE,STATE_ENDED,STATE_FAILED,STATE_RECOGNIZED,STATE_CANCELLED,
+  STATE_BEGAN,STATE_CHANGED} from './recognizerConsts';
 import {assign} from '../utilsjs/assign';
 import {uniqueId} from '../utilsjs/uniqueId';
 import {ifUndefined} from '../utilsjs/ifUndefined';
 import {invokeArrayArg} from '../utilsjs/invokeArrayArg';
 import {inArray} from '../utilsjs/inArray';
 import {boolOrFn} from '../utilsjs/boolOrFn';
-import {getRecognizerByNameIfManager} from './getRecognizerByNameIfManager'
-import {stateStr} from './stateStr'
+import {getRecognizerByNameIfManager} from './getRecognizerByNameIfManager';
+import {stateStr} from './stateStr';
 /**
  * Recognizer flow explained; *
  * All recognizers have the initial state of POSSIBLE when a input session starts.
@@ -281,4 +279,4 @@ Recognizer.prototype = {
     reset: function() { }
 };
 
-export {Recognizer} ;
+export {Recognizer};

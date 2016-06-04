@@ -1,10 +1,10 @@
-import {AttrRecognizer} from './attribute'
-import {inherit} from '../utilsjs/inherit'
+import {AttrRecognizer} from './attribute';
+import {inherit} from '../utilsjs/inherit';
 import {DIRECTION_ALL,DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,DIRECTION_NONE,DIRECTION_UP,DIRECTION_DOWN,
-DIRECTION_LEFT,DIRECTION_RIGHT} from '../inputjs/inputConsts'
-import {STATE_BEGAN} from '../recognizerjs/recognizerConsts'
-import {TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y} from '../touchactionjs/touchactionConsts'
-import {directionStr} from '../recognizerjs/directionStr' 
+DIRECTION_LEFT,DIRECTION_RIGHT} from '../inputjs/inputConsts';
+import {STATE_BEGAN} from '../recognizerjs/recognizerConsts';
+import {TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y} from '../touchactionjs/touchactionConsts';
+import {directionStr} from '../recognizerjs/directionStr';
 
 /**
  * Pan

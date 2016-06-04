@@ -1,8 +1,3 @@
-/**
- * Created by arjun on 25/05/16.
- */
-
-
 var STATE_POSSIBLE = 1;
 var STATE_BEGAN = 2;
 var STATE_CHANGED = 4;

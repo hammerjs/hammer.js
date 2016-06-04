@@ -1,7 +1,5 @@
-/**
- * Created by arjun on 25/05/16.
- */
-import {DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from '../inputjs/inputConsts'
+import {DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from '../inputjs/inputConsts';
+
 /**
  * direction cons to string
  * @param {constant} direction
@@ -20,4 +18,4 @@ function directionStr(direction) {
     return '';
 }
 
-export {directionStr}
+export {directionStr};

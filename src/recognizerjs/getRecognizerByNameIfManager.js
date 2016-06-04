@@ -1,9 +1,4 @@
 /**
- * Created by arjun on 25/05/16.
- */
-
-
-/**
  * get a recognizer by name if it is bound to a manager
  * @param {Recognizer|String} otherRecognizer
  * @param {Recognizer} recognizer
