@@ -1,4 +1,4 @@
-import {deprecate} from './deprecate';
+import deprecate from './deprecate';
 /**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.

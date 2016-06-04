@@ -6,11 +6,9 @@ import {TYPE_FUNCTION} from './utilsConsts';
  * @param {Array} [args]
  * @returns {Boolean}
  */
-function boolOrFn(val, args) {
+export default function boolOrFn(val, args) {
     if (typeof val == TYPE_FUNCTION) {
         return val.apply(args ? args[0] || undefined : undefined, args);
     }
     return val;
 }
-
-export {boolOrFn};

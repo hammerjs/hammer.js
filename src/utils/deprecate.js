@@ -5,7 +5,7 @@
  * @param {String} message
  * @returns {Function} A new function wrapping the supplied method.
  */
-function deprecate(method, name, message) {
+export default function deprecate(method, name, message) {
     var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
     return function() {
         var e = new Error('get-stack-trace');
@@ -20,5 +20,3 @@ function deprecate(method, name, message) {
         return method.apply(this, arguments);
     };
 }
-
-export {deprecate};

@@ -4,8 +4,6 @@
  * @param {*} val2
  * @returns {*}
  */
-function ifUndefined(val1, val2) {
+export default function ifUndefined(val1, val2) {
     return (val1 === undefined) ? val2 : val1;
 }
-
-export {ifUndefined};

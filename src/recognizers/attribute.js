@@ -1,4 +1,4 @@
-import {inherit} from '../utilsjs/inherit';
+import inherit from '../utils/inherit';
 import {Recognizer} from '../recognizerjs/recognizerConstructor';
 import {STATE_BEGAN,STATE_CHANGED,STATE_CANCELLED,STATE_ENDED,STATE_FAILED} from '../recognizerjs/recognizerConsts';
 import {INPUT_CANCEL,INPUT_END} from '../inputjs/inputConsts';

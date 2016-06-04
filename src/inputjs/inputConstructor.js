@@ -1,7 +1,7 @@
-import {boolOrFn} from './../utilsjs/boolOrFn';
-import {addEventListeners} from './../utilsjs/addEventListeners';
-import {removeEventListeners} from './../utilsjs/removeEventListeners';
-import {getWindowForElement} from './../utilsjs/getWindowForElement';
+import boolOrFn from '../utils/boolOrFn';
+import addEventListeners from '../utils/addEventListeners';
+import removeEventListeners from '../utils/removeEventListeners';
+import getWindowForElement from '../utils/getWindowForElement';
 
 /**
  * create new input type manager

@@ -1,5 +1,5 @@
 import {SUPPORT_POINTER_EVENTS,SUPPORT_ONLY_TOUCH,SUPPORT_TOUCH} from './inputConsts';
-import {inputHandler} from './inputHandler';
+import inputHandler from './inputHandler';
 import {PointerEventInput} from '../input/pointerevent';
 import {TouchInput} from '../input/touch';
 import {MouseInput} from '../input/mouse';
@@ -11,7 +11,7 @@ import {TouchMouseInput} from '../input/touchmouse';
  * @param {Hammer} manager
  * @returns {Input}
  */
-function createInputInstance(manager) {
+export default function createInputInstance(manager) {
     var Type;
     var inputClass = manager.options.inputClass;
 
@@ -28,5 +28,3 @@ function createInputInstance(manager) {
     }
     return new (Type)(manager, inputHandler);
 }
-
-export {createInputInstance};

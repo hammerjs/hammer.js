@@ -1,5 +1,5 @@
 import {Hammer} from './hammer';
-import {assign} from './utilsjs/assign';
+import {assign} from './utils/assign';
 import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL} from './inputjs/inputConsts';
 import {STATE_POSSIBLE,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,STATE_RECOGNIZED,
         STATE_CANCELLED,STATE_FAILED} from './recognizerjs/recognizerConsts';
@@ -24,14 +24,14 @@ import {PinchRecognizer} from './recognizers/pinch';
 import {RotateRecognizer} from './recognizers/rotate';
 import {PressRecognizer} from './recognizers/press';
 
-import {addEventListeners} from './utilsjs/addEventListeners';
-import {removeEventListeners} from './utilsjs/removeEventListeners';
-import {each} from './utilsjs/each';
-import {merge} from './utilsjs/merge';
-import {extend} from './utilsjs/extend';
-import {inherit} from './utilsjs/inherit';
-import {bindFn} from './utilsjs/bindFn';
-import {prefixed} from './utilsjs/prefixed';
+import addEventListeners from './utils/addEventListeners';
+import removeEventListeners from './utils/removeEventListeners';
+import each from './utils/each';
+import {merge} from './utils/merge';
+import {extend} from './utils/extend';
+import inherit from './utils/inherit';
+import bindFn from './utils/bindFn';
+import prefixed from './utils/prefixed';
 
 // this prevents errors when Hammer is loaded in the presence of an AMD
 //  style loader but by script tag, not by the loader.

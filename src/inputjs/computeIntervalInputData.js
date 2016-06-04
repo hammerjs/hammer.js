@@ -1,13 +1,14 @@
 import {INPUT_CANCEL,COMPUTE_INTERVAL} from './inputConsts';
-import {abs} from '../utilsjs/utilsConsts';
-import {getVelocity} from './getVelocity';
-import {getDirection} from './getDirection';
+import {abs} from '../utils/utilsConsts';
+import getVelocity from './getVelocity';
+import getDirection from './getDirection';
+
 /**
  * velocity is calculated every x ms
  * @param {Object} session
  * @param {Object} input
  */
-function computeIntervalInputData(session, input) {
+export default function computeIntervalInputData(session, input) {
     var last = session.lastInterval || input,
         deltaTime = input.timeStamp - last.timeStamp,
         velocity, velocityX, velocityY, direction;
@@ -36,5 +37,3 @@ function computeIntervalInputData(session, input) {
     input.velocityY = velocityY;
     input.direction = direction;
 }
-
-export {computeIntervalInputData};

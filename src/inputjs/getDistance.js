@@ -7,7 +7,7 @@ import {PROPS_XY} from './inputConsts';
  * @param {Array} [props] containing x and y keys
  * @return {Number} distance
  */
-function getDistance(p1, p2, props) {
+export default function getDistance(p1, p2, props) {
     if (!props) {
         props = PROPS_XY;
     }
@@ -16,5 +16,3 @@ function getDistance(p1, p2, props) {
 
     return Math.sqrt((x * x) + (y * y));
 }
-
-export {getDistance};

@@ -5,7 +5,7 @@ import {VENDOR_PREFIXES} from './utilsConsts';
  * @param {String} property
  * @returns {String|Undefined} prefixed
  */
-function prefixed(obj, property) {
+export default function prefixed(obj, property) {
     var prefix, prop;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
@@ -21,5 +21,3 @@ function prefixed(obj, property) {
     }
     return undefined;
 }
-
-export {prefixed};

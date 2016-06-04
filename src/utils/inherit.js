@@ -5,7 +5,7 @@ import {assign} from './assign';
  * @param {Function} base
  * @param {Object} [properties]
  */
-function inherit(child, base, properties) {
+export default function inherit(child, base, properties) {
     var baseP = base.prototype,
         childP;
 
@@ -17,5 +17,3 @@ function inherit(child, base, properties) {
         assign(childP, properties);
     }
 }
-
-export {inherit};

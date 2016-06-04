@@ -3,8 +3,6 @@
  * @returns {number} uniqueId
  */
 var _uniqueId = 1;
-function uniqueId() {
+export default function uniqueId() {
     return _uniqueId++;
 }
-
-export {uniqueId};

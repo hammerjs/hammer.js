@@ -5,7 +5,7 @@
  * @param {String} [findByKey]
  * @return {Boolean|Number} false when not found, or the index
  */
-function inArray(src, find, findByKey) {
+export default function inArray(src, find, findByKey) {
     if (src.indexOf && !findByKey) {
         return src.indexOf(find);
     } else {
@@ -19,5 +19,3 @@ function inArray(src, find, findByKey) {
         return -1;
     }
 }
-
-export {inArray};

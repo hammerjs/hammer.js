@@ -1,4 +1,4 @@
-import {abs} from '../utilsjs/utilsConsts';
+import {abs} from '../utils/utilsConsts';
 import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from './inputConsts';
 
 /**
@@ -7,7 +7,7 @@ import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOW
  * @param {Number} y
  * @return {Number} direction
  */
-function getDirection(x, y) {
+export default function getDirection(x, y) {
     if (x === y) {
         return DIRECTION_NONE;
     }
@@ -17,5 +17,3 @@ function getDirection(x, y) {
     }
     return y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
 }
-
-export {getDirection};

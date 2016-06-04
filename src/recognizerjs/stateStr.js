@@ -5,7 +5,7 @@ import {STATE_CANCELLED,STATE_ENDED,STATE_CHANGED,STATE_BEGAN} from './recognize
  * @param {constant} state
  * @returns {String} state
  */
-function stateStr(state) {
+export default function stateStr(state) {
     if (state & STATE_CANCELLED) {
         return 'cancel';
     } else if (state & STATE_ENDED) {
@@ -17,5 +17,3 @@ function stateStr(state) {
     }
     return '';
 }
-
-export {stateStr};

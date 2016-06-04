@@ -4,8 +4,6 @@
  * @param {String} find
  * @returns {Boolean} found
  */
-function inStr(str, find) {
+export default function inStr(str, find) {
     return str.indexOf(find) > -1;
 }
-
-export {inStr};

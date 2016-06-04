@@ -1,11 +1,11 @@
-import {round} from '../utilsjs/utilsConsts';
+import {round} from '../utils/utilsConsts';
 
 /**
  * get the center of all the pointers
  * @param {Array} pointers
  * @return {Object} center contains `x` and `y` properties
  */
-function getCenter(pointers) {
+export default function getCenter(pointers) {
     var pointersLength = pointers.length;
 
     // no need to loop when only one touch
@@ -28,5 +28,3 @@ function getCenter(pointers) {
         y: round(y / pointersLength)
     };
 }
-
-export {getCenter};

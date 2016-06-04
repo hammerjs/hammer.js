@@ -1,6 +1,6 @@
 import {INPUT_START,INPUT_END} from './inputConsts';
 
-function computeDeltaXY(session, input) {
+export default function computeDeltaXY(session, input) {
     var center = input.center;
     var offset = session.offsetDelta || {};
     var prevDelta = session.prevDelta || {};
@@ -21,5 +21,3 @@ function computeDeltaXY(session, input) {
     input.deltaX = prevDelta.x + (center.x - offset.x);
     input.deltaY = prevDelta.y + (center.y - offset.y);
 }
-
-export {computeDeltaXY};

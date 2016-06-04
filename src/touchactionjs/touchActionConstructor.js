@@ -1,10 +1,10 @@
 import {TOUCH_ACTION_COMPUTE,TOUCH_ACTION_MAP,NATIVE_TOUCH_ACTION,PREFIXED_TOUCH_ACTION,TOUCH_ACTION_NONE,
 TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y} from './touchactionConsts';
 import {DIRECTION_VERTICAL,DIRECTION_HORIZONTAL} from '../inputjs/inputConsts';
-import {each} from '../utilsjs/each';
-import {boolOrFn} from '../utilsjs/boolOrFn';
-import {inStr} from '../utilsjs/inStr';
-import {cleanTouchActions} from './cleanTouchActions';
+import each from '../utils/each';
+import boolOrFn from '../utils/boolOrFn';
+import inStr from '../utils/inStr';
+import cleanTouchActions from './cleanTouchActions';
 
 /**
  * Touch Action
