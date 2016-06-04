@@ -7,7 +7,7 @@ import {PROPS_XY} from './inputConsts';
  * @param {Array} [props] containing x and y keys
  * @return {Number} angle
  */
-function getAngle(p1, p2, props) {
+export default function getAngle(p1, p2, props) {
     if (!props) {
         props = PROPS_XY;
     }
@@ -15,5 +15,3 @@ function getAngle(p1, p2, props) {
         y = p2[props[1]] - p1[props[1]];
     return Math.atan2(y, x) * 180 / Math.PI;
 }
-
-export {getAngle};

@@ -1,4 +1,4 @@
-import {deprecate} from './deprecate';
+import deprecate from './deprecate';
 import {extend} from './extend';
 /**
  * merge the values from src in the dest.

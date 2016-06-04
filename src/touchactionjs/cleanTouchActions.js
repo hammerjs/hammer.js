@@ -1,4 +1,4 @@
-import {inStr} from '../utilsjs/inStr';
+import inStr from '../utils/inStr';
 import {TOUCH_ACTION_NONE,TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y,TOUCH_ACTION_MANIPULATION,
 TOUCH_ACTION_AUTO} from './touchactionConsts';
 
@@ -7,7 +7,7 @@ TOUCH_ACTION_AUTO} from './touchactionConsts';
  * @param {String} actions
  * @returns {*}
  */
-function cleanTouchActions(actions) {
+export default function cleanTouchActions(actions) {
     // none
     if (inStr(actions, TOUCH_ACTION_NONE)) {
         return TOUCH_ACTION_NONE;
@@ -36,5 +36,3 @@ function cleanTouchActions(actions) {
 
     return TOUCH_ACTION_AUTO;
 }
-
-export {cleanTouchActions};

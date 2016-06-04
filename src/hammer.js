@@ -1,4 +1,4 @@
-import {ifUndefined} from './utilsjs/ifUndefined';
+import ifUndefined from './utils/ifUndefined';
 import {TOUCH_ACTION_COMPUTE} from './touchactionjs/touchactionConsts';
 import {DIRECTION_HORIZONTAL} from './inputjs/inputConsts';
 import {RotateRecognizer} from './recognizers/rotate';

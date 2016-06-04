@@ -1,4 +1,4 @@
-import {each} from './each';
+import each from './each';
 /**
  * if the argument is an array, we want to execute the fn on each entry
  * if it aint an array we don't want to do a thing.
@@ -8,12 +8,10 @@ import {each} from './each';
  * @param {Object} [context]
  * @returns {Boolean}
  */
-function invokeArrayArg(arg, fn, context) {
+export default function invokeArrayArg(arg, fn, context) {
     if (Array.isArray(arg)) {
         each(arg, context[fn], context);
         return true;
     }
     return false;
 }
-
-export {invokeArrayArg};

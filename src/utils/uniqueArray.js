@@ -1,4 +1,5 @@
-import {inArray} from './inArray';
+import inArray from './inArray';
+
 /**
  * unique array with objects based on a key (like 'id') or just by the array's value
  * @param {Array} src [{id:1},{id:2},{id:1}]
@@ -6,7 +7,7 @@ import {inArray} from './inArray';
  * @param {Boolean} [sort=False]
  * @returns {Array} [{id:1},{id:2}]
  */
-function uniqueArray(src, key, sort) {
+export default function uniqueArray(src, key, sort) {
     var results = [];
     var values = [];
     var i = 0;
@@ -32,5 +33,3 @@ function uniqueArray(src, key, sort) {
 
     return results;
 }
-
-export {uniqueArray};

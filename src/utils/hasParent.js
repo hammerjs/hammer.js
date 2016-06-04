@@ -5,7 +5,7 @@
  * @param {HTMLElement} parent
  * @return {Boolean} found
  */
-function hasParent(node, parent) {
+export default function hasParent(node, parent) {
     while (node) {
         if (node == parent) {
             return true;
@@ -14,5 +14,3 @@ function hasParent(node, parent) {
     }
     return false;
 }
-
-export {hasParent};

@@ -5,7 +5,7 @@ import {DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from '../inp
  * @param {constant} direction
  * @returns {String}
  */
-function directionStr(direction) {
+export default function directionStr(direction) {
     if (direction == DIRECTION_DOWN) {
         return 'down';
     } else if (direction == DIRECTION_UP) {
@@ -17,5 +17,3 @@ function directionStr(direction) {
     }
     return '';
 }
-
-export {directionStr};

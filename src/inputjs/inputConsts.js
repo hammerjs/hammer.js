@@ -1,4 +1,4 @@
-import {prefixed} from '../utilsjs/prefixed';
+import prefixed from '../utils/prefixed';
 
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 

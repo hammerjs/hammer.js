@@ -1,5 +1,6 @@
 import {NATIVE_TOUCH_ACTION} from './touchactionConsts';
-function getTouchActionProps() {
+
+export default function getTouchActionProps() {
     if (!NATIVE_TOUCH_ACTION) {
         return false;
     }
@@ -13,5 +14,3 @@ function getTouchActionProps() {
     });
     return touchMap;
 }
-
-export {getTouchActionProps};

@@ -1,5 +1,5 @@
 import {INPUT_START,INPUT_END,INPUT_CANCEL} from './inputConsts';
-import {computeInputData} from './computeInputData';
+import computeInputData from './computeInputData';
 
 /**
  * handle input events
@@ -7,7 +7,7 @@ import {computeInputData} from './computeInputData';
  * @param {String} eventType
  * @param {Object} input
  */
-function inputHandler(manager, eventType, input) {
+export default function inputHandler(manager, eventType, input) {
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
     var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
@@ -33,5 +33,3 @@ function inputHandler(manager, eventType, input) {
     manager.recognize(input);
     manager.session.prevInput = input;
 }
-
-export {inputHandler};

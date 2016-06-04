@@ -4,7 +4,7 @@
  * @param {Function} iterator
  * @param {Object} context
  */
-function each(obj, iterator, context) {
+export default function each(obj, iterator, context) {
     var i;
 
     if (!obj) {
@@ -25,5 +25,3 @@ function each(obj, iterator, context) {
         }
     }
 }
-
-export {each};

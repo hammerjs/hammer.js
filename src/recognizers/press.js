@@ -1,8 +1,8 @@
 import {Recognizer} from '../recognizerjs/recognizerConstructor';
 import {STATE_RECOGNIZED,STATE_FAILED} from '../recognizerjs/recognizerConsts';
-import {inherit} from '../utilsjs/inherit';
-import {now} from '../utilsjs/utilsConsts';
-import {setTimeoutContext} from '../utilsjs/setTimeoutContext';
+import inherit from '../utils/inherit';
+import {now} from '../utils/utilsConsts';
+import setTimeoutContext from '../utils/setTimeoutContext';
 import {TOUCH_ACTION_AUTO} from '../touchactionjs/touchactionConsts';
 import {INPUT_START,INPUT_END,INPUT_CANCEL} from '../inputjs/inputConsts';
 

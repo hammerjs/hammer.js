@@ -1,23 +1,23 @@
-import {now} from '../utilsjs/utilsConsts';
-import {abs} from '../utilsjs/utilsConsts';
-import {hasParent} from '../utilsjs/hasParent';
-import {simpleCloneInputData} from './simpleCloneInputData';
-import {getCenter} from './getCenter';
-import {getDistance} from './getDistance';
-import {getAngle} from './getAngle';
-import {getDirection} from './getDirection';
-import {computeDeltaXY} from './computeDeltaXY';
-import {getVelocity} from './getVelocity';
-import {getScale} from './getScale';
-import {getRotation} from './getRotation';
-import {computeIntervalInputData} from './computeIntervalInputData';
+import {now} from '../utils/utilsConsts';
+import {abs} from '../utils/utilsConsts';
+import hasParent from '../utils/hasParent';
+import simpleCloneInputData from './simpleCloneInputData';
+import getCenter from './getCenter';
+import getDistance from './getDistance';
+import getAngle from './getAngle';
+import getDirection from './getDirection';
+import computeDeltaXY from './computeDeltaXY';
+import getVelocity from './getVelocity';
+import getScale from './getScale';
+import getRotation from './getRotation';
+import computeIntervalInputData from './computeIntervalInputData';
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc
  * @param {Object} manager
  * @param {Object} input
  */
-function computeInputData(manager, input) {
+export default function computeInputData(manager, input) {
     var session = manager.session;
     var pointers = input.pointers;
     var pointersLength = pointers.length;
@@ -68,5 +68,3 @@ function computeInputData(manager, input) {
     }
     input.target = target;
 }
-
-export {computeInputData};

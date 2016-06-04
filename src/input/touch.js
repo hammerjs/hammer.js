@@ -1,9 +1,9 @@
 import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from '../inputjs/inputConsts';
 import {Input} from '../inputjs/inputConstructor';
-import {inherit} from '../utilsjs/inherit';
-import {toArray} from '../utilsjs/toArray';
-import {hasParent} from '../utilsjs/hasParent';
-import {uniqueArray} from '../utilsjs/uniqueArray';
+import inherit from '../utils/inherit';
+import toArray from '../utils/toArray';
+import hasParent from '../utils/hasParent';
+import uniqueArray from '../utils/uniqueArray';
 
 var TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,

@@ -1,4 +1,5 @@
-import {bindFn} from './bindFn';
+import bindFn from './bindFn';
+
 /**
  * set a timeout with a given scope
  * @param {Function} fn
@@ -6,8 +7,6 @@ import {bindFn} from './bindFn';
  * @param {Object} context
  * @returns {number}
  */
-function setTimeoutContext(fn, timeout, context) {
+export default function setTimeoutContext(fn, timeout, context) {
     return setTimeout(bindFn(fn, context), timeout);
 }
-
-export {setTimeoutContext};

@@ -3,8 +3,7 @@
  * @param {String} str
  * @returns {Array} words
  */
-function splitStr(str) {
+
+export default function splitStr(str) {
     return str.trim().split(/\s+/g);
 }
-
-export {splitStr};
