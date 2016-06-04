@@ -4,7 +4,7 @@ import {inherit} from '../utilsjs/inherit';
 import {now} from '../utilsjs/utilsConsts';
 import {setTimeoutContext} from '../utilsjs/setTimeoutContext';
 import {TOUCH_ACTION_AUTO} from '../touchactionjs/touchactionConsts';
-import {INPUT_START,INPUT_END,INPUT_CANCEL} from '../inputjs/inputConsts'
+import {INPUT_START,INPUT_END,INPUT_CANCEL} from '../inputjs/inputConsts';
 
 /**
  * Press

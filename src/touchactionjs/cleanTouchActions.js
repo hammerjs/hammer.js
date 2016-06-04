@@ -1,9 +1,6 @@
-/*
- * Created by arjun on 28/05/16.
- */
 import {inStr} from '../utilsjs/inStr';
 import {TOUCH_ACTION_NONE,TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y,TOUCH_ACTION_MANIPULATION,
-TOUCH_ACTION_AUTO} from './touchactionConsts'
+TOUCH_ACTION_AUTO} from './touchactionConsts';
 
 /**
  * when the touchActions are collected they are not a valid value, so we need to clean things up. *
@@ -40,4 +37,4 @@ function cleanTouchActions(actions) {
     return TOUCH_ACTION_AUTO;
 }
 
-export {cleanTouchActions}
+export {cleanTouchActions};

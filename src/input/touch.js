@@ -1,5 +1,5 @@
-import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from '../inputjs/inputConsts'
-import {Input} from '../inputjs/inputConstructor'
+import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from '../inputjs/inputConsts';
+import {Input} from '../inputjs/inputConstructor';
 import {inherit} from '../utilsjs/inherit';
 import {toArray} from '../utilsjs/toArray';
 import {hasParent} from '../utilsjs/hasParent';

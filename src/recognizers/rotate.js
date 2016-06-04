@@ -1,7 +1,8 @@
 import {AttrRecognizer} from './attribute';
 import {inherit} from '../utilsjs/inherit';
 import {TOUCH_ACTION_NONE} from '../touchactionjs/touchactionConsts';
-import {STATE_BEGAN} from '../recognizerjs/recognizerConsts'
+import {STATE_BEGAN} from '../recognizerjs/recognizerConsts';
+
 /**
  * Rotate
  * Recognized when two or more pointer are moving in a circular motion.

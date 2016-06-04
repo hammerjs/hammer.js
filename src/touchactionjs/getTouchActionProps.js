@@ -1,7 +1,4 @@
-/*
- * Created by arjun on 28/05/16.
- */
-import {NATIVE_TOUCH_ACTION} from './touchactionConsts'
+import {NATIVE_TOUCH_ACTION} from './touchactionConsts';
 function getTouchActionProps() {
     if (!NATIVE_TOUCH_ACTION) {
         return false;
@@ -17,4 +14,4 @@ function getTouchActionProps() {
     return touchMap;
 }
 
-export {getTouchActionProps}
+export {getTouchActionProps};

@@ -1,7 +1,5 @@
-/**
- * Created by arjun on 25/05/16.
- */
-import {STATE_CANCELLED,STATE_ENDED,STATE_CHANGED,STATE_BEGAN} from './recognizerConsts'
+import {STATE_CANCELLED,STATE_ENDED,STATE_CHANGED,STATE_BEGAN} from './recognizerConsts';
+
 /**
  * get a usable string, used as event postfix
  * @param {constant} state
@@ -20,4 +18,4 @@ function stateStr(state) {
     return '';
 }
 
-export {stateStr}
+export {stateStr};

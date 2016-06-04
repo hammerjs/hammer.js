@@ -1,8 +1,11 @@
 import {Hammer} from './hammer';
 import {assign} from './utilsjs/assign';
 import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL} from './inputjs/inputConsts';
-import {STATE_POSSIBLE,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,STATE_RECOGNIZED,STATE_CANCELLED,STATE_FAILED} from './recognizerjs/recognizerConsts';
-import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN,DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,DIRECTION_ALL} from './inputjs/inputConsts';
+import {STATE_POSSIBLE,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,STATE_RECOGNIZED,
+        STATE_CANCELLED,STATE_FAILED} from './recognizerjs/recognizerConsts';
+import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN,
+        DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,DIRECTION_ALL} from './inputjs/inputConsts';
+
 import {Manager} from './manager';
 import {Input} from './inputjs/inputConstructor';
 import {TouchAction} from './touchactionjs/touchActionConstructor';
@@ -29,7 +32,6 @@ import {extend} from './utilsjs/extend';
 import {inherit} from './utilsjs/inherit';
 import {bindFn} from './utilsjs/bindFn';
 import {prefixed} from './utilsjs/prefixed';
-
 
 // this prevents errors when Hammer is loaded in the presence of an AMD
 //  style loader but by script tag, not by the loader.
@@ -86,6 +88,7 @@ assign(Hammer, {
     bindFn: bindFn,
     prefixed: prefixed
 });
+
 var freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
 freeGlobal.Hammer = Hammer;
 

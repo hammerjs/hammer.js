@@ -3,8 +3,9 @@ import {setTimeoutContext} from '../utilsjs/setTimeoutContext';
 import {Recognizer} from '../recognizerjs/recognizerConstructor';
 import {TOUCH_ACTION_MANIPULATION} from '../touchactionjs/touchactionConsts';
 import {INPUT_START,INPUT_END} from '../inputjs/inputConsts';
-import {STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizerjs/recognizerConsts'
+import {STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizerjs/recognizerConsts';
 import {getDistance} from '../inputjs/getDistance';
+
 /**
  * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
  * between the given interval and position. The delay option can be used to recognize multi-taps without firing
