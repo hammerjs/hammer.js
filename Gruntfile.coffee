@@ -83,7 +83,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat','string-replace','uglify','jshint','jscs']
+        tasks: ['rollup','string-replace','uglify','jshint','jscs']
         options:
           interrupt: true
 
