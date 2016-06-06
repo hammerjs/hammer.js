@@ -9,7 +9,7 @@ export default {
     format: 'es6',
     // moduleName: 'HAMMER',
     plugins: [ babel({exclude: 'node_modules/**'}) ],
-    dest: 'bundle.js',
+    dest: 'hammer.js',
     intro: " (function(window, document, exportName, undefined) { \n'use strict' ",
     outro: "})(window, document, 'Hammer');"
 

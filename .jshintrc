@@ -8,7 +8,6 @@
     "esversion":6,
     "newcap": true,
     "node": true,
-    "quotmark": "single",
     "strict": false,
     "sub": true,
     "trailing": true,
