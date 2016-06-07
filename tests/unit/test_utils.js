@@ -1,12 +1,12 @@
 module('utils');
 
-// for the tests, all hammer properties and methods of Hammer are exposed to window.$H
+// for the tests, all hammer properties and methods of Hammer are exposed to window.Hammer
 
 test('get/set prefixed util', function() {
-    ok(_.isUndefined($H.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+    ok(_.isUndefined(Hammer.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
 
     window.webkitFakeProperty = 1337;
-    ok($H.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
+    ok(Hammer.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
 
     delete window.webkitFakeProperty;
 });
@@ -14,7 +14,7 @@ test('get/set prefixed util', function() {
 test('fnBind', function() {
     var context = { a: true };
 
-    $H.bindFn(function(b) {
+    Hammer.bindFn(function(b) {
         ok(this.a === true, 'bindFn scope');
         ok(b === 123, 'bindFn argument');
     }, context)(123);
@@ -29,7 +29,7 @@ test('Inherit objects', function() {
         Base.call(this);
     }
 
-    $H.inherit(Child, Base, {
+    Hammer.inherit(Child, Base, {
         newMethod: function() {
         }
     });
@@ -45,29 +45,29 @@ test('Inherit objects', function() {
 });
 
 test('toArray', function() {
-    ok(_.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray($H.toArray([true, true])), 'array stays an array');
+    ok(_.isArray(Hammer.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
+    ok(_.isArray(Hammer.toArray([true, true])), 'array stays an array');
 });
 
 test('inArray', function() {
-    ok($H.inArray([1, 2, 3, 4, 'hammer'], 'hammer') === 4, 'found item and returned the index');
-    ok($H.inArray([1, 2, 3, 4, 'hammer'], 'notfound') === -1, 'not found an item and returned -1');
-    ok($H.inArray([
+    ok(Hammer.inArray([1, 2, 3, 4, 'hammer'], 'hammer') === 4, 'found item and returned the index');
+    ok(Hammer.inArray([1, 2, 3, 4, 'hammer'], 'notfound') === -1, 'not found an item and returned -1');
+    ok(Hammer.inArray([
         {id: 2},
         {id: 24}
     ], '24', 'id') === 1, 'find by key and return the index');
-    ok($H.inArray([
+    ok(Hammer.inArray([
         {id: 2},
         {id: 24}
     ], '22', 'id') === -1, 'not found by key and return -1');
 });
 
 test('splitStr', function() {
-    deepEqual($H.splitStr(' a  b  c d   '), ['a', 'b', 'c', 'd'], 'str split valid');
+    deepEqual(Hammer.splitStr(' a  b  c d   '), ['a', 'b', 'c', 'd'], 'str split valid');
 });
 
 test('uniqueArray', function() {
-    deepEqual($H.uniqueArray([
+    deepEqual(Hammer.uniqueArray([
         {id: 1},
         {id: 2},
         {id: 2}
@@ -78,12 +78,12 @@ test('uniqueArray', function() {
 });
 
 test('boolOrFn', function() {
-    equal($H.boolOrFn(true), true, 'Passing an boolean');
-    equal($H.boolOrFn(false), false, 'Passing an boolean');
-    equal($H.boolOrFn(function() {
+    equal(Hammer.boolOrFn(true), true, 'Passing an boolean');
+    equal(Hammer.boolOrFn(false), false, 'Passing an boolean');
+    equal(Hammer.boolOrFn(function() {
         return true;
     }), true, 'Passing an boolean');
-    equal($H.boolOrFn(1), true, 'Passing an integer');
+    equal(Hammer.boolOrFn(1), true, 'Passing an integer');
 });
 
 test('hasParent', function() {
@@ -93,8 +93,8 @@ test('hasParent', function() {
     document.body.appendChild(parent);
     parent.appendChild(child);
 
-    equal($H.hasParent(child, parent), true, 'Found parent');
-    equal($H.hasParent(parent, child), false, 'Not in parent');
+    equal(Hammer.hasParent(child, parent), true, 'Found parent');
+    equal(Hammer.hasParent(parent, child), false, 'Not in parent');
 
     document.body.removeChild(parent);
 });
@@ -105,7 +105,7 @@ test('each', function() {
     var loop;
 
     loop = false;
-    $H.each(object, function(value, key) {
+    Hammer.each(object, function(value, key) {
         if (key == 'hi' && value === true) {
             loop = true;
         }
@@ -113,7 +113,7 @@ test('each', function() {
     ok(loop, 'object loop');
 
     loop = 0;
-    $H.each(array, function(value, key) {
+    Hammer.each(array, function(value, key) {
         if (value) {
             loop++;
         }
@@ -122,7 +122,7 @@ test('each', function() {
 
     loop = 0;
     array.forEach = null;
-    $H.each(array, function(value, key) {
+    Hammer.each(array, function(value, key) {
         if (value) {
             loop++;
         }
@@ -133,7 +133,7 @@ test('each', function() {
 test('assign', function() {
     expect(2);
     deepEqual(
-        $H.assign(
+        Hammer.assign(
             {a: 1, b: 3},
             {b: 2, c: 3}
         ),
@@ -142,7 +142,7 @@ test('assign', function() {
     );
 
     var src = { foo: true };
-    var dest = $H.assign({}, src);
+    var dest = Hammer.assign({}, src);
     src.foo = false;
     deepEqual(dest, {foo: true}, 'Clone reference');
 });
@@ -154,11 +154,11 @@ test('test add/removeEventListener', function() {
 
     expect(2);
 
-    $H.addEventListeners(window, 'testEvent1  testEvent2  ', handleEvent);
+    Hammer.addEventListeners(window, 'testEvent1  testEvent2  ', handleEvent);
     utils.triggerDomEvent(window, 'testEvent1');
     utils.triggerDomEvent(window, 'testEvent2');
 
-    $H.removeEventListeners(window, ' testEvent1 testEvent2 ', handleEvent);
+    Hammer.removeEventListeners(window, ' testEvent1 testEvent2 ', handleEvent);
     utils.triggerDomEvent(window, 'testEvent1');
     utils.triggerDomEvent(window, 'testEvent2');
 });
