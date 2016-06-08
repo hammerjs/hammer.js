@@ -32,6 +32,12 @@ import {extend} from './utils/extend';
 import inherit from './utils/inherit';
 import bindFn from './utils/bindFn';
 import prefixed from './utils/prefixed';
+import toArray from'./utils/toArray';
+import uniqueArray from'./utils/uniqueArray';
+import splitStr from'./utils/splitStr';
+import inArray from'./utils/inArray';
+import boolOrFn from'./utils/boolOrFn';
+import hasParent from'./utils/hasParent';
 
 // this prevents errors when Hammer is loaded in the presence of an AMD
 //  style loader but by script tag, not by the loader.
@@ -86,7 +92,15 @@ assign(Hammer, {
     assign: assign,
     inherit: inherit,
     bindFn: bindFn,
-    prefixed: prefixed
+    prefixed: prefixed,
+    toArray: toArray,
+    inArray: inArray,
+    uniqueArray: uniqueArray,
+    splitStr: splitStr,
+    boolOrFn:boolOrFn,
+    hasParent:hasParent,
+    addEventListeners: addEventListeners,
+    removeEventListeners: removeEventListeners
 });
 
 var freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
