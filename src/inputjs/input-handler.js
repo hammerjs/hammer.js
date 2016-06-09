@@ -1,5 +1,5 @@
-import {INPUT_START,INPUT_END,INPUT_CANCEL} from './inputConsts';
-import computeInputData from './computeInputData';
+import {INPUT_START,INPUT_END,INPUT_CANCEL} from './input-consts';
+import computeInputData from './compute-input-data';
 
 /**
  * handle input events

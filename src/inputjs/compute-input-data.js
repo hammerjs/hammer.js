@@ -1,16 +1,16 @@
-import {now} from '../utils/utilsConsts';
-import {abs} from '../utils/utilsConsts';
-import hasParent from '../utils/hasParent';
-import simpleCloneInputData from './simpleCloneInputData';
-import getCenter from './getCenter';
-import getDistance from './getDistance';
-import getAngle from './getAngle';
-import getDirection from './getDirection';
-import computeDeltaXY from './computeDeltaXY';
-import getVelocity from './getVelocity';
-import getScale from './getScale';
-import getRotation from './getRotation';
-import computeIntervalInputData from './computeIntervalInputData';
+import {now} from '../utils/utils-consts';
+import {abs} from '../utils/utils-consts';
+import hasParent from '../utils/has-parent';
+import simpleCloneInputData from './simple-clone-input-data';
+import getCenter from './get-center';
+import getDistance from './get-distance';
+import getAngle from './get-angle';
+import getDirection from './get-direction';
+import computeDeltaXY from './compute-delta-xy';
+import getVelocity from './get-velocity';
+import getScale from './get-scale';
+import getRotation from './get-rotation';
+import computeIntervalInputData from './compute-interval-input-data';
 
 /**
  * extend the data with some usable properties like scale, rotate, velocity etc

@@ -1,5 +1,5 @@
-import {SUPPORT_POINTER_EVENTS,SUPPORT_ONLY_TOUCH,SUPPORT_TOUCH} from './inputConsts';
-import inputHandler from './inputHandler';
+import {SUPPORT_POINTER_EVENTS,SUPPORT_ONLY_TOUCH,SUPPORT_TOUCH} from './input-consts';
+import inputHandler from './input-handler';
 import {PointerEventInput} from '../input/pointerevent';
 import {TouchInput} from '../input/touch';
 import {MouseInput} from '../input/mouse';

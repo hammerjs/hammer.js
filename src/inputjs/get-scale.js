@@ -1,5 +1,5 @@
-import {PROPS_CLIENT_XY} from './inputConsts';
-import getDistance from './getDistance';
+import {PROPS_CLIENT_XY} from './input-consts';
+import getDistance from './get-distance';
 /**
  * calculate the scale factor between two pointersets
  * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out

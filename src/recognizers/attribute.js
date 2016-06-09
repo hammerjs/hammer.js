@@ -1,7 +1,7 @@
 import inherit from '../utils/inherit';
-import {Recognizer} from '../recognizerjs/recognizerConstructor';
-import {STATE_BEGAN,STATE_CHANGED,STATE_CANCELLED,STATE_ENDED,STATE_FAILED} from '../recognizerjs/recognizerConsts';
-import {INPUT_CANCEL,INPUT_END} from '../inputjs/inputConsts';
+import {Recognizer} from '../recognizerjs/recognizer-constructor';
+import {STATE_BEGAN,STATE_CHANGED,STATE_CANCELLED,STATE_ENDED,STATE_FAILED} from '../recognizerjs/recognizer-consts';
+import {INPUT_CANCEL,INPUT_END} from '../inputjs/input-consts';
 
 /**
  * This recognizer is just used as a base for the simple attribute recognizers.

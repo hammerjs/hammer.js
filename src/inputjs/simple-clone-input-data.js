@@ -1,5 +1,5 @@
-import {now,round} from '../utils/utilsConsts';
-import getCenter from './getCenter';
+import {now,round} from '../utils/utils-consts';
+import getCenter from './get-center';
 
 /**
  * create a simple clone from the input used for storage of firstInput and firstMultiple

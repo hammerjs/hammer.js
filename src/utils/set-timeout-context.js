@@ -1,4 +1,4 @@
-import bindFn from './bindFn';
+import bindFn from './bind-fn';
 
 /**
  * set a timeout with a given scope

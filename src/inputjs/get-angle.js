@@ -1,4 +1,4 @@
-import {PROPS_XY} from './inputConsts';
+import {PROPS_XY} from './input-consts';
 
 /**
  * calculate the angle between two coordinates

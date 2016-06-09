@@ -1,8 +1,8 @@
 import {INPUT_START,INPUT_END,INPUT_CANCEL,INPUT_MOVE,INPUT_TYPE_TOUCH,
-INPUT_TYPE_MOUSE,INPUT_TYPE_PEN,INPUT_TYPE_KINECT} from '../inputjs/inputConsts';
-import {Input} from '../inputjs/inputConstructor';
+INPUT_TYPE_MOUSE,INPUT_TYPE_PEN,INPUT_TYPE_KINECT} from '../inputjs/input-consts';
+import {Input} from '../inputjs/input-constructor';
 import inherit from '../utils/inherit';
-import inArray from '../utils/inArray';
+import inArray from '../utils/in-array';
 
 var POINTER_INPUT_MAP = {
     pointerdown: INPUT_START,

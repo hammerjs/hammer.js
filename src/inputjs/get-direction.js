@@ -1,5 +1,5 @@
-import {abs} from '../utils/utilsConsts';
-import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from './inputConsts';
+import {abs} from '../utils/utils-consts';
+import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from './input-consts';
 
 /**
  * get the direction between two points

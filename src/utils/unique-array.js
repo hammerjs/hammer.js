@@ -1,4 +1,4 @@
-import inArray from './inArray';
+import inArray from './in-array';
 
 /**
  * unique array with objects based on a key (like 'id') or just by the array's value

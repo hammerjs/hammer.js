@@ -1,6 +1,6 @@
-import inStr from '../utils/inStr';
+import inStr from '../utils/in-str';
 import {TOUCH_ACTION_NONE,TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y,TOUCH_ACTION_MANIPULATION,
-TOUCH_ACTION_AUTO} from './touchactionConsts';
+TOUCH_ACTION_AUTO} from './touchaction-Consts';
 
 /**
  * when the touchActions are collected they are not a valid value, so we need to clean things up. *

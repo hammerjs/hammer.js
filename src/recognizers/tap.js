@@ -1,10 +1,10 @@
 import inherit from '../utils/inherit';
-import setTimeoutContext from '../utils/setTimeoutContext';
-import {Recognizer} from '../recognizerjs/recognizerConstructor';
-import {TOUCH_ACTION_MANIPULATION} from '../touchactionjs/touchactionConsts';
-import {INPUT_START,INPUT_END} from '../inputjs/inputConsts';
-import {STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizerjs/recognizerConsts';
-import getDistance from '../inputjs/getDistance';
+import setTimeoutContext from '../utils/set-timeout-context';
+import {Recognizer} from '../recognizerjs/recognizer-constructor';
+import {TOUCH_ACTION_MANIPULATION} from '../touchactionjs/touchaction-Consts';
+import {INPUT_START,INPUT_END} from '../inputjs/input-consts';
+import {STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizerjs/recognizer-consts';
+import getDistance from '../inputjs/get-distance';
 
 /**
  * A tap is recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur

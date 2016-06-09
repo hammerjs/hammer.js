@@ -1,5 +1,5 @@
 import each from './each';
-import splitStr from './splitStr';
+import splitStr from './split-str';
 /**
  * addEventListener with multiple events at once
  * @param {EventTarget} target
