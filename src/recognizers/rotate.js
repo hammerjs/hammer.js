@@ -1,7 +1,7 @@
 import {AttrRecognizer} from './attribute';
 import inherit from '../utils/inherit';
-import {TOUCH_ACTION_NONE} from '../touchactionjs/touchactionConsts';
-import {STATE_BEGAN} from '../recognizerjs/recognizerConsts';
+import {TOUCH_ACTION_NONE} from '../touchactionjs/touchaction-Consts';
+import {STATE_BEGAN} from '../recognizerjs/recognizer-consts';
 
 /**
  * Rotate

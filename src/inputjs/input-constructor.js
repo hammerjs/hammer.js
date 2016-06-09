@@ -1,7 +1,7 @@
-import boolOrFn from '../utils/boolOrFn';
-import addEventListeners from '../utils/addEventListeners';
-import removeEventListeners from '../utils/removeEventListeners';
-import getWindowForElement from '../utils/getWindowForElement';
+import boolOrFn from '../utils/bool-or-fn';
+import addEventListeners from '../utils/add-event-listeners';
+import removeEventListeners from '../utils/remove-event-listeners';
+import getWindowForElement from '../utils/get-window-for-element';
 
 /**
  * create new input type manager

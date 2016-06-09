@@ -1,4 +1,4 @@
-import {NATIVE_TOUCH_ACTION} from './touchactionConsts';
+import {NATIVE_TOUCH_ACTION} from './touchaction-Consts';
 
 export default function getTouchActionProps() {
     if (!NATIVE_TOUCH_ACTION) {

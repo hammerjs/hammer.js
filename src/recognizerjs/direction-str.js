@@ -1,4 +1,4 @@
-import {DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from '../inputjs/inputConsts';
+import {DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN} from '../inputjs/input-consts';
 
 /**
  * direction cons to string

@@ -1,10 +1,10 @@
 import {AttrRecognizer} from '../recognizers/attribute';
 import inherit from '../utils/inherit';
-import {abs} from '../utils/utilsConsts';
-import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL} from '../inputjs/inputConsts';
+import {abs} from '../utils/utils-consts';
+import {DIRECTION_HORIZONTAL,DIRECTION_VERTICAL} from '../inputjs/input-consts';
 import {PanRecognizer} from './pan';
-import {INPUT_END} from '../inputjs/inputConsts';
-import directionStr from '../recognizerjs/directionStr';
+import {INPUT_END} from '../inputjs/input-consts';
+import directionStr from '../recognizerjs/direction-str';
 
 /**
  * Swipe

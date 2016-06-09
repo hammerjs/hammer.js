@@ -1,4 +1,4 @@
-import {INPUT_START,INPUT_END} from './inputConsts';
+import {INPUT_START,INPUT_END} from './input-consts';
 
 export default function computeDeltaXY(session, input) {
     var center = input.center;

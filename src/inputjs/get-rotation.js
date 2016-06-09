@@ -1,5 +1,5 @@
-import getAngle from './getAngle';
-import {PROPS_CLIENT_XY} from './inputConsts';
+import getAngle from './get-angle';
+import {PROPS_CLIENT_XY} from './input-consts';
 
 /**
  * calculate the rotation degrees between two pointersets

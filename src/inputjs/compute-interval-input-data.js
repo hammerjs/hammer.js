@@ -1,7 +1,7 @@
-import {INPUT_CANCEL,COMPUTE_INTERVAL} from './inputConsts';
-import {abs} from '../utils/utilsConsts';
-import getVelocity from './getVelocity';
-import getDirection from './getDirection';
+import {INPUT_CANCEL,COMPUTE_INTERVAL} from './input-consts';
+import {abs} from '../utils/utils-consts';
+import getVelocity from './get-velocity';
+import getDirection from './get-direction';
 
 /**
  * velocity is calculated every x ms

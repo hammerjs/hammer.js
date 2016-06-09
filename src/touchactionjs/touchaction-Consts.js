@@ -1,6 +1,6 @@
 import prefixed from '../utils/prefixed';
-import {TEST_ELEMENT} from '../utils/utilsConsts';
-import getTouchActionProps from './getTouchActionProps';
+import {TEST_ELEMENT} from '../utils/utils-consts';
+import getTouchActionProps from './get-touchaction-props';
 
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;

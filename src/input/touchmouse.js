@@ -1,9 +1,9 @@
-import {Input} from '../inputjs/inputConstructor';
+import {Input} from '../inputjs/input-constructor';
 import inherit from '../utils/inherit';
-import bindFn from '../utils/bindFn';
+import bindFn from '../utils/bind-fn';
 import {TouchInput} from './touch';
 import {MouseInput} from './mouse';
-import {INPUT_START,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH,INPUT_TYPE_MOUSE} from '../inputjs/inputConsts';
+import {INPUT_START,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH,INPUT_TYPE_MOUSE} from '../inputjs/input-consts';
 
 /**
  * Combined touch and mouse input

@@ -1,13 +1,13 @@
 import {STATE_POSSIBLE,STATE_ENDED,STATE_FAILED,STATE_RECOGNIZED,STATE_CANCELLED,
-        STATE_BEGAN,STATE_CHANGED} from './recognizerConsts';
+        STATE_BEGAN,STATE_CHANGED} from './recognizer-consts';
 import {assign} from '../utils/assign';
-import uniqueId from '../utils/uniqueId';
-import ifUndefined from '../utils/ifUndefined';
-import invokeArrayArg from '../utils/invokeArrayArg';
-import inArray from '../utils/inArray';
-import boolOrFn from '../utils/boolOrFn';
-import getRecognizerByNameIfManager from './getRecognizerByNameIfManager';
-import stateStr from './stateStr';
+import uniqueId from '../utils/unique-id';
+import ifUndefined from '../utils/if-undefined';
+import invokeArrayArg from '../utils/invoke-array-arg';
+import inArray from '../utils/in-array';
+import boolOrFn from '../utils/bool-or-fn';
+import getRecognizerByNameIfManager from './get-recognizer-by-name-if-manager';
+import stateStr from './state-str';
 
 /**
  * Recognizer flow explained; *
