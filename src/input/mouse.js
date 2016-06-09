@@ -1,3 +1,7 @@
+import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_TYPE_MOUSE} from '../inputjs/input-consts';
+import {Input} from '../inputjs/input-constructor';
+import inherit from '../utils/inherit';
+
 var MOUSE_INPUT_MAP = {
     mousedown: INPUT_START,
     mousemove: INPUT_MOVE,
@@ -55,3 +59,5 @@ inherit(MouseInput, Input, {
         });
     }
 });
+
+export {MouseInput};

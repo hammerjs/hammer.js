@@ -1,3 +1,15 @@
+import {assign} from './utils/assign';
+import {Hammer} from './hammer';
+import {TouchAction} from './touchactionjs/touchaction-constructor';
+import createInputInstance from './inputjs/create-input-instance';
+import each from './utils/each';
+import inArray from './utils/in-array';
+import invokeArrayArg from './utils/invoke-array-arg';
+import splitStr from './utils/split-str';
+import prefixed from './utils/prefixed';
+import {Recognizer} from './recognizerjs/recognizer-constructor';
+import {STATE_BEGAN,STATE_ENDED,STATE_CHANGED,STATE_RECOGNIZED} from './recognizerjs/recognizer-consts';
+
 var STOP = 1;
 var FORCED_STOP = 2;
 
@@ -101,7 +113,7 @@ Manager.prototype = {
             //      that is being recognized.
             // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
             //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (session.stopped !== FORCED_STOP && ( // 1
+            if (session.stopped !== FORCED_STOP && (// 1
                     !curRecognizer || recognizer == curRecognizer || // 2
                     recognizer.canRecognizeWith(curRecognizer))) { // 3
                 recognizer.recognize(inputData);
@@ -310,3 +322,5 @@ function triggerDomEvent(event, data) {
     gestureEvent.gesture = data;
     data.target.dispatchEvent(gestureEvent);
 }
+
+export {Manager};

@@ -1,3 +1,10 @@
+import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from '../inputjs/input-consts';
+import {Input} from '../inputjs/input-constructor';
+import inherit from '../utils/inherit';
+import toArray from '../utils/to-array';
+import hasParent from '../utils/has-parent';
+import uniqueArray from '../utils/unique-array';
+
 var TOUCH_INPUT_MAP = {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
@@ -96,3 +103,5 @@ function getTouches(ev, type) {
         changedTargetTouches
     ];
 }
+
+export {TouchInput};
