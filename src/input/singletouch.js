@@ -1,5 +1,11 @@
-import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL,INPUT_TYPE_TOUCH} from '../inputjs/input-consts';
-import {Input} from '../inputjs/input-constructor';
+import {
+    INPUT_START,
+    INPUT_MOVE,
+    INPUT_END,
+    INPUT_CANCEL,
+    INPUT_TYPE_TOUCH
+} from '../inputjs/input-consts';
+import { Input } from '../inputjs/input-constructor';
 import inherit from '../utils/inherit';
 import toArray from '../utils/to-array';
 import uniqueArray from '../utils/unique-array';
@@ -73,4 +79,4 @@ function normalizeSingleTouches(ev, type) {
     return [all, changed];
 }
 
-export {SingleTouchInput};
+export { SingleTouchInput };

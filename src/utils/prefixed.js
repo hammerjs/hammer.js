@@ -1,4 +1,4 @@
-import {VENDOR_PREFIXES} from './utils-consts';
+import { VENDOR_PREFIXES } from './utils-consts';
 /**
  * get the prefixed property
  * @param {Object} obj

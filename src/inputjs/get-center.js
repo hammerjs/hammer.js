@@ -1,4 +1,4 @@
-import {round} from '../utils/utils-consts';
+import { round } from '../utils/utils-consts';
 
 /**
  * get the center of all the pointers

@@ -55,4 +55,4 @@ Input.prototype = {
     }
 };
 
-export {Input};
+export { Input };

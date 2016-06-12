@@ -1,6 +1,13 @@
-import {STATE_POSSIBLE,STATE_ENDED,STATE_FAILED,STATE_RECOGNIZED,STATE_CANCELLED,
-        STATE_BEGAN,STATE_CHANGED} from './recognizer-consts';
-import {assign} from '../utils/assign';
+import {
+    STATE_POSSIBLE,
+    STATE_ENDED,
+    STATE_FAILED,
+    STATE_RECOGNIZED,
+    STATE_CANCELLED,
+    STATE_BEGAN,
+    STATE_CHANGED
+} from './recognizer-consts';
+import assign from '../utils/assign';
 import uniqueId from '../utils/unique-id';
 import ifUndefined from '../utils/if-undefined';
 import invokeArrayArg from '../utils/invoke-array-arg';
@@ -280,4 +287,4 @@ Recognizer.prototype = {
     reset: function() { }
 };
 
-export {Recognizer};
+export { Recognizer };

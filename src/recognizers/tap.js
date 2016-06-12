@@ -1,9 +1,13 @@
 import inherit from '../utils/inherit';
 import setTimeoutContext from '../utils/set-timeout-context';
-import {Recognizer} from '../recognizerjs/recognizer-constructor';
-import {TOUCH_ACTION_MANIPULATION} from '../touchactionjs/touchaction-Consts';
-import {INPUT_START,INPUT_END} from '../inputjs/input-consts';
-import {STATE_RECOGNIZED,STATE_BEGAN,STATE_FAILED} from '../recognizerjs/recognizer-consts';
+import { Recognizer } from '../recognizerjs/recognizer-constructor';
+import { TOUCH_ACTION_MANIPULATION } from '../touchactionjs/touchaction-Consts';
+import {INPUT_START,INPUT_END } from '../inputjs/input-consts';
+import {
+    STATE_RECOGNIZED,
+    STATE_BEGAN,
+    STATE_FAILED
+} from '../recognizerjs/recognizer-consts';
 import getDistance from '../inputjs/get-distance';
 
 /**
@@ -121,4 +125,4 @@ inherit(TapRecognizer, Recognizer, {
     }
 });
 
-export {TapRecognizer};
+export { TapRecognizer };

@@ -1,5 +1,5 @@
-import {now} from '../utils/utils-consts';
-import {abs} from '../utils/utils-consts';
+import { now } from '../utils/utils-consts';
+import { abs } from '../utils/utils-consts';
 import hasParent from '../utils/has-parent';
 import simpleCloneInputData from './simple-clone-input-data';
 import getCenter from './get-center';

@@ -1,6 +1,16 @@
-import {TOUCH_ACTION_COMPUTE,TOUCH_ACTION_MAP,NATIVE_TOUCH_ACTION,PREFIXED_TOUCH_ACTION,TOUCH_ACTION_NONE,
-TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y} from './touchaction-Consts';
-import {DIRECTION_VERTICAL,DIRECTION_HORIZONTAL} from '../inputjs/input-consts';
+import {
+    TOUCH_ACTION_COMPUTE,
+    TOUCH_ACTION_MAP,
+    NATIVE_TOUCH_ACTION,
+    PREFIXED_TOUCH_ACTION,
+    TOUCH_ACTION_NONE,
+    TOUCH_ACTION_PAN_X,
+    TOUCH_ACTION_PAN_Y
+} from './touchaction-Consts';
+import {
+    DIRECTION_VERTICAL,
+    DIRECTION_HORIZONTAL
+} from '../inputjs/input-consts';
 import each from '../utils/each';
 import boolOrFn from '../utils/bool-or-fn';
 import inStr from '../utils/in-str';
@@ -109,4 +119,4 @@ TouchAction.prototype = {
     }
 };
 
-export {TouchAction};
+export { TouchAction };

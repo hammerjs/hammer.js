@@ -19,4 +19,4 @@ var extend = deprecate(function extend(dest, src, merge) {
     return dest;
 }, 'extend', 'Use `assign`.');
 
-export {extend};
+export default extend;
