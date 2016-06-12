@@ -1,4 +1,4 @@
-import {PROPS_XY} from './input-consts';
+import { PROPS_XY } from './input-consts';
 
 /**
  * calculate the absolute distance between two points

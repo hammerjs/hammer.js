@@ -1,34 +1,54 @@
-import {Hammer} from './hammer';
-import {assign} from './utils/assign';
-import {INPUT_START,INPUT_MOVE,INPUT_END,INPUT_CANCEL} from './inputjs/input-consts';
-import {STATE_POSSIBLE,STATE_BEGAN,STATE_CHANGED,STATE_ENDED,STATE_RECOGNIZED,
-        STATE_CANCELLED,STATE_FAILED} from './recognizerjs/recognizer-consts';
-import {DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN,
-        DIRECTION_HORIZONTAL,DIRECTION_VERTICAL,DIRECTION_ALL} from './inputjs/input-consts';
+import { Hammer } from './hammer';
+import assign from './utils/assign';
+import {
+    INPUT_START,
+    INPUT_MOVE,
+    INPUT_END,
+    INPUT_CANCEL
+} from './inputjs/input-consts';
+import {
+    STATE_POSSIBLE,
+    STATE_BEGAN,
+    STATE_CHANGED,
+    STATE_ENDED,
+    STATE_RECOGNIZED,
+    STATE_CANCELLED,
+    STATE_FAILED
+} from './recognizerjs/recognizer-consts';
+import {
+    DIRECTION_NONE,
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT,
+    DIRECTION_UP,
+    DIRECTION_DOWN,
+    DIRECTION_HORIZONTAL,
+    DIRECTION_VERTICAL,
+    DIRECTION_ALL
+} from './inputjs/input-consts';
 
-import {Manager} from './manager';
-import {Input} from './inputjs/input-constructor';
-import {TouchAction} from './touchactionjs/touchaction-constructor';
-import {TouchInput} from './input/touch';
-import {MouseInput} from './input/mouse';
-import {PointerEventInput} from './input/pointerevent';
-import {SingleTouchInput} from './input/singletouch';
-import {TouchMouseInput} from './input/touchmouse';
+import { Manager } from './manager';
+import { Input } from './inputjs/input-constructor';
+import { TouchAction } from './touchactionjs/touchaction-constructor';
+import { TouchInput } from './input/touch';
+import { MouseInput } from './input/mouse';
+import { PointerEventInput } from './input/pointerevent';
+import { SingleTouchInput } from './input/singletouch';
+import { TouchMouseInput } from './input/touchmouse';
 
-import {Recognizer} from  './recognizerjs/recognizer-constructor';
-import {AttrRecognizer} from './recognizers/attribute';
-import {TapRecognizer} from './recognizers/tap';
-import {PanRecognizer} from './recognizers/pan';
-import {SwipeRecognizer} from './recognizers/swipe';
-import {PinchRecognizer} from './recognizers/pinch';
-import {RotateRecognizer} from './recognizers/rotate';
-import {PressRecognizer} from './recognizers/press';
+import { Recognizer } from  './recognizerjs/recognizer-constructor';
+import { AttrRecognizer } from './recognizers/attribute';
+import { TapRecognizer } from './recognizers/tap';
+import { PanRecognizer } from './recognizers/pan';
+import { SwipeRecognizer } from './recognizers/swipe';
+import { PinchRecognizer } from './recognizers/pinch';
+import { RotateRecognizer } from './recognizers/rotate';
+import { PressRecognizer } from './recognizers/press';
 
 import addEventListeners from './utils/add-event-listeners';
 import removeEventListeners from './utils/remove-event-listeners';
 import each from './utils/each';
-import {merge} from './utils/merge';
-import {extend} from './utils/extend';
+import merge from './utils/merge';
+import extend from './utils/extend';
 import inherit from './utils/inherit';
 import bindFn from './utils/bind-fn';
 import prefixed from './utils/prefixed';

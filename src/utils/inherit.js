@@ -1,4 +1,4 @@
-import {assign} from './assign';
+import assign from './assign';
 /**
  * simple class inheritance
  * @param {Function} child

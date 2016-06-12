@@ -1,5 +1,5 @@
 import prefixed from '../utils/prefixed';
-import {TEST_ELEMENT} from '../utils/utils-consts';
+import { TEST_ELEMENT } from '../utils/utils-consts';
 import getTouchActionProps from './get-touchaction-props';
 
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
@@ -14,6 +14,14 @@ var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
 var TOUCH_ACTION_MAP = getTouchActionProps();
 
-export {PREFIXED_TOUCH_ACTION,NATIVE_TOUCH_ACTION,TOUCH_ACTION_AUTO,TOUCH_ACTION_COMPUTE,
-  TOUCH_ACTION_MANIPULATION,TOUCH_ACTION_NONE,TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y,
-  TOUCH_ACTION_MAP};
+export {
+    PREFIXED_TOUCH_ACTION,
+    NATIVE_TOUCH_ACTION,
+    TOUCH_ACTION_AUTO,
+    TOUCH_ACTION_COMPUTE,
+    TOUCH_ACTION_MANIPULATION,
+    TOUCH_ACTION_NONE,
+    TOUCH_ACTION_PAN_X,
+    TOUCH_ACTION_PAN_Y,
+    TOUCH_ACTION_MAP
+};

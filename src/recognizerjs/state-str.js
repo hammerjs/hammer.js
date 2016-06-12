@@ -1,4 +1,9 @@
-import {STATE_CANCELLED,STATE_ENDED,STATE_CHANGED,STATE_BEGAN} from './recognizer-consts';
+import {
+    STATE_CANCELLED,
+    STATE_ENDED,
+    STATE_CHANGED,
+    STATE_BEGAN
+} from './recognizer-consts';
 
 /**
  * get a usable string, used as event postfix

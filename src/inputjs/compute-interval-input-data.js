@@ -1,5 +1,5 @@
-import {INPUT_CANCEL,COMPUTE_INTERVAL} from './input-consts';
-import {abs} from '../utils/utils-consts';
+import { INPUT_CANCEL,COMPUTE_INTERVAL } from './input-consts';
+import { abs } from '../utils/utils-consts';
 import getVelocity from './get-velocity';
 import getDirection from './get-direction';
 

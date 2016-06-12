@@ -7,4 +7,11 @@ var round = Math.round;
 var abs = Math.abs;
 var now = Date.now;
 
-export {VENDOR_PREFIXES,TEST_ELEMENT,TYPE_FUNCTION,round,abs,now};
+export {
+    VENDOR_PREFIXES,
+    TEST_ELEMENT,
+    TYPE_FUNCTION,
+    round,
+    abs,
+    now
+};

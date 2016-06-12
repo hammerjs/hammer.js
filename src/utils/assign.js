@@ -29,4 +29,4 @@ if (typeof Object.assign !== 'function') {
     assign = Object.assign;
 }
 
-export {assign};
+export default assign;

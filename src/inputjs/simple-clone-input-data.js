@@ -1,4 +1,4 @@
-import {now,round} from '../utils/utils-consts';
+import { now,round } from '../utils/utils-consts';
 import getCenter from './get-center';
 
 /**
