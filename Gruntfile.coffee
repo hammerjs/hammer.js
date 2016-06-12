@@ -34,28 +34,6 @@ module.exports = (grunt) ->
           sourceMap: 'hammer.min.map'
         files:
           'hammer.min.js': ['hammer.js']
-       # special test build that exposes everything so it's testable, now the test build is produced via rollup -c in terminal
-      # the output is /tests/testBuild.js
-#      test:
-#        options:
-#          wrap: "$H"
-#          comments: 'all'
-#          exportAll: true
-#          mangle: false
-#          beautify: true
-#          compress:
-#            global_defs:
-#              exportName: 'Hammer'
-#        files:
-#          'tests/build.js': [
-#            'src/utils/*.js'
-#            'src/inputjs/*.js'
-#            'src/input/*.js'
-#            'src/touchactionjs/*.js'
-#            'src/recognizerjs/*.js'
-#            'src/recognizers/*.js'
-#            'src/hammer.js'
-#            'src/manager.js']
 
     'string-replace':
       version:
