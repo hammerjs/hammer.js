@@ -8,15 +8,15 @@ import deprecate from './deprecate';
  * @returns {Object} dest
  */
 var extend = deprecate(function extend(dest, src, merge) {
-    var keys = Object.keys(src);
-    var i = 0;
-    while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
-            dest[keys[i]] = src[keys[i]];
-        }
-        i++;
+  var keys = Object.keys(src);
+  var i = 0;
+  while (i < keys.length) {
+    if (!merge || (merge && dest[keys[i]] === undefined)) {
+      dest[keys[i]] = src[keys[i]];
     }
-    return dest;
+    i++;
+  }
+  return dest;
 }, 'extend', 'Use `assign`.');
 
 export default extend;

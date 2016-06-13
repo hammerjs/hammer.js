@@ -5,9 +5,9 @@
  * @returns {Recognizer}
  */
 export default function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
-    var manager = recognizer.manager;
-    if (manager) {
-        return manager.get(otherRecognizer);
-    }
-    return otherRecognizer;
+  var manager = recognizer.manager;
+  if (manager) {
+    return manager.get(otherRecognizer);
+  }
+  return otherRecognizer;
 }

@@ -8,28 +8,28 @@ import inArray from './in-array';
  * @returns {Array} [{id:1},{id:2}]
  */
 export default function uniqueArray(src, key, sort) {
-    var results = [];
-    var values = [];
-    var i = 0;
+  var results = [];
+  var values = [];
+  var i = 0;
 
-    while (i < src.length) {
-        var val = key ? src[i][key] : src[i];
-        if (inArray(values, val) < 0) {
-            results.push(src[i]);
-        }
-        values[i] = val;
-        i++;
+  while (i < src.length) {
+    var val = key ? src[i][key] : src[i];
+    if (inArray(values, val) < 0) {
+      results.push(src[i]);
     }
+    values[i] = val;
+    i++;
+  }
 
-    if (sort) {
-        if (!key) {
-            results = results.sort();
-        } else {
-            results = results.sort(function sortUniqueArray(a, b) {
-                return a[key] > b[key];
-            });
-        }
+  if (sort) {
+    if (!key) {
+      results = results.sort();
+    } else {
+      results = results.sort(function sortUniqueArray(a, b) {
+        return a[key] > b[key];
+      });
     }
+  }
 
-    return results;
+  return results;
 }

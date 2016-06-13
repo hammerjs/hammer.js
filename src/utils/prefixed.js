@@ -6,18 +6,18 @@ import { VENDOR_PREFIXES } from './utils-consts';
  * @returns {String|Undefined} prefixed
  */
 export default function prefixed(obj, property) {
-    var prefix, prop;
-    var camelProp = property[0].toUpperCase() + property.slice(1);
+  var prefix, prop;
+  var camelProp = property[0].toUpperCase() + property.slice(1);
 
-    var i = 0;
-    while (i < VENDOR_PREFIXES.length) {
-        prefix = VENDOR_PREFIXES[i];
-        prop = (prefix) ? prefix + camelProp : property;
+  var i = 0;
+  while (i < VENDOR_PREFIXES.length) {
+    prefix = VENDOR_PREFIXES[i];
+    prop = (prefix) ? prefix + camelProp : property;
 
-        if (prop in obj) {
-            return prop;
-        }
-        i++;
+    if (prop in obj) {
+      return prop;
     }
-    return undefined;
+    i++;
+  }
+  return undefined;
 }
