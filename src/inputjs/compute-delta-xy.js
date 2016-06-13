@@ -1,8 +1,8 @@
 import { INPUT_START,INPUT_END } from './input-consts';
 
 export default function computeDeltaXY(session, input) {
-  let center = input.center;
-  let offset = session.offsetDelta || {};
+  let { center } = input;
+  let offset = session.offsetDelta || {}; // could be further deconstructed later on
   let prevDelta = session.prevDelta || {};
   let prevInput = session.prevInput || {};
 

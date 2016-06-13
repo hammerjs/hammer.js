@@ -3,9 +3,9 @@ const TEST_ELEMENT = document.createElement('div');
 
 const TYPE_FUNCTION = 'function';
 
-const round = Math.round;
-const abs = Math.abs;
-const now = Date.now;
+const { round } = Math;
+const { abs } = Math;
+const { now } = Date;
 
 export {
     VENDOR_PREFIXES,

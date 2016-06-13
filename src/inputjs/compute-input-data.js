@@ -18,9 +18,9 @@ import computeIntervalInputData from './compute-interval-input-data';
  * @param {Object} input
  */
 export default function computeInputData(manager, input) {
-  let session = manager.session;
-  let pointers = input.pointers;
-  let pointersLength = pointers.length;
+  let { session } = manager;
+  let { pointers } = input;
+  let { length:pointersLength } = pointers;
 
   // store the first input to calculate the distance and direction
   if (!session.firstInput) {
@@ -34,8 +34,8 @@ export default function computeInputData(manager, input) {
     session.firstMultiple = false;
   }
 
-  let firstInput = session.firstInput;
-  let firstMultiple = session.firstMultiple;
+  let { firstInput } = session;
+  let { firstMultiple } = session;
   let offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
 
   let center = input.center = getCenter(pointers);

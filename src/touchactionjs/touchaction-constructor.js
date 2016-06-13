@@ -71,7 +71,7 @@ TouchAction.prototype = {
    * @param {Object} input
    */
   preventDefaults: function(input) {
-    let srcEvent = input.srcEvent;
+    let { srcEvent } = input;
     let direction = input.offsetDirection;
 
     // if the touch action did prevented once this session
@@ -80,14 +80,13 @@ TouchAction.prototype = {
       return;
     }
 
-    let actions = this.actions;
+    let { actions } = this;
     let hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
     let hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
     let hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
 
     if (hasNone) {
-      //do not prevent defaults if this is a tap gesture
-
+      // do not prevent defaults if this is a tap gesture
       let isTapPointer = input.pointers.length === 1;
       let isTapMovement = input.distance < 2;
       let isTapTouchTime = input.deltaTime < 250;

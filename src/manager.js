@@ -86,7 +86,7 @@ Manager.prototype = {
    * @param {Object} inputData
    */
   recognize: function(inputData) {
-    let session = this.session;
+    let { session } = this;
     if (session.stopped) {
       return;
     }
@@ -95,12 +95,12 @@ Manager.prototype = {
     this.touchAction.preventDefaults(inputData);
 
     let recognizer;
-    let recognizers = this.recognizers;
+    let { recognizers } = this;
 
     // this holds the recognizer that is being recognized.
     // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
     // if no recognizer is detecting a thing, it is set to `null`
-    let curRecognizer = session.curRecognizer;
+    let { curRecognizer } = session;
 
     // reset when the last recognizer is recognized
     // or when we're in a new session
@@ -145,7 +145,7 @@ Manager.prototype = {
       return recognizer;
     }
 
-    let recognizers = this.recognizers;
+    let { recognizers } = this;
     for (let i = 0; i < recognizers.length; i++) {
       if (recognizers[i].options.event == recognizer) {
         return recognizers[i];
@@ -192,7 +192,7 @@ Manager.prototype = {
 
     // let's make sure this recognizer exists
     if (recognizer) {
-      let recognizers = this.recognizers;
+      let { recognizers } = this;
       let index = inArray(recognizers, recognizer);
 
       if (index !== -1) {
@@ -218,7 +218,7 @@ Manager.prototype = {
       return;
     }
 
-    let handlers = this.handlers;
+    let { handlers } = this;
     each(splitStr(events), function(event) {
       handlers[event] = handlers[event] || [];
       handlers[event].push(handler);
@@ -237,7 +237,7 @@ Manager.prototype = {
       return;
     }
 
-    let handlers = this.handlers;
+    let { handlers } = this;
     each(splitStr(events), function(event) {
       if (!handler) {
         delete handlers[event];
@@ -297,7 +297,7 @@ Manager.prototype = {
  * @param {Boolean} add
  */
 function toggleCssProps(manager, add) {
-  let element = manager.element;
+  let { element } = manager;
   if (!element.style) {
     return;
   }
