@@ -12,8 +12,8 @@ import { TouchMouseInput } from '../input/touchmouse';
  * @returns {Input}
  */
 export default function createInputInstance(manager) {
-  var Type;
-  var inputClass = manager.options.inputClass;
+  let Type;
+  let inputClass = manager.options.inputClass;
 
   if (inputClass) {
     Type = inputClass;

@@ -6,8 +6,8 @@ import assign from './assign';
  * @param {Object} [properties]
  */
 export default function inherit(child, base, properties) {
-  var baseP = base.prototype,
-      childP;
+  let baseP = base.prototype;
+  let childP;
 
   childP = child.prototype = Object.create(baseP);
   childP.constructor = child;

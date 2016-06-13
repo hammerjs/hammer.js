@@ -15,8 +15,8 @@ import {
     STATE_RECOGNIZED
 } from './recognizerjs/recognizer-consts';
 
-var STOP = 1;
-var FORCED_STOP = 2;
+const STOP = 1;
+const FORCED_STOP = 2;
 
 /**
  * Manager
@@ -41,7 +41,7 @@ function Manager(element, options) {
   toggleCssProps(this, true);
 
   each(this.options.recognizers, function(item) {
-    var recognizer = this.add(new (item[0])(item[1]));
+    let recognizer = this.add(new (item[0])(item[1]));
     item[2] && recognizer.recognizeWith(item[2]);
     item[3] && recognizer.requireFailure(item[3]);
   }, this);
@@ -86,7 +86,7 @@ Manager.prototype = {
    * @param {Object} inputData
    */
   recognize: function(inputData) {
-    var session = this.session;
+    let session = this.session;
     if (session.stopped) {
       return;
     }
@@ -94,13 +94,13 @@ Manager.prototype = {
     // run the touch-action polyfill
     this.touchAction.preventDefaults(inputData);
 
-    var recognizer;
-    var recognizers = this.recognizers;
+    let recognizer;
+    let recognizers = this.recognizers;
 
     // this holds the recognizer that is being recognized.
     // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
     // if no recognizer is detecting a thing, it is set to `null`
-    var curRecognizer = session.curRecognizer;
+    let curRecognizer = session.curRecognizer;
 
     // reset when the last recognizer is recognized
     // or when we're in a new session
@@ -108,7 +108,7 @@ Manager.prototype = {
       curRecognizer = session.curRecognizer = null;
     }
 
-    var i = 0;
+    let i = 0;
     while (i < recognizers.length) {
       recognizer = recognizers[i];
 
@@ -145,8 +145,8 @@ Manager.prototype = {
       return recognizer;
     }
 
-    var recognizers = this.recognizers;
-    for (var i = 0; i < recognizers.length; i++) {
+    let recognizers = this.recognizers;
+    for (let i = 0; i < recognizers.length; i++) {
       if (recognizers[i].options.event == recognizer) {
         return recognizers[i];
       }
@@ -166,7 +166,7 @@ Manager.prototype = {
     }
 
     // remove existing
-    var existing = this.get(recognizer.options.event);
+    let existing = this.get(recognizer.options.event);
     if (existing) {
       this.remove(existing);
     }
@@ -192,8 +192,8 @@ Manager.prototype = {
 
     // let's make sure this recognizer exists
     if (recognizer) {
-      var recognizers = this.recognizers;
-      var index = inArray(recognizers, recognizer);
+      let recognizers = this.recognizers;
+      let index = inArray(recognizers, recognizer);
 
       if (index !== -1) {
         recognizers.splice(index, 1);
@@ -218,7 +218,7 @@ Manager.prototype = {
       return;
     }
 
-    var handlers = this.handlers;
+    let handlers = this.handlers;
     each(splitStr(events), function(event) {
       handlers[event] = handlers[event] || [];
       handlers[event].push(handler);
@@ -237,7 +237,7 @@ Manager.prototype = {
       return;
     }
 
-    var handlers = this.handlers;
+    let handlers = this.handlers;
     each(splitStr(events), function(event) {
       if (!handler) {
         delete handlers[event];
@@ -260,7 +260,7 @@ Manager.prototype = {
     }
 
     // no handlers, so skip it all
-    var handlers = this.handlers[event] && this.handlers[event].slice();
+    let handlers = this.handlers[event] && this.handlers[event].slice();
     if (!handlers || !handlers.length) {
       return;
     }
@@ -270,7 +270,7 @@ Manager.prototype = {
       data.srcEvent.preventDefault();
     };
 
-    var i = 0;
+    let i = 0;
     while (i < handlers.length) {
       handlers[i](data);
       i++;
@@ -297,11 +297,11 @@ Manager.prototype = {
  * @param {Boolean} add
  */
 function toggleCssProps(manager, add) {
-  var element = manager.element;
+  let element = manager.element;
   if (!element.style) {
     return;
   }
-  var prop;
+  let prop;
   each(manager.options.cssProps, function(value, name) {
     prop = prefixed(element.style, name);
     if (add) {
@@ -322,7 +322,7 @@ function toggleCssProps(manager, add) {
  * @param {Object} data
  */
 function triggerDomEvent(event, data) {
-  var gestureEvent = document.createEvent('Event');
+  let gestureEvent = document.createEvent('Event');
   gestureEvent.initEvent(event, true, true);
   gestureEvent.gesture = data;
   data.target.dispatchEvent(gestureEvent);

@@ -9,8 +9,8 @@ import getCenter from './get-center';
 export default function simpleCloneInputData(input) {
   // make a simple copy of the pointers because we will get a reference if we don't
   // we only need clientXY for the calculations
-  var pointers = [];
-  var i = 0;
+  let pointers = [];
+  let i = 0;
   while (i < input.pointers.length) {
     pointers[i] = {
       clientX: round(input.pointers[i].clientX),
@@ -21,7 +21,7 @@ export default function simpleCloneInputData(input) {
 
   return {
     timeStamp: now(),
-    pointers: pointers,
+    pointers,
     center: getCenter(pointers),
     deltaX: input.deltaX,
     deltaY: input.deltaY

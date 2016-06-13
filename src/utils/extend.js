@@ -7,9 +7,9 @@ import deprecate from './deprecate';
  * @param {Boolean} [merge=false]
  * @returns {Object} dest
  */
-var extend = deprecate(function extend(dest, src, merge) {
-  var keys = Object.keys(src);
-  var i = 0;
+const extend = deprecate(function extend(dest, src, merge) {
+  let keys = Object.keys(src);
+  let i = 0;
   while (i < keys.length) {
     if (!merge || (merge && dest[keys[i]] === undefined)) {
       dest[keys[i]] = src[keys[i]];

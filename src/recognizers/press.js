@@ -43,10 +43,10 @@ inherit(PressRecognizer, Recognizer, {
   },
 
   process: function(input) {
-    var options = this.options;
-    var validPointers = input.pointers.length === options.pointers;
-    var validMovement = input.distance < options.threshold;
-    var validTime = input.deltaTime > options.time;
+    let options = this.options;
+    let validPointers = input.pointers.length === options.pointers;
+    let validMovement = input.distance < options.threshold;
+    let validTime = input.deltaTime > options.time;
 
     this._input = input;
 

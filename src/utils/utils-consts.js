@@ -1,11 +1,11 @@
-var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
-var TEST_ELEMENT = document.createElement('div');
+const VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
+const TEST_ELEMENT = document.createElement('div');
 
-var TYPE_FUNCTION = 'function';
+const TYPE_FUNCTION = 'function';
 
-var round = Math.round;
-var abs = Math.abs;
-var now = Date.now;
+const round = Math.round;
+const abs = Math.abs;
+const now = Date.now;
 
 export {
     VENDOR_PREFIXES,

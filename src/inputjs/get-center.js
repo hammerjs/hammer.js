@@ -6,7 +6,7 @@ import { round } from '../utils/utils-consts';
  * @return {Object} center contains `x` and `y` properties
  */
 export default function getCenter(pointers) {
-  var pointersLength = pointers.length;
+  let pointersLength = pointers.length;
 
   // no need to loop when only one touch
   if (pointersLength === 1) {
@@ -16,7 +16,9 @@ export default function getCenter(pointers) {
     };
   }
 
-  var x = 0, y = 0, i = 0;
+  let x = 0;
+  let y = 0;
+  let i = 0;
   while (i < pointersLength) {
     x += pointers[i].clientX;
     y += pointers[i].clientY;

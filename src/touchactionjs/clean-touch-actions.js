@@ -18,8 +18,8 @@ export default function cleanTouchActions(actions) {
     return TOUCH_ACTION_NONE;
   }
 
-  var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
-  var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+  let hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+  let hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
 
   // if both pan-x and pan-y are set (different recognizers
   // for different directions, e.g. horizontal pan but vertical swipe?)

@@ -5,7 +5,7 @@
  * @param {Object} context
  */
 export default function each(obj, iterator, context) {
-  var i;
+  let i;
 
   if (!obj) {
     return;

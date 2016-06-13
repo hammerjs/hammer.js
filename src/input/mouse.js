@@ -7,14 +7,14 @@ import {
 import { Input } from '../inputjs/input-constructor';
 import inherit from '../utils/inherit';
 
-var MOUSE_INPUT_MAP = {
+const MOUSE_INPUT_MAP = {
   mousedown: INPUT_START,
   mousemove: INPUT_MOVE,
   mouseup: INPUT_END
 };
 
-var MOUSE_ELEMENT_EVENTS = 'mousedown';
-var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+const MOUSE_ELEMENT_EVENTS = 'mousedown';
+const MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
 
 /**
  * Mouse events input
@@ -36,7 +36,7 @@ inherit(MouseInput, Input, {
    * @param {Object} ev
    */
   handler: function MEhandler(ev) {
-    var eventType = MOUSE_INPUT_MAP[ev.type];
+    let eventType = MOUSE_INPUT_MAP[ev.type];
 
     // on start we want to have the left mouse button down
     if (eventType & INPUT_START && ev.button === 0) {

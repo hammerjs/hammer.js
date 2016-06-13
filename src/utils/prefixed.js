@@ -6,10 +6,11 @@ import { VENDOR_PREFIXES } from './utils-consts';
  * @returns {String|Undefined} prefixed
  */
 export default function prefixed(obj, property) {
-  var prefix, prop;
-  var camelProp = property[0].toUpperCase() + property.slice(1);
+  let prefix;
+  let prop;
+  let camelProp = property[0].toUpperCase() + property.slice(1);
 
-  var i = 0;
+  let i = 0;
   while (i < VENDOR_PREFIXES.length) {
     prefix = VENDOR_PREFIXES[i];
     prop = (prefix) ? prefix + camelProp : property;

@@ -18,9 +18,9 @@ import computeIntervalInputData from './compute-interval-input-data';
  * @param {Object} input
  */
 export default function computeInputData(manager, input) {
-  var session = manager.session;
-  var pointers = input.pointers;
-  var pointersLength = pointers.length;
+  let session = manager.session;
+  let pointers = input.pointers;
+  let pointersLength = pointers.length;
 
   // store the first input to calculate the distance and direction
   if (!session.firstInput) {
@@ -34,11 +34,11 @@ export default function computeInputData(manager, input) {
     session.firstMultiple = false;
   }
 
-  var firstInput = session.firstInput;
-  var firstMultiple = session.firstMultiple;
-  var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+  let firstInput = session.firstInput;
+  let firstMultiple = session.firstMultiple;
+  let offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
 
-  var center = input.center = getCenter(pointers);
+  let center = input.center = getCenter(pointers);
   input.timeStamp = now();
   input.deltaTime = input.timeStamp - firstInput.timeStamp;
 
@@ -48,7 +48,7 @@ export default function computeInputData(manager, input) {
   computeDeltaXY(session, input);
   input.offsetDirection = getDirection(input.deltaX, input.deltaY);
 
-  var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
+  let overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
   input.overallVelocityX = overallVelocity.x;
   input.overallVelocityY = overallVelocity.y;
   input.overallVelocity = (abs(overallVelocity.x) > abs(overallVelocity.y)) ? overallVelocity.x : overallVelocity.y;
@@ -62,7 +62,7 @@ export default function computeInputData(manager, input) {
   computeIntervalInputData(session, input);
 
   // find the correct target
-  var target = manager.element;
+  let target = manager.element;
   if (hasParent(input.srcEvent.target, target)) {
     target = input.srcEvent.target;
   }

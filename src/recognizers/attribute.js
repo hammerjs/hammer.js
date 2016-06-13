@@ -41,7 +41,7 @@ inherit(AttrRecognizer, Recognizer, {
    * @returns {Boolean} recognized
    */
   attrTest: function(input) {
-    var optionPointers = this.options.pointers;
+    let optionPointers = this.options.pointers;
     return optionPointers === 0 || input.pointers.length === optionPointers;
   },
 
@@ -52,11 +52,11 @@ inherit(AttrRecognizer, Recognizer, {
    * @returns {*} State
    */
   process: function(input) {
-    var state = this.state;
-    var eventType = input.eventType;
+    let state = this.state;
+    let eventType = input.eventType;
 
-    var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
-    var isValid = this.attrTest(input);
+    let isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
+    let isValid = this.attrTest(input);
 
     // on cancel input and we've recognized before, return STATE_CANCELLED
     if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
