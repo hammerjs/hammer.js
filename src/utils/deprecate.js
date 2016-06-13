@@ -6,7 +6,7 @@
  * @returns {Function} A new function wrapping the supplied method.
  */
 export default function deprecate(method, name, message) {
-  let deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
+  let deprecationMessage = `DEPRECATED METHOD: ${name}\n${message} AT \n`;
   return function() {
     let e = new Error('get-stack-trace');
     let stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '')

@@ -76,7 +76,7 @@ inherit(PressRecognizer, Recognizer, {
     }
 
     if (input && (input.eventType & INPUT_END)) {
-      this.manager.emit(this.options.event + 'up', input);
+      this.manager.emit(`${this.options.event}up`, input);
     } else {
       this._input.timeStamp = now();
       this.manager.emit(this.options.event, this._input);
