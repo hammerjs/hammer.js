@@ -5,23 +5,23 @@
  * @param {Object} context
  */
 export default function each(obj, iterator, context) {
-    var i;
+  var i;
 
-    if (!obj) {
-        return;
-    }
+  if (!obj) {
+    return;
+  }
 
-    if (obj.forEach) {
-        obj.forEach(iterator, context);
-    } else if (obj.length !== undefined) {
-        i = 0;
-        while (i < obj.length) {
-            iterator.call(context, obj[i], i, obj);
-            i++;
-        }
-    } else {
-        for (i in obj) {
-            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
-        }
+  if (obj.forEach) {
+    obj.forEach(iterator, context);
+  } else if (obj.length !== undefined) {
+    i = 0;
+    while (i < obj.length) {
+      iterator.call(context, obj[i], i, obj);
+      i++;
     }
+  } else {
+    for (i in obj) {
+      obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+    }
+  }
 }

@@ -8,7 +8,7 @@ import extend from './extend';
  * @returns {Object} dest
  */
 var merge = deprecate(function merge(dest, src) {
-    return extend(dest, src, true);
+  return extend(dest, src, true);
 }, 'merge', 'Use `assign`.');
 
 export default merge;

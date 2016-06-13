@@ -8,5 +8,5 @@ import getDistance from './get-distance';
  * @return {Number} scale
  */
 export default function getScale(start, end) {
-    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
+  return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
 }
