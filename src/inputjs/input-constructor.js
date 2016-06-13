@@ -11,7 +11,7 @@ import getWindowForElement from '../utils/get-window-for-element';
  * @constructor
  */
 function Input(manager, callback) {
-  var self = this;
+  let self = this;
   this.manager = manager;
   this.callback = callback;
   this.element = manager.element;

@@ -57,7 +57,7 @@ TouchAction.prototype = {
    * @returns {String} value
    */
   compute: function() {
-    var actions = [];
+    let actions = [];
     each(this.manager.recognizers, function(recognizer) {
       if (boolOrFn(recognizer.options.enable, [recognizer])) {
         actions = actions.concat(recognizer.getTouchAction());
@@ -71,8 +71,8 @@ TouchAction.prototype = {
    * @param {Object} input
    */
   preventDefaults: function(input) {
-    var srcEvent = input.srcEvent;
-    var direction = input.offsetDirection;
+    let srcEvent = input.srcEvent;
+    let direction = input.offsetDirection;
 
     // if the touch action did prevented once this session
     if (this.manager.session.prevented) {
@@ -80,17 +80,17 @@ TouchAction.prototype = {
       return;
     }
 
-    var actions = this.actions;
-    var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
-    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
-    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
+    let actions = this.actions;
+    let hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+    let hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+    let hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
 
     if (hasNone) {
       //do not prevent defaults if this is a tap gesture
 
-      var isTapPointer = input.pointers.length === 1;
-      var isTapMovement = input.distance < 2;
-      var isTapTouchTime = input.deltaTime < 250;
+      let isTapPointer = input.pointers.length === 1;
+      let isTapMovement = input.distance < 2;
+      let isTapTouchTime = input.deltaTime < 250;
 
       if (isTapPointer && isTapMovement && isTapTouchTime) {
         return;

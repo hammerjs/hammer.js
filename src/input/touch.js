@@ -11,14 +11,14 @@ import toArray from '../utils/to-array';
 import hasParent from '../utils/has-parent';
 import uniqueArray from '../utils/unique-array';
 
-var TOUCH_INPUT_MAP = {
+const TOUCH_INPUT_MAP = {
   touchstart: INPUT_START,
   touchmove: INPUT_MOVE,
   touchend: INPUT_END,
   touchcancel: INPUT_CANCEL
 };
 
-var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+const TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Multi-user touch events input
@@ -34,8 +34,8 @@ function TouchInput() {
 
 inherit(TouchInput, Input, {
   handler: function MTEhandler(ev) {
-    var type = TOUCH_INPUT_MAP[ev.type];
-    var touches = getTouches.call(this, ev, type);
+    let type = TOUCH_INPUT_MAP[ev.type];
+    let touches = getTouches.call(this, ev, type);
     if (!touches) {
       return;
     }
@@ -56,8 +56,8 @@ inherit(TouchInput, Input, {
  * @returns {undefined|Array} [all, changed]
  */
 function getTouches(ev, type) {
-  var allTouches = toArray(ev.touches);
-  var targetIds = this.targetIds;
+  let allTouches = toArray(ev.touches);
+  let targetIds = this.targetIds;
 
   // when there is only one touch, the process can be simplified
   if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
@@ -65,11 +65,11 @@ function getTouches(ev, type) {
     return [allTouches, allTouches];
   }
 
-  var i,
-      targetTouches,
-      changedTouches = toArray(ev.changedTouches),
-      changedTargetTouches = [],
-      target = this.target;
+  let i;
+  let targetTouches;
+  let changedTouches = toArray(ev.changedTouches);
+  let changedTargetTouches = [];
+  let target = this.target;
 
   // get target touches from touches
   targetTouches = allTouches.filter(function(touch) {

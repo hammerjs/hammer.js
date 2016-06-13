@@ -53,11 +53,11 @@ inherit(TapRecognizer, Recognizer, {
   },
 
   process: function(input) {
-    var options = this.options;
+    let options = this.options;
 
-    var validPointers = input.pointers.length === options.pointers;
-    var validMovement = input.distance < options.threshold;
-    var validTouchTime = input.deltaTime < options.time;
+    let validPointers = input.pointers.length === options.pointers;
+    let validMovement = input.distance < options.threshold;
+    let validTouchTime = input.deltaTime < options.time;
 
     this.reset();
 
@@ -72,8 +72,8 @@ inherit(TapRecognizer, Recognizer, {
         return this.failTimeout();
       }
 
-      var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-      var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+      let validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+      let validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
 
       this.pTime = input.timeStamp;
       this.pCenter = input.center;
@@ -88,7 +88,7 @@ inherit(TapRecognizer, Recognizer, {
 
       // if tap count matches we have recognized it,
       // else it has began recognizing...
-      var tapCount = this.count % options.taps;
+      let tapCount = this.count % options.taps;
       if (tapCount === 0) {
         // no failing requirements, immediately trigger the tap event
         // or wait as long as the multitap interval to trigger

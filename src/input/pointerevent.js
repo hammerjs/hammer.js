@@ -12,7 +12,7 @@ import { Input } from '../inputjs/input-constructor';
 import inherit from '../utils/inherit';
 import inArray from '../utils/in-array';
 
-var POINTER_INPUT_MAP = {
+const POINTER_INPUT_MAP = {
   pointerdown: INPUT_START,
   pointermove: INPUT_MOVE,
   pointerup: INPUT_END,
@@ -21,15 +21,15 @@ var POINTER_INPUT_MAP = {
 };
 
 // in IE10 the pointer types is defined as an enum
-var IE10_POINTER_TYPE_ENUM = {
+const IE10_POINTER_TYPE_ENUM = {
   2: INPUT_TYPE_TOUCH,
   3: INPUT_TYPE_PEN,
   4: INPUT_TYPE_MOUSE,
   5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
 };
 
-var POINTER_ELEMENT_EVENTS = 'pointerdown';
-var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
+let POINTER_ELEMENT_EVENTS = 'pointerdown';
+let POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
 
 // IE10 has prefixed support, and case-sensitive
 if (window.MSPointerEvent && !window.PointerEvent) {
@@ -57,17 +57,17 @@ inherit(PointerEventInput, Input, {
    * @param {Object} ev
    */
   handler: function PEhandler(ev) {
-    var store = this.store;
-    var removePointer = false;
+    let store = this.store;
+    let removePointer = false;
 
-    var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
-    var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
-    var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+    let eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
+    let eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+    let pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
-    var isTouch = (pointerType == INPUT_TYPE_TOUCH);
+    let isTouch = (pointerType == INPUT_TYPE_TOUCH);
 
     // get index of the event in the store
-    var storeIndex = inArray(store, ev.pointerId, 'pointerId');
+    let storeIndex = inArray(store, ev.pointerId, 'pointerId');
 
     // start and mouse must be down
     if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
@@ -90,7 +90,7 @@ inherit(PointerEventInput, Input, {
     this.callback(this.manager, eventType, {
       pointers: store,
       changedPointers: [ev],
-      pointerType: pointerType,
+      pointerType,
       srcEvent: ev
     });
 

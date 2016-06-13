@@ -1,10 +1,10 @@
 import { INPUT_START,INPUT_END } from './input-consts';
 
 export default function computeDeltaXY(session, input) {
-  var center = input.center;
-  var offset = session.offsetDelta || {};
-  var prevDelta = session.prevDelta || {};
-  var prevInput = session.prevInput || {};
+  let center = input.center;
+  let offset = session.offsetDelta || {};
+  let prevDelta = session.prevDelta || {};
+  let prevInput = session.prevInput || {};
 
   if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
     prevDelta = session.prevDelta = {

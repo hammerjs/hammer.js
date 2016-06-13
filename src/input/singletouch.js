@@ -10,15 +10,15 @@ import inherit from '../utils/inherit';
 import toArray from '../utils/to-array';
 import uniqueArray from '../utils/unique-array';
 
-var SINGLE_TOUCH_INPUT_MAP = {
+const SINGLE_TOUCH_INPUT_MAP = {
   touchstart: INPUT_START,
   touchmove: INPUT_MOVE,
   touchend: INPUT_END,
   touchcancel: INPUT_CANCEL
 };
 
-var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
-var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+const SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
+const SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
  * Touch events input
@@ -35,7 +35,7 @@ function SingleTouchInput() {
 
 inherit(SingleTouchInput, Input, {
   handler: function TEhandler(ev) {
-    var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
+    let type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
     // should we handle the touch events?
     if (type === INPUT_START) {
@@ -46,7 +46,7 @@ inherit(SingleTouchInput, Input, {
       return;
     }
 
-    var touches = normalizeSingleTouches.call(this, ev, type);
+    let touches = normalizeSingleTouches.call(this, ev, type);
 
     // when done, reset the started state
     if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
@@ -69,8 +69,8 @@ inherit(SingleTouchInput, Input, {
  * @returns {undefined|Array} [all, changed]
  */
 function normalizeSingleTouches(ev, type) {
-  var all = toArray(ev.touches);
-  var changed = toArray(ev.changedTouches);
+  let all = toArray(ev.touches);
+  let changed = toArray(ev.changedTouches);
 
   if (type & (INPUT_END | INPUT_CANCEL)) {
     all = uniqueArray(all.concat(changed), 'identifier', true);

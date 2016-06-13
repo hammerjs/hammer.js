@@ -9,15 +9,18 @@ import getDirection from './get-direction';
  * @param {Object} input
  */
 export default function computeIntervalInputData(session, input) {
-  var last = session.lastInterval || input,
-      deltaTime = input.timeStamp - last.timeStamp,
-      velocity, velocityX, velocityY, direction;
+  let last = session.lastInterval || input;
+  let deltaTime = input.timeStamp - last.timeStamp;
+  let velocity;
+  let velocityX;
+  let velocityY;
+  let direction;
 
   if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
-    var deltaX = input.deltaX - last.deltaX;
-    var deltaY = input.deltaY - last.deltaY;
+    let deltaX = input.deltaX - last.deltaX;
+    let deltaY = input.deltaY - last.deltaY;
 
-    var v = getVelocity(deltaTime, deltaX, deltaY);
+    let v = getVelocity(deltaTime, deltaX, deltaY);
     velocityX = v.x;
     velocityY = v.y;
     velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;

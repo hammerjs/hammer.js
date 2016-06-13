@@ -1,35 +1,35 @@
 import prefixed from '../utils/prefixed';
 
-var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+const MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
-var SUPPORT_TOUCH = ('ontouchstart' in window);
-var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
-var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
+const SUPPORT_TOUCH = ('ontouchstart' in window);
+const SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
+const SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
-var INPUT_TYPE_TOUCH = 'touch';
-var INPUT_TYPE_PEN = 'pen';
-var INPUT_TYPE_MOUSE = 'mouse';
-var INPUT_TYPE_KINECT = 'kinect';
+const INPUT_TYPE_TOUCH = 'touch';
+const INPUT_TYPE_PEN = 'pen';
+const INPUT_TYPE_MOUSE = 'mouse';
+const INPUT_TYPE_KINECT = 'kinect';
 
-var COMPUTE_INTERVAL = 25;
+const COMPUTE_INTERVAL = 25;
 
-var INPUT_START = 1;
-var INPUT_MOVE = 2;
-var INPUT_END = 4;
-var INPUT_CANCEL = 8;
+const INPUT_START = 1;
+const INPUT_MOVE = 2;
+const INPUT_END = 4;
+const INPUT_CANCEL = 8;
 
-var DIRECTION_NONE = 1;
-var DIRECTION_LEFT = 2;
-var DIRECTION_RIGHT = 4;
-var DIRECTION_UP = 8;
-var DIRECTION_DOWN = 16;
+const DIRECTION_NONE = 1;
+const DIRECTION_LEFT = 2;
+const DIRECTION_RIGHT = 4;
+const DIRECTION_UP = 8;
+const DIRECTION_DOWN = 16;
 
-var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
-var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
-var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+const DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+const DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+const DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
 
-var PROPS_XY = ['x', 'y'];
-var PROPS_CLIENT_XY = ['clientX', 'clientY'];
+const PROPS_XY = ['x', 'y'];
+const PROPS_CLIENT_XY = ['clientX', 'clientY'];
 
 export {
     MOBILE_REGEX,

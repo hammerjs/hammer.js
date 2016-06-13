@@ -34,8 +34,8 @@ inherit(SwipeRecognizer, AttrRecognizer, {
   },
 
   attrTest: function(input) {
-    var direction = this.options.direction;
-    var velocity;
+    let direction = this.options.direction;
+    let velocity;
 
     if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
       velocity = input.overallVelocity;
@@ -53,7 +53,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
   },
 
   emit: function(input) {
-    var direction = directionStr(input.offsetDirection);
+    let direction = directionStr(input.offsetDirection);
     if (direction) {
       this.manager.emit(this.options.event + direction, input);
     }

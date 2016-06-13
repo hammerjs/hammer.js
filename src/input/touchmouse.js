@@ -21,13 +21,13 @@ import {
  * @extends Input
  */
 
-var DEDUP_TIMEOUT = 2500;
-var DEDUP_DISTANCE = 25;
+const DEDUP_TIMEOUT = 2500;
+const DEDUP_DISTANCE = 25;
 
 function TouchMouseInput() {
   Input.apply(this, arguments);
 
-  var handler = bindFn(this.handler, this);
+  let handler = bindFn(this.handler, this);
   this.touch = new TouchInput(this.manager, handler);
   this.mouse = new MouseInput(this.manager, handler);
 
@@ -43,8 +43,8 @@ inherit(TouchMouseInput, Input, {
    * @param {Object} inputData
    */
   handler: function TMEhandler(manager, inputEvent, inputData) {
-    var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
-        isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
+    let isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH);
+    let isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
     if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
       return;
@@ -79,14 +79,14 @@ function recordTouches(eventType, eventData) {
 }
 
 function setLastTouch(eventData) {
-  var touch = eventData.changedPointers[0];
+  let touch = eventData.changedPointers[0];
 
   if (touch.identifier === this.primaryTouch) {
-    var lastTouch = { x: touch.clientX, y: touch.clientY };
+    let lastTouch = { x: touch.clientX, y: touch.clientY };
     this.lastTouches.push(lastTouch);
-    var lts = this.lastTouches;
-    var removeLastTouch = function() {
-      var i = lts.indexOf(lastTouch);
+    let lts = this.lastTouches;
+    let removeLastTouch = function() {
+      let i = lts.indexOf(lastTouch);
       if (i > -1) {
         lts.splice(i, 1);
       }
@@ -96,10 +96,12 @@ function setLastTouch(eventData) {
 }
 
 function isSyntheticEvent(eventData) {
-  var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
-  for (var i = 0; i < this.lastTouches.length; i++) {
-    var t = this.lastTouches[i];
-    var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
+  let x = eventData.srcEvent.clientX;
+  let y = eventData.srcEvent.clientY;
+  for (let i = 0; i < this.lastTouches.length; i++) {
+    let t = this.lastTouches[i];
+    let dx = Math.abs(x - t.x);
+    let dy = Math.abs(y - t.y);
     if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
       return true;
     }

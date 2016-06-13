@@ -96,7 +96,7 @@ Recognizer.prototype = {
       return this;
     }
 
-    var simultaneous = this.simultaneous;
+    let simultaneous = this.simultaneous;
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     if (!simultaneous[otherRecognizer.id]) {
       simultaneous[otherRecognizer.id] = otherRecognizer;
@@ -130,7 +130,7 @@ Recognizer.prototype = {
       return this;
     }
 
-    var requireFail = this.requireFail;
+    let requireFail = this.requireFail;
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     if (inArray(requireFail, otherRecognizer) === -1) {
       requireFail.push(otherRecognizer);
@@ -150,7 +150,7 @@ Recognizer.prototype = {
     }
 
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-    var index = inArray(this.requireFail, otherRecognizer);
+    let index = inArray(this.requireFail, otherRecognizer);
     if (index > -1) {
       this.requireFail.splice(index, 1);
     }
@@ -180,8 +180,8 @@ Recognizer.prototype = {
    * @param {Object} input
    */
   emit: function(input) {
-    var self = this;
-    var state = this.state;
+    let self = this;
+    let state = this.state;
 
     function emit(event) {
       self.manager.emit(event, input);
@@ -223,7 +223,7 @@ Recognizer.prototype = {
    * @returns {boolean}
    */
   canEmit: function() {
-    var i = 0;
+    let i = 0;
     while (i < this.requireFail.length) {
       if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
         return false;
@@ -240,7 +240,7 @@ Recognizer.prototype = {
   recognize: function(inputData) {
     // make a new copy of the inputData
     // so we can change the inputData without messing up the other recognizers
-    var inputDataClone = assign({}, inputData);
+    let inputDataClone = assign({}, inputData);
 
     // is is enabled and allow recognizing?
     if (!boolOrFn(this.options.enable, [this, inputDataClone])) {

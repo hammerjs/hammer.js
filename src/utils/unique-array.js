@@ -8,12 +8,12 @@ import inArray from './in-array';
  * @returns {Array} [{id:1},{id:2}]
  */
 export default function uniqueArray(src, key, sort) {
-  var results = [];
-  var values = [];
-  var i = 0;
+  let results = [];
+  let values = [];
+  let i = 0;
 
   while (i < src.length) {
-    var val = key ? src[i][key] : src[i];
+    let val = key ? src[i][key] : src[i];
     if (inArray(values, val) < 0) {
       results.push(src[i]);
     }

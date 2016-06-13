@@ -40,8 +40,8 @@ inherit(PanRecognizer, AttrRecognizer, {
   },
 
   getTouchAction: function() {
-    var direction = this.options.direction;
-    var actions = [];
+    let direction = this.options.direction;
+    let actions = [];
     if (direction & DIRECTION_HORIZONTAL) {
       actions.push(TOUCH_ACTION_PAN_Y);
     }
@@ -52,12 +52,12 @@ inherit(PanRecognizer, AttrRecognizer, {
   },
 
   directionTest: function(input) {
-    var options = this.options;
-    var hasMoved = true;
-    var distance = input.distance;
-    var direction = input.direction;
-    var x = input.deltaX;
-    var y = input.deltaY;
+    let options = this.options;
+    let hasMoved = true;
+    let distance = input.distance;
+    let direction = input.direction;
+    let x = input.deltaX;
+    let y = input.deltaY;
 
     // lock to axis?
     if (!(direction & options.direction)) {
@@ -85,7 +85,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     this.pX = input.deltaX;
     this.pY = input.deltaY;
 
-    var direction = directionStr(input.direction);
+    let direction = directionStr(input.direction);
 
     if (direction) {
       input.additionalEvent = this.options.event + direction;

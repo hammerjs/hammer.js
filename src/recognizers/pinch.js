@@ -35,7 +35,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
 
   emit: function(input) {
     if (input.scale !== 1) {
-      var inOut = input.scale < 1 ? 'in' : 'out';
+      let inOut = input.scale < 1 ? 'in' : 'out';
       input.additionalEvent = this.options.event + inOut;
     }
     this._super.emit.call(this, input);

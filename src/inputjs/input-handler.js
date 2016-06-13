@@ -8,10 +8,10 @@ import computeInputData from './compute-input-data';
  * @param {Object} input
  */
 export default function inputHandler(manager, eventType, input) {
-  var pointersLen = input.pointers.length;
-  var changedPointersLen = input.changedPointers.length;
-  var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
-  var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
+  let pointersLen = input.pointers.length;
+  let changedPointersLen = input.changedPointers.length;
+  let isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
+  let isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
 
   input.isFirst = !!isFirst;
   input.isFinal = !!isFinal;
