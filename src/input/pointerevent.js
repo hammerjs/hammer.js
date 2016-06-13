@@ -57,7 +57,7 @@ inherit(PointerEventInput, Input, {
    * @param {Object} ev
    */
   handler: function PEhandler(ev) {
-    let store = this.store;
+    let { store } = this;
     let removePointer = false;
 
     let eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');

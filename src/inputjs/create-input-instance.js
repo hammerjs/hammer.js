@@ -13,8 +13,8 @@ import { TouchMouseInput } from '../input/touchmouse';
  */
 export default function createInputInstance(manager) {
   let Type;
-  let inputClass = manager.options.inputClass;
-
+  // let inputClass = manager.options.inputClass;
+  let { options:{ inputClass } } = manager;
   if (inputClass) {
     Type = inputClass;
   } else if (SUPPORT_POINTER_EVENTS) {

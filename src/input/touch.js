@@ -57,7 +57,7 @@ inherit(TouchInput, Input, {
  */
 function getTouches(ev, type) {
   let allTouches = toArray(ev.touches);
-  let targetIds = this.targetIds;
+  let { targetIds } = this;
 
   // when there is only one touch, the process can be simplified
   if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
@@ -69,7 +69,7 @@ function getTouches(ev, type) {
   let targetTouches;
   let changedTouches = toArray(ev.changedTouches);
   let changedTargetTouches = [];
-  let target = this.target;
+  let { target } = this;
 
   // get target touches from touches
   targetTouches = allTouches.filter(function(touch) {

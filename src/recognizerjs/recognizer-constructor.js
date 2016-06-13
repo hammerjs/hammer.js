@@ -96,7 +96,7 @@ Recognizer.prototype = {
       return this;
     }
 
-    let simultaneous = this.simultaneous;
+    let { simultaneous } = this;
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     if (!simultaneous[otherRecognizer.id]) {
       simultaneous[otherRecognizer.id] = otherRecognizer;
@@ -130,7 +130,7 @@ Recognizer.prototype = {
       return this;
     }
 
-    let requireFail = this.requireFail;
+    let { requireFail }= this;
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     if (inArray(requireFail, otherRecognizer) === -1) {
       requireFail.push(otherRecognizer);
@@ -181,7 +181,7 @@ Recognizer.prototype = {
    */
   emit: function(input) {
     let self = this;
-    let state = this.state;
+    let { state } = this;
 
     function emit(event) {
       self.manager.emit(event, input);

@@ -52,8 +52,8 @@ inherit(AttrRecognizer, Recognizer, {
    * @returns {*} State
    */
   process: function(input) {
-    let state = this.state;
-    let eventType = input.eventType;
+    let { state } = this;
+    let { eventType } = input;
 
     let isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
     let isValid = this.attrTest(input);

@@ -40,7 +40,7 @@ inherit(PanRecognizer, AttrRecognizer, {
   },
 
   getTouchAction: function() {
-    let direction = this.options.direction;
+    let { options:{ direction } } = this;
     let actions = [];
     if (direction & DIRECTION_HORIZONTAL) {
       actions.push(TOUCH_ACTION_PAN_Y);
@@ -52,10 +52,10 @@ inherit(PanRecognizer, AttrRecognizer, {
   },
 
   directionTest: function(input) {
-    let options = this.options;
+    let { options } = this;
     let hasMoved = true;
-    let distance = input.distance;
-    let direction = input.direction;
+    let { distance } = input;
+    let { direction } = input;
     let x = input.deltaX;
     let y = input.deltaY;
 

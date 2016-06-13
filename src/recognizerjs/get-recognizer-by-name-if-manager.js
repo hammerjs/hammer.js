@@ -5,7 +5,7 @@
  * @returns {Recognizer}
  */
 export default function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
-  let manager = recognizer.manager;
+  let { manager } = recognizer;
   if (manager) {
     return manager.get(otherRecognizer);
   }

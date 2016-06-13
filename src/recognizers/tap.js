@@ -53,7 +53,7 @@ inherit(TapRecognizer, Recognizer, {
   },
 
   process: function(input) {
-    let options = this.options;
+    let { options } = this;
 
     let validPointers = input.pointers.length === options.pointers;
     let validMovement = input.distance < options.threshold;

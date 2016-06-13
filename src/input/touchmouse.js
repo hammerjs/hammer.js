@@ -79,8 +79,7 @@ function recordTouches(eventType, eventData) {
 }
 
 function setLastTouch(eventData) {
-  let touch = eventData.changedPointers[0];
-
+  let { changedPointers:[touch] } = eventData;
   if (touch.identifier === this.primaryTouch) {
     let lastTouch = { x: touch.clientX, y: touch.clientY };
     this.lastTouches.push(lastTouch);
