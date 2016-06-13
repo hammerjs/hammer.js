@@ -63,11 +63,11 @@ inherit(PanRecognizer, AttrRecognizer, {
     if (!(direction & options.direction)) {
       if (options.direction & DIRECTION_HORIZONTAL) {
         direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-        hasMoved = x != this.pX;
+        hasMoved = x !== this.pX;
         distance = Math.abs(input.deltaX);
       } else {
         direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
-        hasMoved = y != this.pY;
+        hasMoved = y !== this.pY;
         distance = Math.abs(input.deltaY);
       }
     }

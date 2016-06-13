@@ -64,7 +64,7 @@ inherit(PointerEventInput, Input, {
     let eventType = POINTER_INPUT_MAP[eventTypeNormalized];
     let pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
-    let isTouch = (pointerType == INPUT_TYPE_TOUCH);
+    let isTouch = (pointerType === INPUT_TYPE_TOUCH);
 
     // get index of the event in the store
     let storeIndex = inArray(store, ev.pointerId, 'pointerId');

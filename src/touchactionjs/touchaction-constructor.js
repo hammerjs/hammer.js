@@ -35,7 +35,7 @@ TouchAction.prototype = {
    */
   set: function(value) {
     // find out the touch-action by the event handlers
-    if (value == TOUCH_ACTION_COMPUTE) {
+    if (value === TOUCH_ACTION_COMPUTE) {
       value = this.compute();
     }
 

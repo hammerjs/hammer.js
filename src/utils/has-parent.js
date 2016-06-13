@@ -7,7 +7,7 @@
  */
 export default function hasParent(node, parent) {
   while (node) {
-    if (node == parent) {
+    if (node === parent) {
       return true;
     }
     node = node.parentNode;
