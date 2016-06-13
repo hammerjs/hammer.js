@@ -119,7 +119,7 @@ Manager.prototype = {
       // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
       //      this can be setup with the `recognizeWith()` method on the recognizer.
       if (session.stopped !== FORCED_STOP && (// 1
-              !curRecognizer || recognizer == curRecognizer || // 2
+              !curRecognizer || recognizer === curRecognizer || // 2
               recognizer.canRecognizeWith(curRecognizer))) { // 3
         recognizer.recognize(inputData);
       } else {
@@ -147,7 +147,7 @@ Manager.prototype = {
 
     let { recognizers } = this;
     for (let i = 0; i < recognizers.length; i++) {
-      if (recognizers[i].options.event == recognizer) {
+      if (recognizers[i].options.event === recognizer) {
         return recognizers[i];
       }
     }

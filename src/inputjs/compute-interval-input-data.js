@@ -16,7 +16,7 @@ export default function computeIntervalInputData(session, input) {
   let velocityY;
   let direction;
 
-  if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
+  if (input.eventType !== INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
     let deltaX = input.deltaX - last.deltaX;
     let deltaY = input.deltaY - last.deltaY;
 

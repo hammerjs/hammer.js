@@ -68,7 +68,7 @@ inherit(TapRecognizer, Recognizer, {
     // we only allow little movement
     // and we've reached an end event, so a tap is possible
     if (validMovement && validTouchTime && validPointers) {
-      if (input.eventType != INPUT_END) {
+      if (input.eventType !== INPUT_END) {
         return this.failTimeout();
       }
 
@@ -118,7 +118,7 @@ inherit(TapRecognizer, Recognizer, {
   },
 
   emit: function() {
-    if (this.state == STATE_RECOGNIZED) {
+    if (this.state === STATE_RECOGNIZED) {
       this._input.tapCount = this.count;
       this.manager.emit(this.options.event, this._input);
     }

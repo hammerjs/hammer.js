@@ -43,8 +43,8 @@ inherit(TouchMouseInput, Input, {
    * @param {Object} inputData
    */
   handler: function TMEhandler(manager, inputEvent, inputData) {
-    let isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH);
-    let isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
+    let isTouch = (inputData.pointerType === INPUT_TYPE_TOUCH);
+    let isMouse = (inputData.pointerType === INPUT_TYPE_MOUSE);
 
     if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
       return;

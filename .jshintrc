@@ -5,14 +5,17 @@
   "indent": 2,
   "predef": [
     "document",
-    "window"
+    "window",
+    "define",
+    "module"
   ],
   "browser": true,
   "boss": true,
   "curly": true,
   "debug": false,
   "devel": true,
-  "eqeqeq": true,
+  "expr": true,
+  "validthis": true,
   "evil": true,
   "forin": false,
   "immed": false,
