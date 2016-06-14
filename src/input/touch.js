@@ -34,7 +34,7 @@ function TouchInput() {
 }
 
 inherit(TouchInput, Input, {
-  handler: function MTEhandler(ev) {
+  handler(ev) {
     let type = TOUCH_INPUT_MAP[ev.type];
     let touches = getTouches.call(this, ev, type);
     if (!touches) {

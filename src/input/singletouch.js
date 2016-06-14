@@ -35,7 +35,7 @@ function SingleTouchInput() {
 }
 
 inherit(SingleTouchInput, Input, {
-  handler: function TEhandler(ev) {
+  handler(ev) {
     let type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
     // should we handle the touch events?

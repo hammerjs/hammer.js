@@ -44,7 +44,7 @@ inherit(AttrRecognizer, Recognizer, {
    * @param {Object} input
    * @returns {Boolean} recognized
    */
-  attrTest: function(input) {
+  attrTest(input) {
     let optionPointers = this.options.pointers;
     return optionPointers === 0 || input.pointers.length === optionPointers;
   },
@@ -56,7 +56,7 @@ inherit(AttrRecognizer, Recognizer, {
    * @param {Object} input
    * @returns {*} State
    */
-  process: function(input) {
+  process(input) {
     let { state } = this;
     let { eventType } = input;
 

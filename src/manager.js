@@ -55,7 +55,7 @@ Manager.prototype = {
    * @param {Object} options
    * @returns {Manager}
    */
-  set: function(options) {
+  set(options) {
     assign(this.options, options);
 
     // Options that need a little more setup
@@ -78,7 +78,7 @@ Manager.prototype = {
    * When forced, the recognizer cycle is stopped immediately.
    * @param {Boolean} [force]
    */
-  stop: function(force) {
+  stop(force) {
     this.session.stopped = force ? FORCED_STOP : STOP;
   },
 
@@ -89,7 +89,7 @@ Manager.prototype = {
    * it walks through all the recognizers and tries to detect the gesture that is being made
    * @param {Object} inputData
    */
-  recognize: function(inputData) {
+  recognize(inputData) {
     let { session } = this;
     if (session.stopped) {
       return;
@@ -145,7 +145,7 @@ Manager.prototype = {
    * @param {Recognizer|String} recognizer
    * @returns {Recognizer|Null}
    */
-  get: function(recognizer) {
+  get(recognizer) {
     if (recognizer instanceof Recognizer) {
       return recognizer;
     }
@@ -165,7 +165,7 @@ Manager.prototype = {
    * @param {Recognizer} recognizer
    * @returns {Recognizer|Manager}
    */
-  add: function(recognizer) {
+  add(recognizer) {
     if (invokeArrayArg(recognizer, 'add', this)) {
       return this;
     }
@@ -189,7 +189,7 @@ Manager.prototype = {
    * @param {Recognizer|String} recognizer
    * @returns {Manager}
    */
-  remove: function(recognizer) {
+  remove(recognizer) {
     if (invokeArrayArg(recognizer, 'remove', this)) {
       return this;
     }
@@ -217,7 +217,7 @@ Manager.prototype = {
    * @param {Function} handler
    * @returns {EventEmitter} this
    */
-  on: function(events, handler) {
+  on(events, handler) {
     if (events === undefined) {
       return;
     }
@@ -239,7 +239,7 @@ Manager.prototype = {
    * @param {Function} [handler]
    * @returns {EventEmitter} this
    */
-  off: function(events, handler) {
+  off(events, handler) {
     if (events === undefined) {
       return;
     }
@@ -260,7 +260,7 @@ Manager.prototype = {
    * @param {String} event
    * @param {Object} data
    */
-  emit: function(event, data) {
+  emit(event, data) {
     // we also want to trigger dom events
     if (this.options.domEvents) {
       triggerDomEvent(event, data);
@@ -289,7 +289,7 @@ Manager.prototype = {
    * destroy the manager and unbinds all events
    * it doesn't unbind dom events, that is the user own responsibility
    */
-  destroy: function() {
+  destroy() {
     this.element && toggleCssProps(this, false);
 
     this.handlers = {};

@@ -31,11 +31,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     pointers: 1
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     return PanRecognizer.prototype.getTouchAction.call(this);
   },
 
-  attrTest: function(input) {
+  attrTest(input) {
     let { options:{ direction } } = this;
     let velocity;
 
@@ -54,7 +54,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
   },
 
-  emit: function(input) {
+  emit(input) {
     let direction = directionStr(input.offsetDirection);
     if (direction) {
       this.manager.emit(this.options.event + direction, input);
