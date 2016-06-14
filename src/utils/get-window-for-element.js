@@ -1,4 +1,5 @@
 /**
+ * @private
  * get the window object of an element
  * @param {HTMLElement} element
  * @returns {DocumentView|Window}

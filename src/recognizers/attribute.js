@@ -13,6 +13,7 @@ import {
 } from '../inputjs/input-consts';
 
 /**
+ * @private
  * This recognizer is just used as a base for the simple attribute recognizers.
  * @constructor
  * @extends Recognizer
@@ -23,11 +24,13 @@ function AttrRecognizer() {
 
 inherit(AttrRecognizer, Recognizer, {
   /**
+   * @private
    * @namespace
    * @memberof AttrRecognizer
    */
   defaults: {
     /**
+     * @private
      * @type {Number}
      * @default 1
      */
@@ -35,6 +38,7 @@ inherit(AttrRecognizer, Recognizer, {
   },
 
   /**
+   * @private
    * Used to check if it the recognizer receives valid input, like input.distance > 10.
    * @memberof AttrRecognizer
    * @param {Object} input
@@ -46,6 +50,7 @@ inherit(AttrRecognizer, Recognizer, {
   },
 
   /**
+   * @private
    * Process the input and return the state for the recognizer
    * @memberof AttrRecognizer
    * @param {Object} input

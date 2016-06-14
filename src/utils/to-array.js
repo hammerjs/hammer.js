@@ -1,4 +1,5 @@
 /**
+ * @private
  * convert array-like objects to real arrays
  * @param {Object} obj
  * @returns {Array}

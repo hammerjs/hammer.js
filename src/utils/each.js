@@ -1,4 +1,5 @@
 /**
+ * @private
  * walk objects and arrays
  * @param {Object} obj
  * @param {Function} iterator

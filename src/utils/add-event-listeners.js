@@ -1,6 +1,7 @@
 import each from './each';
 import splitStr from './split-str';
 /**
+ * @private
  * addEventListener with multiple events at once
  * @param {EventTarget} target
  * @param {String} types

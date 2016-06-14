@@ -6,6 +6,7 @@ import {
 } from './recognizer-consts';
 
 /**
+ * @private
  * get a usable string, used as event postfix
  * @param {constant} state
  * @returns {String} state

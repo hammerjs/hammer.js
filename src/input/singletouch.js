@@ -21,6 +21,7 @@ const SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
 const SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
+ * @private
  * Touch events input
  * @constructor
  * @extends Input
@@ -63,6 +64,7 @@ inherit(SingleTouchInput, Input, {
 });
 
 /**
+ * @private
  * @this {TouchInput}
  * @param {Object} ev
  * @param {Number} type flag

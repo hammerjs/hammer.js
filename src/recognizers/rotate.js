@@ -4,6 +4,7 @@ import { TOUCH_ACTION_NONE } from '../touchactionjs/touchaction-Consts';
 import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
 
 /**
+ * @private
  * Rotate
  * Recognized when two or more pointer are moving in a circular motion.
  * @constructor
@@ -15,6 +16,7 @@ function RotateRecognizer() {
 
 inherit(RotateRecognizer, AttrRecognizer, {
   /**
+   * @private
    * @namespace
    * @memberof RotateRecognizer
    */

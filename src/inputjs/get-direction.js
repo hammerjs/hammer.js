@@ -2,6 +2,7 @@ import { abs } from '../utils/utils-consts';
 import { DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DOWN } from './input-consts';
 
 /**
+ * @private
  * get the direction between two points
  * @param {Number} x
  * @param {Number} y

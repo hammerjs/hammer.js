@@ -1,5 +1,6 @@
 import assign from './assign';
 /**
+ * @private
  * simple class inheritance
  * @param {Function} child
  * @param {Function} base

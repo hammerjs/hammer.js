@@ -17,6 +17,7 @@ const MOUSE_ELEMENT_EVENTS = 'mousedown';
 const MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
 
 /**
+ * @private
  * Mouse events input
  * @constructor
  * @extends Input
@@ -32,6 +33,7 @@ function MouseInput() {
 
 inherit(MouseInput, Input, {
   /**
+   * @private
    * handle mouse events
    * @param {Object} ev
    */

@@ -1,6 +1,7 @@
 import inArray from './in-array';
 
 /**
+ * @private
  * unique array with objects based on a key (like 'id') or just by the array's value
  * @param {Array} src [{id:1},{id:2},{id:1}]
  * @param {String} [key]

@@ -13,6 +13,7 @@ import getRotation from './get-rotation';
 import computeIntervalInputData from './compute-interval-input-data';
 
 /**
+* @private
  * extend the data with some usable properties like scale, rotate, velocity etc
  * @param {Object} manager
  * @param {Object} input

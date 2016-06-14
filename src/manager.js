@@ -19,6 +19,7 @@ const STOP = 1;
 const FORCED_STOP = 2;
 
 /**
+* @private
  * Manager
  * @param {HTMLElement} element
  * @param {Object} [options]
@@ -49,6 +50,7 @@ function Manager(element, options) {
 
 Manager.prototype = {
   /**
+   * @private
    * set options
    * @param {Object} options
    * @returns {Manager}
@@ -70,6 +72,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * stop recognizing for this session.
    * This session will be discarded, when a new [input]start event is fired.
    * When forced, the recognizer cycle is stopped immediately.
@@ -80,6 +83,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * run the recognizers!
    * called by the inputHandler function on every movement of the pointers (touches)
    * it walks through all the recognizers and tries to detect the gesture that is being made
@@ -136,6 +140,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * get a recognizer by its event name.
    * @param {Recognizer|String} recognizer
    * @returns {Recognizer|Null}
@@ -155,7 +160,7 @@ Manager.prototype = {
   },
 
   /**
-   * add a recognizer to the manager
+   * @private add a recognizer to the manager
    * existing recognizers with the same event name will be removed
    * @param {Recognizer} recognizer
    * @returns {Recognizer|Manager}
@@ -179,6 +184,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * remove a recognizer by name or instance
    * @param {Recognizer|String} recognizer
    * @returns {Manager}
@@ -205,6 +211,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * bind event
    * @param {String} events
    * @param {Function} handler
@@ -227,7 +234,7 @@ Manager.prototype = {
   },
 
   /**
-   * unbind event, leave emit blank to remove all handlers
+   * @private unbind event, leave emit blank to remove all handlers
    * @param {String} events
    * @param {Function} [handler]
    * @returns {EventEmitter} this
@@ -249,7 +256,7 @@ Manager.prototype = {
   },
 
   /**
-   * emit event to the listeners
+   * @private emit event to the listeners
    * @param {String} event
    * @param {Object} data
    */
@@ -278,6 +285,7 @@ Manager.prototype = {
   },
 
   /**
+   * @private
    * destroy the manager and unbinds all events
    * it doesn't unbind dom events, that is the user own responsibility
    */
@@ -292,6 +300,7 @@ Manager.prototype = {
 };
 
 /**
+ * @private
  * add/remove the css properties as defined in manager.options.cssProps
  * @param {Manager} manager
  * @param {Boolean} add
@@ -317,6 +326,7 @@ function toggleCssProps(manager, add) {
 }
 
 /**
+ * @private
  * trigger dom event
  * @param {String} event
  * @param {Object} data

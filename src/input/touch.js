@@ -21,6 +21,7 @@ const TOUCH_INPUT_MAP = {
 const TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 /**
+ * @private
  * Multi-user touch events input
  * @constructor
  * @extends Input
@@ -50,6 +51,7 @@ inherit(TouchInput, Input, {
 });
 
 /**
+ * @private
  * @this {TouchInput}
  * @param {Object} ev
  * @param {Number} type flag

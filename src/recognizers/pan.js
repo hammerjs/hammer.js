@@ -15,6 +15,7 @@ import { TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y } from '../touchactionjs/touchact
 import directionStr from '../recognizerjs/direction-str';
 
 /**
+ * @private
  * Pan
  * Recognized when the pointer is down and moved in the allowed direction.
  * @constructor
@@ -29,6 +30,7 @@ function PanRecognizer() {
 
 inherit(PanRecognizer, AttrRecognizer, {
   /**
+   * @private
    * @namespace
    * @memberof PanRecognizer
    */

@@ -1,4 +1,5 @@
 /**
+ * @private
  * get a unique id
  * @returns {number} uniqueId
  */

@@ -17,6 +17,7 @@ import getRecognizerByNameIfManager from './get-recognizer-by-name-if-manager';
 import stateStr from './state-str';
 
 /**
+ * @private
  * Recognizer flow explained; *
  * All recognizers have the initial state of POSSIBLE when a input session starts.
  * The definition of a input session is from the first input until the last input, with all it's movement in it. *
@@ -45,6 +46,7 @@ import stateStr from './state-str';
  */
 
 /**
+ * @private
  * Recognizer
  * Every recognizer needs to extend from this class.
  * @constructor
@@ -68,12 +70,14 @@ function Recognizer(options) {
 
 Recognizer.prototype = {
   /**
+   * @private
    * @virtual
    * @type {Object}
    */
   defaults: {},
 
   /**
+   * @private
    * set options
    * @param {Object} options
    * @return {Recognizer}
@@ -87,6 +91,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * recognize simultaneous with an other recognizer.
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
@@ -106,6 +111,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * drop the simultaneous link. it doesnt remove the link on the other recognizer.
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
@@ -121,6 +127,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * recognizer can only run when an other is failing
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
@@ -130,7 +137,7 @@ Recognizer.prototype = {
       return this;
     }
 
-    let { requireFail }= this;
+    let { requireFail } = this;
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     if (inArray(requireFail, otherRecognizer) === -1) {
       requireFail.push(otherRecognizer);
@@ -140,6 +147,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * drop the requireFailure link. it does not remove the link on the other recognizer.
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
@@ -158,6 +166,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * has require failures boolean
    * @returns {boolean}
    */
@@ -166,6 +175,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * if the recognizer can recognize simultaneous with an other recognizer
    * @param {Recognizer} otherRecognizer
    * @returns {Boolean}
@@ -175,6 +185,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * You should use `tryEmit` instead of `emit` directly to check
    * that all the needed recognizers has failed before emitting.
    * @param {Object} input
@@ -205,6 +216,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * Check that all the require failure recognizers has failed,
    * if true, it emits a gesture event,
    * otherwise, setup the state to FAILED.
@@ -219,6 +231,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * can we emit?
    * @returns {boolean}
    */
@@ -234,6 +247,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * update the recognizer
    * @param {Object} inputData
    */
@@ -264,6 +278,7 @@ Recognizer.prototype = {
   },
 
   /**
+   * @private
    * return the state of the recognizer
    * the actual recognizing happens in this method
    * @virtual
@@ -273,6 +288,7 @@ Recognizer.prototype = {
   process: function(inputData) { }, // jshint ignore:line
 
   /**
+   * @private
    * return the preferred touch-action
    * @virtual
    * @returns {Array}
@@ -280,6 +296,7 @@ Recognizer.prototype = {
   getTouchAction: function() { },
 
   /**
+   * @private
    * called when the gesture isn't allowed to recognize
    * like when another is being recognized or it is disabled
    * @virtual

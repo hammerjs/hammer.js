@@ -1,6 +1,7 @@
 import { round } from '../utils/utils-consts';
 
 /**
+ * @private
  * get the center of all the pointers
  * @param {Array} pointers
  * @return {Object} center contains `x` and `y` properties

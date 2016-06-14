@@ -1,4 +1,5 @@
 /**
+ * @private
  * small indexOf wrapper
  * @param {String} str
  * @param {String} find

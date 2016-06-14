@@ -4,6 +4,7 @@ import removeEventListeners from '../utils/remove-event-listeners';
 import getWindowForElement from '../utils/get-window-for-element';
 
 /**
+ * @private
  * create new input type manager
  * @param {Manager} manager
  * @param {Function} callback
@@ -31,12 +32,14 @@ function Input(manager, callback) {
 
 Input.prototype = {
   /**
+   * @private
    * should handle the inputEvent data and trigger the callback
    * @virtual
    */
   handler: function() { },
 
   /**
+   * @private
    * bind the events
    */
   init: function() {
@@ -46,6 +49,7 @@ Input.prototype = {
   },
 
   /**
+   * @private
    * unbind the events
    */
   destroy: function() {

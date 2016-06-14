@@ -6,6 +6,7 @@ import {
 } from '../inputjs/input-consts';
 
 /**
+ * @private
  * direction cons to string
  * @param {constant} direction
  * @returns {String}

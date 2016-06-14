@@ -8,6 +8,7 @@ import {
 } from './touchaction-Consts';
 
 /**
+ * @private
  * when the touchActions are collected they are not a valid value, so we need to clean things up. *
  * @param {String} actions
  * @returns {*}

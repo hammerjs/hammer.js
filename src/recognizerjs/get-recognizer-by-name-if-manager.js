@@ -1,4 +1,5 @@
 /**
+ * @private
  * get a recognizer by name if it is bound to a manager
  * @param {Recognizer|String} otherRecognizer
  * @param {Recognizer} recognizer
