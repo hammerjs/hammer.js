@@ -1,5 +1,6 @@
 import { VENDOR_PREFIXES } from './utils-consts';
 /**
+ * @private
  * get the prefixed property
  * @param {Object} obj
  * @param {String} property

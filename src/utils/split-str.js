@@ -1,4 +1,5 @@
 /**
+ * @private
  * split string on whitespace
  * @param {String} str
  * @returns {Array} words

@@ -2,6 +2,7 @@ import { now,round } from '../utils/utils-consts';
 import getCenter from './get-center';
 
 /**
+ * @private
  * create a simple clone from the input used for storage of firstInput and firstMultiple
  * @param {Object} input
  * @returns {Object} clonedInputData

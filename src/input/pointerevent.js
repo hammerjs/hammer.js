@@ -38,6 +38,7 @@ if (window.MSPointerEvent && !window.PointerEvent) {
 }
 
 /**
+ * @private
  * Pointer events input
  * @constructor
  * @extends Input
@@ -53,6 +54,7 @@ function PointerEventInput() {
 
 inherit(PointerEventInput, Input, {
   /**
+   * @private
    * handle mouse events
    * @param {Object} ev
    */

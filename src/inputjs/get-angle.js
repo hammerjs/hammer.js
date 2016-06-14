@@ -1,6 +1,7 @@
 import { PROPS_XY } from './input-consts';
 
 /**
+ * @private
  * calculate the angle between two coordinates
  * @param {Object} p1
  * @param {Object} p2

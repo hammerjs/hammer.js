@@ -2,6 +2,7 @@ import { INPUT_START,INPUT_END,INPUT_CANCEL } from './input-consts';
 import computeInputData from './compute-input-data';
 
 /**
+ * @private
  * handle input events
  * @param {Manager} manager
  * @param {String} eventType

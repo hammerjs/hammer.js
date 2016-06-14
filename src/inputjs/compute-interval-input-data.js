@@ -4,6 +4,7 @@ import getVelocity from './get-velocity';
 import getDirection from './get-direction';
 
 /**
+ * @private
  * velocity is calculated every x ms
  * @param {Object} session
  * @param {Object} input

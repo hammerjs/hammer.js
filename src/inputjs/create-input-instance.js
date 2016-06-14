@@ -6,6 +6,7 @@ import { MouseInput } from '../input/mouse';
 import { TouchMouseInput } from '../input/touchmouse';
 
 /**
+ * @private
  * create new input type manager
  * called by the Manager constructor
  * @param {Hammer} manager

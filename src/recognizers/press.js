@@ -14,6 +14,7 @@ import {
 } from '../inputjs/input-consts';
 
 /**
+ * @private
  * Press
  * Recognized when the pointer is down for x ms without any movement.
  * @constructor
@@ -28,6 +29,7 @@ function PressRecognizer() {
 
 inherit(PressRecognizer, Recognizer, {
   /**
+   * @private
    * @namespace
    * @memberof PressRecognizer
    */

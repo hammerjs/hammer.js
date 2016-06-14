@@ -1,4 +1,5 @@
 /**
+ * @private
  * simple function bind
  * @param {Function} fn
  * @param {Object} context

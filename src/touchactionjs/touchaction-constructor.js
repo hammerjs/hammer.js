@@ -17,6 +17,7 @@ import inStr from '../utils/in-str';
 import cleanTouchActions from './clean-touch-actions';
 
 /**
+ * @private
  * Touch Action
  * sets the touchAction property or uses the js alternative
  * @param {Manager} manager
@@ -30,6 +31,7 @@ function TouchAction(manager, value) {
 
 TouchAction.prototype = {
   /**
+   * @private
    * set the touchAction value on the element or enable the polyfill
    * @param {String} value
    */
@@ -46,6 +48,7 @@ TouchAction.prototype = {
   },
 
   /**
+   * @private
    * just re-set the touchAction value
    */
   update: function() {
@@ -53,6 +56,7 @@ TouchAction.prototype = {
   },
 
   /**
+   * @private
    * compute the value for the touchAction property based on the recognizer's settings
    * @returns {String} value
    */
@@ -67,6 +71,7 @@ TouchAction.prototype = {
   },
 
   /**
+   * @private
    * this method is called on each input cycle and provides the preventing of the browser behavior
    * @param {Object} input
    */
@@ -109,6 +114,7 @@ TouchAction.prototype = {
   },
 
   /**
+   * @private
    * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
    * @param {Object} srcEvent
    */

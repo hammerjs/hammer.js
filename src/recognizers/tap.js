@@ -11,6 +11,7 @@ import {
 import getDistance from '../inputjs/get-distance';
 
 /**
+ * @private
  * A tap is recognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
  * between the given interval and position. The delay option can be used to recognize multi-taps without firing
  * a single tap.
@@ -35,6 +36,7 @@ function TapRecognizer() {
 
 inherit(TapRecognizer, Recognizer, {
   /**
+   * @private
    * @namespace
    * @memberof PinchRecognizer
    */

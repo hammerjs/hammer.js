@@ -2,6 +2,7 @@ import getAngle from './get-angle';
 import { PROPS_CLIENT_XY } from './input-consts';
 
 /**
+ * @private
  * calculate the rotation degrees between two pointersets
  * @param {Array} start array of pointers
  * @param {Array} end array of pointers

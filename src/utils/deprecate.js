@@ -1,4 +1,5 @@
 /**
+ * @private
  * wrap a method with a deprecation warning and stack trace
  * @param {Function} method
  * @param {String} name

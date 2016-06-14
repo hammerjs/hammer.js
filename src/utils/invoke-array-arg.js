@@ -1,5 +1,6 @@
 import each from './each';
 /**
+ * @private
  * if the argument is an array, we want to execute the fn on each entry
  * if it aint an array we don't want to do a thing.
  * this is used by all the methods that accept a single and array argument.

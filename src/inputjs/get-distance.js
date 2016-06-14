@@ -1,6 +1,7 @@
 import { PROPS_XY } from './input-consts';
 
 /**
+ * @private
  * calculate the absolute distance between two points
  * @param {Object} p1 {x, y}
  * @param {Object} p2 {x, y}

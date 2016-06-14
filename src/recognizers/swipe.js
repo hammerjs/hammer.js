@@ -7,6 +7,7 @@ import { INPUT_END } from '../inputjs/input-consts';
 import directionStr from '../recognizerjs/direction-str';
 
 /**
+ * @private
  * Swipe
  * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
  * @constructor
@@ -18,6 +19,7 @@ function SwipeRecognizer() {
 
 inherit(SwipeRecognizer, AttrRecognizer, {
   /**
+   * @private
    * @namespace
    * @memberof SwipeRecognizer
    */

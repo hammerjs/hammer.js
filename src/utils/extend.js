@@ -1,5 +1,6 @@
 import deprecate from './deprecate';
 /**
+ * @private
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest

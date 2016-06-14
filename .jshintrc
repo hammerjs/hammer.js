@@ -33,6 +33,9 @@
   "strict": false,
   "white": false,
   "eqnull": true,
-  "esnext": true,
-  "unused": true
+  "esversion": 6,
+  "unused": true,
+  "-W116": true,
+  "-W080": true,
+  "-W038": true
 }

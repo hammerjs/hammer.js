@@ -12,6 +12,7 @@ import {
 } from '../inputjs/input-consts';
 
 /**
+ * @private
  * Combined touch and mouse input
  *
  * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
@@ -37,6 +38,7 @@ function TouchMouseInput() {
 
 inherit(TouchMouseInput, Input, {
   /**
+   * @private
    * handle mouse and touch events
    * @param {Hammer} manager
    * @param {String} inputEvent
@@ -61,6 +63,7 @@ inherit(TouchMouseInput, Input, {
   },
 
   /**
+   * @private
    * remove the event listeners
    */
   destroy: function destroy() {

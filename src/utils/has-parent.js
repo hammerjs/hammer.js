@@ -1,4 +1,5 @@
 /**
+ * @private
  * find if a node is in the given parent
  * @method hasParent
  * @param {HTMLElement} node
