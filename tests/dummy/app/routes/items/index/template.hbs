@@ -1,0 +1,11 @@
+<ul>
+  {{#each model as |item|}}
+    <li>
+      <h3>
+        {{#link-to 'items.single' item}}
+          {{item.title}}
+        {{/link-to}}
+      </h3>
+    </li>
+  {{/each}}
+</ul>

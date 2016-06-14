@@ -25,6 +25,6 @@ export default class Layer {
     this.recognizers.push(recognizerInstance);
   }
 
-  emit()
+  emit() {}
 
 }

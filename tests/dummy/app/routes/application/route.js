@@ -1,4 +1,17 @@
 import Ember from 'ember';
 
-export default Ember.Route.extend({
+const {
+  get,
+  Route,
+  set
+  } = Ember;
+
+export default Route.extend({
+
+  setupController(controller, model) {
+    this._super(controller, model);
+
+    set(controller, 'currentRouteName', get(this, 'routeName'));
+  }
+
 });

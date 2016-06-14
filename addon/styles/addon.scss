@@ -38,19 +38,19 @@ history-outlet {
   right {
     @include fillBlock();
     z-index: 0;
-    willChange(80%);
+    @include willChange(80%);
   }
 
   main {
     @include fillBlock();
     z-index: 1;
-    willChange();
+    @include willChange();
   }
 
   outlet {
     @include fillBlock();
     z-index: 1;
-    willChange();
+    @include willChange();
   }
 
   fps {

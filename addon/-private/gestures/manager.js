@@ -16,8 +16,12 @@ export default class Manager {
     this.inputs = {};
     this.options = assign({}, DEFAULT_OPTIONS, options || {});
 
-    for (let { name, InputClass } of this.options.inputs) {
-      this.registerInput(name, InputClass);
+    if (this.options.inputs) {
+      for (let i = 0; i < this.options.inputs.length; i++) {
+        let { name, InputClass } = this.options.inputs[i];
+
+        this.registerInput(name, InputClass);
+      }
     }
 
   }
