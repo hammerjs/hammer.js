@@ -36,13 +36,13 @@ Input.prototype = {
    * should handle the inputEvent data and trigger the callback
    * @virtual
    */
-  handler: function() { },
+  handler() { },
 
   /**
    * @private
    * bind the events
    */
-  init: function() {
+  init() {
     this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
     this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
@@ -52,7 +52,7 @@ Input.prototype = {
    * @private
    * unbind the events
    */
-  destroy: function() {
+  destroy() {
     this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
     this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);

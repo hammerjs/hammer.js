@@ -35,7 +35,7 @@ TouchAction.prototype = {
    * set the touchAction value on the element or enable the polyfill
    * @param {String} value
    */
-  set: function(value) {
+  set(value) {
     // find out the touch-action by the event handlers
     if (value === TOUCH_ACTION_COMPUTE) {
       value = this.compute();
@@ -51,7 +51,7 @@ TouchAction.prototype = {
    * @private
    * just re-set the touchAction value
    */
-  update: function() {
+  update() {
     this.set(this.manager.options.touchAction);
   },
 
@@ -60,7 +60,7 @@ TouchAction.prototype = {
    * compute the value for the touchAction property based on the recognizer's settings
    * @returns {String} value
    */
-  compute: function() {
+  compute() {
     let actions = [];
     each(this.manager.recognizers, function(recognizer) {
       if (boolOrFn(recognizer.options.enable, [recognizer])) {
@@ -75,7 +75,7 @@ TouchAction.prototype = {
    * this method is called on each input cycle and provides the preventing of the browser behavior
    * @param {Object} input
    */
-  preventDefaults: function(input) {
+  preventDefaults(input) {
     let { srcEvent } = input;
     let direction = input.offsetDirection;
 
@@ -118,7 +118,7 @@ TouchAction.prototype = {
    * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
    * @param {Object} srcEvent
    */
-  preventSrc: function(srcEvent) {
+  preventSrc(srcEvent) {
     this.manager.session.prevented = true;
     srcEvent.preventDefault();
   }

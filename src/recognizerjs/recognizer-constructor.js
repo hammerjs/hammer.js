@@ -82,7 +82,7 @@ Recognizer.prototype = {
    * @param {Object} options
    * @return {Recognizer}
    */
-  set: function(options) {
+  set(options) {
     assign(this.options, options);
 
     // also update the touchAction, in case something changed about the directions/enabled state
@@ -96,7 +96,7 @@ Recognizer.prototype = {
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
    */
-  recognizeWith: function(otherRecognizer) {
+  recognizeWith(otherRecognizer) {
     if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
       return this;
     }
@@ -116,7 +116,7 @@ Recognizer.prototype = {
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
    */
-  dropRecognizeWith: function(otherRecognizer) {
+  dropRecognizeWith(otherRecognizer) {
     if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
       return this;
     }
@@ -132,7 +132,7 @@ Recognizer.prototype = {
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
    */
-  requireFailure: function(otherRecognizer) {
+  requireFailure(otherRecognizer) {
     if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
       return this;
     }
@@ -152,7 +152,7 @@ Recognizer.prototype = {
    * @param {Recognizer} otherRecognizer
    * @returns {Recognizer} this
    */
-  dropRequireFailure: function(otherRecognizer) {
+  dropRequireFailure(otherRecognizer) {
     if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
       return this;
     }
@@ -170,7 +170,7 @@ Recognizer.prototype = {
    * has require failures boolean
    * @returns {boolean}
    */
-  hasRequireFailures: function() {
+  hasRequireFailures() {
     return this.requireFail.length > 0;
   },
 
@@ -180,7 +180,7 @@ Recognizer.prototype = {
    * @param {Recognizer} otherRecognizer
    * @returns {Boolean}
    */
-  canRecognizeWith: function(otherRecognizer) {
+  canRecognizeWith(otherRecognizer) {
     return !!this.simultaneous[otherRecognizer.id];
   },
 
@@ -190,7 +190,7 @@ Recognizer.prototype = {
    * that all the needed recognizers has failed before emitting.
    * @param {Object} input
    */
-  emit: function(input) {
+  emit(input) {
     let self = this;
     let { state } = this;
 
@@ -222,7 +222,7 @@ Recognizer.prototype = {
    * otherwise, setup the state to FAILED.
    * @param {Object} input
    */
-  tryEmit: function(input) {
+  tryEmit(input) {
     if (this.canEmit()) {
       return this.emit(input);
     }
@@ -235,7 +235,7 @@ Recognizer.prototype = {
    * can we emit?
    * @returns {boolean}
    */
-  canEmit: function() {
+  canEmit() {
     let i = 0;
     while (i < this.requireFail.length) {
       if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
@@ -251,7 +251,7 @@ Recognizer.prototype = {
    * update the recognizer
    * @param {Object} inputData
    */
-  recognize: function(inputData) {
+  recognize(inputData) {
     // make a new copy of the inputData
     // so we can change the inputData without messing up the other recognizers
     let inputDataClone = assign({}, inputData);
@@ -285,7 +285,10 @@ Recognizer.prototype = {
    * @param {Object} inputData
    * @returns {constant} STATE
    */
-  process: function(inputData) { }, // jshint ignore:line
+
+  /* jshint ignore:start */
+  process(inputData) { },
+  /* jshint ignore:end */
 
   /**
    * @private
@@ -293,7 +296,7 @@ Recognizer.prototype = {
    * @virtual
    * @returns {Array}
    */
-  getTouchAction: function() { },
+  getTouchAction() { },
 
   /**
    * @private
@@ -301,7 +304,7 @@ Recognizer.prototype = {
    * like when another is being recognized or it is disabled
    * @virtual
    */
-  reset: function() { }
+  reset() { }
 };
 
 export { Recognizer };

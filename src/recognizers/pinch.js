@@ -26,16 +26,16 @@ inherit(PinchRecognizer, AttrRecognizer, {
     pointers: 2
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     return [TOUCH_ACTION_NONE];
   },
 
-  attrTest: function(input) {
+  attrTest(input) {
     return this._super.attrTest.call(this, input) &&
         (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
   },
 
-  emit: function(input) {
+  emit(input) {
     if (input.scale !== 1) {
       let inOut = input.scale < 1 ? 'in' : 'out';
       input.additionalEvent = this.options.event + inOut;

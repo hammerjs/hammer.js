@@ -40,11 +40,11 @@ inherit(PressRecognizer, Recognizer, {
     threshold: 9 // a minimal movement is ok, but keep it low
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     return [TOUCH_ACTION_AUTO];
   },
 
-  process: function(input) {
+  process(input) {
     let { options } = this;
     let validPointers = input.pointers.length === options.pointers;
     let validMovement = input.distance < options.threshold;
@@ -68,11 +68,11 @@ inherit(PressRecognizer, Recognizer, {
     return STATE_FAILED;
   },
 
-  reset: function() {
+  reset() {
     clearTimeout(this._timer);
   },
 
-  emit: function(input) {
+  emit(input) {
     if (this.state !== STATE_RECOGNIZED) {
       return;
     }

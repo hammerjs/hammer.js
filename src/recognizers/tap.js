@@ -50,11 +50,11 @@ inherit(TapRecognizer, Recognizer, {
     posThreshold: 10 // a multi-tap can be a bit off the initial position
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     return [TOUCH_ACTION_MANIPULATION];
   },
 
-  process: function(input) {
+  process(input) {
     let { options } = this;
 
     let validPointers = input.pointers.length === options.pointers;
@@ -108,18 +108,18 @@ inherit(TapRecognizer, Recognizer, {
     return STATE_FAILED;
   },
 
-  failTimeout: function() {
+  failTimeout() {
     this._timer = setTimeoutContext(function() {
       this.state = STATE_FAILED;
     }, this.options.interval, this);
     return STATE_FAILED;
   },
 
-  reset: function() {
+  reset() {
     clearTimeout(this._timer);
   },
 
-  emit: function() {
+  emit() {
     if (this.state === STATE_RECOGNIZED) {
       this._input.tapCount = this.count;
       this.manager.emit(this.options.event, this._input);

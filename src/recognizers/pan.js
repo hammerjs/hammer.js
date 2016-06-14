@@ -41,7 +41,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     direction: DIRECTION_ALL
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     let { options:{ direction } } = this;
     let actions = [];
     if (direction & DIRECTION_HORIZONTAL) {
@@ -53,7 +53,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     return actions;
   },
 
-  directionTest: function(input) {
+  directionTest(input) {
     let { options } = this;
     let hasMoved = true;
     let { distance } = input;
@@ -77,12 +77,12 @@ inherit(PanRecognizer, AttrRecognizer, {
     return hasMoved && distance > options.threshold && direction & options.direction;
   },
 
-  attrTest: function(input) {
+  attrTest(input) {
     return AttrRecognizer.prototype.attrTest.call(this, input) &&
         (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
   },
 
-  emit: function(input) {
+  emit(input) {
 
     this.pX = input.deltaX;
     this.pY = input.deltaY;

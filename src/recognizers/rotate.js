@@ -26,11 +26,11 @@ inherit(RotateRecognizer, AttrRecognizer, {
     pointers: 2
   },
 
-  getTouchAction: function() {
+  getTouchAction() {
     return [TOUCH_ACTION_NONE];
   },
 
-  attrTest: function(input) {
+  attrTest(input) {
     return this._super.attrTest.call(this, input) &&
         (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
   }

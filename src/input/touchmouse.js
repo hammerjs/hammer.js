@@ -44,7 +44,7 @@ inherit(TouchMouseInput, Input, {
    * @param {String} inputEvent
    * @param {Object} inputData
    */
-  handler: function TMEhandler(manager, inputEvent, inputData) {
+  handler(manager, inputEvent, inputData) {
     let isTouch = (inputData.pointerType === INPUT_TYPE_TOUCH);
     let isMouse = (inputData.pointerType === INPUT_TYPE_MOUSE);
 
@@ -66,7 +66,7 @@ inherit(TouchMouseInput, Input, {
    * @private
    * remove the event listeners
    */
-  destroy: function destroy() {
+  destroy() {
     this.touch.destroy();
     this.mouse.destroy();
   }
