@@ -3,8 +3,7 @@ const TEST_ELEMENT = document.createElement('div');
 
 const TYPE_FUNCTION = 'function';
 
-const { round } = Math;
-const { abs } = Math;
+const { round, abs } = Math;
 const { now } = Date;
 
 export {

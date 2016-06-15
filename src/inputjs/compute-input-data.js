@@ -35,8 +35,7 @@ export default function computeInputData(manager, input) {
     session.firstMultiple = false;
   }
 
-  let { firstInput } = session;
-  let { firstMultiple } = session;
+  let { firstInput, firstMultiple } = session;
   let offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
 
   let center = input.center = getCenter(pointers);
