@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Hammer.js</title>
+
+    <style>
+        path.sourcePath{
+            transition: all 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div id="hit" class="bg1" style="padding: 30px;">
+        <div id="target" class="bg5" style="display: block; text-align: center;">
+            <svg viewBox="-20 -20 140 140" style="width: 100%; height: 100%;">
+                  <path class="sourcePath" d="" stroke-width="4" stroke="black" fill="none"/>
+                  <path class="trackPath" d="" stroke-width="4.1" stroke="red" fill="none"/>
+            </svg>
+        </div>
+    </div>
+
+    <pre id="debug" style="overflow:hidden; background: #eee; padding: 15px;"></pre>
+
+    <pre id="log" style="overflow:hidden;"></pre>
+
+</div>
+<script src="../../hammer.min.js"></script>
+
+<script>
+
+    var svgEl = document.querySelector("svg");
+    var pathEl = document.querySelector("path.sourcePath");
+
+    var trackPathEl = document.querySelector("path.trackPath");
+
+    var currentPathIndex = 0;
+    var paths = ["M0 0 L50 25 L75 50 L100 100",
+                 "m18.479046,18.981368l-0.144146,62.395447l60.279122,-60.530285l0,64.548894",
+                 "m17.002326,40.230229c0,0 6.813966,-27.004652 32.813966,-25.004652c26,2 32.176729,16.860487 34.697664,28.813966c2.520935,11.953478 -0.82327,35.702316 -29.82327,40.702316c-29,5 -29.413937,-23.079085 -19.413937,-36.079085c10,-13 16.493022,-5.092993 25.493022,8.907007",
+                 "m12.702296,59.293031c6.560497,-19.062802 20.84653,-13.060477 21.851182,0.753489c1.004652,13.813966 26.120953,19.590715 25.367464,-0.251163c-0.753489,-19.841878 27.376768,-19.841878 27.125605,0.502326"
+    ];
+
+    var mc;
+
+    function changePath(index) {
+        pathEl.setAttribute("d", paths[index]);
+        trackPathEl.setAttribute("d", paths[index]);
+        var pathLength = trackPathEl.getTotalLength();
+        trackPathEl.style.strokeDasharray = [0, pathLength].join(' ');
+
+        trackPathEl.style.transition = "none";
+        trackPathEl.style.stroke = "red";
+
+        if (mc) {
+            mc.destroy();
+        }
+
+        var options = {
+            touchAction: "none"
+        };
+
+        mc = new Hammer(document.querySelector("svg"), options);
+        mc.add(new Hammer.Path({
+            svgElement: svgEl,
+            pathElement: pathEl
+        }));
+
+        mc.on("pathmove", function(ev){
+            console.log(Math.round(ev.pathPercent), "% completed");
+            trackPathEl.style.strokeDasharray = [ev.pathLength, pathLength].join(' ');
+        });
+
+        mc.on("pathstart", function(ev){
+            trackPathEl.style.transition = "none";
+        });
+
+        mc.on("pathend", function(ev){
+            if (ev.pathComplete == true) {
+                trackPathEl.style.transition = "stroke 0.3s ease-in, stroke-dasharray 0.4s ease-in";
+                trackPathEl.style.stroke = "rgba(66,214,84,1)";
+                trackPathEl.style.strokeDasharray = [pathLength, 0 ].join(' ');
+
+                currentPathIndex++;
+                currentPathIndex = currentPathIndex == paths.length ? 0 : currentPathIndex;
+
+                setTimeout(function(){
+                    changePath(currentPathIndex);
+                }, 1000);
+
+            }
+            else{
+                trackPathEl.style.transition = "stroke 0.5s ease-out, stroke-dasharray 0.4s ease-out";
+                trackPathEl.style.strokeDasharray = [0, pathLength].join(' ');
+            }
+
+        });
+
+//        mc.on("path pathstart pathend pathmove pathcancel",
+//                logGesture);
+//
+//
+//        function logGesture(ev) {
+//            console.log(ev.timeStamp, ev.type, ev);
+//        }
+
+    }
+
+    changePath(0);
+
+
+
+
+</script>
+</body>
+</html>
