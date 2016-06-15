@@ -78,7 +78,7 @@ export default Component.extend({
   }),
 
   // fps meter
-  debugMode: true,
+  debugMode: false,
   _lastTime: undefined,
   _frames: undefined,
   fps: 0,
@@ -353,63 +353,7 @@ export default Component.extend({
       // debugger;
     });
 
-    this._fpsMeter();
+    // this._fpsMeter();
   }
 
 });
-
-/*
-  var l = function() {
-      function e(e, t) {
-        var r = [],
-          n = true,
-          i = false,
-          a = void 0;
-        try {
-          for (var o, s = e[Symbol.iterator](); !(n = (o = s.next()).done) && (r.push(o.value), !t || r.length !== t); n = !0);
-        } catch (l) {
-          i = true, a = l
-        } finally {
-          try {
-            !n && s['return'] && s['return']()
-          } finally {
-            if (i) throw a
-          }
-        }
-        return r
-      }
-      return function(t, r) {
-        if (Array.isArray(t)) return t;
-        if (Symbol.iterator in Object(t)) return e(t, r);
-        throw new TypeError("Invalid attempt to destructure non-iterable instance")
-      }
-    }();
-*/
-/*
-  {
-
-    _fpsMeter: function () {
-      var e = this;
-      60 === this._frames.length && (window._frames = window._frames || [], window._frames.push(this._frames), window._frames.length > 15 && window._frames.shift(), this._frames = []), requestAnimationFrame(function (t) {
-        var r = (t - e._lastTime) / 1e3,
-          n = Math.round(1 / r);
-        e._frames.push({
-          delta: r,
-          fps: n
-        }), e._lastTime = t;
-        var i = n;
-        if (e._frames.length > 5) {
-          var a = e._frames.slice(-6),
-            o = l(a, 6),
-            s = o[0],
-            u = o[1],
-            c = o[2],
-            d = o[3],
-            f = o[4],
-            h = o[5];
-          i = (s.fps + u.fps + c.fps + d.fps + f.fps + h.fps) / 6
-        }
-        e.set('fps', n), e.set('avg', i), e._fpsMeter()
-      })
-    }
-*/

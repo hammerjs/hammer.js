@@ -10,7 +10,26 @@ Ember.MODEL_FACTORY_INJECTIONS = true;
 App = Ember.Application.extend({
   modulePrefix: config.modulePrefix,
   podModulePrefix: config.podModulePrefix,
-  Resolver
+  Resolver,
+  customEvents: {
+    touchstart: null,
+    touchmove: null,
+    touchcancel: null,
+    touchend: null,
+    mousedown: null,
+    mouseenter: null,
+    mousemove: null,
+    mouseleave: null,
+    mouseup: null,
+    drag: null,
+    dragend: null,
+    dragenter: null,
+    dragleave: null,
+    dragover: null,
+    dragstart: null,
+    drop: null,
+    dblclick: null
+  }
 });
 
 loadInitializers(App, config.modulePrefix);

@@ -31,7 +31,6 @@ export default Service.extend(Evented, {
   current: undefined,
 
   back() {
-    console.log('\n	<=== BACK\n');
     let t = this.get('stack').get('lastObject');
     let r = this.get('current');
 
@@ -47,7 +46,6 @@ export default Service.extend(Evented, {
         .finally(() => {
           this._nextState = undefined;
           this._isHistoryOperation = false;
-          console.log('________ COMPLETE???? ________');
         });
     }
 
@@ -55,7 +53,6 @@ export default Service.extend(Evented, {
   },
 
   forward() {
-    console.log('\n	FORWARD ===>\n');
     let t = this.get('seen.lastObject');
     let r = this.get('current');
 
@@ -77,14 +74,37 @@ export default Service.extend(Evented, {
     return Promise.reject('no forward history present');
   },
 
-  segmentFor(e, t) {
-    if (!t || !t.segments) {
+  segmentFor(outletName, stackItem) {
+    if (!stackItem) {
       return UNKNOWN_SEGMENT;
     }
 
-    let r = t.segments.get(`${e}-main`);
+    const cache = this.get('cache');
+    let data = cache.get(stackItem.url);
 
-    return r ? r.child || r : UNKNOWN_SEGMENT;
+    if (!data || !data.segments) {
+      return UNKNOWN_SEGMENT;
+    }
+
+    let segment = data.segments.get(`${outletName}-main`);
+
+    return segment ? segment.child || segment : UNKNOWN_SEGMENT;
+  },
+
+  updateCache(url, data) {
+    const cache = this.get('cache');
+
+    let stale = cache.get(url);
+
+    if (stale) {
+      stale.segments.forEach((segment) => {
+        segment.dom = null;
+        segment.parent = null;
+        segment.child = null;
+      });
+    }
+
+    this.get('cache').set(url, data);
   },
 
   actions: {
@@ -100,39 +120,39 @@ export default Service.extend(Evented, {
   },
 
   init() {
-    function __someIterativeMethod(iterable) {
-      let r = new Map();
-      let n = null;
+    function walkOutlets(outlets) {
+      let segments = new Map();
+      let lastStackItemSeen = null;
 
-      iterable.forEach(function(iteratedItem) {
-        let i = iteratedItem._state.outletState.render;
-        let a = `${i.name}-${i.outlet}`;
-        let o = {
-            name: i.name,
-            outlet: i.outlet,
-            key: a,
-            dom: __someClonedRange(iteratedItem),
-            parent: n,
+      outlets.forEach(function(outletMorph) {
+        let handler = outletMorph._state.outletState.render;
+        let key = `${handler.name}-${handler.outlet}`;
+        let segment = {
+            name: handler.name,
+            outlet: handler.outlet,
+            key: key,
+            dom: cloneOutlet(outletMorph),
+            parent: lastStackItemSeen,
             child: null
           };
 
-        if (n) {
-          n.child = o;
+        if (lastStackItemSeen) {
+          lastStackItemSeen.child = segment;
         }
 
-        n = o;
-        r.set(a, o);
+        lastStackItemSeen = segment;
+        segments.set(key, segment);
 
       });
 
-      return r;
+      return segments;
     }
 
-    function __someClonedRange(element) {
-      let t = cloneRange('outlet-segment', element.firstNode, element.lastNode);
+    function cloneOutlet(element) {
+      let outletElement = cloneRange('outlet-segment', element.firstNode, element.lastNode);
 
-      t.id = STACK_ID++;
-      return t;
+      outletElement.id = STACK_ID++;
+      return outletElement;
     }
 
     this._super();
@@ -144,11 +164,11 @@ export default Service.extend(Evented, {
     const router = this.get('router');
 
     router.on('willTransition', () => {
-      let t = this.get('current');
+      let currentStackItem = this.get('current');
 
-      if (t) {
-        t.segments = __someIterativeMethod(router._toplevelView._outlets);
-        this.get('cache').set(t.url, t);
+      if (currentStackItem) {
+        let segments = walkOutlets(router._toplevelView._outlets);
+        this.updateCache(currentStackItem.url, { segments });
       }
     });
 
@@ -172,24 +192,24 @@ export default Service.extend(Evented, {
         );
 
       } else {
-        let t = router.get('_location') || router.get('location');
-        let r = t.lastSetURL || router.get('url');
-        let n = this.get('current');
-        let i = {
-          url: r,
+        let location = router.get('_location') || router.get('location');
+        let url = location.lastSetURL || router.get('url');
+        let previousStackItem = this.get('current');
+        let currentStackItem = {
+          url,
           routeName: router.currentRouteName
         };
 
-        this.set('current', i);
+        this.set('current', currentStackItem);
         this.get('seen').clear();
 
-        if (n) {
-          this.get('stack').pushObject(n);
+        if (previousStackItem) {
+          this.get('stack').pushObject(previousStackItem);
         }
 
         this.trigger('didTransition', {
-          previous: n,
-          current: i,
+          previous: previousStackItem,
+          current: currentStackItem,
           next: undefined
         });
       }
