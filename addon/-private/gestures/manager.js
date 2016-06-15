@@ -1,24 +1,28 @@
-import { availableInputs } from './detection';
+import { availableInputs } from './utils/detection';
+import Ember from 'ember';
 
-const assign = Object.assign;
+const assign = Ember.assign || Object.assign || Ember.merge;
 const DEFAULT_OPTIONS = {
   inputs: availableInputs()
 };
-
-const HANDLER_SYMBOL = Symbol('element-gesture-handler');
 
 export default class Manager {
 
   constructor(rootElement, options) {
     this.rootElement = rootElement || window;
     this.layers = new WeakMap();
+    this._recognizedInputs = 0;
+    this.isRecognizing = false;
 
     this.inputs = {};
     this.options = assign({}, DEFAULT_OPTIONS, options || {});
 
     if (this.options.inputs) {
-      for (let i = 0; i < this.options.inputs.length; i++) {
-        let { name, InputClass } = this.options.inputs[i];
+      let inputs = Object.keys(this.options.inputs);
+
+      for (let i = 0; i < inputs.length; i++) {
+        let name = inputs[i];
+        let InputClass = this.options.inputs[name];
 
         this.registerInput(name, InputClass);
       }
@@ -35,9 +39,30 @@ export default class Manager {
 
     while (layer) {
       if (layer.recognize(input, streams, streamEvent)) {
+        this.startInputRecognition();
         break;
       }
       layer = layer.parent;
+    }
+
+    if (this.isRecognizing && streamEvent.name === 'end') {
+      this.endInputRecognition();
+    }
+  }
+
+  startInputRecognition() {
+    this._recognizedInputs++;
+    if (this._recognizedInputs === 1) {
+      this.isRecognizing = true;
+      document.body.setAttribute('gesture-no-touch', 'true');
+    }
+  }
+
+  endInputRecognition() {
+    this._recognizedInputs--;
+    if (this._recognizedInputs === 0) {
+      this.isRecognizing = false;
+      document.body.removeAttribute('gesture-no-touch');
     }
   }
 
@@ -51,8 +76,10 @@ export default class Manager {
   }
 
   registerLayer(layer) {
+    layer.element.setAttribute('gesture-layer', true);
     this.layers.set(layer.element, layer);
-    layer.parent = this._findParentLayer(layer.element);
+
+    layer.parent = this._findParentLayer(layer.element.parentNode);
 
     // insert into linked layer list
     if (layer.parent) {
@@ -81,14 +108,14 @@ export default class Manager {
 
   _findParentLayer(element) {
     do {
-      if (element.hasAttribute('gesture-layer')) {
+      if (element && element.hasAttribute('gesture-layer')) {
         let layer = this.layers.get(element);
 
         if (layer) {
           return layer;
         }
       }
-    } while (element = element.parentNode);
+    } while (element && element !== document.body && (element = element.parentNode));
 
     return null;
   }

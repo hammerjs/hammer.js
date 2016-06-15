@@ -18,8 +18,10 @@ export default class StreamEvent {
     this.y = info.y;
 
     // deltas off of origin event
-    this.totalX = info.x - info.originX;
-    this.totalY = info.y - info.originY;
+    this.originX = prev ? (prev.originX || prev.x) : info.x;
+    this.originY = prev ? (prev.originY || prev.y) : info.y;
+    this.totalX = info.x - this.originX;
+    this.totalY = info.y - this.originY;
 
     // deltas off of last event
     this.dX = prev ? info.x - prev.x : 0;
@@ -38,36 +40,81 @@ export default class StreamEvent {
     this.nextY = 0;
   }
 
-  getAcceleration() {
+  getAccelerationX() {
     const { dT, prev } = this;
-    const { vX, vY } = this.getVelocity();
-    const { vX: _vX, vY: _vY } = prev;
+    const vX = this.getVelocityX();
+    const { vX: _vX } = prev;
 
-    // acceleration
-    let aX = this.aX = (vX - _vX) / dT;
-    let aY = this.aY = (vY - _vY) / dT;
+    return this.aX = (vX - _vX) / dT;
+  }
+
+  getAccelerationY() {
+    const { dT, prev } = this;
+    const vY = this.getVelocityY();
+    const { vY: _vY } = prev;
+
+    return this.aY = (vY - _vY) / dT;
+  }
+
+  getAcceleration() {
+    const aX = this.getAccelerationX();
+    const aY = this.getAccelerationY();
     let acceleration = this.acceleration = Math.sqrt(aX * aX + aY * aY);
 
     return { aX, aY, acceleration };
   }
 
-  getVelocity() {
-    const { dX, dY, dT } = this;
+  getVelocityX() {
+    const { dX, dT } = this;
 
-    let vX = this.vX = dX / dT;
-    let vY = this.vY = dY / dT;
+    debugger;
+
+    return this.vX = dX / dT;
+  }
+
+  getVelocityY() {
+    const { dY, dT } = this;
+
+    return this.vY = dY / dT;
+  }
+
+  getVelocity() {
+    const vX = this.getVelocityX();
+    const vY = this.getVelocityY();
     let velocity = this.velocity = Math.sqrt(vX * vX + vY * vY);
 
     return { vX, vY, velocity };
   }
 
-  predict() {
-    const { aX, aY } = this.getAcceleration();
-    const { x, y, vX, vY, dT } = this;
+  predictX() {
+    const aX = this.getAccelerationX();
+    const { x, dX, vX, dT, totalX } = this;
 
     // distance = initial distance + velocity * time + 1/2 acceleration * time^2
-    let nextX = this.nextX = x + (vX * dT) + (.5 * aX * dT * dT);
-    let nextY = this.nextY = y + (vY * dT) + (.5 * aY * dT * dT);
+    let nextDeltaX = Math.round((vX * dT) + (0.5 * aX * dT * dT));
+    let nextdX = dX + nextDeltaX;
+    let nextX = x + nextDeltaX;
+    let nextTotalX = totalX + nextDeltaX;
+
+    return this.nextX = { x: nextX, dX: nextdX, totalX: nextTotalX };
+  }
+
+  predictY() {
+    const aY = this.getAccelerationY();
+    const { y, dY, vY, dT, totalY } = this;
+
+    // distance = initial distance + velocity * time + 1/2 acceleration * time^2
+    let nextDeltaY = Math.round((vY * dT) + (0.5 * aY * dT * dT));
+    let nextdY = dY + nextDeltaY;
+    let nextY = y + nextDeltaY;
+    let nextTotalY = totalY + nextDeltaY;
+
+    return this.nextY = { y: nextY, dY: nextdY, totalY: nextTotalY };
+  }
+
+  predict() {
+    const nextX = this.predictX();
+    const nextY = this.predictY();
 
     return { x: nextX, y: nextY };
   }
@@ -77,6 +124,12 @@ export default class StreamEvent {
     this.source.preventDefault();
     this.source.stopPropagation();
     this.silenced = true;
+  }
+
+  destroy() {
+    this.source = undefined;
+    this.prev = undefined;
+    this.element = undefined;
   }
 
 }

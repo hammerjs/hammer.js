@@ -1,0 +1,47 @@
+html {
+  font-size:62.5%;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, "Open Sans", sans-serif;
+  font-size: 1.8em;
+  color: #333;
+  margin: 0;
+}
+
+.item-card {
+  font-size: 1em;
+  padding: 1em;
+  background: #ff00ff;
+  margin: 1em;
+  color: #fff;
+}
+
+.bg-dark {
+  background: #333;
+}
+
+.bg-green {
+  background: #80e545;
+}
+
+history-outlet {
+  background: #000;
+
+  left {
+    background: #f00;
+  }
+
+  right {
+    background: #0f0;
+  }
+
+  outlet {
+    background: #00f;
+  }
+
+  main {
+    background: #ffff00;
+  }
+
+}

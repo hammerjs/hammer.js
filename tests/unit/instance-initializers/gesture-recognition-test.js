@@ -3,15 +3,20 @@ import { initialize } from 'dummy/instance-initializers/gesture-recognition';
 import { module, test } from 'qunit';
 import destroyApp from '../../helpers/destroy-app';
 
+const {
+  run,
+  Application
+  } = Ember;
+
 module('Unit | Instance Initializer | gesture recognition', {
-  beforeEach: function() {
-    Ember.run(() => {
-      this.application = Ember.Application.create();
+  beforeEach() {
+    run(() => {
+      this.application = Application.create();
       this.appInstance = this.application.buildInstance();
     });
   },
-  afterEach: function() {
-    Ember.run(this.appInstance, 'destroy');
+  afterEach() {
+    run(this.appInstance, 'destroy');
     destroyApp(this.application);
   }
 });

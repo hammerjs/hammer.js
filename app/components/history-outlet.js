@@ -1,1 +1,1 @@
-export { default } from 'history/components/history-outlet';
+export { default } from 'history/components/history-outlet/component';

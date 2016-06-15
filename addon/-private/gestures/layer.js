@@ -4,27 +4,43 @@ export default class Layer {
   constructor(element) {
     this.element = element;
     this.recognizers = [];
-    this.isRecognizing = false;
+    this._handlers = {};
   }
 
   recognize(input, streams, streamEvent) {
     let { recognizers } = this;
 
-    for (let recognizer of recognizers) {
+    for (let i = 0; i < recognizers.length; i++) {
+      let recognizer = recognizers[i];
+
       if (recognizer.recognize(input, streams, streamEvent)) {
-        this.isRecognizing = true;
         input.handler = recognizer;
-        break;
+        return true;
       }
     }
 
-    return this.isRecognizing;
+    return false;
   }
 
   addRecognizer(recognizerInstance) {
+    recognizerInstance.layer = this;
     this.recognizers.push(recognizerInstance);
   }
 
-  emit() {}
+  emit(e) {
+    let { name, event } = e;
+    let handlers = (this._handlers['*'] || []).concat(this._handlers[name] || []);
+
+    for (let i = 0; i < handlers.length; i++) {
+      handlers[i].call(null, e);
+    }
+  }
+
+  on(event, handler) {
+    this._handlers[event] = this._handlers[event] || [];
+    this._handlers[event].push(handler);
+  }
+
+  off() {}
 
 }

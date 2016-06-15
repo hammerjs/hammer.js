@@ -1,4 +1,5 @@
 /* jshint node: true */
+// jscs:disable
 
 module.exports = function(environment) {
   var ENV = {

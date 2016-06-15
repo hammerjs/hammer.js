@@ -1,3 +1,4 @@
+/* global requestAnimationFrame */
 import Ember from 'ember';
 import layout from './template';
 import RecognizerMixin from 'ember-gestures/mixins/recognizers';
@@ -25,7 +26,7 @@ export default Ember.Component.extend(RecognizerMixin, {
   updateAnimationState() {
     let { _dX, dX, element } = this;
 
-    TweenLite.set(element, { css: { x: `${_dX + dX}px` }});
+    TweenLite.set(element, { css: { x: `${_dX + dX}px` } });
 
     if (this.isPanning) {
       this._nextUpdate = requestAnimationFrame(() => {
@@ -35,7 +36,7 @@ export default Ember.Component.extend(RecognizerMixin, {
       // this._dX = _dX + dX;
       this._nextUpdate = undefined;
 
-      TweenLite.to(element, .35, { css: { x: `0px` }});
+      TweenLite.to(element, 0.35, { css: { x: `0px` } });
 
     }
   },

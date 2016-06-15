@@ -1,4 +1,5 @@
 import Input from './input';
+import SUPPORTS_PASSIVE from '../utils/supports-passive';
 
 export default class MouseInput extends Input {
 
@@ -8,10 +9,12 @@ export default class MouseInput extends Input {
     }
     const { element } = this;
 
-    element.addEventListener('mousedown', this._bind('start') , true);
-    element.addEventListener('mouseup', this._bind('end') , true);
-    element.addEventListener('mouseexit', this._bind('interrupt') , true);
-    element.addEventListener('mousemove', this._bind('update') , true);
+    let opts = SUPPORTS_PASSIVE ? { capture: true, passive: true } : true;
+
+    element.addEventListener('mousedown', this._bind('start'), opts);
+    element.addEventListener('mouseup', this._bind('end'), opts);
+    element.addEventListener('mouseexit', this._bind('interrupt'), opts);
+    element.addEventListener('mousemove', this._bind('update'), opts);
 
     this.attached = true;
   }
@@ -22,10 +25,12 @@ export default class MouseInput extends Input {
     }
     const { element, _handlers } = this;
 
-    element.removeEventListener('mousedown', _handlers.start , true);
-    element.removeEventListener('mouseup', _handlers.end , true);
-    element.removeEventListener('mouseexit', _handlers.interrupt , true);
-    element.removeEventListener('mousemove', _handlers.update , true);
+    let opts = SUPPORTS_PASSIVE ? { capture: true, passive: true } : true;
+
+    element.removeEventListener('mousedown', _handlers.start, opts);
+    element.removeEventListener('mouseup', _handlers.end, opts);
+    element.removeEventListener('mouseexit', _handlers.interrupt, opts);
+    element.removeEventListener('mousemove', _handlers.update, opts);
   }
 
 }

@@ -10,10 +10,13 @@ export default class Input {
     this.handler = null;
     this.handlerStack = [];
     this.streaming = false;
-    this.hasPointer = false;
+    this.hasMoved = false;
+    this._nextEvent = undefined;
 
     this._handlers = { start: null, update: null, end: null, interrupt: null };
     this.manager = manager;
+
+    this.attach();
   }
 
   _bind(name) {
@@ -27,14 +30,15 @@ export default class Input {
     const { streams } = this;
 
     // splice existing streams
-    for (let s of streams) {
-      s.split();
+    for (let i = 0; i < streams.length; i++) {
+      // console.log('splitting existing stream');
+      streams[i].split();
     }
 
     this.streaming = true;
-    this.hasPointer = true;
 
     streams.push(stream);
+    // console.log('opening new stream');
     let streamEvent = stream.open({
       x: event.clientX,
       y: event.clientY,
@@ -47,6 +51,75 @@ export default class Input {
     }
 
     this.manager.recognize(this, streams, streamEvent);
+
+    this._poll();
+  }
+
+  trigger(streamEvent) {
+    if (this.handler) {
+      this.handler.recognize(this, this.streams, streamEvent);
+    } else {
+      this.manager.recognize(this, this.streams, streamEvent);
+    }
+  }
+
+  _update(event) {
+    // console.log('updating');
+    let { streams } = this;
+    let [stream] = streams;
+    let streamEvent;
+
+    if (!this.streaming) {
+      if (!this.handler) {
+
+      }
+      // console.log('closing stream');
+      streamEvent = stream.close({
+        x: event.clientX,
+        y: event.clientY,
+        event
+      });
+
+      this.hasMoved = false;
+      this.trigger(streamEvent);
+
+      let wasRecognizing = this.handler;
+
+      this.handler = null;
+
+      // vacate this stream
+      // console.log('removing stream');
+      streams.pop();
+
+      if (wasRecognizing && !streams.length) {
+        this.manager.endInputRecognition();
+      }
+
+    } else {
+      streamEvent = stream.push({
+        x: event.clientX,
+        y: event.clientY,
+        event
+      });
+
+      this.trigger(streamEvent);
+    }
+
+  }
+
+  _poll() {
+    return void requestAnimationFrame(() => {
+      let event = this._nextEvent;
+
+      if (event) {
+        this._update(event);
+        this._nextEvent = undefined;
+      }
+
+      if (this.streaming) {
+        this._poll();
+      }
+    });
   }
 
   update(event) {
@@ -54,51 +127,29 @@ export default class Input {
       return;
     }
 
-    let { streams } = this;
-    let [stream] = streams;
-
-    let streamEvent = stream.push({
-      x: event.clientX,
-      y: event.clientY,
-      event
-    });
-
-    if (this.handler) {
-      this.handler.recognize(this, this.streams, streamEvent);
-    } else {
-      this.manager.recognize(this, this.streams, streamEvent);
+    this._nextEvent = event;
+    if (!this.hasMoved) {
+      this.hasMoved = true;
+      this._update(event);
     }
   }
 
   _close(event) {
-    let { streams } = this;
-    let stream = streams.pop();
-
-    this.streaming = false;
-
-    let streamEvent = stream.close({
-      x: event.clientX,
-      y: event.clientY,
-      event
-    });
-
-    if (this.handler) {
-      this.handler.recognize(this, this.streams, streamEvent);
-      this.handler = null;
-    } else {
-      this.manager.recognize(this, this.streams, streamEvent);
+    if (this.streaming) {
+      // console.log('received close event');
+      this.streaming = false;
+      this._nextEvent = event;
     }
   }
 
   end(event) {
-    if (this.hasPointer) {
+    if (this.streaming) {
       this._close(event);
-      this.hasPointer = false;
     }
   }
 
   interrupt(event) {
-    if (this.hasPointer) {
+    if (this.streaming) {
       this._close(event);
     }
   }

@@ -1,41 +1,306 @@
+/* global Linear */
 import Ember from 'ember';
-import layout from 'history-outlet';
+import layout from './template';
 import Layer from 'history/-private/gestures/layer';
 import VerticalPan from 'history/-private/gestures/recognizers/vertical-pan';
+import TweenLite from 'tweenlite';
+import removeRange from 'history/utils/dom/remove-range';
+import appendRange from 'history/utils/dom/append-range';
 
 const {
   inject,
-  Component
+  computed,
+  Component,
+  RSVP
   } = Ember;
+
+const assign = Ember.assign || Object.assign || Ember.merge;
+
+function tween(element, time, options) {
+  return new Promise(function(resolve) {
+    options.onComplete = resolve;
+    TweenLite.to(element, time / 1000, options);
+  });
+}
+
+function carryMomentum(element, duration, options) {
+  let opts = assign({ ease: Linear.easeOut }, options);
+
+  return tween(element, duration, opts);
+}
+
+function getDuration(streamEvent, width) {
+  return (width - Math.abs(streamEvent.totalX)) * 5;
+}
+
+function updateStyle(element, css) {
+  let options =  { immediateRender: true, css };
+
+  TweenLite.set(element, options);
+}
 
 export default Component.extend({
   layout,
   tagName: 'history-outlet',
-  _left: null,
-  _main: null,
-  _right: null,
-  _outlet: null,
+
+  _left: undefined,
+  _main: undefined,
+  _right: undefined,
+  _outlet: undefined,
 
   gestures: inject.service('gesture-recognition'),
+  history: inject.service('history'),
 
-  pan() {
-    console.log('pan!');
+  transitionAt: 0.5,
+  parallax: 0.2,
+  _leftDefault: undefined,
+  _rightDefault: undefined,
+  duration: 350,
+  width: 0,
+
+  _isTransitioning: false,
+
+  currentRouteName: '',
+  activeRouteName: computed.alias('history.currentRouteName'),
+
+  canGoBack: computed('history.stack.lastObject', function() {
+    let last = this.get('history.stack.lastObject');
+    let routeName = this.get('currentRouteName');
+
+    return !!last && last.routeName.indexOf(routeName) === 0;
+  }),
+
+  canGoForward: computed('history.seen.lastObject', function() {
+    let next = this.get('history.seen.lastObject');
+    let routeName = this.get('currentRouteName');
+
+    return !!next && next.routeName.indexOf(routeName) === 0;
+  }),
+
+  // fps meter
+  debugMode: true,
+  _lastTime: undefined,
+  _frames: undefined,
+  fps: 0,
+  avg: 0,
+  _emulateSlowdown: false,
+  low: 0,
+
+  _fpsMeter() {
+    requestAnimationFrame((time) => {
+      let diff = (time - this._lastTime) / 1000;
+      let fps = Math.round(1 / diff);
+
+      let frames = this._frames = this._frames || [];
+
+      frames.push({
+        delta: diff,
+        fps: fps
+      });
+
+      if (frames.length > 60) {
+        frames.shift();
+      }
+
+      this._lastTime = time;
+
+      let low = { fps: 60 };
+      let avg = Math.round(
+        frames.reduce((v, f) => {
+          if (f.fps < low.fps) {
+            low = f;
+          }
+
+          return v + f.fps;
+        }, 0) / frames.length
+      );
+
+      if (low.fps < 60) {
+        console.log(low.fps, Math.round(low.delta * 1000), frames);
+        this._frames = [];
+      }
+
+      this.setProperties({
+        fps,
+        avg,
+        low: low.fps
+      });
+
+      this._fpsMeter()
+    })
   },
 
-  panStart() {
-    console.log('pan start');
+
+  panStart(e) {
+    this.width = this._main.clientWidth;
+    this.updateAnimationState(e.totalX);
   },
 
-  panLeft() {
-    console.log('pan left');
+  panEnd(e) {
+    this.resolveAnimationState(e);
   },
 
-  panRight() {
-    console.log('pan right');
+  panLeft(e) {
+    this.updateAnimationState(e.totalX);
   },
 
-  panEnd() {
-    console.log('pan end');
+  panRight(e) {
+    this.updateAnimationState(e.totalX);
+  },
+
+  transition(isLeft) {
+    const history = this.get('history');
+
+    return isLeft ? history.back() : history.forward();
+  },
+
+  updateAnimationState(dX) {
+    let availableNav = this.getProperties('canGoBack', 'canGoForward');
+    let { parallax } = this;
+    let scaledDeltaX = dX * parallax;
+    let isLeft = dX > 0;
+
+    if (isLeft && availableNav.canGoBack) {
+
+      updateStyle(this._left, { x: scaledDeltaX, visibility: 'visible' });
+      updateStyle(this._right, { x: this._rightDefault, visibility: 'hidden' });
+
+    } else if (!isLeft && availableNav.canGoForward) {
+      let inverseDeltaX = dX * (1 - parallax);
+
+      updateStyle(this._right, { x: inverseDeltaX, visibility: 'visible' });
+      updateStyle(this._left, { x: this._leftDefault, visibility: 'hidden' });
+    } else {
+      return;
+    }
+
+    updateStyle(this._main, { x: dX });
+    updateStyle(this._outlet, { x: dX });
+  },
+
+  resolveAnimationState(event) {
+    let dX = event.totalX;
+    let { width, transitionAt, duration } = this;
+    let percentComplete = dX / width;
+    let absCompleted = Math.abs(percentComplete);
+    let remainingTime = (1 - absCompleted) * duration;
+    let isFromLeft = percentComplete > 0;
+    let availableNav = this.getProperties('canGoBack', 'canGoForward');
+
+    if (absCompleted >= transitionAt) {
+      if (isFromLeft && !availableNav.canGoBack) {
+        return this._cleanupAnimation(remainingTime);
+      }
+
+      if (!isFromLeft && !availableNav.canGoForward) {
+        return this._cleanupAnimation(remainingTime);
+      }
+
+      let outletClone = this._outlet.cloneNode(true);
+      let outDuration = getDuration(event, width);
+
+      appendRange(this._main, outletClone.firstChild, outletClone.lastChild);
+
+      this._outlet.style.display = 'none';
+      this._outlet.style.visibility = 'hidden';
+      updateStyle(this._outlet, { x: '0%' });
+
+      this._isTransitioning = true;
+      let outlet = this.element.removeChild(this._outlet);
+      let promises = [this.transition(isFromLeft)];
+
+      if (isFromLeft) {
+        promises.push(
+          carryMomentum(this._left, outDuration, { x: '0%' }),
+          carryMomentum(this._main, outDuration, { x: '100%' })
+        );
+      } else {
+        promises.push(
+          carryMomentum(this._right, outDuration, { x: '0%' }),
+          carryMomentum(this._main, outDuration, { x: '-100%' })
+        );
+      }
+
+      return RSVP.all(promises)
+        .finally(() => {
+          this.element.insertBefore(outlet, this.element.lastElementChild);
+          outlet.style.display = '';
+          outlet.style.visibility = '';
+
+          return this.resetTweens(false)
+            .then(() => {
+              if (this._main.firstChild) {
+                removeRange(this._main.firstChild, this._main.lastChild);
+              }
+
+              this._finishTransition(
+                this.get('history').getProperties('current', 'next', 'previous')
+              );
+              this._isTransitioning = false;
+            });
+        });
+    }
+
+    return this._cleanupAnimation(remainingTime);
+  },
+
+  _cleanupAnimation(remainingTime) {
+    return this.resetTweens(remainingTime)
+      .then(() => {
+        if (this._main.firstChild) {
+          removeRange(this._main.firstChild, this._main.lastChild);
+        }
+      });
+  },
+
+  _finishTransition(nextState) {
+    let previous = this.domFor(nextState.previous, 'previous');
+    let next = this.domFor(nextState.next, 'next');
+
+    this._left.innerHTML = '';
+    this._right.innerHTML = '';
+
+    if (previous) {
+      appendRange(this._left, previous.firstChild, previous.lastChild);
+    }
+    if (next) {
+      appendRange(this._right, next.firstChild, next.lastChild);
+    }
+  },
+
+  resetTweens(duration) {
+    if (duration) {
+      return RSVP.all([
+        tween(this._left, duration, { x: this._leftDefault }),
+        tween(this._main, duration, { x: 0 }),
+        tween(this._outlet, duration, { x: 0 }),
+        tween(this._right, duration, { x: this._rightDefault })
+      ]);
+    }
+
+    updateStyle(this._right, { x: this._rightDefault, visibility: 'hidden' });
+    updateStyle(this._left, { x: this._leftDefault, visibility: 'hidden' });
+    updateStyle(this._main, { x: '0%' });
+    updateStyle(this._outlet, { x: '0%' });
+
+    return Promise.resolve();
+  },
+
+  domForPrevious() {
+    let e = this.get('history');
+    let t = this.get('currentRouteName');
+    let r = e.get('previous');
+    let n = e.segmentFor(t, r);
+
+    return n ? n.dom.cloneNode(true) : false;
+  },
+
+  domFor(e) {
+    let t = this.get('history');
+    let r = this.get('currentRouteName');
+    let n = t.segmentFor(r, e);
+
+    return n ? n.dom.cloneNode(true) : false;
   },
 
   willInsertElement() {
@@ -45,10 +310,18 @@ export default Component.extend({
     this._outlet = this.element.children[3];
   },
 
+  willDestroyElement() {
+    this._super();
+    this._left = undefined;
+    this._main = undefined;
+    this._right = undefined;
+    this._outlet = undefined;
+  },
+
   setupLayer() {
-    this.layer = new Layer(this.element);
+    this.layer = new Layer();
     this.layer.addRecognizer(new VerticalPan());
-    this.layer.on('*', ({name, event}) => {
+    this.layer.on('*', ({ name, event }) => {
       if (this[name]) {
         this[name](event);
       }
@@ -56,12 +329,87 @@ export default Component.extend({
   },
 
   didInsertElement() {
+    this.layer.element = this.element;
     this.get('gestures.manager').registerLayer(this.layer);
+    this.resetTweens();
   },
 
   init() {
     this._super();
     this.setupLayer();
+    let leftPer = (this.parallax * 100).toFixed(2);
+    let rightPer = 100 - leftPer;
+
+    this._leftDefault =  `-${leftPer}%`;
+    this._rightDefault =  `${rightPer}%`;
+
+    this.get('history').on('didTransition', (nextState) => {
+      if (!this._isTransitioning) {
+        this._finishTransition(nextState);
+      }
+    });
+
+    this.get('history').on('willTransition', (t) => {
+      // debugger;
+    });
+
+    this._fpsMeter();
   }
 
 });
+
+/*
+  var l = function() {
+      function e(e, t) {
+        var r = [],
+          n = true,
+          i = false,
+          a = void 0;
+        try {
+          for (var o, s = e[Symbol.iterator](); !(n = (o = s.next()).done) && (r.push(o.value), !t || r.length !== t); n = !0);
+        } catch (l) {
+          i = true, a = l
+        } finally {
+          try {
+            !n && s['return'] && s['return']()
+          } finally {
+            if (i) throw a
+          }
+        }
+        return r
+      }
+      return function(t, r) {
+        if (Array.isArray(t)) return t;
+        if (Symbol.iterator in Object(t)) return e(t, r);
+        throw new TypeError("Invalid attempt to destructure non-iterable instance")
+      }
+    }();
+*/
+/*
+  {
+
+    _fpsMeter: function () {
+      var e = this;
+      60 === this._frames.length && (window._frames = window._frames || [], window._frames.push(this._frames), window._frames.length > 15 && window._frames.shift(), this._frames = []), requestAnimationFrame(function (t) {
+        var r = (t - e._lastTime) / 1e3,
+          n = Math.round(1 / r);
+        e._frames.push({
+          delta: r,
+          fps: n
+        }), e._lastTime = t;
+        var i = n;
+        if (e._frames.length > 5) {
+          var a = e._frames.slice(-6),
+            o = l(a, 6),
+            s = o[0],
+            u = o[1],
+            c = o[2],
+            d = o[3],
+            f = o[4],
+            h = o[5];
+          i = (s.fps + u.fps + c.fps + d.fps + f.fps + h.fps) / 6
+        }
+        e.set('fps', n), e.set('avg', i), e._fpsMeter()
+      })
+    }
+*/

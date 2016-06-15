@@ -7,7 +7,7 @@ const {
 export default Route.extend({
 
   model(params) {
-    return this.get('store').findRecord(params.id);
+    return this.get('store').findRecord('item', params.id);
   }
 
 });
