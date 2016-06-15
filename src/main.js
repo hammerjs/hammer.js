@@ -126,6 +126,7 @@ assign(Hammer, {
 let freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
 freeGlobal.Hammer = Hammer;
 
+/* jshint ignore:start */
 if (typeof define === 'function' && define.amd) {
   define(function() {
     return Hammer;
@@ -135,3 +136,4 @@ if (typeof define === 'function' && define.amd) {
 } else {
   window[exportName] = Hammer;
 }
+/* jshint ignore:end */

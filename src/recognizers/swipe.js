@@ -36,7 +36,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
   },
 
   attrTest(input) {
-    let { options:{ direction } } = this;
+    let { direction } = this.options;
     let velocity;
 
     if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
