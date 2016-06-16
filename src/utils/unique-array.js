@@ -26,7 +26,7 @@ export default function uniqueArray(src, key, sort) {
     if (!key) {
       results = results.sort();
     } else {
-      results = results.sort(function sortUniqueArray(a, b) {
+      results = results.sort((a, b) => {
         return a[key] > b[key];
       });
     }

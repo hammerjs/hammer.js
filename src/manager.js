@@ -41,7 +41,7 @@ function Manager(element, options) {
 
   toggleCssProps(this, true);
 
-  each(this.options.recognizers, function(item) {
+  each(this.options.recognizers, (item) => {
     let recognizer = this.add(new (item[0])(item[1]));
     item[2] && recognizer.recognizeWith(item[2]);
     item[3] && recognizer.requireFailure(item[3]);
@@ -226,7 +226,7 @@ Manager.prototype = {
     }
 
     let { handlers } = this;
-    each(splitStr(events), function(event) {
+    each(splitStr(events), (event) => {
       handlers[event] = handlers[event] || [];
       handlers[event].push(handler);
     });
@@ -245,7 +245,7 @@ Manager.prototype = {
     }
 
     let { handlers } = this;
-    each(splitStr(events), function(event) {
+    each(splitStr(events), (event) => {
       if (!handler) {
         delete handlers[event];
       } else {
@@ -311,7 +311,7 @@ function toggleCssProps(manager, add) {
     return;
   }
   let prop;
-  each(manager.options.cssProps, function(value, name) {
+  each(manager.options.cssProps, (value, name) => {
     prop = prefixed(element.style, name);
     if (add) {
       manager.oldCssProps[prop] = element.style[prop];

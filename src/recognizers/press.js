@@ -58,7 +58,7 @@ inherit(PressRecognizer, Recognizer, {
       this.reset();
     } else if (input.eventType & INPUT_START) {
       this.reset();
-      this._timer = setTimeoutContext(function() {
+      this._timer = setTimeoutContext(() => {
         this.state = STATE_RECOGNIZED;
         this.tryEmit();
       }, options.time, this);

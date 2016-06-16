@@ -97,7 +97,7 @@ inherit(TapRecognizer, Recognizer, {
         if (!this.hasRequireFailures()) {
           return STATE_RECOGNIZED;
         } else {
-          this._timer = setTimeoutContext(function() {
+          this._timer = setTimeoutContext(() => {
             this.state = STATE_RECOGNIZED;
             this.tryEmit();
           }, options.interval, this);
@@ -109,7 +109,7 @@ inherit(TapRecognizer, Recognizer, {
   },
 
   failTimeout() {
-    this._timer = setTimeoutContext(function() {
+    this._timer = setTimeoutContext(() => {
       this.state = STATE_FAILED;
     }, this.options.interval, this);
     return STATE_FAILED;
