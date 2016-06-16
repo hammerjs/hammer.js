@@ -8,7 +8,7 @@ import extend from './extend';
  * @param {Object} src
  * @returns {Object} dest
  */
-const merge = deprecate(function merge(dest, src) {
+const merge = deprecate((dest, src) => {
   return extend(dest, src, true);
 }, 'merge', 'Use `assign`.');
 

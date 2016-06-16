@@ -74,7 +74,7 @@ function getTouches(ev, type) {
   let { target } = this;
 
   // get target touches from touches
-  targetTouches = allTouches.filter(function(touch) {
+  targetTouches = allTouches.filter((touch) => {
     return hasParent(touch.target, target);
   });
 

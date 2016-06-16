@@ -128,7 +128,7 @@ freeGlobal.Hammer = Hammer;
 
 /* jshint ignore:start */
 if (typeof define === 'function' && define.amd) {
-  define(function() {
+  define(() => {
     return Hammer;
   });
 } else if (typeof module !== 'undefined' && module.exports) {

@@ -62,7 +62,7 @@ TouchAction.prototype = {
    */
   compute() {
     let actions = [];
-    each(this.manager.recognizers, function(recognizer) {
+    each(this.manager.recognizers, (recognizer) => {
       if (boolOrFn(recognizer.options.enable, [recognizer])) {
         actions = actions.concat(recognizer.getTouchAction());
       }
