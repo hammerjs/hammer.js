@@ -3,7 +3,7 @@ import Ember from 'ember';
 import layout from './template';
 import Layer from 'history/-private/gestures/layer';
 import VerticalPan from 'history/-private/gestures/recognizers/vertical-pan';
-import TweenLite from 'tweenlite';
+import Animation from 'history/-private/animation';
 import removeRange from 'history/utils/dom/remove-range';
 import appendRange from 'history/utils/dom/append-range';
 
@@ -14,19 +14,12 @@ const {
   RSVP
   } = Ember;
 
-const assign = Ember.assign || Object.assign || Ember.merge;
-
 function tween(element, time, options) {
-  return new Promise(function(resolve) {
-    options.onComplete = resolve;
-    TweenLite.to(element, time / 1000, options);
-  });
+  return Animation.to(element, time, options);
 }
 
 function carryMomentum(element, duration, options) {
-  let opts = assign({ ease: Linear.easeOut }, options);
-
-  return tween(element, duration, opts);
+  return tween(element, duration, options, { ease: 'ease-out' });
 }
 
 function getDuration(streamEvent, width) {
@@ -34,9 +27,7 @@ function getDuration(streamEvent, width) {
 }
 
 function updateStyle(element, css) {
-  let options =  { immediateRender: true, css };
-
-  TweenLite.set(element, options);
+  Animation.set(element, css);
 }
 
 export default Component.extend({
