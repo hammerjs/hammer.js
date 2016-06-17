@@ -5,8 +5,8 @@ const STREAM_SERIES_POOL = new FastArray(10, 'StreamSeries Pool');
 
 export default class StreamSeries extends FastArray {
 
-  constructor() {
-    super(...arguments);
+  constructor(number = MAX_ARRAY_SIZE, name = 'StreamEvent to List') {
+    super(number, name);
     this._isDestroyed = false;
   }
 
