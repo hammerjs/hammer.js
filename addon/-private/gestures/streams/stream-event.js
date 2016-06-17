@@ -11,7 +11,8 @@ export default class StreamEvent {
   init(name, info, prev) {
     this.name = name;
     this.element = info.event.target;
-    this.source = info.event;
+    this._isImportantEvent = (name === 'end' || name === 'start' || (prev && prev.name === 'start'));
+    this._source = this._isImportantEvent ? info.event : undefined;
     this.silenced = false;
     this.prev = prev;
 
@@ -127,9 +128,11 @@ export default class StreamEvent {
 
   // cancel any default behaviors from this event
   silence() {
-    this.source.preventDefault();
-    this.source.stopPropagation();
-    this.silenced = true;
+    if (this._source && this._source.cancelable) {
+      this._source.preventDefault();
+      this._source.stopPropagation();
+      this.silenced = true;
+    }
   }
 
   static create(name, info, prev) {
@@ -144,7 +147,7 @@ export default class StreamEvent {
   }
 
   destroy() {
-    this.source = undefined;
+    this._source = undefined;
     this.prev = undefined;
     this.element = undefined;
 
