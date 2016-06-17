@@ -17,9 +17,9 @@ export default class VerticalPan {
     this.stream = streams[streams.length - 1];
     let { series } = this.stream;
 
-    for (let i = 0; i < series.length; i++) {
-      this.relay(series[i]);
-    }
+    series.forEach((event) => {
+      this.relay(event);
+    });
   }
 
   relay(event) {

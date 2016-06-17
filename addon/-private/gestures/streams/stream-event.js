@@ -1,8 +1,14 @@
 /* global Math, performance */
+import FastArray from './fast-array';
+const STREAM_EVENT_POOL = new FastArray(undefined, 'StreamEvent Pool');
 
 export default class StreamEvent {
 
   constructor(name, info, prev) {
+    this.init(name, info, prev);
+  }
+
+  init(name, info, prev) {
     this.name = name;
     this.element = info.event.target;
     this.source = info.event;
@@ -126,10 +132,23 @@ export default class StreamEvent {
     this.silenced = true;
   }
 
+  static create(name, info, prev) {
+    let event = STREAM_EVENT_POOL.pop();
+
+    if (event) {
+      event.init(name, info, prev);
+      return event;
+    }
+
+    return new StreamEvent(name, info, prev);
+  }
+
   destroy() {
     this.source = undefined;
     this.prev = undefined;
     this.element = undefined;
+
+    STREAM_EVENT_POOL.push(this);
   }
 
 }

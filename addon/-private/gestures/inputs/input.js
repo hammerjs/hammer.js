@@ -26,7 +26,7 @@ export default class Input {
   }
 
   start(event) {
-    let stream = new Stream();
+    let stream = Stream.create();
     const { streams } = this;
 
     // splice existing streams
