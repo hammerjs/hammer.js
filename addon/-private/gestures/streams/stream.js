@@ -27,7 +27,7 @@ export default class Stream {
   push(info) {
     // Improve Chrome Performance
     if (this.segments.length > 1 || this.series.length > 2) {
-      info.cancelable = false;
+      info.event.cancelable = false;
     }
 
     let lastEvent = this.series[this.series.length - 1];
