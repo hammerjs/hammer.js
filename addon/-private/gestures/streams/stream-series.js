@@ -1,5 +1,5 @@
-import FastArray from './fast-array';
-import { MAX_ARRAY_SIZE } from './fast-array';
+import FastArray from '../../cache-list/fast-array';
+import { MAX_ARRAY_SIZE } from '../../cache-list/fast-array';
 
 const STREAM_SERIES_POOL = new FastArray(10, 'StreamSeries Pool');
 
