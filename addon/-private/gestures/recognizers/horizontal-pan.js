@@ -1,7 +1,7 @@
 
-export default class VerticalPan {
+export default class HorizontalPan {
   constructor(options) {
-    this.name = 'vertical-pan';
+    this.name = 'horizontal-pan';
     this.options = options;
     this.layer = undefined;
     this.stream = undefined;
@@ -29,11 +29,11 @@ export default class VerticalPan {
       this.layer.emit({ name: 'panEnd', event });
       this.stream = undefined;
 
-    } else if (event.totalY < 0 || event.prev.totalY < 0) {
-      this.layer.emit({ name: 'panUp', event });
+    } else if (event.totalX < 0 || event.prev.totalX < 0) {
+      this.layer.emit({ name: 'panLeft', event });
 
     } else {
-      this.layer.emit({ name: 'panDown', event });
+      this.layer.emit({ name: 'panRight', event });
     }
   }
 
@@ -44,7 +44,7 @@ export default class VerticalPan {
   recognize(input, streams, streamEvent) {
     if (this.isRecognizing) {
       this.relay(streamEvent);
-    } else if (streamEvent.totalX === 0 && streamEvent.totalY !== 0) {
+    } else if (streamEvent.totalY === 0 && streamEvent.totalX !== 0) {
       this.beginRecognizing(input, streams, streamEvent);
     }
 

@@ -2,7 +2,7 @@
 import Ember from 'ember';
 import layout from './template';
 import Layer from 'history/-private/gestures/layer';
-import VerticalPan from 'history/-private/gestures/recognizers/vertical-pan';
+import HorizontalPan from 'history/-private/gestures/recognizers/horizontal-pan';
 import Animation from 'history/-private/animation';
 import removeRange from 'history/utils/dom/remove-range';
 import appendRange from 'history/utils/dom/append-range';
@@ -311,7 +311,7 @@ export default Component.extend({
 
   setupLayer() {
     this.layer = new Layer();
-    this.layer.addRecognizer(new VerticalPan());
+    this.layer.addRecognizer(new HorizontalPan());
     this.layer.on('*', ({ name, event }) => {
       if (this[name]) {
         this[name](event);
