@@ -12,5 +12,12 @@
         "component.json",
         "Gruntfile.coffee",
         "package.json"
+    ],
+    "keywords": [
+        "touch",
+        "gestures",
+        "hammerjs",
+        "hammer",
+        "hammer.js"
     ]
 }
