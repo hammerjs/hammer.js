@@ -1,5 +1,6 @@
 import deprecate from './deprecate';
 /**
+ * @private
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
@@ -7,16 +8,16 @@ import deprecate from './deprecate';
  * @param {Boolean} [merge=false]
  * @returns {Object} dest
  */
-var extend = deprecate(function extend(dest, src, merge) {
-    var keys = Object.keys(src);
-    var i = 0;
-    while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
-            dest[keys[i]] = src[keys[i]];
-        }
-        i++;
+const extend = deprecate((dest, src, merge) => {
+  let keys = Object.keys(src);
+  let i = 0;
+  while (i < keys.length) {
+    if (!merge || (merge && dest[keys[i]] === undefined)) {
+      dest[keys[i]] = src[keys[i]];
     }
-    return dest;
+    i++;
+  }
+  return dest;
 }, 'extend', 'Use `assign`.');
 
 export default extend;

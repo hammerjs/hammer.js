@@ -26,7 +26,7 @@ module.exports = (grunt) ->
       files:
         dest: 'hammer.js'
         src: 'src/main.js'
-        
+
     uglify:
       min:
         options:
@@ -53,7 +53,7 @@ module.exports = (grunt) ->
 
     jscs:
       src: [
-        'src/**/*.js' 
+        'src/**/*.js'
       ]
       options:
         config: "./.jscsrc"

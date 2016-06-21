@@ -1,4 +1,5 @@
 /**
+ * @private
  * find if a node is in the given parent
  * @method hasParent
  * @param {HTMLElement} node
@@ -6,11 +7,11 @@
  * @return {Boolean} found
  */
 export default function hasParent(node, parent) {
-    while (node) {
-        if (node == parent) {
-            return true;
-        }
-        node = node.parentNode;
+  while (node) {
+    if (node === parent) {
+      return true;
     }
-    return false;
+    node = node.parentNode;
+  }
+  return false;
 }
