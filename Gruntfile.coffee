@@ -1,3 +1,4 @@
+babel = require('rollup-plugin-babel');
 module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON 'package.json'
@@ -16,21 +17,15 @@ module.exports = (grunt) ->
         files:
           src: ['./hammer.js','./hammer.min.js']
 
-    concat:
-      build:
-        src: [
-          'src/hammer.prefix.js'
-          'src/utils.js'
-          'src/input.js'
-          'src/input/*.js'
-          'src/touchaction.js'
-          'src/recognizer.js'
-          'src/recognizers/*.js'
-          'src/hammer.js'
-          'src/manager.js'
-          'src/expose.js'
-          'src/hammer.suffix.js']
+    rollup:
+      options:
+        format: 'es6'
+        plugins: [ babel({exclude: 'node_modules/**'}) ]
+        intro: " (function(window, document, exportName, undefined) { \n'use strict';"
+        outro: "})(window, document, 'Hammer');"
+      files:
         dest: 'hammer.js'
+        src: 'src/main.js'
 
     uglify:
       min:
@@ -39,28 +34,6 @@ module.exports = (grunt) ->
           sourceMap: 'hammer.min.map'
         files:
           'hammer.min.js': ['hammer.js']
-       # special test build that exposes everything so it's testable
-      test:
-        options:
-          wrap: "$H"
-          comments: 'all'
-          exportAll: true
-          mangle: false
-          beautify: true
-          compress:
-            global_defs:
-              exportName: 'Hammer'
-        files:
-          'tests/build.js': [
-            'src/utils.js'
-            'src/input.js'
-            'src/input/*.js'
-            'src/touchaction.js'
-            'src/recognizer.js'
-            'src/recognizers/*.js'
-            'src/hammer.js'
-            'src/manager.js'
-            'src/expose.js']
 
     'string-replace':
       version:
@@ -80,9 +53,7 @@ module.exports = (grunt) ->
 
     jscs:
       src: [
-        'src/**/*.js',
-        '!src/hammer.prefix.js',
-        '!src/hammer.suffix.js'
+        'src/**/*.js'
       ]
       options:
         config: "./.jscsrc"
@@ -91,7 +62,7 @@ module.exports = (grunt) ->
     watch:
       scripts:
         files: ['src/**/*.js']
-        tasks: ['concat','string-replace','uglify','jshint','jscs']
+        tasks: ['rollup','string-replace','uglify','jshint','jscs']
         options:
           interrupt: true
 
@@ -106,7 +77,7 @@ module.exports = (grunt) ->
 
 
   # Load tasks
-  grunt.loadNpmTasks 'grunt-contrib-concat'
+  grunt.loadNpmTasks 'grunt-rollup';
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-qunit'
   grunt.loadNpmTasks 'grunt-contrib-watch'
@@ -119,6 +90,6 @@ module.exports = (grunt) ->
   # Default task(s)
   grunt.registerTask 'default', ['connect', 'watch']
   grunt.registerTask 'default-test', ['connect', 'uglify:test', 'watch']
-  grunt.registerTask 'build', ['concat', 'string-replace', 'uglify:min', 'usebanner', 'test']
-  grunt.registerTask 'test', ['jshint', 'jscs', 'uglify:test', 'qunit']
+  grunt.registerTask 'build', ['rollup','string-replace', 'uglify:min', 'usebanner', 'test']
+  grunt.registerTask 'test', ['jshint', 'jscs','qunit']
   grunt.registerTask 'test-travis', ['build']
