@@ -15,6 +15,7 @@ export default class StreamEvent {
     this._source = this._isImportantEvent ? info.event : undefined;
     this.silenced = false;
     this.prev = prev;
+    this.pointerId = info.pointerId;
 
     // time
     this.time = performance.now();
@@ -25,10 +26,16 @@ export default class StreamEvent {
     this.y = info.y;
 
     // deltas off of origin event
-    this.originX = prev ? (prev.originX || prev.x) : info.x;
-    this.originY = prev ? (prev.originY || prev.y) : info.y;
+    this.originX = info.originX;
+    this.originY = info.originY;
     this.totalX = info.x - this.originX;
     this.totalY = info.y - this.originY;
+
+    // deltas off the segment
+    this.segmentOriginX = info.segmentOriginX;
+    this.segmentOriginY = info.segmentOriginY;
+    this.segmentX = info.x - this.segmentOriginX;
+    this.segmentY = info.y - this.segmentOriginY;
 
     // deltas off of last event
     this.dX = prev ? info.x - prev.x : 0;

@@ -7,13 +7,13 @@ export default class Layer {
     this._handlers = {};
   }
 
-  recognize(input, streams, streamEvent) {
+  recognize(input, streams, stream, streamEvent) {
     let { recognizers } = this;
 
     for (let i = 0; i < recognizers.length; i++) {
       let recognizer = recognizers[i];
 
-      if (recognizer.recognize(input, streams, streamEvent)) {
+      if (recognizer.recognize(input, streams, stream, streamEvent)) {
         input.handler = recognizer;
         return true;
       }

@@ -34,11 +34,11 @@ export default class Manager {
     this.inputs[name] = new InputClass(this.rootElement, this);
   }
 
-  recognize(input, streams, streamEvent) {
+  recognize(input, streams, stream, streamEvent) {
     let layer = this._findParentLayer(streamEvent.element);
 
     while (layer) {
-      if (layer.recognize(input, streams, streamEvent)) {
+      if (layer.recognize(input, streams, stream, streamEvent)) {
         this.startInputRecognition();
         break;
       }
