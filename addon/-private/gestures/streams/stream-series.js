@@ -1,16 +1,16 @@
-import FastArray from '../../cache-list/fast-array';
-import { MAX_ARRAY_SIZE } from '../../cache-list/fast-array';
+import FastArray from 'perf-primitives/fast-array';
+import { SMALL_ARRAY_LENGTH } from 'perf-primitives/-constants';
 
 const STREAM_SERIES_POOL = new FastArray(10, 'StreamSeries Pool');
 
 export default class StreamSeries extends FastArray {
 
-  constructor(number = MAX_ARRAY_SIZE, name = 'StreamEvent to List') {
+  constructor(number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
     super(number, name);
     this._isDestroyed = false;
   }
 
-  static create(number = MAX_ARRAY_SIZE, name = 'StreamEvent to List') {
+  static create(number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
     let series = STREAM_SERIES_POOL.pop();
 
     if (series) {

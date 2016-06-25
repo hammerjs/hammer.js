@@ -1,10 +1,10 @@
-import CacheList from '../cache-list';
+import HashMap from 'perf-primitives/hash-map';
 import ElementStyle from './element-style';
 
 export default class Animation {
 
   constructor() {
-    this.cache = new CacheList();
+    this.cache = new HashMap();
   }
 
   // We dumb
