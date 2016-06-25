@@ -5,21 +5,27 @@ const STREAM_SERIES_POOL = new FastArray(10, 'StreamSeries Pool');
 
 export default class StreamSeries extends FastArray {
 
-  constructor(number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
+  constructor(values, number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
     super(number, name);
     this._isDestroyed = false;
   }
 
-  static create(number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
+  init({ originX, originY }, length, name) {
+    super.init(length, name);
+    this.originX = originX;
+    this.originY = originY;
+  }
+
+  static create(values, number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
     let series = STREAM_SERIES_POOL.pop();
 
     if (series) {
-      series.init(number, name);
+      series.init(values, number, name);
 
       return series;
     }
 
-    return new StreamSeries(number, name);
+    return new StreamSeries(values, number, name);
   }
 
   destroy() {

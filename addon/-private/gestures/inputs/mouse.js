@@ -3,6 +3,15 @@ import SUPPORTS_PASSIVE from '../utils/supports-passive';
 
 export default class MouseInput extends Input {
 
+  extract(event) {
+    return {
+      pointerId: 'MOUSE_POINTER',
+      x: event.clientX,
+      y: event.clientY,
+      event
+    };
+  }
+
   attach() {
     if (this.attached) {
       return;
@@ -11,10 +20,10 @@ export default class MouseInput extends Input {
 
     let opts = SUPPORTS_PASSIVE ? { capture: true, passive: true } : true;
 
-    element.addEventListener('mousedown', this._bind('start'), opts);
-    element.addEventListener('mouseup', this._bind('end'), opts);
-    element.addEventListener('mouseexit', this._bind('interrupt'), opts);
-    element.addEventListener('mousemove', this._bind('update'), opts);
+    element.addEventListener('mousedown', this._bind('extractThen', 'start'), opts);
+    element.addEventListener('mouseup', this._bind('extractThen', 'end'), opts);
+    element.addEventListener('mouseexit', this._bind('extractThen', 'interrupt'), opts);
+    element.addEventListener('mousemove', this._bind('extractThen', 'update'), opts);
 
     this.attached = true;
   }
