@@ -1,5 +1,5 @@
 import TransformStyle from './transform-style';
-import CacheList from '../cache-list';
+import HashMap from 'perf-primitives/hash-map';
 import ValueTransform from './value-transform';
 import TRANSFORM_PROP from './utils/transform-prop';
 import LAYOUT_PROPS from './utils/layout-props';
@@ -19,7 +19,7 @@ export default class ElementStyle {
   }
 
   init(values, element) {
-    this.changes = new CacheList();
+    this.changes = new HashMap();
     this.hasTransform = false;
     this.srcStyle = window.getComputedStyle(element);
     this.transformStyle = new TransformStyle(this.srcStyle.transform);

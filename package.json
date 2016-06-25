@@ -47,7 +47,8 @@
     "liquid-fire": "0.23.1",
     "loader.js": "^4.0.1",
     "morgan": "^1.7.0",
-    "object-assign": "^4.1.0"
+    "object-assign": "^4.1.0",
+    "perf-primitives": "runspired/perf-primitives"
   },
   "keywords": [
     "ember-addon"
