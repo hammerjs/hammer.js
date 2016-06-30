@@ -1,5 +1,4 @@
-import { AttrRecognizer } from './attribute';
-import inherit from '../utils/inherit';
+import  AttrRecognizer from './attribute';
 import {
     DIRECTION_ALL,
     DIRECTION_HORIZONTAL,
@@ -21,25 +20,27 @@ import directionStr from '../recognizerjs/direction-str';
  * @constructor
  * @extends AttrRecognizer
  */
-function PanRecognizer() {
-  AttrRecognizer.apply(this, arguments);
+export default class PanRecognizer extends AttrRecognizer {
+  constructor() {
+    super(...arguments);
 
-  this.pX = null;
-  this.pY = null;
-}
+    this.pX = null;
+    this.pY = null;
+  }
 
-inherit(PanRecognizer, AttrRecognizer, {
   /**
    * @private
    * @namespace
    * @memberof PanRecognizer
    */
-  defaults: {
-    event: 'pan',
-    threshold: 10,
-    pointers: 1,
-    direction: DIRECTION_ALL
-  },
+  get defaults() {
+    return {
+      event: 'pan',
+      threshold: 10,
+      pointers: 1,
+      direction: DIRECTION_ALL
+    };
+  }
 
   getTouchAction() {
     let { options:{ direction } } = this;
@@ -51,7 +52,7 @@ inherit(PanRecognizer, AttrRecognizer, {
       actions.push(TOUCH_ACTION_PAN_X);
     }
     return actions;
-  },
+  }
 
   directionTest(input) {
     let { options } = this;
@@ -75,12 +76,12 @@ inherit(PanRecognizer, AttrRecognizer, {
     }
     input.direction = direction;
     return hasMoved && distance > options.threshold && direction & options.direction;
-  },
+  }
 
   attrTest(input) {
-    return AttrRecognizer.prototype.attrTest.call(this, input) &&
+    return AttrRecognizer.prototype.attrTest.call(this, input) && // replace with a super call
         (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
-  },
+  }
 
   emit(input) {
 
@@ -92,8 +93,6 @@ inherit(PanRecognizer, AttrRecognizer, {
     if (direction) {
       input.additionalEvent = this.options.event + direction;
     }
-    this._super.emit.call(this, input);
+    super.emit(input);
   }
-});
-
-export { PanRecognizer };
+}

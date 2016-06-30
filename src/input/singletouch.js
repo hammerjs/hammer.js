@@ -5,8 +5,7 @@ import {
     INPUT_CANCEL,
     INPUT_TYPE_TOUCH
 } from '../inputjs/input-consts';
-import { Input } from '../inputjs/input-constructor';
-import inherit from '../utils/inherit';
+import Input from '../inputjs/input-constructor';
 import toArray from '../utils/to-array';
 import uniqueArray from '../utils/unique-array';
 
@@ -26,15 +25,16 @@ const SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @constructor
  * @extends Input
  */
-function SingleTouchInput() {
-  this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
-  this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
-  this.started = false;
+export default class SingleTouchInput extends Input {
+  constructor() {
+    super(...arguments);
+    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+    this.started = false;
 
-  Input.apply(this, arguments);
-}
+    Input.apply(this, arguments);
+  }
 
-inherit(SingleTouchInput, Input, {
   handler(ev) {
     let type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
@@ -61,7 +61,7 @@ inherit(SingleTouchInput, Input, {
       srcEvent: ev
     });
   }
-});
+}
 
 /**
  * @private
@@ -80,5 +80,3 @@ function normalizeSingleTouches(ev, type) {
 
   return [all, changed];
 }
-
-export { SingleTouchInput };

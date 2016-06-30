@@ -1,9 +1,8 @@
-import { Recognizer } from '../recognizerjs/recognizer-constructor';
+import Recognizer from '../recognizerjs/recognizer-constructor';
 import {
     STATE_RECOGNIZED,
     STATE_FAILED
 } from '../recognizerjs/recognizer-consts';
-import inherit from '../utils/inherit';
 import { now } from '../utils/utils-consts';
 import setTimeoutContext from '../utils/set-timeout-context';
 import { TOUCH_ACTION_AUTO } from '../touchactionjs/touchaction-Consts';
@@ -20,29 +19,31 @@ import {
  * @constructor
  * @extends Recognizer
  */
-function PressRecognizer() {
-  Recognizer.apply(this, arguments);
+export default class PressRecognizer extends Recognizer {
+  constructor() {
+    super(...arguments);
 
-  this._timer = null;
-  this._input = null;
-}
+    this._timer = null;
+    this._input = null;
+  }
 
-inherit(PressRecognizer, Recognizer, {
   /**
    * @private
    * @namespace
    * @memberof PressRecognizer
    */
-  defaults: {
-    event: 'press',
-    pointers: 1,
-    time: 251, // minimal time of the pointer to be pressed
-    threshold: 9 // a minimal movement is ok, but keep it low
-  },
+  get defaults() {
+    return {
+      event: 'press',
+      pointers: 1,
+      time: 251, // minimal time of the pointer to be pressed
+      threshold: 9 // a minimal movement is ok, but keep it low
+    };
+  }
 
   getTouchAction() {
     return [TOUCH_ACTION_AUTO];
-  },
+  }
 
   process(input) {
     let { options } = this;
@@ -66,11 +67,11 @@ inherit(PressRecognizer, Recognizer, {
       return STATE_RECOGNIZED;
     }
     return STATE_FAILED;
-  },
+  }
 
   reset() {
     clearTimeout(this._timer);
-  },
+  }
 
   emit(input) {
     if (this.state !== STATE_RECOGNIZED) {
@@ -84,6 +85,4 @@ inherit(PressRecognizer, Recognizer, {
       this.manager.emit(this.options.event, this._input);
     }
   }
-});
-
-export { PressRecognizer };
+}

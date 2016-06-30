@@ -1,6 +1,5 @@
-import inherit from '../utils/inherit';
 import setTimeoutContext from '../utils/set-timeout-context';
-import { Recognizer } from '../recognizerjs/recognizer-constructor';
+import Recognizer from '../recognizerjs/recognizer-constructor';
 import { TOUCH_ACTION_MANIPULATION } from '../touchactionjs/touchaction-Consts';
 import {INPUT_START,INPUT_END } from '../inputjs/input-consts';
 import {
@@ -21,38 +20,39 @@ import getDistance from '../inputjs/get-distance';
  * @constructor
  * @extends Recognizer
  */
-function TapRecognizer() {
-  Recognizer.apply(this, arguments);
+export default class TapRecognizer extends Recognizer {
+  constructor() {
+    super(...arguments);
+    // previous time and center,
+    // used for tap counting
+    this.pTime = false;
+    this.pCenter = false;
 
-  // previous time and center,
-  // used for tap counting
-  this.pTime = false;
-  this.pCenter = false;
+    this._timer = null;
+    this._input = null;
+    this.count = 0;
+  }
 
-  this._timer = null;
-  this._input = null;
-  this.count = 0;
-}
-
-inherit(TapRecognizer, Recognizer, {
   /**
    * @private
    * @namespace
    * @memberof PinchRecognizer
    */
-  defaults: {
-    event: 'tap',
-    pointers: 1,
-    taps: 1,
-    interval: 300, // max time between the multi-tap taps
-    time: 250, // max time of the pointer to be down (like finger on the screen)
-    threshold: 9, // a minimal movement is ok, but keep it low
-    posThreshold: 10 // a multi-tap can be a bit off the initial position
-  },
+  get defaults() {
+    return {
+      event: 'tap',
+      pointers: 1,
+      taps: 1,
+      interval: 300, // max time between the multi-tap taps
+      time: 250, // max time of the pointer to be down (like finger on the screen)
+      threshold: 9, // a minimal movement is ok, but keep it low
+      posThreshold: 10 // a multi-tap can be a bit off the initial position
+    };
+  }
 
   getTouchAction() {
     return [TOUCH_ACTION_MANIPULATION];
-  },
+  }
 
   process(input) {
     let { options } = this;
@@ -106,18 +106,18 @@ inherit(TapRecognizer, Recognizer, {
       }
     }
     return STATE_FAILED;
-  },
+  }
 
   failTimeout() {
     this._timer = setTimeoutContext(() => {
       this.state = STATE_FAILED;
     }, this.options.interval, this);
     return STATE_FAILED;
-  },
+  }
 
   reset() {
     clearTimeout(this._timer);
-  },
+  }
 
   emit() {
     if (this.state === STATE_RECOGNIZED) {
@@ -125,6 +125,4 @@ inherit(TapRecognizer, Recognizer, {
       this.manager.emit(this.options.event, this._input);
     }
   }
-});
-
-export { TapRecognizer };
+}

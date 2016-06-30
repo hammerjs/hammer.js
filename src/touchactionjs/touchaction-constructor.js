@@ -24,12 +24,12 @@ import cleanTouchActions from './clean-touch-actions';
  * @param {String} value
  * @constructor
  */
-function TouchAction(manager, value) {
-  this.manager = manager;
-  this.set(value);
-}
+export default class TouchAction {
+  constructor(manager, value) {
+    this.manager = manager;
+    this.set(value);
+  }
 
-TouchAction.prototype = {
   /**
    * @private
    * set the touchAction value on the element or enable the polyfill
@@ -45,7 +45,7 @@ TouchAction.prototype = {
       this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
     }
     this.actions = value.toLowerCase().trim();
-  },
+  }
 
   /**
    * @private
@@ -53,7 +53,7 @@ TouchAction.prototype = {
    */
   update() {
     this.set(this.manager.options.touchAction);
-  },
+  }
 
   /**
    * @private
@@ -68,7 +68,7 @@ TouchAction.prototype = {
       }
     });
     return cleanTouchActions(actions.join(' '));
-  },
+  }
 
   /**
    * @private
@@ -111,7 +111,7 @@ TouchAction.prototype = {
         (hasPanX && direction & DIRECTION_VERTICAL)) {
       return this.preventSrc(srcEvent);
     }
-  },
+  }
 
   /**
    * @private
@@ -122,6 +122,4 @@ TouchAction.prototype = {
     this.manager.session.prevented = true;
     srcEvent.preventDefault();
   }
-};
-
-export { TouchAction };
+}
