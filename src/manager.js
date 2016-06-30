@@ -1,13 +1,13 @@
 import assign from './utils/assign';
-import { Hammer } from './hammer';
-import { TouchAction } from './touchactionjs/touchaction-constructor';
+import  Hammer  from './hammer';
+import TouchAction from './touchactionjs/touchaction-constructor';
 import createInputInstance from './inputjs/create-input-instance';
 import each from './utils/each';
 import inArray from './utils/in-array';
 import invokeArrayArg from './utils/invoke-array-arg';
 import splitStr from './utils/split-str';
 import prefixed from './utils/prefixed';
-import { Recognizer } from './recognizerjs/recognizer-constructor';
+import Recognizer from './recognizerjs/recognizer-constructor';
 import {
     STATE_BEGAN,
     STATE_ENDED,
@@ -25,30 +25,30 @@ const FORCED_STOP = 2;
  * @param {Object} [options]
  * @constructor
  */
-function Manager(element, options) {
-  this.options = assign({}, Hammer.defaults, options || {});
+export default class Manager {
+  constructor(element, options) {
+    this.options = assign({}, Hammer.defaults, options || {});
 
-  this.options.inputTarget = this.options.inputTarget || element;
+    this.options.inputTarget = this.options.inputTarget || element;
 
-  this.handlers = {};
-  this.session = {};
-  this.recognizers = [];
-  this.oldCssProps = {};
+    this.handlers = {};
+    this.session = {};
+    this.recognizers = [];
+    this.oldCssProps = {};
 
-  this.element = element;
-  this.input = createInputInstance(this);
-  this.touchAction = new TouchAction(this, this.options.touchAction);
+    this.element = element;
+    this.input = createInputInstance(this);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
 
-  toggleCssProps(this, true);
+    toggleCssProps(this, true);
 
-  each(this.options.recognizers, (item) => {
-    let recognizer = this.add(new (item[0])(item[1]));
-    item[2] && recognizer.recognizeWith(item[2]);
-    item[3] && recognizer.requireFailure(item[3]);
-  }, this);
-}
+    each(this.options.recognizers, (item) => {
+      let recognizer = this.add(new (item[0])(item[1]));
+      item[2] && recognizer.recognizeWith(item[2]);
+      item[3] && recognizer.requireFailure(item[3]);
+    }, this);
+  }
 
-Manager.prototype = {
   /**
    * @private
    * set options
@@ -69,7 +69,7 @@ Manager.prototype = {
       this.input.init();
     }
     return this;
-  },
+  }
 
   /**
    * @private
@@ -80,7 +80,7 @@ Manager.prototype = {
    */
   stop(force) {
     this.session.stopped = force ? FORCED_STOP : STOP;
-  },
+  }
 
   /**
    * @private
@@ -137,7 +137,7 @@ Manager.prototype = {
       }
       i++;
     }
-  },
+  }
 
   /**
    * @private
@@ -157,7 +157,7 @@ Manager.prototype = {
       }
     }
     return null;
-  },
+  }
 
   /**
    * @private add a recognizer to the manager
@@ -181,7 +181,7 @@ Manager.prototype = {
 
     this.touchAction.update();
     return recognizer;
-  },
+  }
 
   /**
    * @private
@@ -208,7 +208,7 @@ Manager.prototype = {
     }
 
     return this;
-  },
+  }
 
   /**
    * @private
@@ -231,7 +231,7 @@ Manager.prototype = {
       handlers[event].push(handler);
     });
     return this;
-  },
+  }
 
   /**
    * @private unbind event, leave emit blank to remove all handlers
@@ -253,7 +253,7 @@ Manager.prototype = {
       }
     });
     return this;
-  },
+  }
 
   /**
    * @private emit event to the listeners
@@ -282,7 +282,7 @@ Manager.prototype = {
       handlers[i](data);
       i++;
     }
-  },
+  }
 
   /**
    * @private
@@ -297,7 +297,7 @@ Manager.prototype = {
     this.input.destroy();
     this.element = null;
   }
-};
+}
 
 /**
  * @private
@@ -337,5 +337,3 @@ function triggerDomEvent(event, data) {
   gestureEvent.gesture = data;
   data.target.dispatchEvent(gestureEvent);
 }
-
-export { Manager };

@@ -5,8 +5,7 @@ import {
     INPUT_CANCEL,
     INPUT_TYPE_TOUCH
 } from '../inputjs/input-consts';
-import { Input } from '../inputjs/input-constructor';
-import inherit from '../utils/inherit';
+import Input from '../inputjs/input-constructor';
 import toArray from '../utils/to-array';
 import hasParent from '../utils/has-parent';
 import uniqueArray from '../utils/unique-array';
@@ -26,14 +25,17 @@ const TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
  * @constructor
  * @extends Input
  */
-function TouchInput() {
-  this.evTarget = TOUCH_TARGET_EVENTS;
-  this.targetIds = {};
+export default class TouchInput extends Input {
 
-  Input.apply(this, arguments);
-}
+  constructor() {
+    TouchInput.prototype.evTarget = TOUCH_TARGET_EVENTS;
+    TouchInput.prototype.targetIds = {};
+    super(...arguments);
 
-inherit(TouchInput, Input, {
+    this.evTarget = TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
+  }
+
   handler(ev) {
     let type = TOUCH_INPUT_MAP[ev.type];
     let touches = getTouches.call(this, ev, type);
@@ -48,7 +50,7 @@ inherit(TouchInput, Input, {
       srcEvent: ev
     });
   }
-});
+}
 
 /**
  * @private
@@ -111,5 +113,3 @@ function getTouches(ev, type) {
       changedTargetTouches
   ];
 }
-
-export { TouchInput };

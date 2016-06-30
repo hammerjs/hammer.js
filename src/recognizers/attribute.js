@@ -1,5 +1,4 @@
-import inherit from '../utils/inherit';
-import { Recognizer } from '../recognizerjs/recognizer-constructor';
+import Recognizer from '../recognizerjs/recognizer-constructor';
 import {
     STATE_BEGAN,
     STATE_CHANGED,
@@ -18,24 +17,26 @@ import {
  * @constructor
  * @extends Recognizer
  */
-function AttrRecognizer() {
-  Recognizer.apply(this, arguments);
-}
+export default class AttrRecognizer extends Recognizer {
+  constructor() {
+    super(...arguments);
+  }
 
-inherit(AttrRecognizer, Recognizer, {
   /**
    * @private
    * @namespace
    * @memberof AttrRecognizer
    */
-  defaults: {
-    /**
-     * @private
-     * @type {Number}
-     * @default 1
-     */
-    pointers: 1
-  },
+  get defaults() {
+    return {
+      /**
+      * @private
+      * @type {Number}
+      * @default 1
+      */
+      pointers: 1
+    };
+  }
 
   /**
    * @private
@@ -47,7 +48,7 @@ inherit(AttrRecognizer, Recognizer, {
   attrTest(input) {
     let optionPointers = this.options.pointers;
     return optionPointers === 0 || input.pointers.length === optionPointers;
-  },
+  }
 
   /**
    * @private
@@ -76,6 +77,4 @@ inherit(AttrRecognizer, Recognizer, {
     }
     return STATE_FAILED;
   }
-});
-
-export { AttrRecognizer };
+}

@@ -1,8 +1,7 @@
-import { Input } from '../inputjs/input-constructor';
-import inherit from '../utils/inherit';
+import Input from '../inputjs/input-constructor';
 import bindFn from '../utils/bind-fn';
-import { TouchInput } from './touch';
-import { MouseInput } from './mouse';
+import  TouchInput  from './touch';
+import  MouseInput  from './mouse';
 import {
     INPUT_START,
     INPUT_END,
@@ -25,18 +24,18 @@ import {
 const DEDUP_TIMEOUT = 2500;
 const DEDUP_DISTANCE = 25;
 
-function TouchMouseInput() {
-  Input.apply(this, arguments);
+export default class TouchMouseInput extends Input {
+  constructor() {
+    super(...arguments);
 
-  let handler = bindFn(this.handler, this);
-  this.touch = new TouchInput(this.manager, handler);
-  this.mouse = new MouseInput(this.manager, handler);
+    let handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
 
-  this.primaryTouch = null;
-  this.lastTouches = [];
-}
+    this.primaryTouch = null;
+    this.lastTouches = [];
+  }
 
-inherit(TouchMouseInput, Input, {
   /**
    * @private
    * handle mouse and touch events
@@ -60,7 +59,7 @@ inherit(TouchMouseInput, Input, {
     }
 
     this.callback(manager, inputEvent, inputData);
-  },
+  }
 
   /**
    * @private
@@ -70,7 +69,7 @@ inherit(TouchMouseInput, Input, {
     this.touch.destroy();
     this.mouse.destroy();
   }
-});
+}
 
 function recordTouches(eventType, eventData) {
   if (eventType & INPUT_START) {
@@ -110,5 +109,3 @@ function isSyntheticEvent(eventData) {
   }
   return false;
 }
-
-export { TouchMouseInput };

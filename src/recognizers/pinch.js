@@ -1,5 +1,4 @@
-import { AttrRecognizer } from './attribute';
-import inherit from '../utils/inherit';
+import AttrRecognizer from './attribute';
 import { TOUCH_ACTION_NONE } from '../touchactionjs/touchaction-Consts';
 import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
 
@@ -10,38 +9,38 @@ import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
  * @constructor
  * @extends AttrRecognizer
  */
-function PinchRecognizer() {
-  AttrRecognizer.apply(this, arguments);
-}
+export default class PinchRecognizer extends AttrRecognizer {
+  constructor() {
+    super(...arguments);
+  }
 
-inherit(PinchRecognizer, AttrRecognizer, {
   /**
    * @private
    * @namespace
    * @memberof PinchRecognizer
    */
-  defaults: {
-    event: 'pinch',
-    threshold: 0,
-    pointers: 2
-  },
+  get defaults() {
+    return {
+      event: 'pinch',
+      threshold: 0,
+      pointers: 2
+    };
+  }
 
   getTouchAction() {
     return [TOUCH_ACTION_NONE];
-  },
+  }
 
   attrTest(input) {
-    return this._super.attrTest.call(this, input) &&
+    return super.attrTest(input) &&
         (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
-  },
+  }
 
   emit(input) {
     if (input.scale !== 1) {
       let inOut = input.scale < 1 ? 'in' : 'out';
       input.additionalEvent = this.options.event + inOut;
     }
-    this._super.emit.call(this, input);
+    super.emit(input);
   }
-});
-
-export { PinchRecognizer };
+}

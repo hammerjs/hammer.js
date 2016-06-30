@@ -8,8 +8,7 @@ import {
     INPUT_TYPE_PEN,
     INPUT_TYPE_KINECT
 } from '../inputjs/input-consts';
-import { Input } from '../inputjs/input-constructor';
-import inherit from '../utils/inherit';
+import Input from '../inputjs/input-constructor';
 import inArray from '../utils/in-array';
 
 const POINTER_INPUT_MAP = {
@@ -43,16 +42,15 @@ if (window.MSPointerEvent && !window.PointerEvent) {
  * @constructor
  * @extends Input
  */
-function PointerEventInput() {
-  this.evEl = POINTER_ELEMENT_EVENTS;
-  this.evWin = POINTER_WINDOW_EVENTS;
+export default class PointerEventInput extends Input {
+  constructor() {
+    super(...arguments);
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
 
-  Input.apply(this, arguments);
+    this.store = (this.manager.session.pointerEvents = []);
+  }
 
-  this.store = (this.manager.session.pointerEvents = []);
-}
-
-inherit(PointerEventInput, Input, {
   /**
    * @private
    * handle mouse events
@@ -101,6 +99,4 @@ inherit(PointerEventInput, Input, {
       store.splice(storeIndex, 1);
     }
   }
-});
-
-export { PointerEventInput };
+}

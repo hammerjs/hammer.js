@@ -7,4 +7,5 @@
   ],
   "disallowConstOutsideModuleScope": false,
   "requireArrowFunctions": true,
+  "disallowEmptyBlocks": false
 }

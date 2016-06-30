@@ -52,29 +52,30 @@ import stateStr from './state-str';
  * @constructor
  * @param {Object} options
  */
-function Recognizer(options) {
-  this.options = assign({}, this.defaults, options || {});
+export default class Recognizer {
+  constructor(options) {
+    this.options = assign({}, this.defaults, options || {});
 
-  this.id = uniqueId();
+    this.id = uniqueId();
 
-  this.manager = null;
+    this.manager = null;
 
-  // default is enable true
-  this.options.enable = ifUndefined(this.options.enable, true);
+    // default is enable true
+    this.options.enable = ifUndefined(this.options.enable, true);
 
-  this.state = STATE_POSSIBLE;
+    this.state = STATE_POSSIBLE;
 
-  this.simultaneous = {};
-  this.requireFail = [];
-}
-
-Recognizer.prototype = {
+    this.simultaneous = {};
+    this.requireFail = [];
+  }
   /**
    * @private
    * @virtual
    * @type {Object}
    */
-  defaults: {},
+  get defaults() {
+    return {};
+  }
 
   /**
    * @private
@@ -88,7 +89,7 @@ Recognizer.prototype = {
     // also update the touchAction, in case something changed about the directions/enabled state
     this.manager && this.manager.touchAction.update();
     return this;
-  },
+  }
 
   /**
    * @private
@@ -108,7 +109,7 @@ Recognizer.prototype = {
       otherRecognizer.recognizeWith(this);
     }
     return this;
-  },
+  }
 
   /**
    * @private
@@ -124,7 +125,7 @@ Recognizer.prototype = {
     otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
     delete this.simultaneous[otherRecognizer.id];
     return this;
-  },
+  }
 
   /**
    * @private
@@ -144,7 +145,7 @@ Recognizer.prototype = {
       otherRecognizer.requireFailure(this);
     }
     return this;
-  },
+  }
 
   /**
    * @private
@@ -163,7 +164,7 @@ Recognizer.prototype = {
       this.requireFail.splice(index, 1);
     }
     return this;
-  },
+  }
 
   /**
    * @private
@@ -172,7 +173,7 @@ Recognizer.prototype = {
    */
   hasRequireFailures() {
     return this.requireFail.length > 0;
-  },
+  }
 
   /**
    * @private
@@ -182,7 +183,7 @@ Recognizer.prototype = {
    */
   canRecognizeWith(otherRecognizer) {
     return !!this.simultaneous[otherRecognizer.id];
-  },
+  }
 
   /**
    * @private
@@ -213,7 +214,7 @@ Recognizer.prototype = {
     if (state >= STATE_ENDED) {
       emit(self.options.event + stateStr(state));
     }
-  },
+  }
 
   /**
    * @private
@@ -228,7 +229,7 @@ Recognizer.prototype = {
     }
     // it's failing anyway
     this.state = STATE_FAILED;
-  },
+  }
 
   /**
    * @private
@@ -244,7 +245,7 @@ Recognizer.prototype = {
       i++;
     }
     return true;
-  },
+  }
 
   /**
    * @private
@@ -275,7 +276,7 @@ Recognizer.prototype = {
     if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
       this.tryEmit(inputDataClone);
     }
-  },
+  }
 
   /**
    * @private
@@ -287,7 +288,7 @@ Recognizer.prototype = {
    */
 
   /* jshint ignore:start */
-  process(inputData) { },
+  process(inputData) { }
   /* jshint ignore:end */
 
   /**
@@ -296,7 +297,7 @@ Recognizer.prototype = {
    * @virtual
    * @returns {Array}
    */
-  getTouchAction() { },
+  getTouchAction() { }
 
   /**
    * @private
@@ -305,6 +306,4 @@ Recognizer.prototype = {
    * @virtual
    */
   reset() { }
-};
-
-export { Recognizer };
+}
