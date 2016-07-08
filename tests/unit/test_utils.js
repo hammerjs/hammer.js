@@ -1,164 +1,164 @@
-module('utils');
+QUnit.module( "utils" );
 
-// for the tests, all hammer properties and methods of Hammer are exposed to window.Hammer
+// For the tests, all hammer properties and methods of Hammer are exposed to window.Hammer
 
-test('get/set prefixed util', function() {
-    ok(_.isUndefined(Hammer.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+QUnit.test( "get/set prefixed util", function( assert ) {
+    assert.ok( _.isUndefined( Hammer.prefixed( window, "FakeProperty" ) ), "non existent property returns undefined" );
 
     window.webkitFakeProperty = 1337;
-    ok(Hammer.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
+    assert.ok( Hammer.prefixed( window, "FakeProperty" ) == "webkitFakeProperty", "existent prefixed property returns the prefixed name" );
 
     delete window.webkitFakeProperty;
-});
+} );
 
-test('fnBind', function() {
+QUnit.test( "fnBind", function( assert ) {
     var context = { a: true };
 
-    Hammer.bindFn(function(b) {
-        ok(this.a === true, 'bindFn scope');
-        ok(b === 123, 'bindFn argument');
-    }, context)(123);
-});
+    Hammer.bindFn( function( b ) {
+        assert.ok( this.a === true, "bindFn scope" );
+        assert.ok( b === 123, "bindFn argument" );
+    }, context )( 123 );
+} );
 
-test('Inherit objects', function() {
+QUnit.test( "Inherit objects", function( assert ) {
     function Base() {
         this.name = true;
     }
 
     function Child() {
-        Base.call(this);
+        Base.call( this );
     }
 
-    Hammer.inherit(Child, Base, {
+    Hammer.inherit( Child, Base, {
         newMethod: function() {
         }
-    });
+    } );
 
     var inst = new Child();
 
-    ok(inst.name == true, 'child has extended from base');
-    ok(inst.newMethod, 'child has a new method');
-    ok(Child.prototype.newMethod, 'child has a new prototype method');
-    ok(inst instanceof Child, 'is instanceof Child');
-    ok(inst instanceof Base, 'is instanceof Base');
-    ok(inst._super === Base.prototype, '_super is ref to prototype of Base');
-});
+    assert.ok( inst.name == true, "child has extended from base" );
+    assert.ok( inst.newMethod, "child has a new method" );
+    assert.ok( Child.prototype.newMethod, "child has a new prototype method" );
+    assert.ok( inst instanceof Child, "is instanceof Child" );
+    assert.ok( inst instanceof Base, "is instanceof Base" );
+    assert.ok( inst._super === Base.prototype, "_super is ref to prototype of Base" );
+} );
 
-test('toArray', function() {
-    ok(_.isArray(Hammer.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray(Hammer.toArray([true, true])), 'array stays an array');
-});
+QUnit.test( "toArray", function( assert ) {
+    assert.ok( _.isArray( Hammer.toArray( { 0: true, 1: "second", length: 2 } ) ), "converted an array-like object to an array" );
+    assert.ok( _.isArray( Hammer.toArray( [ true, true ] ) ), "array stays an array" );
+} );
 
-test('inArray', function() {
-    ok(Hammer.inArray([1, 2, 3, 4, 'hammer'], 'hammer') === 4, 'found item and returned the index');
-    ok(Hammer.inArray([1, 2, 3, 4, 'hammer'], 'notfound') === -1, 'not found an item and returned -1');
-    ok(Hammer.inArray([
-        {id: 2},
-        {id: 24}
-    ], '24', 'id') === 1, 'find by key and return the index');
-    ok(Hammer.inArray([
-        {id: 2},
-        {id: 24}
-    ], '22', 'id') === -1, 'not found by key and return -1');
-});
+QUnit.test( "inArray", function( assert ) {
+    assert.ok( Hammer.inArray( [ 1, 2, 3, 4, "hammer" ], "hammer" ) === 4, "found item and returned the index" );
+    assert.ok( Hammer.inArray( [ 1, 2, 3, 4, "hammer" ], "notfound" ) === -1, "not found an item and returned -1" );
+    assert.ok( Hammer.inArray( [
+        { id: 2 },
+        { id: 24 }
+    ], "24", "id" ) === 1, "find by key and return the index" );
+    assert.ok( Hammer.inArray( [
+        { id: 2 },
+        { id: 24 }
+    ], "22", "id" ) === -1, "not found by key and return -1" );
+} );
 
-test('splitStr', function() {
-    deepEqual(Hammer.splitStr(' a  b  c d   '), ['a', 'b', 'c', 'd'], 'str split valid');
-});
+QUnit.test( "splitStr", function( assert ) {
+    assert.deepEqual( Hammer.splitStr( " a  b  c d   " ), [ "a", "b", "c", "d" ], "str split valid" );
+} );
 
-test('uniqueArray', function() {
-    deepEqual(Hammer.uniqueArray([
-        {id: 1},
-        {id: 2},
-        {id: 2}
-    ], 'id'), [
-        {id: 1},
-        {id: 2}
-    ], 'remove duplicate ids')
-});
+QUnit.test( "uniqueArray", function( assert ) {
+    assert.deepEqual( Hammer.uniqueArray( [
+        { id: 1 },
+        { id: 2 },
+        { id: 2 }
+    ], "id" ), [
+        { id: 1 },
+        { id: 2 }
+    ], "remove duplicate ids" );
+} );
 
-test('boolOrFn', function() {
-    equal(Hammer.boolOrFn(true), true, 'Passing an boolean');
-    equal(Hammer.boolOrFn(false), false, 'Passing an boolean');
-    equal(Hammer.boolOrFn(function() {
+QUnit.test( "boolOrFn", function( assert ) {
+    assert.equal( Hammer.boolOrFn( true ), true, "Passing an boolean" );
+    assert.equal( Hammer.boolOrFn( false ), false, "Passing an boolean" );
+    assert.equal( Hammer.boolOrFn( function() {
         return true;
-    }), true, 'Passing an boolean');
-    equal(Hammer.boolOrFn(1), true, 'Passing an integer');
-});
+    } ), true, "Passing an boolean" );
+    assert.equal( Hammer.boolOrFn( 1 ), true, "Passing an integer" );
+} );
 
-test('hasParent', function() {
-    var parent = document.createElement('div'),
-        child = document.createElement('div');
+QUnit.test( "hasParent", function( assert ) {
+    var parent = document.createElement( "div" ),
+        child = document.createElement( "div" );
 
-    document.body.appendChild(parent);
-    parent.appendChild(child);
+    document.body.appendChild( parent );
+    parent.appendChild( child );
 
-    equal(Hammer.hasParent(child, parent), true, 'Found parent');
-    equal(Hammer.hasParent(parent, child), false, 'Not in parent');
+    assert.equal( Hammer.hasParent( child, parent ), true, "Found parent" );
+    assert.equal( Hammer.hasParent( parent, child ), false, "Not in parent" );
 
-    document.body.removeChild(parent);
-});
+    document.body.removeChild( parent );
+} );
 
-test('each', function() {
+QUnit.test( "each", function( assert ) {
     var object = { hi: true };
-    var array = ['a', 'b', 'c'];
+    var array = [ "a", "b", "c" ];
     var loop;
 
     loop = false;
-    Hammer.each(object, function(value, key) {
-        if (key == 'hi' && value === true) {
+    Hammer.each( object, function( value, key ) {
+        if ( key == "hi" && value === true ) {
             loop = true;
         }
-    });
-    ok(loop, 'object loop');
+    } );
+    assert.ok( loop, "object loop" );
 
     loop = 0;
-    Hammer.each(array, function(value, key) {
-        if (value) {
+    Hammer.each( array, function( value, key ) {
+        if ( value ) {
             loop++;
         }
-    });
-    ok(loop == 3, 'array loop');
+    } );
+    assert.ok( loop == 3, "array loop" );
 
     loop = 0;
     array.forEach = null;
-    Hammer.each(array, function(value, key) {
-        if (value) {
+    Hammer.each( array, function( value, key ) {
+        if ( value ) {
             loop++;
         }
-    });
-    ok(loop == 3, 'array loop without Array.forEach');
-});
+    } );
+    assert.ok( loop == 3, "array loop without Array.forEach" );
+} );
 
-test('assign', function() {
-    expect(2);
-    deepEqual(
+QUnit.test( "assign", function( assert ) {
+    assert.expect( 2 );
+    assert.deepEqual(
         Hammer.assign(
-            {a: 1, b: 3},
-            {b: 2, c: 3}
+            { a: 1, b: 3 },
+            { b: 2, c: 3 }
         ),
-        {a: 1, b: 2, c: 3},
-        'Simple extend'
+        { a: 1, b: 2, c: 3 },
+        "Simple extend"
     );
 
     var src = { foo: true };
-    var dest = Hammer.assign({}, src);
+    var dest = Hammer.assign( {}, src );
     src.foo = false;
-    deepEqual(dest, {foo: true}, 'Clone reference');
-});
+    assert.deepEqual( dest, { foo: true }, "Clone reference" );
+} );
 
-test('test add/removeEventListener', function() {
+QUnit.test( "test add/removeEventListener", function( assert ) {
     function handleEvent() {
-        ok(true, 'triggered event');
+        assert.ok( true, "triggered event" );
     }
 
-    expect(2);
+    assert.expect( 2 );
 
-    Hammer.addEventListeners(window, 'testEvent1  testEvent2  ', handleEvent);
-    utils.triggerDomEvent(window, 'testEvent1');
-    utils.triggerDomEvent(window, 'testEvent2');
+    Hammer.addEventListeners( window, "testEvent1  testEvent2  ", handleEvent );
+    utils.triggerDomEvent( window, "testEvent1" );
+    utils.triggerDomEvent( window, "testEvent2" );
 
-    Hammer.removeEventListeners(window, ' testEvent1 testEvent2 ', handleEvent);
-    utils.triggerDomEvent(window, 'testEvent1');
-    utils.triggerDomEvent(window, 'testEvent2');
-});
+    Hammer.removeEventListeners( window, " testEvent1 testEvent2 ", handleEvent );
+    utils.triggerDomEvent( window, "testEvent1" );
+    utils.triggerDomEvent( window, "testEvent2" );
+} );

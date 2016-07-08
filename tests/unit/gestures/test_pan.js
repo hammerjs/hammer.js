@@ -1,63 +1,64 @@
 var el,
     hammer;
 
-module('Pan Gesture', {
-    setup: function() {
-        el = document.createElement('div');
-        document.body.appendChild(el);
+QUnit.module( "Pan Gesture", {
+    beforeEach: function( assert ) {
+        el = document.createElement( "div" );
+        document.body.appendChild( el );
 
-        hammer = new Hammer(el, {recognizers: []});
+        hammer = new Hammer( el, { recognizers: [] } );
     },
-    teardown: function() {
-        document.body.removeChild(el);
+    afterEach: function( assert ) {
+        document.body.removeChild( el );
         hammer.destroy();
     }
-});
+} );
 
-test('`panstart` and `panmove` should be recognized', function() {
-    expect(2);
+QUnit.test( "`panstart` and `panmove` should be recognized", function( assert ) {
+    assert.expect( 2 );
 
     var panMoveCount = 0;
-    var pan = new Hammer.Pan({threshold: 1});
+    var pan = new Hammer.Pan( { threshold: 1 } );
 
-    hammer.add(pan);
-    hammer.on('panstart', function() {
-      ok(true);
-    });
-    hammer.on('panmove', function() {
+    hammer.add( pan );
+    hammer.on( "panstart", function() {
+      assert.ok( true );
+    } );
+    hammer.on( "panmove", function() {
       panMoveCount++;
-    });
+    } );
 
-    utils.dispatchTouchEvent(el, 'start', 50, 50);
-    utils.dispatchTouchEvent(el, 'move', 70, 50);
-    utils.dispatchTouchEvent(el, 'move', 90, 50);
+    utils.dispatchTouchEvent( el, "start", 50, 50 );
+    utils.dispatchTouchEvent( el, "move", 70, 50 );
+    utils.dispatchTouchEvent( el, "move", 90, 50 );
 
-    equal(panMoveCount, 1);
-});
+    assert.equal( panMoveCount, 1 );
+} );
 
-asyncTest('Pan event flow should be start -> left -> end', function() {
-    expect(1);
-    var pan = new Hammer.Pan({threshold: 1});
-    hammer.add(pan);
+QUnit.test( "Pan event flow should be start -> left -> end", function( assert ) {
+    var ready = assert.async();
+    assert.expect( 1 );
+    var pan = new Hammer.Pan( { threshold: 1 } );
+    hammer.add( pan );
 
     var eventflow = "";
     var isCalledPanleft = false;
-    hammer.on('panstart', function() {
+    hammer.on( "panstart", function() {
         eventflow += "start";
-    });
-    hammer.on('panleft', function() {
-        if(!isCalledPanleft){
+    } );
+    hammer.on( "panleft", function() {
+        if ( !isCalledPanleft ) {
             isCalledPanleft = true;
             eventflow += "left";
         }
-    });
-    hammer.on('panend', function() {
+    } );
+    hammer.on( "panend", function() {
         eventflow += "end";
         isCalledPanleft = true;
-    });
+    } );
 
-    Simulator.gestures.pan(el, { deltaX: -100, deltaY: 0 }, function() {
-        equal(eventflow,"startleftend");
-        start();
-    });
-});
+    Simulator.gestures.pan( el, { deltaX: -100, deltaY: 0 }, function() {
+        assert.equal( eventflow, "startleftend" );
+        ready();
+    } );
+} );
