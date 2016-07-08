@@ -2,28 +2,25 @@ var el,
     hammer,
     swipeCount = 0;
 
-module('Swipe Gesture', {
-    setup: function() {
+QUnit.module( "Swipe Gesture", {
+    beforeEach: function( assert ) {
         el = utils.createHitArea();
-        hammer = new Hammer(el, {recognizers: []});
+        hammer = new Hammer( el, { recognizers: [] } );
         swipeCount = 0;
     },
-    teardown: function() {
+    afterEach: function( assert ) {
         hammer.destroy();
     }
-});
+} );
 
-test('swipe can be recognized', function() {
-    expect(1);
-
-    var swipe = new Hammer.Swipe({threshold: 1});
-    hammer.add(swipe);
-    hammer.on('swipe', function() {
-        ok(true);
-        start();
-    });
-
-    stop();
-
-    Simulator.gestures.swipe(el);
-});
+QUnit.test( "swipe can be recognized", function( assert ) {
+    assert.expect( 1 );
+    var done = assert.async();
+    var swipe = new Hammer.Swipe( { threshold: 1 } );
+    hammer.add( swipe );
+    hammer.on( "swipe", function() {
+        assert.ok( true );
+        done();
+    } );
+    Simulator.gestures.swipe( el );
+} );
