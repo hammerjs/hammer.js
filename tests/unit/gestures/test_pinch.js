@@ -15,7 +15,7 @@ QUnit.module( "Pinch Gesture", {
 } );
 
 QUnit.test( "Pinch event flow should be start -> in -> end", function( assert ) {
-    var ready = assert.async();
+    var done = assert.async();
     assert.expect( 1 );
     var pinch = new Hammer.Pinch( { enable: true, threshold: .1 } );
     hammer.add( pinch );
@@ -38,7 +38,7 @@ QUnit.test( "Pinch event flow should be start -> in -> end", function( assert ) 
 
     Simulator.gestures.pinch( el, { duration: 500, scale: .5 }, function() {
         assert.equal( eventflow, "startinend" );
-        ready();
+        done();
     } );
 } );
 

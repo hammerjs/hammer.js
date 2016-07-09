@@ -11,7 +11,7 @@ QUnit.module( "Simultaenous recognition", {
 } );
 
 QUnit.test( "should pinch and pan simultaneously be recognized when enabled", function( assert ) {
-    var ready = assert.async();
+    var done = assert.async();
     assert.expect( 4 );
 
     var panCount = 0,
@@ -100,7 +100,7 @@ QUnit.test( "should pinch and pan simultaneously be recognized when enabled", fu
             assert.equal( panCount, 2 );
             assert.equal( pinchCount, 1 );
 
-            ready();
+            done();
         } );
     } );
 } );

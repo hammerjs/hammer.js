@@ -36,7 +36,7 @@ QUnit.test( "`panstart` and `panmove` should be recognized", function( assert ) 
 } );
 
 QUnit.test( "Pan event flow should be start -> left -> end", function( assert ) {
-    var ready = assert.async();
+    var done = assert.async();
     assert.expect( 1 );
     var pan = new Hammer.Pan( { threshold: 1 } );
     hammer.add( pan );
@@ -59,6 +59,6 @@ QUnit.test( "Pan event flow should be start -> left -> end", function( assert ) 
 
     Simulator.gestures.pan( el, { deltaX: -100, deltaY: 0 }, function() {
         assert.equal( eventflow, "startleftend" );
-        ready();
+        done();
     } );
 } );
