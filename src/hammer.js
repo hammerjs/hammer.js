@@ -1,13 +1,13 @@
 import ifUndefined from './utils/if-undefined';
 import { TOUCH_ACTION_COMPUTE } from './touchactionjs/touchaction-Consts';
 import { DIRECTION_HORIZONTAL } from './inputjs/input-consts';
-import { RotateRecognizer } from './recognizers/rotate';
-import { PinchRecognizer } from './recognizers/pinch';
-import { SwipeRecognizer } from './recognizers/swipe';
-import { PanRecognizer } from './recognizers/pan';
-import { TapRecognizer } from './recognizers/tap';
-import { PressRecognizer } from './recognizers/press';
-import { Manager } from './manager';
+import RotateRecognizer from './recognizers/rotate';
+import PinchRecognizer from './recognizers/pinch';
+import SwipeRecognizer from './recognizers/swipe';
+import PanRecognizer from './recognizers/pan';
+import TapRecognizer from './recognizers/tap';
+import PressRecognizer from './recognizers/press';
+import  Manager  from './manager';
 
 /**
  * @private
@@ -16,10 +16,12 @@ import { Manager } from './manager';
  * @param {Object} [options]
  * @constructor
  */
-function Hammer(element, options) {
-  options = options || {};
-  options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
-  return new Manager(element, options);
+export default class Hammer {
+  constructor(element, options) {
+    options = options || {};
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
+    return new Manager(element, options);
+  }
 }
 
 /**
@@ -153,5 +155,3 @@ Hammer.defaults = {
     tapHighlightColor: 'rgba(0,0,0,0)'
   }
 };
-
-export { Hammer };

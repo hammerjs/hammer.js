@@ -1,8 +1,7 @@
-import { AttrRecognizer } from '../recognizers/attribute';
-import inherit from '../utils/inherit';
+import AttrRecognizer from '../recognizers/attribute';
 import { abs } from '../utils/utils-consts';
 import { DIRECTION_HORIZONTAL,DIRECTION_VERTICAL } from '../inputjs/input-consts';
-import { PanRecognizer } from './pan';
+import PanRecognizer from './pan';
 import { INPUT_END } from '../inputjs/input-consts';
 import directionStr from '../recognizerjs/direction-str';
 
@@ -13,27 +12,29 @@ import directionStr from '../recognizerjs/direction-str';
  * @constructor
  * @extends AttrRecognizer
  */
-function SwipeRecognizer() {
-  AttrRecognizer.apply(this, arguments);
-}
+export default class SwipeRecognizer extends AttrRecognizer{
+  constructor() {
+    super(...arguments);
+  }
 
-inherit(SwipeRecognizer, AttrRecognizer, {
   /**
    * @private
    * @namespace
    * @memberof SwipeRecognizer
    */
-  defaults: {
-    event: 'swipe',
-    threshold: 10,
-    velocity: 0.3,
-    direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
-    pointers: 1
-  },
+  get defaults() {
+    return {
+      event: 'swipe',
+      threshold: 10,
+      velocity: 0.3,
+      direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
+      pointers: 1
+    };
+  }
 
   getTouchAction() {
     return PanRecognizer.prototype.getTouchAction.call(this);
-  },
+  }
 
   attrTest(input) {
     let { direction } = this.options;
@@ -47,12 +48,12 @@ inherit(SwipeRecognizer, AttrRecognizer, {
       velocity = input.overallVelocityY;
     }
 
-    return this._super.attrTest.call(this, input) &&
+    return super.attrTest(input) &&
         direction & input.offsetDirection &&
         input.distance > this.options.threshold &&
         input.maxPointers === this.options.pointers &&
         abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
-  },
+  }
 
   emit(input) {
     let direction = directionStr(input.offsetDirection);
@@ -62,6 +63,4 @@ inherit(SwipeRecognizer, AttrRecognizer, {
 
     this.manager.emit(this.options.event, input);
   }
-});
-
-export { SwipeRecognizer };
+}

@@ -11,32 +11,31 @@ import getWindowForElement from '../utils/get-window-for-element';
  * @returns {Input}
  * @constructor
  */
-function Input(manager, callback) {
-  let self = this;
-  this.manager = manager;
-  this.callback = callback;
-  this.element = manager.element;
-  this.target = manager.options.inputTarget;
+export default class Input {
+  constructor(manager, callback) {
+    let self = this;
+    this.manager = manager;
+    this.callback = callback;
+    this.element = manager.element;
+    this.target = manager.options.inputTarget;
 
-  // smaller wrapper around the handler, for the scope and the enabled state of the manager,
-  // so when disabled the input events are completely bypassed.
-  this.domHandler = function(ev) {
-    if (boolOrFn(manager.options.enable, [manager])) {
-      self.handler(ev);
-    }
-  };
+    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+    // so when disabled the input events are completely bypassed.
+    this.domHandler = function(ev) {
+      if (boolOrFn(manager.options.enable, [manager])) {
+        self.handler(ev);
+      }
+    };
 
-  this.init();
+    this.init();
 
-}
-
-Input.prototype = {
+  }
   /**
    * @private
    * should handle the inputEvent data and trigger the callback
    * @virtual
    */
-  handler() { },
+  handler() { }
 
   /**
    * @private
@@ -46,7 +45,7 @@ Input.prototype = {
     this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
     this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
-  },
+  }
 
   /**
    * @private
@@ -57,6 +56,4 @@ Input.prototype = {
     this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
     this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
   }
-};
-
-export { Input };
+}

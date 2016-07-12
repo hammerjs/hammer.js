@@ -4,8 +4,7 @@ import {
     INPUT_END,
     INPUT_TYPE_MOUSE
 } from '../inputjs/input-consts';
-import { Input } from '../inputjs/input-constructor';
-import inherit from '../utils/inherit';
+import Input from '../inputjs/input-constructor';
 
 const MOUSE_INPUT_MAP = {
   mousedown: INPUT_START,
@@ -22,16 +21,16 @@ const MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
  * @constructor
  * @extends Input
  */
-function MouseInput() {
-  this.evEl = MOUSE_ELEMENT_EVENTS;
-  this.evWin = MOUSE_WINDOW_EVENTS;
+export default class MouseInput extends Input {
+  constructor() {
+    super(...arguments);
 
-  this.pressed = false; // mousedown state
+    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evWin = MOUSE_WINDOW_EVENTS;
 
-  Input.apply(this, arguments);
-}
+    this.pressed = false; // mousedown state
+  }
 
-inherit(MouseInput, Input, {
   /**
    * @private
    * handle mouse events
@@ -65,6 +64,4 @@ inherit(MouseInput, Input, {
       srcEvent: ev
     });
   }
-});
-
-export { MouseInput };
+}

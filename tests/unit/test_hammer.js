@@ -19,25 +19,30 @@ module('Tests', {
     }
 });
 
-test('hammer shortcut', function() {
-    expect(2);
+/**
+ * since Hammer is now a ES6 Class and we cannot call a class as a function,
+ * it needs a `new` keyword prefixed that makes this Shortcut test kinda Redundant.
+**/
 
-    Hammer.defaults.touchAction = 'pan-y';
-    hammer = Hammer(el);
+// test('hammer shortcut', function() {
+//     expect(2);
+//
+//     Hammer.defaults.touchAction = 'pan-y';
+//     hammer = Hammer(el);
+//
+//     ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+//     ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
+// });
 
-    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
-    ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
-});
-
-test('hammer shortcut with options', function() {
-    expect(2);
-
-    hammer = Hammer(el, {
-        touchAction: 'none'
-    });
-    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
-    ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
-});
+// test('hammer shortcut with options', function() {
+//     expect(2);
+//
+//     hammer = Hammer(el, {
+//         touchAction: 'none'
+//     });
+//     ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+//     ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
+// });
 
 /* Creating a hammer instance does not work on the same way
  * when using Hammer or Hammer.Manager.
@@ -175,7 +180,7 @@ test('check whether Hammer.defaults.cssProps is restored', function() {
         }
     });
 
-    hammer = Hammer(el);
+    hammer = new Hammer(el);
     hammer.destroy();
     hammer = null;
     Hammer.each(Hammer.defaults.cssProps, function(value, name) {

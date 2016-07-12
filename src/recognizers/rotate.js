@@ -1,5 +1,4 @@
-import { AttrRecognizer } from './attribute';
-import inherit from '../utils/inherit';
+import AttrRecognizer from './attribute';
 import { TOUCH_ACTION_NONE } from '../touchactionjs/touchaction-Consts';
 import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
 
@@ -10,30 +9,30 @@ import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
  * @constructor
  * @extends AttrRecognizer
  */
-function RotateRecognizer() {
-  AttrRecognizer.apply(this, arguments);
-}
+export default class RotateRecognizer extends AttrRecognizer {
+  constructor() {
+    super(...arguments);
+  }
 
-inherit(RotateRecognizer, AttrRecognizer, {
   /**
    * @private
    * @namespace
    * @memberof RotateRecognizer
    */
-  defaults: {
-    event: 'rotate',
-    threshold: 0,
-    pointers: 2
-  },
+  get defaults() {
+    return {
+      event: 'rotate',
+      threshold: 0,
+      pointers: 2
+    };
+  }
 
   getTouchAction() {
     return [TOUCH_ACTION_NONE];
-  },
+  }
 
   attrTest(input) {
-    return this._super.attrTest.call(this, input) &&
+    return super.attrTest(input) &&
         (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
   }
-});
-
-export {RotateRecognizer};
+}
