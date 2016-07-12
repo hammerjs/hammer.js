@@ -1,4 +1,0 @@
-{
-  "preset": "ember-suave",
-  "disallowConstOutsideModuleScope": false
-}

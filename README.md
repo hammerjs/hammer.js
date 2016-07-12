@@ -1,26 +1,12 @@
-# History
+Hammer.js 3.0
+=============
 
-This README outlines the details of collaborating on this Ember addon.
+`-private/gestures` is an initial exploratory spike of the concepts
+likely to be used for Hammer.js 3.0
 
-## Installation
+So if you reached in, found these, and like them, you should now reach out
+finish them, and land them in Hammer ;)
 
-* `git clone` this repository
-* `npm install`
-* `bower install`
+- Chris
 
-## Running
 
-* `ember server`
-* Visit your app at http://localhost:4200.
-
-## Running Tests
-
-* `npm test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
-
-## Building
-
-* `ember build`
-
-For more information on using ember-cli, visit [http://ember-cli.com/](http://ember-cli.com/).
