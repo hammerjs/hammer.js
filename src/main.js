@@ -12,7 +12,7 @@ import VerticalPanRecognizer from './recognizers/vertical-pan';
 // this prevents errors when Hammer is loaded in the presence of an AMD
 // style loader but by script tag, not by the loader.
 
-let Hammer = {
+let Hammer = { // jshint ignore:line
   Input,
   Layer,
   Manager,

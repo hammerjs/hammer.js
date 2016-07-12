@@ -81,8 +81,6 @@ export default class StreamEvent {
   getVelocityX() {
     const { dX, dT } = this;
 
-    debugger;
-
     return this.vX = dX / dT;
   }
 

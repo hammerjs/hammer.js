@@ -9,7 +9,7 @@ export default class VerticalPan {
     this.isRecognizing = false;
   }
 
-  beginRecognizing(input, streams, streamEvent) {
+  beginRecognizing(input, streams) {
     this.isRecognizing = true;
 
     this.stream = streams[streams.length - 1];
@@ -45,7 +45,7 @@ export default class VerticalPan {
     if (this.isRecognizing) {
       this.relay(streamEvent);
     } else if (streamEvent.totalX === 0 && streamEvent.totalY !== 0) {
-      this.beginRecognizing(input, streams, streamEvent);
+      this.beginRecognizing(input, streams);
     }
 
     return this.isRecognizing;

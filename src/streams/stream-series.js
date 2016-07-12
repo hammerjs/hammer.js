@@ -7,6 +7,8 @@ export default class StreamSeries extends FastArray {
 
   constructor(values, number = SMALL_ARRAY_LENGTH, name = 'StreamEvent to List') {
     super(number, name);
+
+    this.init(values, number, name);
     this._isDestroyed = false;
   }
 

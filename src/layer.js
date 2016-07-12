@@ -28,7 +28,7 @@ export default class Layer {
   }
 
   emit(e) {
-    let { name, event } = e;
+    let { name } = e;
     let handlers = (this._handlers['*'] || []).concat(this._handlers[name] || []);
 
     for (let i = 0; i < handlers.length; i++) {

@@ -49,7 +49,9 @@ export default class Stream {
     this.series.push(streamEvent);
 
     this._isDestroying = true;
-    new MacroTask(() => { this.destroy(); });
+    new MacroTask(() => {
+      this.destroy();
+    });
 
     return streamEvent;
   }
