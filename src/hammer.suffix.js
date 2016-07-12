@@ -1,1 +1,0 @@
-})(window, document, 'Hammer');
