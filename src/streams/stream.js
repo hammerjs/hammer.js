@@ -1,7 +1,7 @@
 import StreamEvent from './stream-event';
 import StreamSeries from './stream-series';
 import MacroTask from '../utils/macro-task';
-import FastArray from 'perf-primitives/fast-array';
+import FastArray from 'perf-primitives/addon/fast-array';
 
 const STREAM_POOL = new FastArray(5, 'Stream Pool');
 

@@ -1,5 +1,5 @@
 /* global Math, performance */
-import FastArray from 'perf-primitives/fast-array';
+import FastArray from 'perf-primitives/addon/fast-array';
 const STREAM_EVENT_POOL = new FastArray(undefined, 'StreamEvent Pool');
 
 export default class StreamEvent {

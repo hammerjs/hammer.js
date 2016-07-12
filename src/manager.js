@@ -1,7 +1,6 @@
 import { availableInputs } from './utils/detection';
-import Ember from 'ember';
+import assign from './utils/assign';
 
-const assign = Ember.assign || Object.assign || Ember.merge;
 const DEFAULT_OPTIONS = {
   inputs: availableInputs()
 };

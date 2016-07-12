@@ -1,6 +1,6 @@
 import Stream from '../streams/stream';
 import StreamEvent from '../streams/stream-event';
-import HashMap from 'perf-primitives/hash-map';
+import HashMap from 'perf-primitives/addon/hash-map';
 
 export default class Input {
 

@@ -1,5 +1,5 @@
-import FastArray from 'perf-primitives/fast-array';
-import { SMALL_ARRAY_LENGTH } from 'perf-primitives/-constants';
+import FastArray from 'perf-primitives/addon/fast-array';
+import { SMALL_ARRAY_LENGTH } from 'perf-primitives/addon/-constants';
 
 const STREAM_SERIES_POOL = new FastArray(10, 'StreamSeries Pool');
 
