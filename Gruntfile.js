@@ -1,4 +1,5 @@
 var babel = require('rollup-plugin-babel');
+var nodeResolve = require('rollup-plugin-node-resolve');
 
 module.exports = function(grunt) {
   grunt.initConfig({
@@ -19,9 +20,8 @@ module.exports = function(grunt) {
       options: {
         format: 'es6',
         plugins: [
-          babel({
-            exclude: 'node_modules/**'
-          })
+          nodeResolve(),
+          babel()
         ],
         intro: " (function(window, document, exportName, undefined) { \n'use strict';",
         outro: "})(window, document, 'Hammer');"

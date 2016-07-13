@@ -2,7 +2,7 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.8",
+  "version": "3.0.0",
   "homepage": "http://hammerjs.github.io/",
   "license": "MIT",
   "keywords": [
@@ -49,7 +49,8 @@
     "hammer-simulator": "git://github.com/hammerjs/simulator#master",
     "jquery-hammerjs": "2.0.x",
     "rollup": "^0.26.3",
-    "rollup-plugin-babel": "^2.4.0"
+    "rollup-plugin-babel": "^2.4.0",
+    "rollup-plugin-node-resolve": "^1.7.1"
   },
   "main": "hammer.js",
   "engines": {
