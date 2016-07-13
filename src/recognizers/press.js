@@ -21,24 +21,15 @@ import {
  */
 export default class PressRecognizer extends Recognizer {
   constructor() {
-    super(...arguments);
-
-    this._timer = null;
-    this._input = null;
-  }
-
-  /**
-   * @private
-   * @namespace
-   * @memberof PressRecognizer
-   */
-  get defaults() {
-    return {
+    PressRecognizer.prototype.defaults = {
       event: 'press',
       pointers: 1,
       time: 251, // minimal time of the pointer to be pressed
       threshold: 9 // a minimal movement is ok, but keep it low
     };
+    super(...arguments);
+    this._timer = null;
+    this._input = null;
   }
 
   getTouchAction() {

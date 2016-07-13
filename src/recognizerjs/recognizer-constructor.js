@@ -54,6 +54,8 @@ import stateStr from './state-str';
  */
 export default class Recognizer {
   constructor(options) {
+    Recognizer.prototype.defaults = {};
+
     this.options = assign({}, this.defaults, options || {});
 
     this.id = uniqueId();
@@ -64,17 +66,8 @@ export default class Recognizer {
     this.options.enable = ifUndefined(this.options.enable, true);
 
     this.state = STATE_POSSIBLE;
-
     this.simultaneous = {};
     this.requireFail = [];
-  }
-  /**
-   * @private
-   * @virtual
-   * @type {Object}
-   */
-  get defaults() {
-    return {};
   }
 
   /**

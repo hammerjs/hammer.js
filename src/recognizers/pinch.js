@@ -11,20 +11,12 @@ import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
  */
 export default class PinchRecognizer extends AttrRecognizer {
   constructor() {
-    super(...arguments);
-  }
-
-  /**
-   * @private
-   * @namespace
-   * @memberof PinchRecognizer
-   */
-  get defaults() {
-    return {
+    PinchRecognizer.prototype.defaults = {
       event: 'pinch',
       threshold: 0,
       pointers: 2
     };
+    super(...arguments);
   }
 
   getTouchAction() {
