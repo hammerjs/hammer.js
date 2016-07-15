@@ -22,12 +22,6 @@ import directionStr from '../recognizerjs/direction-str';
  */
 export default class PanRecognizer extends AttrRecognizer {
   constructor() {
-    PanRecognizer.prototype.defaults = {
-      event: 'pan',
-      threshold: 10,
-      pointers: 1,
-      direction: DIRECTION_ALL
-    };
     super(...arguments);
     this.pX = null;
     this.pY = null;
@@ -87,3 +81,10 @@ export default class PanRecognizer extends AttrRecognizer {
     super.emit(input);
   }
 }
+
+PanRecognizer.prototype.defaults = {
+  event: 'pan',
+  threshold: 10,
+  pointers: 1,
+  direction: DIRECTION_ALL
+};
