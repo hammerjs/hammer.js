@@ -14,22 +14,14 @@ import directionStr from '../recognizerjs/direction-str';
  */
 export default class SwipeRecognizer extends AttrRecognizer{
   constructor() {
-    super(...arguments);
-  }
-
-  /**
-   * @private
-   * @namespace
-   * @memberof SwipeRecognizer
-   */
-  get defaults() {
-    return {
+    SwipeRecognizer.prototype.defaults = {
       event: 'swipe',
       threshold: 10,
       velocity: 0.3,
       direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
       pointers: 1
     };
+    super(...arguments);
   }
 
   getTouchAction() {

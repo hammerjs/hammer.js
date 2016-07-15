@@ -19,23 +19,15 @@ import {
  */
 export default class AttrRecognizer extends Recognizer {
   constructor() {
-    super(...arguments);
-  }
-
-  /**
-   * @private
-   * @namespace
-   * @memberof AttrRecognizer
-   */
-  get defaults() {
-    return {
+    AttrRecognizer.prototype.defaults = {
       /**
-      * @private
-      * @type {Number}
-      * @default 1
-      */
+       * @private
+       * @type {Number}
+       * @default 1
+       */
       pointers: 1
     };
+    super(...arguments);
   }
 
   /**
