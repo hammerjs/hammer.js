@@ -8,4 +8,4 @@ before_script:
   - npm install -g grunt-cli
 
 script:
-  - grunt test-travis
+  - npm run test-travis
