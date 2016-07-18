@@ -24,22 +24,6 @@ export default class AttrRecognizer extends Recognizer {
 
   /**
    * @private
-   * @namespace
-   * @memberof AttrRecognizer
-   */
-  get defaults() {
-    return {
-      /**
-      * @private
-      * @type {Number}
-      * @default 1
-      */
-      pointers: 1
-    };
-  }
-
-  /**
-   * @private
    * Used to check if it the recognizer receives valid input, like input.distance > 10.
    * @memberof AttrRecognizer
    * @param {Object} input
@@ -78,3 +62,12 @@ export default class AttrRecognizer extends Recognizer {
     return STATE_FAILED;
   }
 }
+
+AttrRecognizer.prototype.defaults = {
+  /**
+   * @private
+   * @type {Number}
+   * @default 1
+   */
+  pointers: 1
+};

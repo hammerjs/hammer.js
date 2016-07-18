@@ -14,19 +14,6 @@ export default class PinchRecognizer extends AttrRecognizer {
     super(...arguments);
   }
 
-  /**
-   * @private
-   * @namespace
-   * @memberof PinchRecognizer
-   */
-  get defaults() {
-    return {
-      event: 'pinch',
-      threshold: 0,
-      pointers: 2
-    };
-  }
-
   getTouchAction() {
     return [TOUCH_ACTION_NONE];
   }
@@ -44,3 +31,9 @@ export default class PinchRecognizer extends AttrRecognizer {
     super.emit(input);
   }
 }
+
+PinchRecognizer.prototype.defaults = {
+  event: 'pinch',
+  threshold: 0,
+  pointers: 2
+};

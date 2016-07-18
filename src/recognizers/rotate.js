@@ -14,19 +14,6 @@ export default class RotateRecognizer extends AttrRecognizer {
     super(...arguments);
   }
 
-  /**
-   * @private
-   * @namespace
-   * @memberof RotateRecognizer
-   */
-  get defaults() {
-    return {
-      event: 'rotate',
-      threshold: 0,
-      pointers: 2
-    };
-  }
-
   getTouchAction() {
     return [TOUCH_ACTION_NONE];
   }
@@ -36,3 +23,9 @@ export default class RotateRecognizer extends AttrRecognizer {
         (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
   }
 }
+
+RotateRecognizer.prototype.defaults = {
+  event: 'rotate',
+  threshold: 0,
+  pointers: 2
+};

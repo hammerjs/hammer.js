@@ -64,17 +64,8 @@ export default class Recognizer {
     this.options.enable = ifUndefined(this.options.enable, true);
 
     this.state = STATE_POSSIBLE;
-
     this.simultaneous = {};
     this.requireFail = [];
-  }
-  /**
-   * @private
-   * @virtual
-   * @type {Object}
-   */
-  get defaults() {
-    return {};
   }
 
   /**
@@ -307,3 +298,5 @@ export default class Recognizer {
    */
   reset() { }
 }
+
+Recognizer.prototype.defaults = {};

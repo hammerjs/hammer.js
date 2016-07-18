@@ -23,23 +23,8 @@ import directionStr from '../recognizerjs/direction-str';
 export default class PanRecognizer extends AttrRecognizer {
   constructor() {
     super(...arguments);
-
     this.pX = null;
     this.pY = null;
-  }
-
-  /**
-   * @private
-   * @namespace
-   * @memberof PanRecognizer
-   */
-  get defaults() {
-    return {
-      event: 'pan',
-      threshold: 10,
-      pointers: 1,
-      direction: DIRECTION_ALL
-    };
   }
 
   getTouchAction() {
@@ -96,3 +81,10 @@ export default class PanRecognizer extends AttrRecognizer {
     super.emit(input);
   }
 }
+
+PanRecognizer.prototype.defaults = {
+  event: 'pan',
+  threshold: 10,
+  pointers: 1,
+  direction: DIRECTION_ALL
+};
