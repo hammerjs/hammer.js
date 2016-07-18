@@ -19,14 +19,6 @@ import {
  */
 export default class AttrRecognizer extends Recognizer {
   constructor() {
-    AttrRecognizer.prototype.defaults = {
-      /**
-       * @private
-       * @type {Number}
-       * @default 1
-       */
-      pointers: 1
-    };
     super(...arguments);
   }
 
@@ -70,3 +62,12 @@ export default class AttrRecognizer extends Recognizer {
     return STATE_FAILED;
   }
 }
+
+AttrRecognizer.prototype.defaults = {
+  /**
+   * @private
+   * @type {Number}
+   * @default 1
+   */
+  pointers: 1
+};

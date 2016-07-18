@@ -54,8 +54,6 @@ import stateStr from './state-str';
  */
 export default class Recognizer {
   constructor(options) {
-    Recognizer.prototype.defaults = {};
-
     this.options = assign({}, this.defaults, options || {});
 
     this.id = uniqueId();
@@ -300,3 +298,5 @@ export default class Recognizer {
    */
   reset() { }
 }
+
+Recognizer.prototype.defaults = {};
