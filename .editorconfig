@@ -16,5 +16,5 @@ indent_size = 2
 indent_style = space
 indent_size = 2
 
-[*.{diff,md}]
+[*.md]
 trim_trailing_whitespace = false

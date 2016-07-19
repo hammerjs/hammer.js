@@ -1,7 +1,6 @@
 {
   "preset": "ember-suave",
   "excludeFiles": [
-    "*.js",
     "tests/**/assets",
     "node_modules/**"
   ],

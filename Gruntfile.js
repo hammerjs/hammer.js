@@ -1,3 +1,5 @@
+// jscs:disable disallowVar,requireTemplateStringsForConcatenation
+
 var babel = require('rollup-plugin-babel');
 
 module.exports = function(grunt) {
@@ -7,7 +9,11 @@ module.exports = function(grunt) {
       taskName: {
         options: {
           position: 'top',
-          banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n * <%= pkg.homepage %>\n *\n * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n * Licensed under the <%= pkg.license %> license */',
+          banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>' +
+          '\n * <%= pkg.homepage %>\n' +
+          '*\n *' +
+          ' Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
+          '\n * Licensed under the <%= pkg.license %> license */' ,
           linebreak: true
         },
         files: {
@@ -23,8 +29,8 @@ module.exports = function(grunt) {
             exclude: 'node_modules/**'
           })
         ],
-        intro: " (function(window, document, exportName, undefined) { \n'use strict';",
-        outro: "})(window, document, 'Hammer');"
+        intro: '(function(window, document, exportName, undefined) {\n \'use strict\';',
+        outro: '})(window, document, \'Hammer\');'
       },
       files: {
         dest: 'hammer.js',
@@ -59,22 +65,23 @@ module.exports = function(grunt) {
     },
     jshint: {
       options: {
-        jshintrc: true
+        jshintrc: true,
+        'require': true
       },
       build: {
-        src: ['hammer.js']
+        src: ['src/**/*.js','hammer.js','tests/unit/*.js','tests/unit/gestures/*.js','Gruntfile.js']
       }
     },
     jscs: {
-      src: ['src/**/*.js'],
+      src: ['src/**/*.js','tests/unit/*.js','tests/unit/gestures/*.js','Gruntfile.js'],
       options: {
-        config: "./.jscsrc",
+        config: './.jscsrc',
         force: true
       }
     },
     watch: {
       scripts: {
-        files: ['src/**/*.js'],
+        files: ['src/**/*.js','tests/unit/*.js','tests/unit/gestures/*.js'],
         tasks: ['rollup', 'string-replace', 'uglify', 'jshint', 'jscs'],
         options: {
           interrupt: true
@@ -84,7 +91,7 @@ module.exports = function(grunt) {
     connect: {
       server: {
         options: {
-          hostname: "0.0.0.0",
+          hostname: '0.0.0.0',
           port: 8000
         }
       }
