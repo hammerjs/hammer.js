@@ -1,6 +1,4 @@
-// jscs:disable disallowVar,requireTemplateStringsForConcatenation
-
-var babel = require('rollup-plugin-babel');
+const babel = require('rollup-plugin-babel');
 
 module.exports = function(grunt) {
   grunt.initConfig({
@@ -9,11 +7,11 @@ module.exports = function(grunt) {
       taskName: {
         options: {
           position: 'top',
-          banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>' +
-          '\n * <%= pkg.homepage %>\n' +
-          '*\n *' +
-          ' Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-          '\n * Licensed under the <%= pkg.license %> license */' ,
+          banner: `/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>
+                    * <%= pkg.homepage %>
+                    *
+                    * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;
+                    * Licensed under the <%= pkg.license %> license */`.replace(/  +/g, ''),
           linebreak: true
         },
         files: {
@@ -65,8 +63,7 @@ module.exports = function(grunt) {
     },
     jshint: {
       options: {
-        jshintrc: true,
-        'require': true
+        jshintrc: true
       },
       build: {
         src: ['src/**/*.js','hammer.js','tests/unit/*.js','tests/unit/gestures/*.js','Gruntfile.js']
