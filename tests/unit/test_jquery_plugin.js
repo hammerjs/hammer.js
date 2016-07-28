@@ -41,7 +41,7 @@ asyncTest('trigger pan with jQuery', function() {
 asyncTest('trigger pan without jQuery should still work', function() {
     expect(1);
 
-    var hammer = Hammer(el);
+    var hammer = new Hammer(el);
     hammer.on('panstart pan panmove panright panend', function(ev) {
         events[ev.type] = true;
     });
