@@ -21,6 +21,7 @@
   "laxbreak": false,
   "newcap": true,
   "noarg": true,
+  "node": true,
   "noempty": false,
   "nonew": false,
   "nomen": false,
