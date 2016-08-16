@@ -30,6 +30,9 @@
   "bugs": {
     "url": "https://github.com/hammerjs/hammer.js/issues"
   },
+  "files": [
+    "hammer.js"
+  ],
   "dependencies": {},
   "devDependencies": {
     "changelogplease": "^1.2.0",
