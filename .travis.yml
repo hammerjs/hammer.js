@@ -4,8 +4,5 @@ node_js:
 
 sudo: false
 
-before_script:
-  - npm install -g grunt-cli
-
 script:
   - npm run test-travis
