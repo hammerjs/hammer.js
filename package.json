@@ -33,33 +33,43 @@
   "dependencies": {},
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
+    "bannerize": "^1.0.2",
     "blanket": "^1.2.3",
     "changelogplease": "^1.2.0",
-    "ember-suave": "^3.0.1",
+    "ember-suave": "^4.0.0",
     "git-tags": "^0.2.4",
-    "grunt": "1.0.x",
-    "grunt-banner": "^0.6.0",
-    "grunt-contrib-connect": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-qunit": "^1.2.0",
-    "grunt-contrib-uglify": "^1.0.0",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-jscs": "^3.0.0",
-    "grunt-rollup": "^0.7.1",
-    "grunt-string-replace": "^1.2.x",
     "hammer-simulator": "git://github.com/hammerjs/simulator#master",
     "jquery": "^3.1.0",
     "jquery-hammerjs": "2.0.x",
+    "jscs": "^3.0.7",
+    "jshint": "^2.9.2",
+    "jshint-stylish": "^2.2.0",
     "lodash-compat": "^3.10.2",
+    "node-qunit-phantomjs": "^1.4.0",
     "qunitjs": "^2.0.0",
     "rollup": "^0.26.3",
-    "rollup-plugin-babel": "^2.4.0"
+    "rollup-plugin-babel": "^2.4.0",
+    "run-when-changed": "^1.2.0",
+    "serve": "^1.4.0",
+    "uglify-js": "^2.7.0"
   },
   "main": "hammer.js",
   "engines": {
     "node": ">=0.8.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "bannerize": "bannerize hammer.js hammer.min.js",
+    "connect": "serve -p 8000 ./",
+    "rollup": "rollup -c",
+    "uglify": "uglifyjs hammer.js --source-map hammer.min.js.map -o hammer.min.js --stats",
+    "string-replace": "node string-replace.js",
+    "jshint": "jshint src/**/*.js hammer.js tests/unit/*.js tests/unit/gestures/*.js --config .jshintrc --verbose --reporter=node_modules/jshint-stylish",
+    "jscs": " jscs src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config=./.jscsrc",
+    "qunit": "phantomjs node_modules/qunit-phantomjs-runner/runner-list.js tests/unit/index.html 15",
+    "watch": "run-when-changed --watch 'src/**/*.js' --watch 'tests/unit/*.js' --watch 'tests/unit/gestures/*.js' --exec 'npm run watch-tasks'",
+    "watch-tasks": "npm run rollup && npm run string-replace && npm run uglify && npm run jshint && npm run jscs",
+    "test": "npm run jshint && npm run jscs && npm run qunit",
+    "build": "npm run rollup && npm run string-replace && npm run uglify && npm run bannerize && npm run test",
+    "test-travis": "npm run build"
   }
 }
