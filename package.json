@@ -68,8 +68,7 @@
     "qunit": "phantomjs node_modules/qunit-phantomjs-runner/runner-list.js tests/unit/index.html 15",
     "watch": "run-when-changed --watch 'src/**/*.js' --watch 'tests/unit/*.js' --watch 'tests/unit/gestures/*.js' --exec 'npm run watch-tasks'",
     "watch-tasks": "npm run rollup && npm run string-replace && npm run uglify && npm run jshint && npm run jscs",
-    "test": "npm run jshint && npm run jscs && npm run qunit",
-    "build": "npm run rollup && npm run string-replace && npm run uglify && npm run bannerize && npm run test",
-    "test-travis": "npm run build"
+    "build": "npm run rollup && npm run string-replace && npm run uglify && npm run bannerize",
+    "test": "npm run build && npm run jshint && npm run jscs && npm run qunit"
   }
 }
