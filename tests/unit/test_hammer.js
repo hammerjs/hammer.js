@@ -54,10 +54,11 @@ QUnit.test('Hammer and Hammer.Manager constructors work exactly on the same way.
     assert.expect(2);
 
     hammer = new Hammer(el, {});
-    assert.equal(Hammer.defaults.preset.length, hammer.recognizers.length);
+    assert.equal(Hammer.defaults.preset.length, hammer.recognizers.length,
+      'Correct number of recognizers by default');
 
     hammer2 = new Hammer.Manager(el, {});
-    assert.equal(0, hammer2.recognizers.length);
+    assert.equal(0, hammer2.recognizers.length, 'No default recognizers with manager and empty object');
   });
 
 /* DOC to disable default recognizers should be added.
@@ -71,7 +72,7 @@ QUnit.test('A Hammer instance can be setup to not having default recognizers.', 
     assert.expect(1);
 
     hammer = new Hammer(el, { recognizers: false });
-    assert.equal(0, hammer.recognizers.length);
+    assert.equal(0, hammer.recognizers.length, 'No default recognizers with recognizers false');
   });
 
 /* The case was when I added a custom tap event which was added to the default
@@ -84,13 +85,13 @@ QUnit.test('Adding the same recognizer type should remove the old recognizer', f
     hammer = new Hammer(el);
 
     assert.ok(!!hammer.get('tap'));
-    assert.equal(7, hammer.recognizers.length);
+    assert.equal(7, hammer.recognizers.length, '7 recognizers found');
 
     var newTap = new Hammer.Tap({ time: 1337 });
     hammer.add(newTap);
 
-    assert.equal(7, hammer.recognizers.length);
-    assert.equal(1337, hammer.get('tap').options.time);
+    assert.equal(7, hammer.recognizers.length, '7 recognizers found after adding tap');
+    assert.equal(1337, hammer.get('tap').options.time, 'Time has been updated to reflect new tap');
   });
 
 /*
@@ -144,12 +145,13 @@ QUnit.test('Hammer.Manager accepts recognizers as arrays.', function(assert) {
             [ Hammer.Pan, { direction: Hammer.DIRECTION_UP }, [ 'swipe', 'pinch' ], [ 'rotate' ] ]
         ]
       });
-    assert.equal(4, hammer.recognizers.length);
+    assert.equal(4, hammer.recognizers.length, '4 recognizers found');
 
     var recognizerActual = hammer.recognizers[ 3 ];
-    assert.equal(recognizerActual.options.direction, Hammer.DIRECTION_UP);
-    assert.equal(2, Object.keys(recognizerActual.simultaneous).length);
-    assert.equal(1, recognizerActual.requireFail.length);
+    assert.equal(recognizerActual.options.direction, Hammer.DIRECTION_UP,
+      'Recognize direction from options');
+    assert.equal(2, Object.keys(recognizerActual.simultaneous).length, '2 simultanious recognizers found');
+    assert.equal(1, recognizerActual.requireFail.length, '1 require failing recognizer found');
   });
 
 /*
@@ -163,7 +165,7 @@ QUnit.test('Remove non-existent recognizer.', function(assert) {
     hammer.add(new Hammer.Swipe());
     hammer.remove('tap');
 
-    assert.equal(1, hammer.recognizers.length);
+    assert.equal(1, hammer.recognizers.length, '1 recognizer found');
   });
 
 QUnit.test('check whether Hammer.defaults.cssProps is restored', function(assert) {

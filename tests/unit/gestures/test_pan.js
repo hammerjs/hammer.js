@@ -25,7 +25,7 @@ QUnit.test('`panstart` and `panmove` should be recognized', function(assert) {
 
     hammer.add(pan);
     hammer.on('panstart', function() {
-      assert.ok(true);
+      assert.ok(true, 'Pan start triggered');
     });
     hammer.on('panmove', function() {
       panMoveCount++;
@@ -35,7 +35,7 @@ QUnit.test('`panstart` and `panmove` should be recognized', function(assert) {
     utils.dispatchTouchEvent(el, 'move', 70, 50);
     utils.dispatchTouchEvent(el, 'move', 90, 50);
 
-    assert.equal(panMoveCount, 1);
+    assert.equal(panMoveCount, 1, 'exactly one panMove triggered');
   });
 
 QUnit.test('Pan event flow should be start -> left -> end', function(assert) {
@@ -61,7 +61,7 @@ QUnit.test('Pan event flow should be start -> left -> end', function(assert) {
       });
 
     Simulator.gestures.pan(el, { deltaX: -100, deltaY: 0 }, function() {
-        assert.equal(eventflow, 'startleftend');
+        assert.equal(eventflow, 'startleftend', 'correct event flow');
         done();
       });
   });

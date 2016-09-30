@@ -74,9 +74,9 @@ QUnit.test('When a doubleTap is fired, tripleTap and Tap should not be recognize
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        assert.equal(tripleTapCount, 0);
-        assert.equal(doubleTapCount, 1);
-        assert.equal(tapCount, 0);
+        assert.equal(tripleTapCount, 0, 'No tripple taps recognized');
+        assert.equal(doubleTapCount, 1, '1 double tap recognized');
+        assert.equal(tapCount, 0, 'No single taps recognized');
         done();
       }, 350);
   });
@@ -89,9 +89,9 @@ QUnit.test('When a tap is fired, tripleTap and doubleTap should not be recognize
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        assert.equal(tripleTapCount, 0);
-        assert.equal(doubleTapCount, 0);
-        assert.equal(tapCount, 1);
+        assert.equal(tripleTapCount, 0, 'No tripple taps recognized');
+        assert.equal(doubleTapCount, 0, 'No double taps recognized');
+        assert.equal(tapCount, 1, '1 single tap recognized');
         done();
       }, 350);
   });

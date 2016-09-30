@@ -50,7 +50,7 @@ QUnit.test('recognize pan', function(assert) {
             panmove: true,
             panright: true,
             panend: true
-          });
+          }, 'Pan events recognized');
         done();
       });
   });
@@ -64,7 +64,7 @@ QUnit.test('recognize press', function(assert) {
             press: true
           });
         done();
-      });
+      }, 'only press was recognized');
   });
 
 QUnit.test('recognize swipe', function(assert) {
@@ -80,7 +80,7 @@ QUnit.test('recognize swipe', function(assert) {
             panend: true,
             swipe: true,
             swiperight: true
-          });
+          }, 'pan and swipe events were recognized');
         done();
       });
   });
@@ -96,7 +96,7 @@ QUnit.test('recognize pinch', function(assert) {
             pinchmove: true,
             pinchend: true,
             pinchin: true
-          });
+          }, 'pinch events were recognized');
         done();
       });
   });
@@ -115,7 +115,7 @@ QUnit.test('recognize children multitouch pinch', function(assert) {
             pinchmove: true,
             pinchend: true,
             pinchin: true
-          });
+          }, 'pinch events on child were recognized');
         done();
       });
   });
@@ -133,7 +133,7 @@ QUnit.test('recognize parent-child multitouch pinch', function(assert) {
             pinchmove: true,
             pinchend: true,
             pinchin: true
-          });
+          }, 'Pinch events on parent were recognized');
         done();
       });
   });
@@ -148,7 +148,7 @@ QUnit.test('recognize rotate', function(assert) {
             rotatestart: true,
             rotatemove: true,
             rotateend: true
-          });
+          }, 'Rotate events recognized');
         done();
       });
   });
@@ -165,7 +165,7 @@ QUnit.test('recognize multitouch rotate', function(assert) {
             rotatestart: true,
             rotatemove: true,
             rotateend: true
-          });
+          }, 'Rotate events were recognized');
         done();
       });
   });
@@ -185,7 +185,7 @@ QUnit.test('recognize rotate and pinch simultaneous', function(assert) {
             pinchmove: true,
             pinchend: true,
             pinchout: true
-          });
+          }, 'Rotate and pinch were recognized together');
         done();
       });
   });
@@ -195,7 +195,7 @@ QUnit.test("don't recognize pan and swipe when moving down, when only horizontal
     assert.expect(1);
 
     Simulator.gestures.swipe(el, { duration: 250, deltaX: 0, deltaZ: 200 }, function() {
-        assert.deepEqual(events, { });
+        assert.deepEqual(events, { }, 'No events were recognized');
         done();
       });
   });
