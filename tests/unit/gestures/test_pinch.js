@@ -40,7 +40,7 @@ QUnit.test('Pinch event flow should be start -> in -> end', function(assert) {
       });
 
     Simulator.gestures.pinch(el, { duration: 500, scale: 0.5 }, function() {
-        assert.equal(eventflow, 'startinend');
+        assert.equal(eventflow, 'startinend', 'correct event flow');
         done();
       });
   });

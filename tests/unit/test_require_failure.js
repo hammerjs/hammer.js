@@ -44,7 +44,7 @@ QUnit.test('When swipe does not recognize the gesture, a press gesture can be fi
     utils.dispatchTouchEvent(el, 'start', 50, 50);
 
     setTimeout(function() {
-        assert.equal(pressCount, 1);
+        assert.equal(pressCount, 1, '1 press recognized');
         done();
       }, pressPeriod + 100);
   });
@@ -97,7 +97,7 @@ QUnit.test('When pan does not recognize the gesture, a press gesture can be fire
     utils.dispatchTouchEvent(el, 'start', 50, 50);
 
     setTimeout(function() {
-      assert.equal(pressCount, 1);
+      assert.equal(pressCount, 1, '1 press recognized');
       done();
     }, pressPeriod + 100);
   });

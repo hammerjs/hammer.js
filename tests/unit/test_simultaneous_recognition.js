@@ -93,15 +93,15 @@ QUnit.test('should pinch and pan simultaneously be recognized when enabled', fun
 
     // 2 gesture will be recognized
     executeGesture(function() {
-        assert.equal(panCount, 1);
-        assert.equal(pinchCount, 1);
+        assert.equal(panCount, 1, '1 pan event recognized');
+        assert.equal(pinchCount, 1, '1 pinch event recognized');
 
         pinch.dropRecognizeWith(hammer.get('pan'));
 
         // Only the pan gesture will be recognized
         executeGesture(function() {
-            assert.equal(panCount, 2);
-            assert.equal(pinchCount, 1);
+            assert.equal(panCount, 2, '2 pan events recognized');
+            assert.equal(pinchCount, 1, 'One pinch event recognized');
 
             done();
           });
@@ -146,7 +146,7 @@ QUnit.test('the first gesture should block the following gestures (Tap & DoubleT
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    assert.equal(tapCount, 4);
+    assert.equal(tapCount, 4, '4 tap events recognized');
     assert.equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
   });
 
@@ -233,6 +233,6 @@ QUnit.test('the first gesture should block the following gestures (DoubleTap & T
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    assert.equal(doubleTapCount, 1);
+    assert.equal(doubleTapCount, 1, '1 double tap recognized');
     assert.equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
   });

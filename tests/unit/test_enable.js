@@ -31,7 +31,7 @@ QUnit.test('should disable a recognizer through the `enable` constructor paramet
 
     setTimeout(function() {
 
-      assert.equal(counter, 0);
+      assert.equal(counter, 0, 'counter is zero');
       done();
     }, 100);
   });
@@ -50,7 +50,7 @@ QUnit.test('should disable recognizing when the manager is disabled.', function(
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        assert.equal(counter, 0);
+        assert.equal(counter, 0, 'counter is zero');
         done();
       }, 100);
   });
@@ -71,7 +71,7 @@ QUnit.test('should toggle a recognizer using the `set` call to the recognizer en
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 1);
+    assert.equal(counter, 1, 'counter is 1');
   });
 
 QUnit.test('should accept the `enable` constructor parameter as function', function(assert) {
@@ -95,14 +95,14 @@ QUnit.test('should accept the `enable` constructor parameter as function', funct
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        assert.equal(counter, 0);
+        assert.equal(counter, 0, 'counter is zero');
 
         canRecognizeTap = true;
 
         utils.dispatchTouchEvent(el, 'start', 50, 50);
         utils.dispatchTouchEvent(el, 'end', 50, 50);
 
-        assert.equal(counter, 1);
+        assert.equal(counter, 1, 'counter is 1');
         done();
       }, 100);
   });
@@ -117,7 +117,7 @@ QUnit.test('should accept a function parameter with `set`', function(assert) {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 1);
+    assert.equal(counter, 1, 'counter is 1');
 
     var canRecognizeTap = false;
     hammer.get('tap').set({ enable: function() {
@@ -126,12 +126,12 @@ QUnit.test('should accept a function parameter with `set`', function(assert) {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 1);
+    assert.equal(counter, 1, 'counter is 1');
 
     canRecognizeTap = true;
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 2);
+    assert.equal(counter, 2, 'counter is 2');
   });
 
 QUnit.test('should pass the recognizer and optional the input parameter to the `enable` callback', function(assert) {
@@ -142,7 +142,7 @@ QUnit.test('should pass the recognizer and optional the input parameter to the `
     // The enable function is called initially to setup the touch-action property
     // at that moment there isn't any input
     var canEnable = function(recognizer, input) {
-        assert.equal(recognizer, tap);
+        assert.equal(recognizer, tap, 'recognizer is tap');
         return true;
       };
     tap = new Hammer.Tap({ enable: canEnable });
@@ -170,10 +170,10 @@ QUnit.test('should toggle based on other object method', function(assert) {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 0);
+    assert.equal(counter, 0, 'counter is 0');
 
     view.state = 1;
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 1);
+    assert.equal(counter, 1, 'counter is 1');
   });

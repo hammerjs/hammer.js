@@ -35,7 +35,7 @@ QUnit.test('trigger pan with jQuery', function(assert) {
                 panmove: true,
                 panright: true,
                 panend: true
-              });
+              }, 'Pan events recognized');
 
             assert.ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
             done();
@@ -57,7 +57,7 @@ QUnit.test('trigger pan without jQuery should still work', function(assert) {
             panmove: true,
             panright: true,
             panend: true
-          });
+          }, 'Pan events recognized');
         done();
       });
   });
