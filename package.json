@@ -63,7 +63,7 @@
     "rollup": "rollup -c",
     "uglify": "uglifyjs hammer.js --source-map hammer.min.js.map -o hammer.min.js --stats",
     "string-replace": "node string-replace.js",
-    "jshint": "jshint src/**/*.js hammer.js tests/unit/*.js tests/unit/gestures/*.js --config .jshintrc --verbose --reporter=node_modules/jshint-stylish",
+    "jshint": "jshint src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config .jshintrc --verbose --reporter=node_modules/jshint-stylish",
     "jscs": " jscs src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config=./.jscsrc",
     "qunit": "phantomjs node_modules/qunit-phantomjs-runner/runner-list.js tests/unit/index.html 15",
     "watch": "run-when-changed --watch 'src/**/*.js' --watch 'tests/unit/*.js' --watch 'tests/unit/gestures/*.js' --exec 'npm run watch-tasks'",
