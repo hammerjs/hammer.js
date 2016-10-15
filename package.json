@@ -47,7 +47,7 @@
     "lodash-compat": "^3.10.2",
     "node-qunit-phantomjs": "^1.4.0",
     "qunitjs": "^2.0.0",
-    "rollup": "^0.26.3",
+    "rollup": "^0.36.0",
     "rollup-plugin-babel": "^2.4.0",
     "run-when-changed": "^1.2.0",
     "serve": "^1.4.0",
