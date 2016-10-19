@@ -1,5 +1,6 @@
 {
     "name": "hammerjs",
+    "license": "MIT",
     "main": "hammer.js",
     "ignore": [
         "tests",
