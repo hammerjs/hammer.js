@@ -62,9 +62,9 @@ QUnit.test('recognize press', function(assert) {
     Simulator.gestures.press(el, null, function() {
         assert.deepEqual(events, {
             press: true
-          });
+          }, 'only press was recognized');
         done();
-      }, 'only press was recognized');
+      });
   });
 
 QUnit.test('recognize swipe', function(assert) {

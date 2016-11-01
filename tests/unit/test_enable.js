@@ -65,7 +65,7 @@ QUnit.test('should toggle a recognizer using the `set` call to the recognizer en
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    assert.equal(counter, 1);
+    assert.equal(counter, 1, 'counter is 1');
 
     hammer.get('tap').set({ enable: false });
 
