@@ -249,7 +249,12 @@ export default class Manager {
       if (!handler) {
         delete handlers[event];
       } else {
-        handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+        if (handlers[event]) {
+          handlers[event].splice(inArray(handlers[event], handler), 1);
+          if (handlers[event].length === 0) {
+            delete handlers[event];
+          }
+        }
       }
     });
     return this;
