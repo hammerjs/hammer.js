@@ -39,7 +39,7 @@ export default class MouseInput extends Input {
   handler(ev) {
     let eventType = MOUSE_INPUT_MAP[ev.type];
 
-    // on start we want to have the left mouse button down
+    // on start we want to have mouse button down
     if (eventType & INPUT_START && ev.button >= 0) {
       this.pressed = true;
     }
