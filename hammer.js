@@ -1,4 +1,4 @@
-/*! Hammer.JS - v2.0.8 - 2016-09-30
+/*! Hammer.JS - v2.0.8 - 2017-01-14
  * http://hammerjs.github.io/
  *
  * Copyright (c)  Jorik Tangelder;
@@ -237,118 +237,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
-var asyncGenerator = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
 
-  function AsyncGenerator(gen) {
-    var front, back;
 
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
 
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
 
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
 
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
 
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
 
-        case "throw":
-          front.reject(value);
-          break;
 
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
 
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function (fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function (value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -374,7 +271,13 @@ var createClass = function () {
   };
 }();
 
-var get = function get(object, property, receiver) {
+
+
+
+
+
+
+var get$1 = function get$1(object, property, receiver) {
   if (object === null) object = Function.prototype;
   var desc = Object.getOwnPropertyDescriptor(object, property);
 
@@ -384,7 +287,7 @@ var get = function get(object, property, receiver) {
     if (parent === null) {
       return undefined;
     } else {
-      return get(parent, property, receiver);
+      return get$1(parent, property, receiver);
     }
   } else if ("value" in desc) {
     return desc.value;
@@ -415,12 +318,46 @@ var inherits = function (subClass, superClass) {
   if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 };
 
+
+
+
+
+
+
+
+
+
+
 var possibleConstructorReturn = function (self, call) {
   if (!self) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
 
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+
+
+var set$1 = function set$1(object, property, value, receiver) {
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent !== null) {
+      set$1(parent, property, value, receiver);
+    }
+  } else if ("value" in desc && desc.writable) {
+    desc.value = value;
+  } else {
+    var setter = desc.set;
+
+    if (setter !== undefined) {
+      setter.call(receiver, value);
+    }
+  }
+
+  return value;
 };
 
 var slicedToArray = function () {
@@ -947,7 +884,7 @@ var RotateRecognizer = function (_AttrRecognizer) {
   }, {
     key: 'attrTest',
     value: function attrTest(input) {
-      return get(RotateRecognizer.prototype.__proto__ || Object.getPrototypeOf(RotateRecognizer.prototype), 'attrTest', this).call(this, input) && (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+      return get$1(RotateRecognizer.prototype.__proto__ || Object.getPrototypeOf(RotateRecognizer.prototype), 'attrTest', this).call(this, input) && (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
     }
   }]);
   return RotateRecognizer;
@@ -983,7 +920,7 @@ var PinchRecognizer = function (_AttrRecognizer) {
   }, {
     key: 'attrTest',
     value: function attrTest(input) {
-      return get(PinchRecognizer.prototype.__proto__ || Object.getPrototypeOf(PinchRecognizer.prototype), 'attrTest', this).call(this, input) && (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
+      return get$1(PinchRecognizer.prototype.__proto__ || Object.getPrototypeOf(PinchRecognizer.prototype), 'attrTest', this).call(this, input) && (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
     }
   }, {
     key: 'emit',
@@ -992,7 +929,7 @@ var PinchRecognizer = function (_AttrRecognizer) {
         var inOut = input.scale < 1 ? 'in' : 'out';
         input.additionalEvent = this.options.event + inOut;
       }
-      get(PinchRecognizer.prototype.__proto__ || Object.getPrototypeOf(PinchRecognizer.prototype), 'emit', this).call(this, input);
+      get$1(PinchRecognizer.prototype.__proto__ || Object.getPrototypeOf(PinchRecognizer.prototype), 'emit', this).call(this, input);
     }
   }]);
   return PinchRecognizer;
@@ -1103,7 +1040,7 @@ var PanRecognizer = function (_AttrRecognizer) {
       if (direction) {
         input.additionalEvent = this.options.event + direction;
       }
-      get(PanRecognizer.prototype.__proto__ || Object.getPrototypeOf(PanRecognizer.prototype), 'emit', this).call(this, input);
+      get$1(PanRecognizer.prototype.__proto__ || Object.getPrototypeOf(PanRecognizer.prototype), 'emit', this).call(this, input);
     }
   }]);
   return PanRecognizer;
@@ -1152,7 +1089,7 @@ var SwipeRecognizer = function (_AttrRecognizer) {
         velocity = input.overallVelocityY;
       }
 
-      return get(SwipeRecognizer.prototype.__proto__ || Object.getPrototypeOf(SwipeRecognizer.prototype), 'attrTest', this).call(this, input) && direction & input.offsetDirection && input.distance > this.options.threshold && input.maxPointers === this.options.pointers && abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
+      return get$1(SwipeRecognizer.prototype.__proto__ || Object.getPrototypeOf(SwipeRecognizer.prototype), 'attrTest', this).call(this, input) && direction & input.offsetDirection && input.distance > this.options.threshold && input.maxPointers === this.options.pointers && abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
     }
   }, {
     key: 'emit',
@@ -1849,8 +1786,8 @@ function computeInputData(manager, input) {
     session.firstMultiple = false;
   }
 
-  var firstInput = session.firstInput;
-  var firstMultiple = session.firstMultiple;
+  var firstInput = session.firstInput,
+      firstMultiple = session.firstMultiple;
 
   var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
 
@@ -2334,12 +2271,12 @@ var MouseInput = function (_Input) {
     value: function handler(ev) {
       var eventType = MOUSE_INPUT_MAP[ev.type];
 
-      // on start we want to have the left mouse button down
-      if (eventType & INPUT_START && ev.button === 0) {
+      // on start we want to have mouse button down
+      if (eventType & INPUT_START && ev.button >= 0) {
         this.pressed = true;
       }
 
-      if (eventType & INPUT_MOVE && ev.which !== 1) {
+      if (eventType & INPUT_MOVE && !ev.which) {
         eventType = INPUT_END;
       }
 
@@ -2450,9 +2387,8 @@ function recordTouches(eventType, eventData) {
 function setLastTouch(eventData) {
   var _this2 = this;
 
-  var _eventData$changedPoi = slicedToArray(eventData.changedPointers, 1);
-
-  var touch = _eventData$changedPoi[0];
+  var _eventData$changedPoi = slicedToArray(eventData.changedPointers, 1),
+      touch = _eventData$changedPoi[0];
 
   if (touch.identifier === this.primaryTouch) {
     (function () {
@@ -3225,6 +3161,9 @@ assign$1(Hammer, {
   addEventListeners: addEventListeners,
   removeEventListeners: removeEventListeners
 });
+
+var freeGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : {}; // jshint ignore:line
+freeGlobal.Hammer = Hammer;
 
 /* jshint ignore:start */
 if (typeof define === 'function' && define.amd) {
