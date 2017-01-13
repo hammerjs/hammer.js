@@ -1,43 +1,46 @@
-var el,
-    hammer;
+// jscs:disable requireArrowFunctions,disallowVar,requireEnhancedObjectLiterals
+/* globals QUnit,Hammer,Simulator */
 
-module('Pinch Gesture', {
-    setup: function() {
+var el;
+var hammer;
+
+QUnit.module('Pinch Gesture', {
+    beforeEach: function() {
         el = document.createElement('div');
         document.body.appendChild(el);
 
-        hammer = new Hammer(el, {recognizers: []});
-    },
-    teardown: function() {
+        hammer = new Hammer(el, { recognizers: [] });
+      },
+    afterEach: function() {
         document.body.removeChild(el);
         hammer.destroy();
-    }
-});
+      }
+  });
 
-asyncTest('Pinch event flow should be start -> in -> end', function() {
-    expect(1);
-    var pinch = new Hammer.Pinch({enable: true, threshold: .1});
+QUnit.test('Pinch event flow should be start -> in -> end', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
+    var pinch = new Hammer.Pinch({ enable: true, threshold: 0.1 });
     hammer.add(pinch);
 
-    var eventflow = "";
+    var eventflow = '';
     var isFiredPinchin = false;
     hammer.on('pinchstart', function() {
-        eventflow += "start";
-    });
+        eventflow += 'start';
+      });
     hammer.on('pinchin', function() {
-        if(!isFiredPinchin){
-            isFiredPinchin = true;
-            eventflow += "in";
+        if (!isFiredPinchin) {
+          isFiredPinchin = true;
+          eventflow += 'in';
         }
-    });
+      });
     hammer.on('pinchend', function() {
-        eventflow += "end";
+        eventflow += 'end';
         isFiredPinchin = false;
-    });
+      });
 
-    Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function() {
-        equal(eventflow,"startinend");
-        start();
-    });
-});
-
+    Simulator.gestures.pinch(el, { duration: 500, scale: 0.5 }, function() {
+        assert.equal(eventflow, 'startinend', 'correct event flow');
+        done();
+      });
+  });

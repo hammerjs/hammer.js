@@ -1,5 +1,6 @@
 {
     "name": "hammerjs",
+    "license": "MIT",
     "main": "hammer.js",
     "ignore": [
         "tests",
@@ -10,7 +11,6 @@
         ".jshintrc",
         ".travis.yml",
         "component.json",
-        "Gruntfile.coffee",
         "package.json"
     ]
 }

@@ -1,29 +1,29 @@
-var el,
-    hammer,
-    swipeCount = 0;
+// jscs:disable requireArrowFunctions,disallowVar,requireEnhancedObjectLiterals
+/* globals QUnit,Hammer,utils,Simulator */
 
-module('Swipe Gesture', {
-    setup: function() {
+var el;
+var hammer;
+var swipeCount = 0;
+
+QUnit.module('Swipe Gesture', {
+    beforeEach: function() {
         el = utils.createHitArea();
-        hammer = new Hammer(el, {recognizers: []});
+        hammer = new Hammer(el, { recognizers: [] });
         swipeCount = 0;
-    },
-    teardown: function() {
+      },
+    afterEach: function() {
         hammer.destroy();
-    }
-});
+      }
+  });
 
-test('swipe can be recognized', function() {
-    expect(1);
-
-    var swipe = new Hammer.Swipe({threshold: 1});
+QUnit.test('swipe can be recognized', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var swipe = new Hammer.Swipe({ threshold: 1 });
     hammer.add(swipe);
     hammer.on('swipe', function() {
-        ok(true);
-        start();
-    });
-
-    stop();
-
+        assert.ok(true);
+        done();
+      });
     Simulator.gestures.swipe(el);
-});
+  });

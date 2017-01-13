@@ -3,12 +3,12 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Tests</title>
-    <link rel="stylesheet" href="assets/qunit.css">
+    <link rel="stylesheet" href="../../node_modules/qunitjs/qunit/qunit.css">
 
-    <script src="assets/jquery.min.js"></script>
-    <script src="assets/lodash.compat.js"></script>
-    <script src="assets/qunit.js"></script>
-    <!--[if !IE]> --><script src="assets/blanket.js"></script><!-- <![endif]-->
+    <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../../node_modules/lodash-compat/index.js"></script>
+    <script src="../../node_modules/qunitjs/qunit/qunit.js"></script>
+    <!--[if !IE]> --><script src="../../node_modules/blanket/dist/qunit/blanket.js"></script><!-- <![endif]-->
     <script src="assets/utils.js"></script>
 
     <script src="../../node_modules/hammer-simulator/index.js"></script>
@@ -17,7 +17,7 @@
         Simulator.events.touch.fakeSupport();
     </script>
 
-    <script src="../build.js" data-cover></script>
+    <script src="../../hammer.js" data-cover></script>
 </head>
 <body>
 <div id="qunit"></div>
@@ -29,7 +29,7 @@
 <script src="test_events.js"></script>
 <script src="test_nested_gesture_recognizers.js"></script>
 <script src="test_simultaneous_recognition.js"></script>
-<script src="test_propagation.js"></script>
+<script src="test_propagation_bubble.js"></script>
 <script src="test_gestures.js"></script>
 <script src="test_multiple_taps.js"></script>
 <script src="test_require_failure.js"></script>

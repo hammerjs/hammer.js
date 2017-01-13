@@ -1,59 +1,63 @@
+// jscs:disable requireArrowFunctions,disallowVar,requireEnhancedObjectLiterals
+/* globals QUnit,Hammer,utils,Simulator,$,jQuery */
+
 var el, hammer, events;
 
 var jQueryPluginPath = '../../node_modules/jquery-hammerjs/jquery.hammer.js';
 
-module('jQuery plugin', {
-    setup: function() {
+QUnit.module('jQuery plugin', {
+    beforeEach: function() {
         el = utils.createHitArea();
         events = {};
-    },
-    teardown: function() {
+      },
+    afterEach: function() {
         hammer && hammer.destroy();
-    }
-});
+      }
+  });
 
-asyncTest('trigger pan with jQuery', function() {
-    expect(2);
+QUnit.test('trigger pan with jQuery', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
 
     $.getScript(jQueryPluginPath, function() {
         jQuery(el).hammer();
         jQuery(el).bind('panstart pan panmove panright panend', function(ev) {
             if (ev.gesture) {
-                events[ev.type] = true;
+              events[ ev.type ] = true;
             }
-        });
+          });
 
         Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function() {
-            start();
-            deepEqual(events, {
+
+            assert.deepEqual(events, {
                 pan: true,
                 panstart: true,
                 panmove: true,
                 panright: true,
                 panend: true
-            });
+              }, 'Pan events recognized');
 
-            ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
-        });
-    });
-});
+            assert.ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
+            done();
+          });
+      });
+  });
 
-asyncTest('trigger pan without jQuery should still work', function() {
-    expect(1);
-
-    var hammer = Hammer(el);
+QUnit.test('trigger pan without jQuery should still work', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
+    var hammer = new Hammer(el);
     hammer.on('panstart pan panmove panright panend', function(ev) {
         events[ev.type] = true;
-    });
-
+      });
     Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function() {
-        start();
-        deepEqual(events, {
+        assert.deepEqual(events, {
             pan: true,
             panstart: true,
             panmove: true,
             panright: true,
             panend: true
-        });
-    });
-});
+          }, 'Pan events recognized');
+        done();
+      });
+  });
