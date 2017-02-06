@@ -295,7 +295,9 @@ export default class Manager {
     this.handlers = {};
     this.session = {};
     this.input.destroy();
+    this.input = null;
     this.element = null;
+    this.options.inputTarget = null;
   }
 }
 
