@@ -54,6 +54,7 @@
     "uglify-js": "^2.7.0"
   },
   "main": "hammer.js",
+  "module": "src/exports.js",
   "engines": {
     "node": ">=0.8.0"
   },
