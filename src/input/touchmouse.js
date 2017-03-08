@@ -27,7 +27,7 @@ const DEDUP_DISTANCE = 25;
 export default class TouchMouseInput extends Input {
   constructor() {
     super(...arguments);
-
+    this.init();
     let handler = bindFn(this.handler, this);
     this.touch = new TouchInput(this.manager, handler);
     this.mouse = new MouseInput(this.manager, handler);

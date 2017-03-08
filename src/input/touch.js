@@ -28,12 +28,12 @@ const TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 export default class TouchInput extends Input {
 
   constructor() {
-    TouchInput.prototype.evTarget = TOUCH_TARGET_EVENTS;
-    TouchInput.prototype.targetIds = {};
     super(...arguments);
 
     this.evTarget = TOUCH_TARGET_EVENTS;
     this.targetIds = {};
+
+    this.init();
   }
 
   handler(ev) {

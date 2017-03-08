@@ -26,9 +26,6 @@ export default class Input {
         self.handler(ev);
       }
     };
-
-    this.init();
-
   }
   /**
    * @private
