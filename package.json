@@ -30,6 +30,9 @@
   "bugs": {
     "url": "https://github.com/hammerjs/hammer.js/issues"
   },
+  "files": [
+    "hammer.js"
+  ],
   "dependencies": {},
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
