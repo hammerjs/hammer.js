@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (C) 2011-2014 by Jorik Tangelder (Eight Media)
+Copyright (C) 2011-2017 by Jorik Tangelder (Eight Media)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
