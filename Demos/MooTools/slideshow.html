@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=600">
+    <style>
+    #slideshow {
+        width: 510px;
+        height: 310px;
+        overflow: hidden;
+        position:relative;
+        background: #eee;
+    }
+
+    #slideshow ul {
+        position: absolute;
+        top: 0;
+        -webkit-transition: all .2s ease-out;
+        -moz-transition: all .2s ease-out;
+        -o-transition: all .2s ease-out;
+        transition: all .2s ease-out;
+        width: 3000px;
+        height: 310px;
+        margin: 0;
+        padding: 0;
+        list-style:none;
+    }
+
+    #slideshow ul li {
+        float: left;
+        width: 510px;
+        height: 310px;
+        overflow:hidden;
+    }
+
+    #slideshow ul li img {
+        border: solid 5px #666;
+    }
+
+    #overview {
+        width: 510px;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    #overview ul {
+        margin: 0;
+        padding: 0;
+        list-style:none;
+    }
+
+    #overview li {
+        display: inline-block;
+        margin: 0 3px;
+        text-indent: -999em;
+        overflow: hidden;
+        width: 10px;
+        height: 10px;
+        border-radius: 10px;
+        background: #ddd;
+        cursor: pointer;
+    }
+
+    #overview li.active {
+        background: #999;
+    }
+
+
+    </style>
+</head>
+
+<body>
+
+    <div id="slideshow">
+        <ul>
+            <li><img src="http://placekitten.com/500/300" width="500" height="300" alt="" /></li>
+            <li><img src="http://placekitten.com/501/301" width="500" height="300" alt="" /></li>
+            <li><img src="http://placekitten.com/502/302" width="500" height="300" alt="" /></li>
+            <li><img src="http://placekitten.com/503/303" width="500" height="300" alt="" /></li>
+            <li><img src="http://placekitten.com/504/304" width="500" height="300" alt="" /></li>
+        </ul>
+    </div>
+    <div id="overview">
+        <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+        </ul>
+    </div>
+
+    <p>Simple slideshow to demo the drag event.</p>
+    <p>Notice that the drag event is non-blocking for the scrolling of your page...</p>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+	<script src="../../hammer-mootools.js"></script>
+    <script>
+
+	window.addEvent('domready', function(){
+	
+	    // disable the dragging of images on desktop browsers
+	    $$("#slideshow li")
+	    .each(function(l){
+	    	l.ondragstart = function(){ return false; }
+	    });
+	    	
+	
+	    /**
+	    * super simple slideshow
+	    * animation between slides happens with css transitions
+	    */
+	    function Slideshow(container, overview)
+	    {
+	        container = $(container);
+	
+	        var slides = container.getElements('>li');
+	        var width = container.getParent().getSize().x;
+	
+	        var self = this;
+	        var current = 0;
+	        var total_slides = slides.length;
+	
+	        // overview dots
+	        overview.addEvent('click', function(ev){
+	            self.slideTo( $(this).getAllPrevious('li').length );
+	            ev.preventDefault();
+	        });
+	
+	        this.updateOverview = function() {
+	            overview.removeClass("active");
+	            overview[current].addClass('active');
+	        }
+	        
+	        self.updateOverview();
+	
+	
+	        // slide to given index
+	        this.slideTo = function( index ) {
+	            if(index > total_slides-1) {
+	                index = total_slides-1;
+	            } 
+	            else if(index < 0) {
+	                index = 0;
+	            } 
+	
+	            if(index == current) {
+	                return false;
+	            }
+	
+	            container.setStyles({ left: 0 - (width * index) });
+	            current = index;
+	
+	            self.updateOverview();
+	
+	            return true;
+	        };
+	
+	        this.next = function() {
+	            return this.slideTo(current+1);	
+	        }
+	
+	        this.prev = function() {
+	            return this.slideTo(current-1);	
+	        }
+	
+	        this.getContainer = function() {
+	            return container;
+	        }
+	
+	        this.getCurrent = function() {
+	            return $(slides.get(current));
+	        }
+	    }
+	
+	
+	
+	    var hammer = new Hammer("slideshow");
+	    var slideshow = new Slideshow($("slideshow").getElement('ul'), $("overview").getElements('li'));
+	
+	
+	    // ondrag we preview the next/prev slide
+	    hammer.onDrag = function(ev) {
+	        var left = 0;
+		
+			console.log(arguments);
+		
+	        // determine which direction we need to show the preview
+	        if(ev.direction == 'left') {
+	            left = 0 - ev.distance;
+	        } else if(ev.direction == 'right') {
+	            left = ev.distance;
+	        }
+	
+	        // just move the marginLeft
+	        slideshow.getContainer().setStyles({ 'margin-left': left });
+	    };
+	
+	
+	    // ondragend we will move to the next/prev slide when we have 
+	    // opened it more then 100px on the screen
+	    hammer.onDragend = function(ev) {
+	        // restore the margin
+	        slideshow.getContainer().setStyles({ 'margin-left': 0 });
+	
+	        // if we moved the slide 100px then navigate
+	        if(Math.abs(ev.distance) > 100) {
+	            if(ev.direction == 'right') {
+	                slideshow.prev();
+	            } else if(ev.direction == 'left') {
+	                slideshow.next();
+	            }
+	        }
+	    };
+    
+    });
+
+    </script>
+</body>
+</html>

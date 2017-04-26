@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        html, body {
+            margin: 0;
+            background: #666;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="draw"></canvas>
+
+	<div id="debug" style="white-space:pre;"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://raw.github.com/eightmedia/hammer.js/master/hammer.js"></script>
+<script>
+
+    var drawingCanvas = document.getElementById('draw');
+    drawingCanvas.width = $("body").width();
+    drawingCanvas.height = $("body").height();
+
+    var ctx;
+    if(drawingCanvas.getContext) {
+        ctx = drawingCanvas.getContext('2d');
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 5;
+    }
+
+    function randomHSLColor(lightness) {
+        return "hsl("+ Math.round(Math.random() * 255) +", 100%, "+ Math.round(lightness/2) +"%)";
+    }
+
+
+    var points = [];
+
+    var hammer = new Hammer("#draw", {
+        hold: false,
+        tap: false,
+        tap_double: false,
+        drag: true,
+        drag_vertical: true,
+        drag_horizontal: true,
+        transform: false,
+        prevent_default: true
+    });
+
+    $("#draw").bind("drag", function(event) {
+        for(var t=0, len=event.touches.length; t<len; t++) {
+            points.unshift({ x: event.touches[t].x, y: event.touches[t].y });
+        }
+
+        // allow max 100 points
+        points.splice(100, 100);
+
+        event.preventDefault();
+    });
+
+
+    function drawDot(x, y, opacity) {
+        if(!ctx) {
+            return;
+        }
+
+        ctx.fillStyle = randomHSLColor(opacity);
+        ctx.beginPath();
+        ctx.arc( x, y, ((opacity*3) / 10), 0, Math.PI*2, true );
+        ctx.closePath();
+        ctx.fill();
+    }
+
+
+    setInterval(function() {
+        if(!ctx) {
+            return;
+        }
+
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+        for(var i=100; i>0; i--) {
+            if(!points[i]) {
+                continue;
+            }
+
+            drawDot(points[i].x, points[i].y, 100 - i);
+        }
+    }, 1000/35)
+
+
+
+</script>
+</body>
+</html>
