@@ -1,5 +1,6 @@
 # Hammer.js 2.0.6
 
+[![npm version](https://badge.fury.io/js/hammerjs.svg)](https://badge.fury.io/js/hammerjs)
 [![Build Status](https://travis-ci.org/hammerjs/hammer.js.svg)](https://travis-ci.org/hammerjs/hammer.js)
 
 ## Support, Questions, and Collaboration
