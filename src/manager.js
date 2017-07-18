@@ -256,6 +256,13 @@ export default class Manager {
   }
 
   /**
+   * @private stop execution of current events chain
+   */
+  forceStop() {
+    this._isEventsChainStopped = true;
+  }
+
+  /**
    * @private emit event to the listeners
    * @param {String} event
    * @param {Object} data
@@ -281,6 +288,10 @@ export default class Manager {
     while (i < handlers.length) {
       handlers[i](data);
       i++;
+      if (this._isEventsChainStopped) {
+        this._isEventsChainStopped = false;
+        break;
+      }
     }
   }
 
