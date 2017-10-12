@@ -9,5 +9,10 @@ import bindFn from './bind-fn';
  * @returns {number}
  */
 export default function setTimeoutContext(fn, timeout, context) {
-  return setTimeout(bindFn(fn, context), timeout);
+  if(timeout === 0) {
+    fn.call( context );
+    return null;
+  } else {
+    return setTimeout(bindFn(fn, context), timeout); 
+  }
 }
