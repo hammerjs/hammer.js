@@ -13,6 +13,6 @@ export default function setTimeoutContext(fn, timeout, context) {
     fn.call( context );
     return null;
   } else {
-    return setTimeout(bindFn(fn, context), timeout); 
+    return setTimeout(bindFn(fn, context), timeout);
   }
 }
