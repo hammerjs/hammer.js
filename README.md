@@ -1,51 +1,120 @@
-# Hammer.js 2.0.6
+# [hammer.js][hammerjs-url]  [![NPM Version][npm-image]][npm-url]  [![NPM Downloads][downloads-image]][downloads-url]  [![Build Status][travis-image]][travis-url]
+> A JavaScript library for detecting touch gestures.
 
-[![Build Status](https://travis-ci.org/hammerjs/hammer.js.svg)](https://travis-ci.org/hammerjs/hammer.js)
 
-## Support, Questions, and Collaboration
+## Installation
+### NPM
+```sh
+npm install --save hammerjs
+```
 
-[![Slack Status](https://hammerjs.herokuapp.com/badge.svg)](https://hammerjs.herokuapp.com/)
+**or**
 
-## Documentation
+### Yarn
+```sh
+yarn add hammerjs
+```
 
-Visit [hammerjs.github.io](http://hammerjs.github.io) for detailed documentation.
+**or**
 
+### CDN
+[https://cdnjs.com/libraries/hammer.js/](https://cdnjs.com/libraries/hammer.js/)
+
+
+## Usage
+hammer.js has a quick start option for gestures it already recognizes.
 ```js
-// get a reference to an element
-var stage = document.getElementById('stage');
+// Get a reference to an element.
+var square = document.querySelector('.square');
 
-// create a manager for that element
-var mc = new Hammer.Manager(stage);
+// Create an instance of Hammer with the reference.
+var hammer = new Hammer(square);
 
-// create a recognizer
-var Rotate = new Hammer.Rotate();
-
-// add the recognizer
-mc.add(Rotate);
-
-// subscribe to events
-mc.on('rotate', function(e) {
-    // do something cool
-    var rotation = Math.round(e.rotation);    
-    stage.style.transform = 'rotate('+rotation+'deg)';
+// Subscribe to a quick start event: press, tap, or doubletap.
+// For a full list of quick start events, read the documentation.
+hammer.on('press', function(e) {
+  e.target.classList.toggle('expand');
+  console.log("You're pressing me!");
+  console.log(e);
 });
 ```
 
-An advanced demo is available here: [http://codepen.io/runspired/full/ZQBGWd/](http://codepen.io/runspired/full/ZQBGWd/)
+If you want to recognize your own gestures, such as `tripletap`, then you'll have to use these steps:
+```js
+// Get a reference to an element.
+var square = document.querySelector('.square');
+
+// Create a manager to manage the element.
+var manager = new Hammer.Manager(square);
+
+// Create a recognizer.
+var TripleTap = new Hammer.Tap({
+  event: 'tripletap',
+  taps: 3
+});
+
+// Add the recognizer to the manager.
+manager.add(TripleTap);
+
+// Subscribe to the event.
+manager.on('tripletap', function(e) {
+  e.target.classList.toggle('expand');
+  console.log("You're triple tapping me!");
+  console.log(e);
+});
+```
 
 
-## Contributing
+## Examples
+- [tap][tap]
+- [double tap][double-tap]
+- [press][press]
+- [swipe][swipe]
 
-Read the [contributing guidelines](./CONTRIBUTING.md).
 
-For PRs.
+## Documentation
+For further information regarding hammer.js, please read our [documentation][hammerjs-url].
 
-- Use [Angular Style commit messages](https://github.com/angular/angular.js/blob/v1.4.8/CONTRIBUTING.md#commit)
-- Rebase your PR branch when necessary
-- If you add a feature or fix a bug, please add or fix any necessary tests.
-- If a new feature, open a docs PR to go with.
 
-## Building
+## Contributions  [![Github Issues][issues-image]][issues-url]  [![Github PRs][pulls-image]][pulls-url]  [![Slack][slack-image]][slack-url]
+Feel encouraged to report issues or submit pull requests. When you're ready to do either, read our [contribution guidelines][contribution-guidelines]. If you're looking for another form of contribution, we love help answering questions on our [slack channel][slack-url].
 
-You can get the pre-build versions from the Hammer.js website, or do this by yourself running 
-`npm install && npm run build`
+
+## License
+[MIT][license]
+
+[hammerjs-url]: http://hammerjs.github.io
+
+[npm-image]: https://img.shields.io/npm/v/hammerjs.svg
+[npm-url]: https://npmjs.org/package/hammerjs
+
+[travis-image]: https://img.shields.io/travis/stream-utils/raw-body/master.svg
+[travis-url]: https://travis-ci.org/hammerjs/hammer.js
+
+[downloads-image]: https://img.shields.io/npm/dm/hammerjs.svg
+[downloads-url]: https://npmjs.org/package/hammerjs
+
+
+<!-- Examples -->
+[tap]: https://codepen.io/choskim/pen/WZggmg
+[double-tap]: https://codepen.io/choskim/pen/vezzwZ
+[press]: https://codepen.io/choskim/pen/RLYebL
+[pan]: ''
+[swipe]: https://codepen.io/choskim/pen/rGZqxa
+[pinch]: ''
+[rotate]: ''
+
+
+<!-- Contributions -->
+[issues-image]: https://img.shields.io/github/issues/hammerjs/hammer.js.svg
+[issues-url]: https://github.com/hammerjs/hammer.js/issues
+
+[pulls-image]: https://img.shields.io/github/issues-pr/hammerjs/hammer.js.svg
+[pulls-url]: https://github.com/hammerjs/hammer.js/pulls
+
+[slack-image]: https://hammerjs.herokuapp.com/badge.svg
+[slack-url]: https://hammerjs.herokuapp.com/
+
+[contribution-guidelines]: ./CONTRIBUTING.md
+
+[license]: ./LICENSE.md
