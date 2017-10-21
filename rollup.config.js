@@ -5,6 +5,6 @@ export default {
   format: 'es',
   plugins: [ babel({ exclude: 'node_modules/**' }) ],
   dest: 'hammer.js',
-  intro: " (function(window, document, exportName, undefined) { \n'use strict';",
-  outro: "})(window, document, 'Hammer');"
+  intro: " (function(exportName, undefined) { \n'use strict';",
+  outro: "})('Hammer');"
 };
