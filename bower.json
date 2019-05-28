@@ -12,5 +12,12 @@
         ".travis.yml",
         "component.json",
         "package.json"
+    ],
+    "keywords": [
+        "touch",
+        "gestures",
+        "hammerjs",
+        "hammer",
+        "hammer.js"
     ]
 }
