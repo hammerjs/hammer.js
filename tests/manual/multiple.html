@@ -9,14 +9,12 @@
 
         #right,
         #left {
-            display: block;
+            height: 580px;
             width: 50%;
-            height: 500px;
+            font-size: .8em;
+            float: left;
             overflow: hidden;
         }
-
-        #left { float: left; }
-        #right { float: right; }
 
     </style>
 </head>
@@ -44,6 +42,8 @@
                         value = "Array("+ value.length +"):"+ value;
                     } else if(value instanceof HTMLElement) {
                         value = value +" ("+ value.outerHTML.substring(0, 50) +"...)";
+                    } else if(key === 'center') {
+                        value = '{ x: '+value.x+', y: '+value.y+' }';
                     }
                     output.push(key +": "+ value);
                 }
