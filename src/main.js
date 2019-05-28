@@ -28,6 +28,7 @@ import {
 
 import Manager from './manager';
 import Input from './inputjs/input-constructor';
+import inputHandler from './inputjs/input-handler';
 import TouchAction from './touchactionjs/touchaction-constructor';
 import TouchInput from './input/touch';
 import MouseInput from './input/mouse';
@@ -94,6 +95,7 @@ assign(Hammer, {
   PointerEventInput,
   TouchMouseInput,
   SingleTouchInput,
+  inputHandler,
 
   Recognizer,
   AttrRecognizer,
