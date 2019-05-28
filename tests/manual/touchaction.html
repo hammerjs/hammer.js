@@ -71,7 +71,7 @@
         Hammer.each(touchActions, function(touchAction) {
             var el = document.getElementById(touchAction.replace(" ", "-"));
 
-            var mc = Hammer(el, {
+            var mc = new Hammer(el, {
                 touchAction: touchAction
             });
             mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
