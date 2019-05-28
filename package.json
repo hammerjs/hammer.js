@@ -32,7 +32,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "babel-preset-es2015-rollup": "^1.1.1",
+    "babel-core": "^6.26.3",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
     "bannerize": "^1.0.2",
     "blanket": "^1.2.3",
     "changelogplease": "^1.2.0",
@@ -47,11 +49,11 @@
     "lodash-compat": "^3.10.2",
     "node-qunit-phantomjs": "^1.4.0",
     "qunitjs": "^2.0.0",
-    "rollup": "^0.36.0",
-    "rollup-plugin-babel": "^2.4.0",
-    "run-when-changed": "^1.2.0",
+    "rollup": "^0.59.4",
+    "rollup-plugin-babel": "^3.0.4",
+    "run-when-changed": "^2.1.0",
     "serve": "^1.4.0",
-    "uglify-js": "^2.7.0"
+    "uglify-js": "^3.4.0"
   },
   "main": "hammer.js",
   "engines": {
@@ -61,7 +63,7 @@
     "bannerize": "bannerize hammer.js hammer.min.js",
     "connect": "serve -p 8000 ./",
     "rollup": "rollup -c",
-    "uglify": "uglifyjs hammer.js --source-map hammer.min.js.map -o hammer.min.js --stats",
+    "uglify": "uglifyjs hammer.js --source-map \"filename=hammer.min.js.map\" -o hammer.min.js --timings",
     "string-replace": "node string-replace.js",
     "jshint": "jshint src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config .jshintrc --verbose --reporter=node_modules/jshint-stylish",
     "jscs": " jscs src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config=./.jscsrc",
