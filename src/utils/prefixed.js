@@ -7,6 +7,10 @@ import { VENDOR_PREFIXES } from './utils-consts';
  * @returns {String|Undefined} prefixed
  */
 export default function prefixed(obj, property) {
+  // This allows gestures to be registered inside svgs in Android webviews
+  if (!obj) {
+    return undefined;
+  }
   let prefix;
   let prop;
   let camelProp = property[0].toUpperCase() + property.slice(1);
