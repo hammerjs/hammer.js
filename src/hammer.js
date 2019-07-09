@@ -18,6 +18,7 @@ import  Manager  from './manager';
  */
 export default class Hammer {
   constructor(element, options) {
+    if(!element instanceof HTMLElement) element = document.querySelector(element);
     options = options || {};
     options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
     return new Manager(element, options);
