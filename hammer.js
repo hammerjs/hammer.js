@@ -3,7 +3,7 @@
  *
  * Copyright (c)  Jorik Tangelder;
  * Licensed under the MIT license */
-(function(window, document, exportName, undefined) { 
+if( typeof window !== "undefined" && typeof document !== "undefined" )(function(window, document, exportName, undefined) { 
 'use strict';
 /**
  * @private
