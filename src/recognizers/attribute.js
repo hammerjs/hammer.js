@@ -53,6 +53,10 @@ export default class AttrRecognizer extends Recognizer {
       return state | STATE_CANCELLED;
     } else if (isRecognized || isValid) {
       if (eventType & INPUT_END) {
+        // on end input without being recognized before, return STATE_FAILED
+        if (!isRecognized) {
+          return STATE_FAILED;
+        }
         return state | STATE_ENDED;
       } else if (!(state & STATE_BEGAN)) {
         return STATE_BEGAN;
