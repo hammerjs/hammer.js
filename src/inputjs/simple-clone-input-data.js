@@ -1,4 +1,4 @@
-import { now,round } from '../utils/utils-consts';
+import { now } from '../utils/utils-consts';
 import getCenter from './get-center';
 
 /**
@@ -14,8 +14,8 @@ export default function simpleCloneInputData(input) {
   let i = 0;
   while (i < input.pointers.length) {
     pointers[i] = {
-      clientX: round(input.pointers[i].clientX),
-      clientY: round(input.pointers[i].clientY)
+      clientX: input.pointers[i].clientX,
+      clientY: input.pointers[i].clientY
     };
     i++;
   }
