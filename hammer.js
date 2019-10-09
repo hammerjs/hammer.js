@@ -3,21 +3,6 @@
  *
  * Copyright (c)  Jorik Tangelder;
  * Licensed under the MIT license */
-/*! Hammer.JS - v2.0.9 - 2019-10-09
- * http://hammerjs.github.io/
- *
- * Copyright (c)  Jorik Tangelder;
- * Licensed under the MIT license */
-/*! Hammer.JS - v2.0.8 - 2019-10-09
- * http://hammerjs.github.io/
- *
- * Copyright (c)  Jorik Tangelder;
- * Licensed under the MIT license */
-/*! Hammer.JS - v2.0.8 - 2019-10-09
- * http://hammerjs.github.io/
- *
- * Copyright (c)  Jorik Tangelder;
- * Licensed under the MIT license */
 (function(window, document, exportName, undefined) { 
 'use strict';
 

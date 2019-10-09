@@ -16,6 +16,7 @@ pids
 logs
 results
 tests/build.js
+.vs
 
 npm-debug.log
 node_modules
