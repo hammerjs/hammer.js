@@ -81,7 +81,6 @@ var TOUCH_ACTION_MAP = getTouchActionProps();
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
 var SUPPORT_TOUCH = 'ontouchstart' in window;
-var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = 'touch';
@@ -2389,8 +2388,6 @@ function createInputInstance(manager) {
 
   if (inputClass) {
     Type = inputClass;
-  } else if (SUPPORT_POINTER_EVENTS) {
-    Type = PointerEventInput;
   } else if (SUPPORT_ONLY_TOUCH) {
     Type = TouchInput;
   } else if (!SUPPORT_TOUCH) {
