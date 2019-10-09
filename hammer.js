@@ -1888,8 +1888,6 @@ var Input = function () {
         self.handler(ev);
       }
     };
-
-    this.init();
   }
   /**
    * @private
@@ -1974,6 +1972,7 @@ var PointerEventInput = function (_Input) {
     _this.evEl = POINTER_ELEMENT_EVENTS;
     _this.evWin = POINTER_WINDOW_EVENTS;
 
+    _this.init();
     _this.store = _this.manager.session.pointerEvents = [];
     return _this;
   }
@@ -2102,13 +2101,12 @@ var TouchInput = function (_Input) {
   function TouchInput() {
     classCallCheck(this, TouchInput);
 
-    TouchInput.prototype.evTarget = TOUCH_TARGET_EVENTS;
-    TouchInput.prototype.targetIds = {};
-
     var _this = possibleConstructorReturn(this, (TouchInput.__proto__ || Object.getPrototypeOf(TouchInput)).apply(this, arguments));
 
     _this.evTarget = TOUCH_TARGET_EVENTS;
     _this.targetIds = {};
+
+    _this.init();
     return _this;
   }
 
@@ -2214,6 +2212,7 @@ var MouseInput = function (_Input) {
     _this.evWin = MOUSE_WINDOW_EVENTS;
 
     _this.pressed = false; // mousedown state
+    _this.init();
     return _this;
   }
 
@@ -2280,6 +2279,7 @@ var TouchMouseInput = function (_Input) {
 
     var _this = possibleConstructorReturn(this, (TouchMouseInput.__proto__ || Object.getPrototypeOf(TouchMouseInput)).apply(this, arguments));
 
+    _this.init();
     var handler = bindFn(_this.handler, _this);
     _this.touch = new TouchInput(_this.manager, handler);
     _this.mouse = new MouseInput(_this.manager, handler);
@@ -2779,7 +2779,7 @@ var Hammer = function Hammer(element, options) {
   options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
   return new Manager(element, options);
 };
-Hammer.VERSION = '2.0.8';
+Hammer.VERSION = '2.0.9';
 
 /**
  * @private
@@ -2929,7 +2929,7 @@ var SingleTouchInput = function (_Input) {
     _this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
     _this.started = false;
 
-    Input.apply(_this, arguments);
+    _this.init();
     return _this;
   }
 

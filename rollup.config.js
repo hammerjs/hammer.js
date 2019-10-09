@@ -4,7 +4,7 @@ export default {
   input: 'src/main.js',
   output : {
     format: 'es',
-    dest: 'hammer.js',
+    file: 'hammer.js',
     intro: " (function(window, document, exportName, undefined) { \n'use strict';",
     outro: "})(window, document, 'Hammer');"
   },
