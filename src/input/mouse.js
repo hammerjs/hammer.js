@@ -29,6 +29,7 @@ export default class MouseInput extends Input {
     this.evWin = MOUSE_WINDOW_EVENTS;
 
     this.pressed = false; // mousedown state
+    this.init();
   }
 
   /**
