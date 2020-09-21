@@ -1726,7 +1726,7 @@ function getDirection(x, y) {
 function computeDeltaXY(session, input) {
   var center = input.center;
   // let { offsetDelta:offset = {}, prevDelta = {}, prevInput = {} } = session;
-  // jscs throwing error on defalut destructured values and without defaults tests fail
+  // jscs throwing error on default destructured values and without defaults tests fail
 
   var offset = session.offsetDelta || {};
   var prevDelta = session.prevDelta || {};
