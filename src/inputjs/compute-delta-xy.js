@@ -3,7 +3,7 @@ import { INPUT_START, INPUT_END } from './input-consts';
 export default function computeDeltaXY(session, input) {
   let { center } = input;
   // let { offsetDelta:offset = {}, prevDelta = {}, prevInput = {} } = session;
-  // jscs throwing error on defalut destructured values and without defaults tests fail
+  // jscs throwing error on default destructured values and without defaults tests fail
   let offset = session.offsetDelta || {};
   let prevDelta = session.prevDelta || {};
   let prevInput = session.prevInput || {};
