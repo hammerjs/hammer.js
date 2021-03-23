@@ -41,7 +41,7 @@
     "ember-suave": "^4.0.0",
     "git-tags": "^0.2.4",
     "hammer-simulator": "git://github.com/hammerjs/simulator#master",
-    "jquery": "^3.1.0",
+    "jquery": "^3.5.1",
     "jquery-hammerjs": "2.0.x",
     "jscs": "^3.0.7",
     "jshint": "^2.9.2",
