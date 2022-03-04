@@ -26,7 +26,8 @@ const FORCED_STOP = 2;
  * @constructor
  */
 export default class Manager {
-  constructor(element, options) {
+  constructor(element, options, callbackThis) {
+    this.callbackThis = callbackThis;
     this.options = assign({}, Hammer.defaults, options || {});
 
     this.options.inputTarget = this.options.inputTarget || element;
@@ -278,11 +279,20 @@ export default class Manager {
     };
 
     let i = 0;
-    while (i < handlers.length) {
-      handlers[i](data);
-      i++;
+    if(this.callbackThis)
+    {
+      while (i < handlers.length) {
+        handlers[i].call(this.callbackThis, data);
+        i++;
+      }
     }
-  }
+    else {
+      while (i < handlers.length) {
+        handlers[i](data);
+        i++;
+      }
+      }
+    }
 
   /**
    * @private
