@@ -7,8 +7,8 @@ import splitStr from './split-str';
  * @param {String} types
  * @param {Function} handler
  */
-export default function addEventListeners(target, types, handler) {
+export default function addEventListeners(target, types, handler, useCapture = false) {
   each(splitStr(types), (type) => {
-    target.addEventListener(type, handler, false);
+    target.addEventListener(type, handler, useCapture);
   });
 }
