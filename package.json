@@ -1,8 +1,8 @@
 {
-  "name": "hammerjs",
+  "name": "@zecar/hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "homepage": "http://hammerjs.github.io/",
   "license": "MIT",
   "keywords": [
@@ -15,20 +15,16 @@
   },
   "contributors": [
     {
-      "name": "Alexander Schmitz",
-      "email": "arschmitz@gmail.com"
-    },
-    {
-      "name": "Chris Thoburn",
-      "email": ""
+      "name": "Capraru Ioan",
+      "email": "capraru.ioan@gmail.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/hammerjs/hammer.js.git"
+    "url": "https://github.com/zecar/hammer.js.git"
   },
   "bugs": {
-    "url": "https://github.com/hammerjs/hammer.js/issues"
+    "url": "https://github.com/zecar/hammer.js/issues"
   },
   "dependencies": {},
   "devDependencies": {
@@ -40,7 +36,7 @@
     "changelogplease": "^1.2.0",
     "ember-suave": "^4.0.0",
     "git-tags": "^0.2.4",
-    "hammer-simulator": "git://github.com/hammerjs/simulator#master",
+    "hammer-simulator": "https://github.com/hammerjs/simulator#master",
     "jquery": "^3.1.0",
     "jquery-hammerjs": "2.0.x",
     "jscs": "^3.0.7",
@@ -72,5 +68,8 @@
     "watch-tasks": "npm run rollup && npm run string-replace && npm run uglify && npm run jshint && npm run jscs",
     "build": "npm run rollup && npm run string-replace && npm run uglify && npm run bannerize",
     "test": "npm run build && npm run jshint && npm run jscs && npm run qunit"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
