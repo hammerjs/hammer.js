@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["DOM", "ES2020"],
+    "sourceMap": true,
+    "declaration": true, // Enable the generation of .d.ts files
+    "declarationDir": "dist/types", // Output directory for .d.ts files
+    /* Strictness */
+    "strict": true,
+    "esModuleInterop": true,
+    /* Paths */
+    "baseUrl": ".",
+    "outDir": "dist",
+    /* Type Definitions Management */
+    // Crucial: These are set to false because Vite/esbuild handles the JS output.
+    // Type definition generation is handled separately (see tsconfig.build.json).
+    "noEmit": true, // Do not emit JS from 'tsc' during development
+    "emitDeclarationOnly": true, // Do emit declarations
+    "isolatedModules": true, // Required for fast tools like esbuild
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "src/v2/tests/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
