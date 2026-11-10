@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "tsc --emitDeclarationOnly && vite build",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
     "preview": "vite preview",
     "test": "vitest",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/user-event": "^14.6.1",
+    "@vitest/coverage-v8": "^4.0.9",
     "gts": "^5.3.1",
     "jsdom": "^27.2.0",
     "prettier": "^3.3.3",
@@ -30,12 +31,12 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/types/hammer.d.ts",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/hammer.es.js",
-      "require": "./dist/hammer.umd.cjs"
+      "require": "./dist/hammer.umd.js"
     }
   },
-  "types": "./dist/types/hammer.d.ts",
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist"
   ]

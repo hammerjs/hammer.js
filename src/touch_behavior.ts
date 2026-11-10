@@ -1,80 +1,158 @@
+export type TouchActionValue =
+  | 'auto'
+  | 'manipulation'
+  | 'pan-x'
+  | 'pan-y'
+  | 'pan-x pan-y'
+  | 'pan-x pinch-zoom'
+  | 'pan-y pinch-zoom'
+  | 'pinch-zoom'
+  | 'none';
+
+export type TouchActionSetting = 'compute' | TouchActionValue | false;
+
+// 4-bit capability lattice representing native browser actions allowed by W3C CSS `touch-action`:
+const ALLOW_PAN_X = 1 << 0;
+const ALLOW_PAN_Y = 1 << 1;
+const ALLOW_PINCH_ZOOM = 1 << 2;
+const ALLOW_DOUBLE_TAP_ZOOM = 1 << 3;
+const ALLOW_ALL = ALLOW_PAN_X | ALLOW_PAN_Y | ALLOW_PINCH_ZOOM | ALLOW_DOUBLE_TAP_ZOOM;
+
+function touchActionToMask(action: TouchActionValue): number {
+  switch (action) {
+    case 'auto':
+      return ALLOW_ALL;
+    case 'manipulation':
+      return ALLOW_PAN_X | ALLOW_PAN_Y | ALLOW_PINCH_ZOOM;
+    case 'pan-x pan-y':
+      return ALLOW_PAN_X | ALLOW_PAN_Y;
+    case 'pan-x pinch-zoom':
+      return ALLOW_PAN_X | ALLOW_PINCH_ZOOM;
+    case 'pan-y pinch-zoom':
+      return ALLOW_PAN_Y | ALLOW_PINCH_ZOOM;
+    case 'pan-x':
+      return ALLOW_PAN_X;
+    case 'pan-y':
+      return ALLOW_PAN_Y;
+    case 'pinch-zoom':
+      return ALLOW_PINCH_ZOOM;
+    case 'none':
+      return 0;
+  }
+}
+
+function maskToTouchAction(mask: number): TouchActionValue {
+  if ((mask & ALLOW_ALL) === ALLOW_ALL) {
+    return 'auto';
+  }
+  const x = (mask & ALLOW_PAN_X) !== 0;
+  const y = (mask & ALLOW_PAN_Y) !== 0;
+  const z = (mask & ALLOW_PINCH_ZOOM) !== 0;
+
+  if (x && y) {
+    return z ? 'manipulation' : 'pan-x pan-y';
+  }
+  if (x) {
+    return z ? 'pan-x pinch-zoom' : 'pan-x';
+  }
+  if (y) {
+    return z ? 'pan-y pinch-zoom' : 'pan-y';
+  }
+  return z ? 'pinch-zoom' : 'none';
+}
+
+/** Returns `true` when `action` permits native 2-finger browser pinch-zoom. */
+export function allowsPinchZoom(action: TouchActionValue): boolean {
+  return (touchActionToMask(action) & ALLOW_PINCH_ZOOM) !== 0;
+}
+
 /**
- * Configuration options for native touch behaviors.
- * All properties are optional and default to `false` (preventing nothing).
- * `true` means the default browser behavior will be prevented.
+ * Checks whether the current browser CSS parser supports `value` for `touch-action`,
+ * falling back cleanly on older WebKit / iOS Safari builds that reject `pinch-zoom`
+ * compound tokens (where setting an unsupported token would drop the declaration).
  */
-export interface TouchBehavior {
-  // Prevent the browser from handling scrolling?
-  preventScrollX?: boolean;
-  preventScrollY?: boolean;
-  // Prevent pinch-to-zoom on this element?
-  preventZoom?: boolean;
-  // Prevent the user from selecting text or images on this element?
-  preventSelect?: boolean;
-  // Prevent the native context menu (long press) from appearing?
-  preventContextMenu?: boolean;
+export function resolveSupportedTouchAction(value: TouchActionValue): TouchActionValue {
+  if (value !== 'pan-x pinch-zoom' && value !== 'pan-y pinch-zoom' && value !== 'pinch-zoom') {
+    return value;
+  }
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
+    return value;
+  }
+  if (CSS.supports('touch-action', value)) {
+    return value;
+  }
+  if (value === 'pan-x pinch-zoom') return 'pan-x';
+  if (value === 'pan-y pinch-zoom') return 'pan-y';
+  return 'none';
 }
 
 /**
- * Applies CSS properties and event listeners to an element based on the given touch behavior configuration.
- * Returns a function to remove any added event listeners.
+ * Combines multiple recognizer `TouchActionValue` intents via intersection (`&`)
+ * over the W3C capability lattice so native scrolling and zooming remain enabled
+ * on every axis not claimed by a registered recognizer.
  */
-export function setTouchBehavior(element: HTMLElement, options: TouchBehavior): () => void {
-  const removeTouchAction = setTouchActionRule(element, options);
-  const removeUserSelect = setUserSelectRule(element, !!options.preventSelect);
-  const removeEventListener = setContextMenuListener(element, !!options.preventContextMenu);
+export function mergeTouchActions(actions: readonly TouchActionValue[]): TouchActionValue {
+  let mask = ALLOW_ALL;
+  for (let i = 0; i < actions.length; i++) {
+    mask &= touchActionToMask(actions[i]);
+  }
+  return resolveSupportedTouchAction(maskToTouchAction(mask));
+}
+
+function kebabToCamel(property: string): string {
+  return property.replace(/^-/, '').replace(/-([a-z])/g, (_, ch: string) => ch.toUpperCase());
+}
+
+function applyStyleRule(element: HTMLElement, property: string, value: string): () => void {
+  const camel = kebabToCamel(property);
+  const styleRecord = element.style as unknown as Record<string, string>;
+  const previousCss = element.style.getPropertyValue(property);
+  const previousCamel = styleRecord[camel] || '';
+
+  element.style.setProperty(property, value);
+  if (element.style.getPropertyValue(property) !== value) {
+    styleRecord[camel] = value;
+  }
+
   return () => {
-    removeTouchAction();
-    removeUserSelect();
-    removeEventListener();
+    if (previousCss) {
+      element.style.setProperty(property, previousCss);
+    } else {
+      element.style.removeProperty(property);
+      styleRecord[camel] = previousCamel;
+    }
   };
 }
 
-function setTouchActionRule(element: HTMLElement, o: TouchBehavior): () => void {
-  let touchAction = 'auto';
-  if (o.preventScrollX && o.preventScrollY) {
-    // Disallow ALL browser scrolling (e.g. Game Canvas)
-    touchAction = 'none';
-  } else if (o.preventScrollX && !o.preventScrollY) {
-    // Disallow X (allow Y). Browser handles vertical, we handle horizontal.
-    touchAction = 'pan-y';
-  } else if (!o.preventScrollX && o.preventScrollY) {
-    // Disallow Y (allow X). Browser handles horizontal, we handle vertical.
-    touchAction = 'pan-x';
-  } else if (o.preventZoom) {
-    // 'manipulation' allows panning but disables double-tap-to-zoom
-    touchAction = 'manipulation';
-  }
-  element.style.setProperty('touch-action', touchAction);
-  return () => {
-    element.style.removeProperty('touch-action');
-  };
-}
+/**
+ * Applies computed CSS `touch-action` and (when non-tap gestures are present)
+ * selection, iOS callout (`-webkit-touch-callout: none`), and HTML5 `dragstart`
+ * guards, returning a cleanup callback that restores the element's prior state.
+ */
+export function applySurfaceBehavior(
+  element: HTMLElement,
+  touchAction: TouchActionValue,
+  preventSelectionAndDrag: boolean
+): () => void {
+  const cleanups: Array<() => void> = [
+    applyStyleRule(element, 'touch-action', resolveSupportedTouchAction(touchAction)),
+  ];
 
-function setUserSelectRule(element: HTMLElement, prevent: boolean): () => void {
-  if (!prevent) {
-    return () => {};
-  }
-  element.style.setProperty('user-select', 'none');
-  element.style.setProperty('-webkit-user-select', 'none');
-  element.style.setProperty('-webkit-touch-callout', 'none');
-  return () => {
-    element.style.removeProperty('user-select');
-    element.style.removeProperty('-webkit-user-select');
-    element.style.removeProperty('-webkit-touch-callout');
-  };
-}
+  if (preventSelectionAndDrag) {
+    cleanups.push(applyStyleRule(element, '-webkit-user-select', 'none'));
+    cleanups.push(applyStyleRule(element, 'user-select', 'none'));
+    cleanups.push(applyStyleRule(element, '-webkit-touch-callout', 'none'));
 
-// Prevent the context menu from appearing on long-press if not allowed.
-function setContextMenuListener(element: HTMLElement, prevent: boolean): () => void {
-  if (!prevent) {
-    return () => {};
+    const onDragStart = (e: Event) => {
+      e.preventDefault();
+    };
+    element.addEventListener('dragstart', onDragStart);
+    cleanups.push(() => element.removeEventListener('dragstart', onDragStart));
   }
-  const handler = (e: Event) => {
-    e.preventDefault();
-  };
-  element.addEventListener('contextmenu', handler);
+
   return () => {
-    element.removeEventListener('contextmenu', handler);
+    for (let i = cleanups.length - 1; i >= 0; i--) {
+      cleanups[i]();
+    }
   };
 }

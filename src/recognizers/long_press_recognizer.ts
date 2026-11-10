@@ -1,75 +1,188 @@
-import type {Point, MotionTracker} from '../motion_tracker';
-import {GestureEventData, GestureRecognizer} from '../gesture_recognizer';
+import {MotionAction, type MotionEvent, type Point} from '../motion_event';
+import {type GestureEventData, GestureRecognizer, RecognizerState} from '../gesture_recognizer';
+import type {TouchActionValue} from '../touch_behavior';
 
 export interface LongPressOptions {
-  slop: number; // max movement allowed (px)
-  duration: number; // min time required (ms)
+  /** Number of simultaneous pointers required. Default: `1`. */
+  numPointers: number;
+  /** Maximum radial movement in `px` allowed before `duration` elapses. */
+  slop: number;
+  /** Hold duration in `ms` required to trigger long press. */
+  duration: number;
+}
+
+export interface LongPressEventData extends GestureEventData {
+  /** Cumulative horizontal movement since long-press start (`0` on initial trigger). */
+  readonly deltaX: number;
+  /** Cumulative vertical movement since long-press start (`0` on initial trigger). */
+  readonly deltaY: number;
 }
 
 export interface LongPressCallbacks {
-  onLongPress: (event: GestureEventData) => void;
+  onLongPress: (event: LongPressEventData) => void;
+  onLongPressMove?: (event: LongPressEventData) => void;
+  onLongPressUp?: (event: LongPressEventData) => void;
+  onLongPressCancel?: () => void;
 }
 
+const LONG_PRESS_TIMER = 'longPress';
+
 export class LongPressRecognizer extends GestureRecognizer {
-  private callbacks: LongPressCallbacks;
-  private options: LongPressOptions;
+  readonly type = 'longPress';
 
-  private startPos: Point | null = null;
-  private timer: number | null = null;
-  private triggered = false;
-  private initialEventData: GestureEventData | null = null;
+  private readonly callbacks: LongPressCallbacks;
+  private readonly userOptions: Partial<LongPressOptions>;
 
-  static DEFAULTS: LongPressOptions = {
-    slop: 10,
-    duration: 500,
-  };
+  private readonly downPositions = new Map<number, Point>();
+  private anchorFocus: Point = {x: 0, y: 0};
+  private lastEvent: MotionEvent | null = null;
 
-  constructor(callbacks: LongPressCallbacks, options?: Partial<LongPressOptions>) {
+  constructor(callbacks: LongPressCallbacks, options: Partial<LongPressOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.options = {...LongPressRecognizer.DEFAULTS, ...options};
+    this.userOptions = options;
   }
 
-  onStart(tracker: MotionTracker, e: PointerEvent): void {
-    if (tracker.pointers.size > 1) return;
+  override getTouchAction(): TouchActionValue {
+    return 'manipulation';
+  }
 
-    this.active = true;
-    this.startPos = {...tracker.centroid};
-    this.triggered = false;
-    this.initialEventData = this.createEventData(tracker, e);
+  override get usesVelocity(): boolean {
+    return false;
+  }
 
-    this.timer = window.setTimeout(() => {
-      if (this.active) {
-        this.triggered = true;
-        if (this.initialEventData) {
-          this.callbacks.onLongPress(this.initialEventData);
+  private get numPointers(): number {
+    return this.userOptions.numPointers ?? 1;
+  }
+
+  private get slop(): number {
+    return this.userOptions.slop ?? this.config.touchSlop;
+  }
+
+  private get duration(): number {
+    return this.userOptions.duration ?? this.config.longPressTimeout;
+  }
+
+  onMotionEvent(event: MotionEvent): void {
+    this.lastEvent = event;
+
+    switch (event.action) {
+      case MotionAction.DOWN: {
+        this.downPositions.clear();
+        const p = event.pointers[0];
+        if (p) {
+          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         }
+        if (event.activePointerCount > this.numPointers) {
+          this.fail();
+          return;
+        }
+        if (event.activePointerCount === this.numPointers) {
+          this.armLongPress(event);
+        }
+        break;
       }
-    }, this.options.duration);
-  }
 
-  onMove(tracker: MotionTracker, _e: PointerEvent): void {
-    if (!this.active || this.triggered || !this.startPos) return;
-
-    const dx = tracker.centroid.x - this.startPos.x;
-    const dy = tracker.centroid.y - this.startPos.y;
-
-    // Use Euclidean distance
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist > this.options.slop) {
-      if (this.timer !== null) {
-        clearTimeout(this.timer);
+      case MotionAction.POINTER_DOWN: {
+        if (this.active) {
+          if (event.activePointerCount !== this.numPointers) {
+            this.cancel(false);
+          }
+          return;
+        }
+        if (event.activePointerCount > this.numPointers) {
+          this.fail();
+          return;
+        }
+        const p = event.pointers[event.actionIndex];
+        if (p) {
+          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+        }
+        if (event.activePointerCount === this.numPointers) {
+          this.armLongPress(event);
+        }
+        break;
       }
-      this.active = false;
+
+      case MotionAction.MOVE: {
+        if (this.active) {
+          if (this.callbacks.onLongPressMove) {
+            this.emitChange(() => {
+              this.callbacks.onLongPressMove?.(this.buildEventData(event));
+            });
+          }
+          return;
+        }
+
+        const moved = event.pointers[event.actionIndex];
+        if (!moved) break;
+        const start = this.downPositions.get(moved.pointerId);
+        if (start && Math.hypot(moved.x - start.x, moved.y - start.y) > this.slop) {
+          this.fail();
+        }
+        break;
+      }
+
+      case MotionAction.POINTER_UP: {
+        if (this.active) {
+          if (event.activePointerCount < this.numPointers) {
+            this.completeActive(() => {
+              this.callbacks.onLongPressUp?.(this.buildEventData(event));
+            });
+          }
+        } else {
+          this.fail();
+        }
+        break;
+      }
+
+      case MotionAction.UP: {
+        if (this.active) {
+          this.completeActive(() => {
+            this.callbacks.onLongPressUp?.(this.buildEventData(event));
+          });
+        } else {
+          this.fail();
+        }
+        break;
+      }
+
+      case MotionAction.CANCEL: {
+        this.cancel();
+        break;
+      }
     }
   }
 
-  onEnd(_tracker: MotionTracker, _e: PointerEvent): void {
-    this.active = false;
+  protected override onCancel(): void {
+    this.callbacks.onLongPressCancel?.();
+  }
 
-    if (this.timer !== null) {
-      clearTimeout(this.timer);
-    }
+  protected override onReset(): void {
+    this.downPositions.clear();
+    this.anchorFocus = {x: 0, y: 0};
+    this.lastEvent = null;
+  }
+
+  private armLongPress(armEvent: MotionEvent): void {
+    this.anchorFocus = armEvent.focus;
+    this.setTimer(LONG_PRESS_TIMER, this.duration, () => {
+      const triggerEvent = this.lastEvent;
+      if (this.state !== RecognizerState.POSSIBLE || !triggerEvent) {
+        return;
+      }
+      this.tryBegin(() => {
+        this.anchorFocus = triggerEvent.focus;
+        this.callbacks.onLongPress(this.buildEventData(triggerEvent));
+      });
+    });
+  }
+
+  private buildEventData(event: MotionEvent): LongPressEventData {
+    return {
+      ...this.createEventData(event),
+      deltaX: event.focusX - this.anchorFocus.x,
+      deltaY: event.focusY - this.anchorFocus.y,
+    };
   }
 }

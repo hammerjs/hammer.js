@@ -14,84 +14,104 @@
       fieldset {
         display: inline-block;
         margin-bottom: 16px;
+        vertical-align: top;
       }
 
       label {
         white-space: nowrap;
+        margin-right: 10px;
       }
 
       #logger {
-        font: 10px/16px monospace;
+        font: 11px/16px monospace;
         white-space: pre;
-        position: absolute;
+        position: fixed;
         top: 10px;
         right: 10px;
         text-align: right;
+        max-height: calc(100vh - 60px);
         overflow: hidden;
-        opacity: 0.4;
+        opacity: 0.55;
         pointer-events: none;
       }
 
       #clearButton {
-        position: absolute;
+        position: fixed;
         bottom: 10px;
         right: 10px;
       }
 
       #hitarea {
-        width: 300px;
-        height: 300px;
+        width: 340px;
+        height: 340px;
         border: solid 2px;
+        border-radius: 12px;
         display: flex;
+        flex-direction: column;
+        gap: 12px;
         align-items: center;
         justify-content: center;
+        cursor: grab;
+      }
+
+      #hitarea:active {
+        cursor: grabbing;
       }
     </style>
   </head>
   <body>
     <form id="configForm">
       <fieldset>
-        <legend>Supported Pointer Types</legend>
+        <legend>Pointer Types</legend>
         <label><input type="checkbox" id="touchCheckbox" /> Touch</label>
         <label><input type="checkbox" id="penCheckbox" /> Pen</label>
         <label><input type="checkbox" id="mouseCheckbox" /> Mouse</label>
       </fieldset>
       <fieldset>
-        <legend>Touch Behavior (control what the browser may do)</legend>
-        <label><input type="checkbox" id="preventScrollXCheckbox" /> Prevent Scroll X</label>
-        <label><input type="checkbox" id="preventScrollYCheckbox" /> Prevent Scroll Y</label>
-        <label><input type="checkbox" id="preventZoomCheckbox" /> Prevent Zoom</label>
-        <label><input type="checkbox" id="preventSelectCheckbox" /> Prevent Select</label>
+        <legend>Scale Options</legend>
+        <label><input type="checkbox" id="quickScaleCheckbox" checked /> Quick-Scale</label>
+      </fieldset>
+      <fieldset>
+        <legend>Touch Action &amp; Scroll Coexistence</legend>
+        <select id="touchActionSelect">
+          <option value="compute">compute (Auto from recognizers)</option>
+          <option value="pan-y pinch-zoom">pan-y pinch-zoom (Horizontal Carousel)</option>
+          <option value="pan-x pan-y">pan-x pan-y (1-finger Scroll + Pinch)</option>
+          <option value="manipulation">manipulation (Scroll + Zoom, No 300ms Delay)</option>
+          <option value="none">none (Full 2D Canvas)</option>
+        </select>
         <label
-          ><input type="checkbox" id="preventContextMenuCheckbox" /> Prevent Context Menu</label
+          ><input type="checkbox" id="horizontalOnlyCheckbox" /> Horizontal Pan/Fling Only</label
         >
       </fieldset>
     </form>
 
     <div id="logger"></div>
     <div id="hitarea">
-      <span>Touch here</span>
+      <span>Tap / Double-Tap / Pan / Fling / Scale / Rotate</span>
+      <button id="childButton" type="button">Interactive Child Button</button>
     </div>
 
-    <button id="clearButton" onclick="clear()">Clear Log</button>
+    <button id="clearButton" type="button">Clear Log</button>
 
     <script type="module">
-      import Hammer from '../src/index.js';
+      import Hammer from '../src/index.ts';
 
-      function $(selector) {
-        return document.querySelector(selector);
-      }
-      function $$(selector) {
-        return Array.from(document.querySelectorAll(selector));
-      }
+      const $ = selector => document.querySelector(selector);
+      const $$ = selector => Array.from(document.querySelectorAll(selector));
 
       const logger = $('#logger');
       function writeLine(message) {
         logger.textContent = message + '\n' + logger.textContent;
       }
+
       $('#clearButton').onclick = () => {
         logger.textContent = '';
         console.clear();
+      };
+
+      $('#childButton').onclick = () => {
+        writeLine('Native child <button> click!');
       };
 
       function logGesture(gesture) {
@@ -99,9 +119,9 @@
           console.log(gesture, ev);
           const cleanEv = {...ev};
           delete cleanEv.originalEvent;
+          delete cleanEv.motionEvent;
           writeLine(
-            JSON.stringify(cleanEv, (key, value) =>
-              // Limit number of decimals for floats for readability
+            JSON.stringify(cleanEv, (_key, value) =>
               typeof value === 'number' ? Math.round(value * 100) / 100 : value
             ) +
               ' | ' +
@@ -110,18 +130,54 @@
         };
       }
 
-      function installHammer(mangerOptions) {
-        const hammer = new Hammer($('#hitarea'), mangerOptions);
-        hammer.register(new Hammer.Tap({onTap: logGesture('Tap')}));
-        hammer.register(new Hammer.LongPress({onLongPress: logGesture('LongPress')}));
-        hammer.register(new Hammer.PinchRotate({onPinchRotate: logGesture('PinchRotate')}));
-        hammer.register(new Hammer.Swipe({onSwipe: logGesture('Swipe')}));
-        hammer.register(
-          new Hammer.Drag({
-            onDragStart: logGesture('DragStart'),
-            onDrag: logGesture('Drag'),
-            onDragEnd: logGesture('DragEnd'),
-          })
+      function installHammer(managerOptions, quickScale, horizontalOnly) {
+        const hammer = new Hammer($('#hitarea'), managerOptions);
+        const doubleTap = new Hammer.Tap({onTap: logGesture('DoubleTap')}, {taps: 2});
+        const singleTap = new Hammer.Tap({
+          onTap: logGesture('SingleTapConfirmed'),
+        }).requireFailureOf(doubleTap);
+
+        hammer
+          .register(singleTap)
+          .register(doubleTap)
+          .register(
+            new Hammer.LongPress({
+              onLongPress: logGesture('LongPress'),
+              onLongPressUp: logGesture('LongPressUp'),
+            })
+          );
+
+        if (!horizontalOnly) {
+          hammer
+            .register(
+              new Hammer.Scale(
+                {
+                  onScaleStart: logGesture('ScaleStart'),
+                  onScale: logGesture('Scale'),
+                  onScaleEnd: logGesture('ScaleEnd'),
+                },
+                {quickScale}
+              )
+            )
+            .register(
+              new Hammer.Rotate({
+                onRotateStart: logGesture('RotateStart'),
+                onRotate: logGesture('Rotate'),
+                onRotateEnd: logGesture('RotateEnd'),
+              })
+            );
+        }
+
+        const direction = horizontalOnly ? 'horizontal' : 'all';
+        hammer.register(new Hammer.Fling({onFling: logGesture('Fling')}, {direction})).register(
+          new Hammer.Pan(
+            {
+              onPanStart: logGesture('PanStart'),
+              onPan: logGesture('Pan'),
+              onPanEnd: logGesture('PanEnd'),
+            },
+            {direction}
+          )
         );
         return hammer;
       }
@@ -129,47 +185,39 @@
       let hammerInstance;
 
       function configureHammer() {
-        // Gather options from the config form
         const supportedPointerTypes = [];
         if ($('#touchCheckbox').checked) supportedPointerTypes.push('touch');
         if ($('#penCheckbox').checked) supportedPointerTypes.push('pen');
         if ($('#mouseCheckbox').checked) supportedPointerTypes.push('mouse');
 
-        const touchBehavior = {
-          preventScrollX: $('#preventScrollXCheckbox').checked,
-          preventScrollY: $('#preventScrollYCheckbox').checked,
-          preventZoom: $('#preventZoomCheckbox').checked,
-          preventSelect: $('#preventSelectCheckbox').checked,
-          preventContextMenu: $('#preventContextMenuCheckbox').checked,
-        };
+        const touchAction = $('#touchActionSelect').value;
+        const quickScale = $('#quickScaleCheckbox').checked;
+        const horizontalOnly = $('#horizontalOnlyCheckbox').checked;
 
-        // Destroy the old instance and create a new one
         if (hammerInstance) {
           hammerInstance.destroy();
         }
-        hammerInstance = installHammer({
-          supportedPointerTypes,
-          touchBehavior,
-        });
+        hammerInstance = installHammer(
+          {
+            supportedPointerTypes,
+            touchAction,
+          },
+          quickScale,
+          horizontalOnly
+        );
 
-        writeLine('Configured Hammer');
+        writeLine(`Configured Hammer (touch-action="${$('#hitarea').style.touchAction}")`);
       }
 
-      $$('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', configureHammer);
+      $$('input[type="checkbox"], select').forEach(control => {
+        control.addEventListener('change', configureHammer);
       });
 
       const defaults = Hammer.DEFAULTS;
-
-      // Ensure the configured options are reflected in the config controls.
       $('#touchCheckbox').checked = defaults.supportedPointerTypes.includes('touch');
       $('#penCheckbox').checked = defaults.supportedPointerTypes.includes('pen');
       $('#mouseCheckbox').checked = defaults.supportedPointerTypes.includes('mouse');
-      $('#preventScrollXCheckbox').checked = defaults.touchBehavior.preventScrollX;
-      $('#preventScrollYCheckbox').checked = defaults.touchBehavior.preventScrollY;
-      $('#preventZoomCheckbox').checked = defaults.touchBehavior.preventZoom;
-      $('#preventSelectCheckbox').checked = defaults.touchBehavior.preventSelect;
-      $('#preventContextMenuCheckbox').checked = defaults.touchBehavior.preventContextMenu;
+      $('#touchActionSelect').value = defaults.touchAction;
 
       configureHammer();
     </script>

@@ -1,0 +1,383 @@
+import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {MotionAction, MotionEvent, MotionEventStream} from '../src/motion_event';
+import {pointerEvent} from './test_helpers';
+
+describe('MotionEvent & MotionEventStream', () => {
+  let stream: MotionEventStream;
+
+  beforeEach(() => {
+    stream = new MotionEventStream();
+  });
+
+  it('transitions through DOWN -> POINTER_DOWN -> MOVE -> POINTER_UP -> UP', () => {
+    const down1 = stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 10})
+    )!;
+    expect(down1.action).toBe(MotionAction.DOWN);
+    expect(down1.pointerCount).toBe(1);
+    expect(down1.activePointerCount).toBe(1);
+    expect(down1.focus).toEqual({x: 100, y: 100});
+    expect(down1.downTime).toBe(10);
+
+    const down2 = stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 2, clientX: 200, clientY: 100, timeStamp: 20})
+    )!;
+    expect(down2.action).toBe(MotionAction.POINTER_DOWN);
+    expect(down2.pointerCount).toBe(2);
+    expect(down2.activePointerCount).toBe(2);
+    expect(down2.actionPointerId).toBe(2);
+    expect(down2.focus).toEqual({x: 150, y: 100});
+    expect(down2.getSpan()).toBeCloseTo(100);
+    expect(down2.downTime).toBe(10);
+
+    const move = stream.onPointerMove(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 30})
+    )!;
+    expect(move.action).toBe(MotionAction.MOVE);
+    expect(move.focus).toEqual({x: 200, y: 100});
+    expect(move.getSpan()).toBeCloseTo(200);
+
+    // When pointer 1 lifts (`POINTER_UP`), `focus` excludes pointer 1 and smoothly shifts to pointer 2!
+    const up1 = stream.onPointerUp(
+      pointerEvent('pointerup', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 40})
+    )!;
+    expect(up1.action).toBe(MotionAction.POINTER_UP);
+    expect(up1.pointerCount).toBe(2);
+    expect(up1.activePointerCount).toBe(1);
+    expect(up1.actionPointerId).toBe(1);
+    expect(up1.focus).toEqual({x: 300, y: 100});
+
+    const up2 = stream.onPointerUp(
+      pointerEvent('pointerup', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 50})
+    )!;
+    expect(up2.action).toBe(MotionAction.UP);
+    expect(up2.activePointerCount).toBe(0);
+    expect(up2.focus).toEqual({x: 300, y: 100});
+  });
+
+  it('ignores unpressed hover moves and non-primary mouse buttons', () => {
+    expect(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 1, pointerType: 'mouse'}))
+    ).toBeNull();
+
+    expect(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, pointerType: 'mouse', button: 2})
+      )
+    ).toBeNull();
+  });
+
+  it('extracts coalesced pointer events strictly for the moving actionIndex pointer', () => {
+    stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+    );
+    stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 50, timeStamp: 2})
+    );
+
+    const c1 = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 110,
+      clientY: 55,
+      pressure: 0.6,
+      timeStamp: 4,
+    });
+    const c2 = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 120,
+      clientY: 60,
+      pressure: 0.7,
+      timeStamp: 8,
+    });
+    const c3 = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 130,
+      clientY: 65,
+      pressure: 0.8,
+      timeStamp: 12,
+    });
+
+    const move = stream.onPointerMove(
+      pointerEvent('pointermove', {
+        pointerId: 2,
+        clientX: 130,
+        clientY: 65,
+        pressure: 0.8,
+        timeStamp: 12,
+        coalescedEvents: [c1, c2, c3],
+      })
+    )!;
+
+    expect(move.actionIndex).toBe(1);
+    expect(move.history).toHaveLength(2);
+    expect(move.history[0]).toEqual({eventTime: 4, x: 110, y: 55, pressure: 0.6});
+    expect(move.history[1]).toEqual({eventTime: 8, x: 120, y: 60, pressure: 0.7});
+    expect(move.pointers[1].x).toBe(130);
+    expect(move.pointers[0].x).toBe(0);
+  });
+
+  it('computes element-relative local coordinates', () => {
+    const el = document.createElement('div');
+    el.getBoundingClientRect = () =>
+      ({
+        left: 40,
+        top: 80,
+        right: 340,
+        bottom: 380,
+        width: 300,
+        height: 300,
+        x: 40,
+        y: 80,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    const down = stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 140, clientY: 200, timeStamp: 10})
+    )!;
+
+    expect(down.relativeTo(el)).toEqual({x: 100, y: 120});
+    expect(down.relativeTo(el, {x: 50, y: 90})).toEqual({x: 10, y: 10});
+  });
+
+  it('aborts all active pointers on CANCEL', () => {
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0}));
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 50}));
+
+    const cancel = stream.onPointerCancel(pointerEvent('pointercancel', {pointerId: 1}))!;
+    expect(cancel.action).toBe(MotionAction.CANCEL);
+    expect(cancel.activePointerCount).toBe(0);
+    expect(stream.activePointerCount).toBe(0);
+  });
+
+  it('computes multi-pointer mean-deviation span across 3 pointers', () => {
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: -60, clientY: 0}));
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, clientY: 0}));
+    const ev = stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerId: 3, clientX: 60, clientY: 0})
+    )!;
+
+    expect(ev.focus).toEqual({x: 0, y: 0});
+    expect(ev.getSpanX()).toBeCloseTo(80);
+    expect(ev.getSpan()).toBeCloseTo(80);
+  });
+
+  it('covers findPointerIndex, spans, stream queries, and raw Event fallbacks', () => {
+    const down1 = stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 10,
+        clientX: 0,
+        clientY: 0,
+        pressure: 0.4,
+        timeStamp: 5,
+      })
+    )!;
+    expect(down1.findPointerIndex(10)).toBe(0);
+    expect(down1.findPointerIndex(999)).toBe(-1);
+    expect(down1.pointers[0].pressure).toBeCloseTo(0.4);
+    expect(down1.getSpan()).toBe(0);
+    expect(down1.getSpanX()).toBe(0);
+    expect(down1.getSpanY()).toBe(0);
+
+    const down2 = stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 20,
+        clientX: 0,
+        clientY: 100,
+        pressure: 0.8,
+        timeStamp: 10,
+      })
+    )!;
+    expect(down2.getSpanY()).toBeCloseTo(100);
+    expect(stream.hasPointer(20)).toBe(true);
+
+    // Untracked pointerup / pointercancel return null:
+    expect(stream.onPointerUp(pointerEvent('pointerup', {pointerId: 777}))).toBeNull();
+    expect(stream.onPointerCancel(pointerEvent('pointercancel', {pointerId: 777}))).toBeNull();
+
+    // Non-finite timestamp, empty pointerType, and undefined pressure fallbacks:
+    stream.reset();
+    expect(stream.activePointerCount).toBe(0);
+    const rawEv = new Event('pointerdown') as PointerEvent;
+    Object.defineProperties(rawEv, {
+      pointerId: {value: 5},
+      clientX: {value: 15},
+      clientY: {value: 25},
+      pointerType: {value: ''},
+      timeStamp: {value: Number.NaN},
+    });
+    const fallbackDown = stream.onPointerDown(rawEv)!;
+    expect(fallbackDown.pointerType).toBe('touch');
+    expect(fallbackDown.pointers[0].pressure).toBe(0.5);
+    expect(Number.isFinite(fallbackDown.eventTime)).toBe(true);
+
+    const rawCoalesced = new Event('pointermove') as PointerEvent;
+    Object.defineProperties(rawCoalesced, {
+      pointerId: {value: 5},
+      clientX: {value: 16},
+      clientY: {value: 26},
+      timeStamp: {value: fallbackDown.eventTime + 4},
+    });
+    const rawMove = new Event('pointermove') as PointerEvent;
+    Object.defineProperties(rawMove, {
+      pointerId: {value: 5},
+      clientX: {value: 20},
+      clientY: {value: 30},
+      pointerType: {value: ''},
+      timeStamp: {value: fallbackDown.eventTime + 8},
+      getCoalescedEvents: {value: () => [rawCoalesced, rawMove]},
+    });
+    const fallbackMove = stream.onPointerMove(rawMove)!;
+    expect(fallbackMove.pointerType).toBe('touch');
+    expect(fallbackMove.history[0].pressure).toBe(0.5);
+
+    const rawUp = new Event('pointerup') as PointerEvent;
+    Object.defineProperties(rawUp, {
+      pointerId: {value: 5},
+      clientX: {value: 20},
+      clientY: {value: 30},
+      pointerType: {value: ''},
+      timeStamp: {value: fallbackDown.eventTime + 12},
+    });
+    const fallbackUp = stream.onPointerUp(rawUp)!;
+    expect(fallbackUp.getActivePointers()).toEqual([]);
+
+    stream.onPointerDown(rawEv);
+    const rawCancel = new Event('pointercancel') as PointerEvent;
+    Object.defineProperties(rawCancel, {
+      pointerId: {value: 5},
+      clientX: {value: 15},
+      clientY: {value: 25},
+      pointerType: {value: ''},
+      timeStamp: {value: fallbackDown.eventTime + 16},
+    });
+    expect(stream.onPointerCancel(rawCancel)!.pointerType).toBe('touch');
+
+    // Synthetic empty and single-pointer POINTER_UP snapshots:
+    const emptySnapshot = new MotionEvent({
+      action: MotionAction.DOWN,
+      downTime: 0,
+      eventTime: 0,
+      actionIndex: 0,
+      pointerType: 'touch',
+      pointers: [],
+      originalEvent: rawEv,
+    });
+    expect(emptySnapshot.focus).toEqual({x: 0, y: 0});
+    expect(emptySnapshot.actionPointerId).toBe(-1);
+
+    const degeneratePointerUp = new MotionEvent({
+      action: MotionAction.POINTER_UP,
+      downTime: 0,
+      eventTime: 10,
+      actionIndex: 0,
+      pointerType: 'touch',
+      pointers: [{pointerId: 1, x: 42, y: 84, pressure: 0.5}],
+      originalEvent: rawEv,
+    });
+    expect(degeneratePointerUp.focus).toEqual({x: 42, y: 84});
+  });
+
+  it('recovers from orphaned ghost pointers, filters WebKit 0ms coalesced samples, and supports silent/cancelAll helpers', () => {
+    // 1. Stuck primary touch #1 without pointerup -> new primary touch #2 recovers as fresh DOWN:
+    stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: 10,
+        clientY: 10,
+        timeStamp: 10,
+      })
+    );
+    const recoveredDown = stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 2,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: 50,
+        clientY: 60,
+        timeStamp: 500,
+      })
+    )!;
+    expect(recoveredDown.action).toBe(MotionAction.DOWN);
+    expect(recoveredDown.pointerCount).toBe(1);
+    expect(recoveredDown.downTime).toBe(500);
+
+    // 2. Duplicate `pointerdown` for the same single tracked pointerId recovers as fresh DOWN:
+    const dupDown = stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 2,
+        pointerType: 'mouse',
+        clientX: 70,
+        clientY: 80,
+        timeStamp: 600,
+      })
+    )!;
+    expect(dupDown.action).toBe(MotionAction.DOWN);
+    expect(dupDown.downTime).toBe(600);
+
+    // 3. `includeHistory = false` skips `getCoalescedEvents()` completely on 120Hz moves:
+    const coalescedSpy = vi.fn(() => []);
+    const noHistoryEv = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 75,
+      clientY: 85,
+      timeStamp: 610,
+    });
+    Object.defineProperty(noHistoryEv, 'getCoalescedEvents', {value: coalescedSpy});
+    const fastMove = stream.onPointerMove(noHistoryEv, false)!;
+    expect(coalescedSpy).not.toHaveBeenCalled();
+    expect(fastMove.history).toHaveLength(0);
+
+    // 4. WebKit bogus `timeStamp === 0` or future coalesced samples are filtered out:
+    const bogusZero = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 76,
+      clientY: 86,
+      timeStamp: 0,
+    });
+    const bogusFuture = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 77,
+      clientY: 87,
+      timeStamp: 999,
+    });
+    const terminal = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 80,
+      clientY: 90,
+      timeStamp: 620,
+    });
+    const webkitMove = stream.onPointerMove(
+      pointerEvent('pointermove', {
+        pointerId: 2,
+        clientX: 80,
+        clientY: 90,
+        timeStamp: 620,
+        coalescedEvents: [bogusZero, bogusFuture, terminal],
+      })
+    )!;
+    expect(webkitMove.history).toHaveLength(0);
+
+    // 5. `updatePointerSilent` updates active pointer & ignores unknown pointers:
+    stream.updatePointerSilent(pointerEvent('pointermove', {pointerId: 999, clientX: 1}));
+    stream.updatePointerSilent(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 120, clientY: 130})
+    );
+
+    // 6. `cancelAll` aborts active pointers with finite & fallback timestamps:
+    const blurEv = new Event('blur');
+    Object.defineProperty(blurEv, 'timeStamp', {value: 700});
+    const cancelled = stream.cancelAll(blurEv)!;
+    expect(cancelled.action).toBe(MotionAction.CANCEL);
+    expect(cancelled.eventTime).toBe(700);
+    expect(cancelled.focus).toEqual({x: 120, y: 130});
+    expect(stream.cancelAll(blurEv)).toBeNull();
+
+    // Fallback timestamp when `triggerEvent.timeStamp <= 0`:
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 3, isPrimary: true}));
+    const zeroBlur = new Event('blur');
+    Object.defineProperty(zeroBlur, 'timeStamp', {value: 0});
+    expect(stream.cancelAll(zeroBlur)!.action).toBe(MotionAction.CANCEL);
+  });
+});
