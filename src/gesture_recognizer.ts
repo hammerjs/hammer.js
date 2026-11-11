@@ -106,11 +106,6 @@ export abstract class GestureRecognizer {
     return 'none';
   }
 
-  /** Whether this recognizer consumes high-frequency pointer history / velocity. */
-  get usesVelocity(): boolean {
-    return false;
-  }
-
   /**
    * Whether winning this gesture should suppress trailing synthetic DOM `click`s
    * on pointer release (true for `Pan`, `LongPress`, `Scale`, `QuickScale`, `Rotate`; false for `Tap`).
@@ -165,9 +160,6 @@ export abstract class GestureRecognizer {
 
   /** @internal */
   prepareForDown(_event: MotionEvent): void {}
-
-  /** @internal */
-  onPendingMotionEvent(_event: MotionEvent): void {}
 
   /** @internal */
   shouldResetOnDown(_event: MotionEvent): boolean {

@@ -38,7 +38,7 @@ export interface ScaleCallbacks {
 export class ScaleRecognizer extends GestureRecognizer {
   readonly type = 'scale';
 
-  private callbacks: ScaleCallbacks;
+  private readonly callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<ScaleOptions>;
 
   private initialSpan = 0;
@@ -51,11 +51,6 @@ export class ScaleRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
-  }
-
-  setCallbacks(callbacks: ScaleCallbacks): this {
-    this.callbacks = callbacks;
-    return this;
   }
 
   override getTouchAction(): TouchActionValue {

@@ -83,47 +83,11 @@ export interface HammerOptions {
   rotate?: Partial<RotateOptions>;
 }
 
-interface ResolvedQuickScaleCallbacks {
-  readonly hasQuickScale: boolean;
-  readonly onScaleStart?: (event: ScaleEventData) => void;
-  readonly onScale?: (event: ScaleEventData) => void;
-  readonly onScaleEnd?: (event: ScaleEventData) => void;
-  readonly onScaleCancel?: () => void;
-}
-
-function resolveQuickScaleCallbacks(options: HammerOptions): ResolvedQuickScaleCallbacks {
-  const disabled = options.quickScale === false;
-  const forward = Boolean(options.quickScale);
-  const onScaleStart = disabled
-    ? undefined
-    : (options.onQuickScaleStart ?? (forward ? options.onScaleStart : undefined));
-  const onScale = disabled
-    ? undefined
-    : (options.onQuickScale ?? (forward ? options.onScale : undefined));
-  const onScaleEnd = disabled
-    ? undefined
-    : (options.onQuickScaleEnd ?? (forward ? options.onScaleEnd : undefined));
-  const onScaleCancel = disabled
-    ? undefined
-    : (options.onQuickScaleCancel ?? (forward ? options.onScaleCancel : undefined));
-  return {
-    hasQuickScale: Boolean(onScaleStart || onScale || onScaleEnd || onScaleCancel),
-    onScaleStart,
-    onScale,
-    onScaleEnd,
-    onScaleCancel,
-  };
-}
-
-type StructureSignature = readonly (string | number | boolean | undefined)[];
-
-function sameStructure(a: StructureSignature, b: StructureSignature): boolean {
-  return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
-}
-
-function resolveRecognizerDescriptor(options: HammerOptions) {
+function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
+  const recognizers: GestureRecognizer[] = [];
   const requireDoubleTapFailure = options.requireDoubleTapFailure ?? true;
-  const hasPanRecognizer = Boolean(
+
+  const hasPan = Boolean(
     options.onPanStart ||
     options.onPan ||
     options.onPanEnd ||
@@ -133,110 +97,7 @@ function resolveRecognizerDescriptor(options: HammerOptions) {
   const panPointers = options.pan?.numPointers ?? 1;
 
   const hasSingleTap = Boolean(options.onTap || options.onTapDown || options.onShowPress);
-  const hasDoubleTap = Boolean(options.onDoubleTap);
-  const qs = resolveQuickScaleCallbacks(options);
-
-  let quickScaleOpts = typeof options.quickScale === 'object' ? {...options.quickScale} : undefined;
-  if (
-    qs.hasQuickScale &&
-    hasPanRecognizer &&
-    panPointers <= 1 &&
-    options.pan?.slop !== undefined &&
-    quickScaleOpts?.slop === undefined
-  ) {
-    // Keep QuickScale's slop at or below a tighter custom pan slop so multi-frame drags on
-    // stroke #2 aren't claimed by Pan before QuickScale crosses touchSlop.
-    const defaultSlop =
-      options.viewConfiguration?.touchSlop ?? DEFAULT_VIEW_CONFIGURATION.touchSlop;
-    if (options.pan.slop < defaultSlop) {
-      quickScaleOpts = {...quickScaleOpts, slop: options.pan.slop};
-    }
-  }
-
-  const hasLongPress = Boolean(
-    options.onLongPress ||
-    options.onLongPressMove ||
-    options.onLongPressUp ||
-    options.onLongPressCancel
-  );
-  const hasScale = Boolean(
-    options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
-  );
-  const hasRotate = Boolean(
-    options.onRotateStart || options.onRotate || options.onRotateEnd || options.onRotateCancel
-  );
-
-  const structure: StructureSignature = [
-    hasSingleTap,
-    Boolean(options.onTap),
-    requireDoubleTapFailure,
-    hasDoubleTap,
-    qs.hasQuickScale,
-    hasLongPress,
-    hasPanRecognizer,
-    hasScale,
-    hasRotate,
-    options.tap?.numPointers,
-    options.tap?.slop,
-    options.tap?.maxTime,
-    options.tap?.multiTapInterval,
-    options.tap?.minTapInterval,
-    options.tap?.multiTapSlop,
-    options.doubleTap?.numPointers,
-    options.doubleTap?.slop,
-    options.doubleTap?.maxTime,
-    options.doubleTap?.multiTapInterval,
-    options.doubleTap?.minTapInterval,
-    options.doubleTap?.multiTapSlop,
-    quickScaleOpts?.slop,
-    quickScaleOpts?.sensitivity,
-    options.longPress?.numPointers,
-    options.longPress?.slop,
-    options.longPress?.duration,
-    options.pan?.numPointers,
-    options.pan?.slop,
-    options.pan?.direction,
-    options.pan?.minSwipeVelocity,
-    options.pan?.maxSwipeVelocity,
-    options.pan?.minSwipeDistance,
-    options.scale?.spanSlop,
-    options.scale?.minSpan,
-    options.rotate?.rotationSlop,
-    options.rotate?.minSpan,
-  ];
-
-  return {
-    structure,
-    requireDoubleTapFailure,
-    hasPanRecognizer,
-    panPointers,
-    hasSingleTap,
-    hasDoubleTap,
-    qs,
-    quickScaleOpts,
-    hasLongPress,
-    hasScale,
-    hasRotate,
-  };
-}
-
-interface BuiltRecognizers {
-  readonly structure: StructureSignature;
-  readonly list: GestureRecognizer[];
-  readonly singleTap: TapRecognizer | null;
-  readonly doubleTap: TapRecognizer | null;
-  readonly quickScale: QuickScaleRecognizer | null;
-  readonly longPress: LongPressRecognizer | null;
-  readonly pan: PanRecognizer | null;
-  readonly scale: ScaleRecognizer | null;
-  readonly rotate: RotateRecognizer | null;
-}
-
-function buildRecognizers(options: HammerOptions): BuiltRecognizers {
-  const desc = resolveRecognizerDescriptor(options);
-  const recognizers: GestureRecognizer[] = [];
-
-  const singleTap = desc.hasSingleTap
+  const singleTap = hasSingleTap
     ? new TapRecognizer(
         {
           onDown: options.onTapDown,
@@ -247,19 +108,36 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
       )
     : null;
 
-  const doubleTap = desc.hasDoubleTap
+  const doubleTap = options.onDoubleTap
     ? new TapRecognizer({onTap: options.onDoubleTap}, {...options.doubleTap, taps: 2})
     : null;
 
-  const quickScale = desc.qs.hasQuickScale
+  const qsDisabled = options.quickScale === false;
+  const qsForward = Boolean(options.quickScale);
+  const qsStart = qsDisabled
+    ? undefined
+    : (options.onQuickScaleStart ?? (qsForward ? options.onScaleStart : undefined));
+  const qsChange = qsDisabled
+    ? undefined
+    : (options.onQuickScale ?? (qsForward ? options.onScale : undefined));
+  const qsEnd = qsDisabled
+    ? undefined
+    : (options.onQuickScaleEnd ?? (qsForward ? options.onScaleEnd : undefined));
+  const qsCancel = qsDisabled
+    ? undefined
+    : (options.onQuickScaleCancel ?? (qsForward ? options.onScaleCancel : undefined));
+  const hasQuickScale = Boolean(qsStart || qsChange || qsEnd || qsCancel);
+
+  const quickScaleOpts = typeof options.quickScale === 'object' ? options.quickScale : undefined;
+  const quickScale = hasQuickScale
     ? new QuickScaleRecognizer(
         {
-          onScaleStart: desc.qs.onScaleStart,
-          onScale: desc.qs.onScale,
-          onScaleEnd: desc.qs.onScaleEnd,
-          onScaleCancel: desc.qs.onScaleCancel,
+          onScaleStart: qsStart,
+          onScale: qsChange,
+          onScaleEnd: qsEnd,
+          onScaleCancel: qsCancel,
         },
-        desc.quickScaleOpts
+        quickScaleOpts
       )
     : null;
 
@@ -268,7 +146,7 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
     const doubleTapPointers = options.doubleTap?.numPointers ?? 1;
     const samePointersAsDoubleTap = Boolean(doubleTap && tapPointers === doubleTapPointers);
 
-    if (options.onTap && desc.requireDoubleTapFailure) {
+    if (options.onTap && requireDoubleTapFailure) {
       if (doubleTap && samePointersAsDoubleTap) {
         singleTap.requireFailureOf(doubleTap);
       }
@@ -288,8 +166,15 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
     recognizers.push(quickScale);
   }
 
-  const longPress = desc.hasLongPress
-    ? new LongPressRecognizer(
+  const hasLongPress = Boolean(
+    options.onLongPress ||
+    options.onLongPressMove ||
+    options.onLongPressUp ||
+    options.onLongPressCancel
+  );
+  if (hasLongPress) {
+    recognizers.push(
+      new LongPressRecognizer(
         {
           onLongPress: options.onLongPress,
           onLongPressMove: options.onLongPressMove,
@@ -298,12 +183,10 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
         },
         options.longPress
       )
-    : null;
-  if (longPress) {
-    recognizers.push(longPress);
+    );
   }
 
-  const pan = desc.hasPanRecognizer
+  const pan = hasPan
     ? new PanRecognizer(
         {
           onPanStart: options.onPanStart,
@@ -319,7 +202,10 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
     recognizers.push(pan);
   }
 
-  const scale = desc.hasScale
+  const hasScale = Boolean(
+    options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
+  );
+  const scale = hasScale
     ? new ScaleRecognizer(
         {
           onScaleStart: options.onScaleStart,
@@ -331,7 +217,10 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
       )
     : null;
 
-  const rotate = desc.hasRotate
+  const hasRotate = Boolean(
+    options.onRotateStart || options.onRotate || options.onRotateEnd || options.onRotateCancel
+  );
+  const rotate = hasRotate
     ? new RotateRecognizer(
         {
           onRotateStart: options.onRotateStart,
@@ -346,7 +235,7 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
   if (scale && rotate) {
     scale.simultaneousWith(rotate);
   }
-  if (pan && desc.panPointers !== 1) {
+  if (pan && panPointers !== 1) {
     if (scale) {
       pan.simultaneousWith(scale);
     }
@@ -362,17 +251,7 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
     recognizers.push(rotate);
   }
 
-  return {
-    structure: desc.structure,
-    list: recognizers,
-    singleTap,
-    doubleTap,
-    quickScale,
-    longPress,
-    pan,
-    scale,
-    rotate,
-  };
+  return recognizers;
 }
 
 /**
@@ -385,16 +264,16 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
 export class Hammer<T extends GestureTarget = GestureTarget> {
   readonly element: T;
   readonly manager: GestureManager<T>;
-  private built: BuiltRecognizers;
+  private recognizers: GestureRecognizer[];
 
   constructor(element: T, options: HammerOptions = {}) {
     this.element = element;
-    this.built = buildRecognizers(options);
+    this.recognizers = buildRecognizers(options);
     this.manager = new GestureManager(element, {
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
       viewConfiguration: options.viewConfiguration,
-      recognizers: this.built.list,
+      recognizers: this.recognizers,
     });
   }
 
@@ -402,65 +281,16 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
     return this.manager.config;
   }
 
-  /**
-   * Updates callbacks and/or gesture configuration in place. When recognizer topology and
-   * recognizer options are unchanged, callbacks swap without interrupting active gestures.
-   */
   setOptions(options: HammerOptions): this {
-    const desc = resolveRecognizerDescriptor(options);
-    const managerOptions = {
+    this.manager.unregister(...this.recognizers);
+    this.recognizers = buildRecognizers(options);
+    this.manager.setOptions({
       supportedPointerTypes:
         options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
       touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
       viewConfiguration: options.viewConfiguration ?? DEFAULT_VIEW_CONFIGURATION,
-    };
-
-    if (sameStructure(desc.structure, this.built.structure)) {
-      this.built.singleTap?.setCallbacks({
-        onDown: options.onTapDown,
-        onShowPress: options.onShowPress,
-        onTap: options.onTap,
-      });
-      this.built.doubleTap?.setCallbacks({onTap: options.onDoubleTap});
-      this.built.quickScale?.setCallbacks({
-        onScaleStart: desc.qs.onScaleStart,
-        onScale: desc.qs.onScale,
-        onScaleEnd: desc.qs.onScaleEnd,
-        onScaleCancel: desc.qs.onScaleCancel,
-      });
-      this.built.longPress?.setCallbacks({
-        onLongPress: options.onLongPress,
-        onLongPressMove: options.onLongPressMove,
-        onLongPressUp: options.onLongPressUp,
-        onLongPressCancel: options.onLongPressCancel,
-      });
-      this.built.pan?.setCallbacks({
-        onPanStart: options.onPanStart,
-        onPan: options.onPan,
-        onPanEnd: options.onPanEnd,
-        onPanCancel: options.onPanCancel,
-        onSwipe: options.onSwipe,
-      });
-      this.built.scale?.setCallbacks({
-        onScaleStart: options.onScaleStart,
-        onScale: options.onScale,
-        onScaleEnd: options.onScaleEnd,
-        onScaleCancel: options.onScaleCancel,
-      });
-      this.built.rotate?.setCallbacks({
-        onRotateStart: options.onRotateStart,
-        onRotate: options.onRotate,
-        onRotateEnd: options.onRotateEnd,
-        onRotateCancel: options.onRotateCancel,
-      });
-      this.manager.setOptions(managerOptions);
-      return this;
-    }
-
-    this.manager.unregister(...this.built.list);
-    this.built = buildRecognizers(options);
-    this.manager.setOptions(managerOptions);
-    this.manager.register(...this.built.list);
+    });
+    this.manager.register(...this.recognizers);
     return this;
   }
 

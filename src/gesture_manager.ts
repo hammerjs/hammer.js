@@ -95,12 +95,10 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
 
   private unsetSurfaceBehavior: Cleanup | null = null;
   private unbindActiveTracking: Cleanup | null = null;
-  private unbindScrollGuard: Cleanup | null = null;
   private disarmClickSuppression: Cleanup | null = null;
   private lastHandledDown: Event | null = null;
   private appliedSurfaceKey = '';
   private preventsPinchZoom = false;
-  private needsDynamicScrollGuard = false;
   private suppressesTouchContextMenu = false;
   private destroyed = false;
 
@@ -286,17 +284,9 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
       this.abortActiveStream(e);
       return;
     }
-    if (!this.arena.hasLiveRecognizers) {
-      this.releaseScrollGuard();
-      this.stream.updatePointerSilent(e);
-      return;
-    }
-    const motionEvent = this.stream.onPointerMove(e, this.arena.needsVelocity);
+    const motionEvent = this.stream.onPointerMove(e);
     if (motionEvent) {
       this.arena.dispatch(motionEvent);
-      if (!this.arena.hasLiveRecognizers) {
-        this.releaseScrollGuard();
-      }
     }
   };
 
@@ -348,26 +338,11 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   }
 
   private cleanupSurfaceBehavior(): void {
-    this.releaseScrollGuard();
     this.unsetSurfaceBehavior?.();
     this.unsetSurfaceBehavior = null;
     this.appliedSurfaceKey = '';
     this.preventsPinchZoom = false;
-    this.needsDynamicScrollGuard = false;
     this.suppressesTouchContextMenu = false;
-  }
-
-  private ensureScrollGuard(): void {
-    if (!this.unbindScrollGuard) {
-      this.unbindScrollGuard = listen(this.element, 'touchmove', this.onTouchMove, {
-        passive: false,
-      });
-    }
-  }
-
-  private releaseScrollGuard(): void {
-    this.unbindScrollGuard?.();
-    this.unbindScrollGuard = null;
   }
 
   private syncTouchAction(): void {
@@ -400,8 +375,6 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     this.cleanupSurfaceBehavior();
     this.appliedSurfaceKey = nextKey;
     this.preventsPinchZoom = preventsPinchZoom;
-    this.needsDynamicScrollGuard =
-      hasNonTapRecognizer && !preventsPinchZoom && resolvedAction !== 'none';
     this.suppressesTouchContextMenu = hasNonTapRecognizer;
 
     const el = this.element;
@@ -409,20 +382,9 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
 
     if (hasNonTapRecognizer) {
       cleanups.push(listen(el, 'contextmenu', this.onContextMenu));
-      // Keep directional `Pan` / `LongPress` / `QuickScale` surfaces free of idle non-passive
-      // `touchmove` listeners so compositor fast-scroll regions stay unblocked until touched;
-      // only attach statically when 2-finger pinch-zoom must be blocked on a scrollable surface.
-      if (preventsPinchZoom && resolvedAction !== 'none') {
+      if (resolvedAction !== 'none') {
         cleanups.push(listen(el, 'touchmove', this.onTouchMove, {passive: false}));
       }
-    }
-
-    if (
-      this.needsDynamicScrollGuard &&
-      this.unbindActiveTracking &&
-      this.stream.activePointerType === 'touch'
-    ) {
-      this.ensureScrollGuard();
     }
 
     if (
@@ -449,9 +411,6 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
 
   /** Attaches document-level listeners for the lifetime of a single pointer stream. */
   private ensureActiveTracking(): void {
-    if (this.needsDynamicScrollGuard && this.stream.activePointerType === 'touch') {
-      this.ensureScrollGuard();
-    }
     if (this.unbindActiveTracking) {
       return;
     }
@@ -487,7 +446,6 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
 
   private stopActiveTracking(): void {
     this.lastHandledDown = null;
-    this.releaseScrollGuard();
     this.unbindActiveTracking?.();
     this.unbindActiveTracking = null;
   }

@@ -579,7 +579,6 @@ describe('GestureArena conflict resolution', () => {
       readonly type = 'probe';
       exerciseGuards(): void {
         expect(this.getTouchAction()).toBe('none');
-        expect(this.usesVelocity).toBe(false);
         expect(this.suppressesClick).toBe(true);
         this.emitChange(() => {});
         this.completeActive(() => {});

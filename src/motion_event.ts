@@ -312,12 +312,8 @@ export class MotionEventStream {
     });
   }
 
-  /**
-   * Converts a `pointermove` into a `MotionEvent`.
-   * Pass `includeHistory = false` when no registered recognizer uses velocity to skip
-   * `getCoalescedEvents()` allocations on 120Hz displays.
-   */
-  onPointerMove(e: PointerEvent, includeHistory = true): MotionEvent | null {
+  /** Converts a `pointermove` into a `MotionEvent`, including coalesced intermediate samples. */
+  onPointerMove(e: PointerEvent): MotionEvent | null {
     if (!this.pointers.has(e.pointerId)) {
       return null;
     }
@@ -325,7 +321,7 @@ export class MotionEventStream {
     const eventTime = readTimestamp(e);
     let history: readonly HistoricalSample[] = EMPTY_HISTORY;
 
-    if (includeHistory && typeof e.getCoalescedEvents === 'function') {
+    if (typeof e.getCoalescedEvents === 'function') {
       const coalesced = e.getCoalescedEvents();
       if (coalesced.length > 1) {
         const samples: HistoricalSample[] = [];
@@ -407,13 +403,6 @@ export class MotionEventStream {
       pointers: snapshot,
       originalEvent: e,
     });
-  }
-
-  /** Updates an active pointer's coordinates without constructing a `MotionEvent`. */
-  updatePointerSilent(e: PointerEvent): void {
-    if (this.pointers.has(e.pointerId)) {
-      this.pointers.set(e.pointerId, toPointerSample(e));
-    }
   }
 
   /** Aborts all active pointers on `window` `blur`, hidden `visibilitychange`, or stuck mouse release. */

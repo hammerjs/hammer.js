@@ -815,30 +815,6 @@ describe('GestureManager', () => {
       outerLink.dispatchEvent(laterClick);
       expect(linkClickSpy).toHaveBeenCalledTimes(2);
 
-      gm.unregister(pan);
-      const coalescedSpy = vi.fn(() => []);
-      innerCard.dispatchEvent(
-        pointerEvent('pointerdown', {pointerId: 7, clientX: 0, clientY: 0, timeStamp: 300})
-      );
-      const movePastSlop = pointerEvent('pointermove', {
-        pointerId: 7,
-        clientX: 25,
-        clientY: 0,
-        timeStamp: 316,
-      });
-      Object.defineProperty(movePastSlop, 'getCoalescedEvents', {value: coalescedSpy});
-      innerCard.dispatchEvent(movePastSlop);
-      expect(coalescedSpy).not.toHaveBeenCalled();
-
-      const moveSpy = vi.spyOn(tap, 'onMotionEvent');
-      innerCard.dispatchEvent(
-        pointerEvent('pointermove', {pointerId: 7, clientX: 60, clientY: 0, timeStamp: 332})
-      );
-      expect(moveSpy).not.toHaveBeenCalled();
-      innerCard.dispatchEvent(
-        pointerEvent('pointerup', {pointerId: 7, clientX: 60, clientY: 0, timeStamp: 348})
-      );
-
       gm.destroy();
       outerLink.remove();
       otherBtn.remove();
@@ -911,7 +887,7 @@ describe('GestureManager', () => {
     expect(released).toEqual([1]);
   });
 
-  it('keeps directional Pan / LongPress surfaces free of idle touchmove listeners and supports SVGElement targets', () => {
+  it('supports SVGElement targets, partial setOptions updates, and orphaned pen recovery', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     document.body.appendChild(svg);
 
@@ -920,39 +896,19 @@ describe('GestureManager', () => {
     const onPan = vi.fn();
     const onPanCancel = vi.fn();
 
+    const pan = new PanRecognizer({onPan, onPanCancel}, {direction: 'horizontal', slop: 6});
     const gm = new GestureManager(svg, {
-      recognizers: [new PanRecognizer({onPan, onPanCancel}, {direction: 'horizontal', slop: 6})],
+      recognizers: [pan],
     });
     expect(gm.element).toBe(svg);
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
-    // Zero idle non-passive `touchmove` listeners on directional Pan surfaces:
-    expect(addSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
-
-    // Mouse input never attaches a `touchmove` listener:
-    svg.dispatchEvent(
-      pointerEvent('pointerdown', {pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0})
-    );
-    expect(addSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0})
-    );
-
-    // Touch input attaches `touchmove` dynamically and detaches it as soon as vertical scroll fails Pan:
-    svg.dispatchEvent(
-      pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 0})
-    );
     expect(addSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
-    document.dispatchEvent(
-      pointerEvent('pointermove', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 20})
-    );
-    expect(removeSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 20})
-    );
 
+    // Switching to `touchAction: 'none'` detaches the redundant element `touchmove` guard:
     gm.setOptions({touchAction: 'none', viewConfiguration: {touchSlop: 16}});
     expect(gm.config.touchSlop).toBe(16);
     expect(svg.style.touchAction).toBe('none');
+    expect(removeSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
 
     // Partial `setOptions` updates only specified properties without wiping existing config:
     gm.setOptions({supportedPointerTypes: ['touch', 'pen']});

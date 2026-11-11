@@ -40,7 +40,6 @@ export class GestureArena {
   private dispatchDepth = 0;
   private evaluatingPending = false;
   private nextDispatchToken = 0;
-  private velocityNeeded = false;
   private multiTouchAccepted = false;
   private totalWinnersInStream = 0;
   private yieldedWinnersInStream = 0;
@@ -68,10 +67,6 @@ export class GestureArena {
     return false;
   }
 
-  get needsVelocity(): boolean {
-    return this.velocityNeeded;
-  }
-
   get acceptsMultiTouch(): boolean {
     return this.multiTouchAccepted;
   }
@@ -86,20 +81,6 @@ export class GestureArena {
     }
     for (const r of this.recognizers) {
       if (r.state === RecognizerState.POSSIBLE && r.isPrioritized) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  get hasLiveRecognizers(): boolean {
-    for (const {state} of this.recognizers) {
-      if (
-        state === RecognizerState.POSSIBLE ||
-        state === RecognizerState.PENDING ||
-        state === RecognizerState.BEGAN ||
-        state === RecognizerState.CHANGED
-      ) {
         return true;
       }
     }
@@ -194,15 +175,9 @@ export class GestureArena {
         }
 
         for (const r of recognizers) {
-          if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
-            continue;
-          }
-          if (isDispatchEligible(r)) {
+          if (r.isAttachedTo(this) && r.lastDispatchToken !== token && isDispatchEligible(r)) {
             r.lastDispatchToken = token;
             r.onMotionEvent(event);
-          } else if (r.state === RecognizerState.PENDING) {
-            r.lastDispatchToken = token;
-            r.onPendingMotionEvent(event);
           }
         }
         return;
@@ -216,15 +191,9 @@ export class GestureArena {
         }
       }
       for (const r of recognizers) {
-        if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
-          continue;
-        }
-        if (isDispatchEligible(r)) {
+        if (r.isAttachedTo(this) && r.lastDispatchToken !== token && isDispatchEligible(r)) {
           r.lastDispatchToken = token;
           r.onMotionEvent(event);
-        } else if (r.state === RecognizerState.PENDING) {
-          r.lastDispatchToken = token;
-          r.onPendingMotionEvent(event);
         }
       }
 
@@ -302,7 +271,6 @@ export class GestureArena {
     const recognizers = this.recognizers;
     this.recognizers = [];
     this.clearStreamTracking(true);
-    this.velocityNeeded = false;
     this.multiTouchAccepted = false;
     for (const r of recognizers) {
       r.attach(null);
@@ -320,7 +288,6 @@ export class GestureArena {
   }
 
   private refreshCapabilities(): void {
-    this.velocityNeeded = this.recognizers.some(r => r.usesVelocity);
     this.multiTouchAccepted = this.recognizers.some(r => r.acceptsMultiTouch);
   }
 

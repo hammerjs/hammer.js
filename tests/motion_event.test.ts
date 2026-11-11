@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {describe, it, expect, beforeEach} from 'vitest';
 import {MotionAction, MotionEvent, MotionEventStream} from '../src/motion_event';
 import {pointerEvent} from './test_helpers';
 
@@ -388,18 +388,6 @@ describe('MotionEvent & MotionEventStream', () => {
       })
     );
 
-    const coalescedSpy = vi.fn(() => []);
-    const noHistoryEv = pointerEvent('pointermove', {
-      pointerId: 9,
-      clientX: 75,
-      clientY: 85,
-      timeStamp: 610,
-    });
-    Object.defineProperty(noHistoryEv, 'getCoalescedEvents', {value: coalescedSpy});
-    const fastMove = stream.onPointerMove(noHistoryEv, false)!;
-    expect(coalescedSpy).not.toHaveBeenCalled();
-    expect(fastMove.history).toHaveLength(0);
-
     const bogusZero = pointerEvent('pointermove', {
       pointerId: 9,
       clientX: 76,
@@ -429,17 +417,12 @@ describe('MotionEvent & MotionEventStream', () => {
     )!;
     expect(webkitMove.history).toHaveLength(0);
 
-    stream.updatePointerSilent(pointerEvent('pointermove', {pointerId: 999, clientX: 1}));
-    stream.updatePointerSilent(
-      pointerEvent('pointermove', {pointerId: 9, clientX: 120, clientY: 130})
-    );
-
     const blurEv = new Event('blur');
     Object.defineProperty(blurEv, 'timeStamp', {value: 700});
     const cancelled = stream.cancelAll(blurEv)!;
     expect(cancelled.action).toBe(MotionAction.CANCEL);
     expect(cancelled.eventTime).toBe(700);
-    expect(cancelled.focus).toEqual({x: 120, y: 130});
+    expect(cancelled.focus).toEqual({x: 80, y: 90});
     expect(stream.cancelAll(blurEv)).toBeNull();
 
     stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 3, isPrimary: true}));

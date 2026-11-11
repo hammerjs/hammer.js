@@ -36,7 +36,7 @@ function shortestAngleDelta(fromDeg: number, toDeg: number): number {
 export class RotateRecognizer extends GestureRecognizer {
   readonly type = 'rotate';
 
-  private callbacks: RotateCallbacks;
+  private readonly callbacks: RotateCallbacks;
   private readonly userOptions: Partial<RotateOptions>;
 
   private trackedPair: [number, number] | null = null;
@@ -49,11 +49,6 @@ export class RotateRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
-  }
-
-  setCallbacks(callbacks: RotateCallbacks): this {
-    this.callbacks = callbacks;
-    return this;
   }
 
   override getTouchAction(): TouchActionValue {

@@ -22,7 +22,7 @@ export interface QuickScaleOptions {
 export class QuickScaleRecognizer extends GestureRecognizer {
   readonly type = 'quickScale';
 
-  private callbacks: ScaleCallbacks;
+  private readonly callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<QuickScaleOptions>;
 
   private tapDown: Point = ZERO_POINT;
@@ -43,11 +43,6 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
-  }
-
-  setCallbacks(callbacks: ScaleCallbacks): this {
-    this.callbacks = callbacks;
-    return this;
   }
 
   override getTouchAction(): TouchActionValue {

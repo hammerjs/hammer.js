@@ -326,8 +326,13 @@ describe('PanRecognizer (with integrated Swipe)', () => {
       )!
     );
     arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 0, clientY: 60, timeStamp: 308})
+      )!
+    );
+    arena.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20, timeStamp: 315})
+        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20, timeStamp: 316})
       )!
     );
     expect(onSwipe).toHaveBeenCalledWith(

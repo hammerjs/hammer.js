@@ -100,7 +100,7 @@ function computeAllPointersCentroid(event: MotionEvent): Point {
 export class PanRecognizer extends GestureRecognizer {
   readonly type = 'pan';
 
-  private callbacks: PanCallbacks;
+  private readonly callbacks: PanCallbacks;
   private readonly userOptions: Partial<PanOptions>;
 
   private downFocus: Point = ZERO_POINT;
@@ -117,15 +117,6 @@ export class PanRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
-  }
-
-  setCallbacks(callbacks: PanCallbacks): this {
-    this.callbacks = callbacks;
-    return this;
-  }
-
-  override get usesVelocity(): boolean {
-    return true;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -351,25 +342,6 @@ export class PanRecognizer extends GestureRecognizer {
         }
       });
       return;
-    }
-
-    // Handle single-frame flicks where `UP` arrives past `slop` without an intermediate `MOVE`:
-    if (this.anchorReady && this.callbacks.onSwipe) {
-      const dx = endFocus.x - this.downFocus.x;
-      const dy = endFocus.y - this.downFocus.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist > this.slop && this.matchesDirectionLock(dx, dy)) {
-        const slopRatio = this.slop / dist;
-        setPoint(this.totalDelta, dx * (1 - slopRatio), dy * (1 - slopRatio));
-        const endData = this.buildEndEventData(event, centerOverride);
-        const swipeData = this.evaluateSwipe(endData);
-        if (swipeData) {
-          this.tryRecognizeDiscrete(() => {
-            this.callbacks.onSwipe?.(swipeData);
-          });
-          return;
-        }
-      }
     }
 
     this.fail();

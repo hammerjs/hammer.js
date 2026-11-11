@@ -30,7 +30,7 @@ const LONG_PRESS_TIMER = 'longPress';
 export class LongPressRecognizer extends GestureRecognizer {
   readonly type = 'longPress';
 
-  private callbacks: LongPressCallbacks;
+  private readonly callbacks: LongPressCallbacks;
   private readonly userOptions: Partial<LongPressOptions>;
 
   private readonly downPositions = new Map<number, Point>();
@@ -41,11 +41,6 @@ export class LongPressRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
-  }
-
-  setCallbacks(callbacks: LongPressCallbacks): this {
-    this.callbacks = callbacks;
-    return this;
   }
 
   override getTouchAction(): TouchActionValue {
