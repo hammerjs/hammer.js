@@ -67,6 +67,7 @@ QUnit.test('inArray', function(assert) {
 
 QUnit.test('splitStr', function(assert) {
     assert.deepEqual(Hammer.splitStr(' a  b  c d   '), [ 'a', 'b', 'c', 'd' ], 'str split valid');
+    assert.deepEqual(Hammer.splitStr('   '), [], 'empty/whitespace string returns empty array');
   });
 
 QUnit.test('uniqueArray', function(assert) {
@@ -78,6 +79,17 @@ QUnit.test('uniqueArray', function(assert) {
         { id: 1 },
         { id: 2 }
     ], 'remove duplicate ids');
+
+    assert.deepEqual(Hammer.uniqueArray([
+        { id: 3 },
+        { id: 1 },
+        { id: 2 },
+        { id: 1 }
+    ], 'id', true), [
+        { id: 1 },
+        { id: 2 },
+        { id: 3 }
+    ], 'remove duplicate ids and sort ascending by key');
   });
 
 QUnit.test('boolOrFn', function(assert) {

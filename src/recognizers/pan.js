@@ -9,7 +9,11 @@ import {
     DIRECTION_LEFT,
     DIRECTION_RIGHT
 } from '../inputjs/input-consts';
-import { STATE_BEGAN } from '../recognizerjs/recognizer-consts';
+import {
+    STATE_BEGAN,
+    STATE_ENDED,
+    STATE_CANCELLED
+} from '../recognizerjs/recognizer-consts';
 import { TOUCH_ACTION_PAN_X,TOUCH_ACTION_PAN_Y } from '../touchactionjs/touchaction-Consts';
 import directionStr from '../recognizerjs/direction-str';
 
@@ -49,7 +53,10 @@ export default class PanRecognizer extends AttrRecognizer {
 
     // lock to axis?
     if (!(direction & options.direction)) {
-      if (options.direction & DIRECTION_HORIZONTAL) {
+      if (options.direction & DIRECTION_HORIZONTAL && options.direction & DIRECTION_VERTICAL) {
+        direction = input.offsetDirection;
+        hasMoved = x !== this.pX || y !== this.pY;
+      } else if (options.direction & DIRECTION_HORIZONTAL) {
         direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
         hasMoved = x !== this.pX;
         distance = Math.abs(input.deltaX);
@@ -79,6 +86,15 @@ export default class PanRecognizer extends AttrRecognizer {
       input.additionalEvent = this.options.event + direction;
     }
     super.emit(input);
+
+    if (this.state & (STATE_ENDED | STATE_CANCELLED)) {
+      this.reset();
+    }
+  }
+
+  reset() {
+    this.pX = null;
+    this.pY = null;
   }
 }
 

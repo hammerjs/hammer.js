@@ -25,7 +25,7 @@ export default class SwipeRecognizer extends AttrRecognizer {
     let { direction } = this.options;
     let velocity;
 
-    if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+    if (direction & DIRECTION_HORIZONTAL && direction & DIRECTION_VERTICAL) {
       velocity = input.overallVelocity;
     } else if (direction & DIRECTION_HORIZONTAL) {
       velocity = input.overallVelocityX;

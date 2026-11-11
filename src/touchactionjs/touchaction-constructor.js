@@ -41,10 +41,20 @@ export default class TouchAction {
       value = this.compute();
     }
 
-    if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+    if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
       this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
     }
     this.actions = value.toLowerCase().trim();
+  }
+
+  /**
+   * @private
+   * clean the touchAction property on the element
+   */
+  clean() {
+    if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style) {
+      this.manager.element.style[PREFIXED_TOUCH_ACTION] = '';
+    }
   }
 
   /**
@@ -81,7 +91,9 @@ export default class TouchAction {
 
     // if the touch action did prevented once this session
     if (this.manager.session.prevented) {
-      srcEvent.preventDefault();
+      if (srcEvent.cancelable !== false) {
+        srcEvent.preventDefault();
+      }
       return;
     }
 
@@ -119,7 +131,9 @@ export default class TouchAction {
    * @param {Object} srcEvent
    */
   preventSrc(srcEvent) {
-    this.manager.session.prevented = true;
-    srcEvent.preventDefault();
+    if (srcEvent.cancelable !== false) {
+      this.manager.session.prevented = true;
+      srcEvent.preventDefault();
+    }
   }
 }

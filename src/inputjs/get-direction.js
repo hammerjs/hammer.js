@@ -9,7 +9,7 @@ import { DIRECTION_NONE,DIRECTION_LEFT,DIRECTION_RIGHT,DIRECTION_UP,DIRECTION_DO
  * @return {Number} direction
  */
 export default function getDirection(x, y) {
-  if (x === y) {
+  if (x === 0 && y === 0) {
     return DIRECTION_NONE;
   }
 

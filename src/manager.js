@@ -12,7 +12,9 @@ import {
     STATE_BEGAN,
     STATE_ENDED,
     STATE_CHANGED,
-    STATE_RECOGNIZED
+    STATE_RECOGNIZED,
+    STATE_CANCELLED,
+    STATE_FAILED
 } from './recognizerjs/recognizer-consts';
 
 const STOP = 1;
@@ -108,7 +110,7 @@ export default class Manager {
 
     // reset when the last recognizer is recognized
     // or when we're in a new session
-    if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+    if (!curRecognizer || (curRecognizer && curRecognizer.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED))) {
       curRecognizer = session.curRecognizer = null;
     }
 
@@ -202,6 +204,7 @@ export default class Manager {
       let index = inArray(recognizers, recognizer);
 
       if (index !== -1) {
+        recognizer.reset();
         recognizers.splice(index, 1);
         this.touchAction.update();
       }
@@ -248,8 +251,11 @@ export default class Manager {
     each(splitStr(events), (event) => {
       if (!handler) {
         delete handlers[event];
-      } else {
-        handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+      } else if (handlers[event]) {
+        let index = inArray(handlers[event], handler);
+        if (index > -1) {
+          handlers[event].splice(index, 1);
+        }
       }
     });
     return this;
@@ -294,7 +300,11 @@ export default class Manager {
 
     this.handlers = {};
     this.session = {};
+    each(this.recognizers, (recognizer) => {
+      recognizer.reset();
+    });
     this.input.destroy();
+    this.touchAction.clean();
     this.element = null;
   }
 }

@@ -16,12 +16,10 @@ import  Manager  from './manager';
  * @param {Object} [options]
  * @constructor
  */
-export default class Hammer {
-  constructor(element, options) {
-    options = options || {};
-    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
-    return new Manager(element, options);
-  }
+export default function Hammer(element, options) {
+  options = options || {};
+  options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
+  return new Manager(element, options);
 }
 
 /**

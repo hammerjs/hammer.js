@@ -25,9 +25,6 @@ export default class MouseInput extends Input {
   constructor() {
     super(...arguments);
 
-    this.evEl = MOUSE_ELEMENT_EVENTS;
-    this.evWin = MOUSE_WINDOW_EVENTS;
-
     this.pressed = false; // mousedown state
   }
 
@@ -65,3 +62,6 @@ export default class MouseInput extends Input {
     });
   }
 }
+
+MouseInput.prototype.evEl = MOUSE_ELEMENT_EVENTS;
+MouseInput.prototype.evWin = MOUSE_WINDOW_EVENTS;

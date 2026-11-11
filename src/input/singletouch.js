@@ -17,7 +17,7 @@ const SINGLE_TOUCH_INPUT_MAP = {
 };
 
 const SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
-const SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+const SINGLE_TOUCH_WINDOW_EVENTS = 'touchmove touchend touchcancel';
 
 /**
  * @private
@@ -28,11 +28,7 @@ const SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
 export default class SingleTouchInput extends Input {
   constructor() {
     super(...arguments);
-    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
-    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
     this.started = false;
-
-    Input.apply(this, arguments);
   }
 
   handler(ev) {
@@ -80,3 +76,6 @@ function normalizeSingleTouches(ev, type) {
 
   return [all, changed];
 }
+
+SingleTouchInput.prototype.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+SingleTouchInput.prototype.evWin = SINGLE_TOUCH_WINDOW_EVENTS;

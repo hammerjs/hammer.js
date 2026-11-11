@@ -1,7 +1,7 @@
 import setTimeoutContext from '../utils/set-timeout-context';
 import Recognizer from '../recognizerjs/recognizer-constructor';
 import { TOUCH_ACTION_MANIPULATION } from '../touchactionjs/touchaction-Consts';
-import {INPUT_START,INPUT_END } from '../inputjs/input-consts';
+import { INPUT_START, INPUT_END, INPUT_CANCEL } from '../inputjs/input-consts';
 import {
     STATE_RECOGNIZED,
     STATE_BEGAN,
@@ -41,11 +41,17 @@ export default class TapRecognizer extends Recognizer {
   process(input) {
     let { options } = this;
 
-    let validPointers = input.pointers.length === options.pointers;
+    let validPointers = input.pointers.length === options.pointers &&
+        input.maxPointers === options.pointers;
     let validMovement = input.distance < options.threshold;
     let validTouchTime = input.deltaTime < options.time;
 
     this.reset();
+
+    if (input.eventType & INPUT_CANCEL) {
+      this.count = 0;
+      return STATE_FAILED;
+    }
 
     if ((input.eventType & INPUT_START) && (this.count === 0)) {
       return this.failTimeout();
@@ -88,6 +94,10 @@ export default class TapRecognizer extends Recognizer {
           return STATE_BEGAN;
         }
       }
+    }
+
+    if (!validMovement || !validTouchTime) {
+      this.count = 0;
     }
     return STATE_FAILED;
   }
