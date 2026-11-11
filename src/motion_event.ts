@@ -49,7 +49,7 @@ export interface MotionEventInit {
   readonly pointerType: string;
   readonly pointers: readonly PointerSample[];
   readonly history?: readonly HistoricalSample[];
-  readonly originalEvent: PointerEvent;
+  readonly originalEvent: Event;
 }
 
 /**
@@ -67,11 +67,16 @@ export class MotionEvent {
   readonly pointerType: string;
   readonly pointers: readonly PointerSample[];
   readonly history: readonly HistoricalSample[];
-  readonly originalEvent: PointerEvent;
+  /**
+   * DOM event that produced this snapshot: the `PointerEvent` for pointer-driven actions, or the
+   * triggering `blur` / `visibilitychange` / `contextmenu` / `pointermove` event for a system `cancel`.
+   */
+  readonly originalEvent: Event;
   readonly focus: Point;
 
   private cachedSpanX: number | null = null;
   private cachedSpanY: number | null = null;
+  private cachedActivePointers: readonly PointerSample[] | null = null;
 
   constructor(init: MotionEventInit) {
     this.action = init.action;
@@ -165,7 +170,10 @@ export class MotionEvent {
       return EMPTY_POINTERS;
     }
     if (this.action === MotionAction.POINTER_UP) {
-      return this.pointers.filter((_, idx) => idx !== this.actionIndex);
+      if (this.cachedActivePointers === null) {
+        this.cachedActivePointers = this.pointers.filter((_, idx) => idx !== this.actionIndex);
+      }
+      return this.cachedActivePointers;
     }
     return this.pointers;
   }
@@ -237,58 +245,77 @@ function toPointerSample(e: PointerEvent): PointerSample {
 export class MotionEventStream {
   private readonly pointers = new Map<number, PointerSample>();
   private downTime = 0;
-  private primaryTouchId: number | null = null;
+  private streamPointerType: string | null = null;
+  private mouseButtonsTracked = false;
 
   get activePointerCount(): number {
     return this.pointers.size;
   }
 
-  get activePointerIds(): number[] {
-    return Array.from(this.pointers.keys());
+  get activePointerIds(): IterableIterator<number> {
+    return this.pointers.keys();
   }
 
-  hasPointer(pointerId: number): boolean {
-    return this.pointers.has(pointerId);
+  get activePointerType(): string | null {
+    return this.pointers.size > 0 ? this.streamPointerType : null;
+  }
+
+  /**
+   * Returns `true` when a tracked mouse pointer reports `buttons` without the
+   * primary button bit (`1`), indicating `pointerup` was swallowed off-page
+   * (e.g. over an iframe, OS dialog, or context menu).
+   */
+  hasReleasedMouseButton(e: PointerEvent): boolean {
+    return (
+      this.mouseButtonsTracked &&
+      e.pointerType === 'mouse' &&
+      this.pointers.has(e.pointerId) &&
+      typeof e.buttons === 'number' &&
+      (e.buttons & 1) === 0
+    );
   }
 
   onPointerDown(e: PointerEvent): MotionEvent | null {
-    // Ignore non-primary mouse buttons (right-click / middle-click).
-    if (e.pointerType === 'mouse' && typeof e.button === 'number' && e.button !== 0) {
+    // Ignore non-primary button presses (right/middle/barrel buttons) and macOS Ctrl+Click.
+    if (
+      (typeof e.button === 'number' && e.button !== 0) ||
+      (e.pointerType === 'mouse' && e.ctrlKey)
+    ) {
       return null;
     }
 
+    const pointerType = e.pointerType || 'touch';
+
     // Recover automatically from orphaned "ghost" pointers (e.g. if an iOS notification
-    // banner, modal, or iframe swallowed a prior `pointerup`/`pointercancel`):
+    // banner, modal, or iframe swallowed a prior `pointerup`/`pointercancel`, including
+    // when a primary touch lifted cleanly and a secondary touch was orphaned):
     if (
-      (e.pointerType === 'touch' &&
-        e.isPrimary === true &&
-        this.primaryTouchId !== null &&
-        this.primaryTouchId !== e.pointerId) ||
-      (this.pointers.size === 1 && this.pointers.has(e.pointerId))
+      this.pointers.size > 0 &&
+      ((pointerType === 'touch' && e.isPrimary === true) ||
+        pointerType === 'mouse' ||
+        this.pointers.has(e.pointerId) ||
+        (this.streamPointerType !== null && this.streamPointerType !== pointerType))
     ) {
-      this.pointers.clear();
-      this.primaryTouchId = null;
+      this.clearStreamState();
     }
 
     const eventTime = readTimestamp(e);
     const wasEmpty = this.pointers.size === 0;
     if (wasEmpty) {
       this.downTime = eventTime;
-    }
-    if (e.pointerType === 'touch' && e.isPrimary === true) {
-      this.primaryTouchId = e.pointerId;
+      this.streamPointerType = pointerType;
+      this.mouseButtonsTracked =
+        pointerType === 'mouse' && typeof e.buttons === 'number' && (e.buttons & 1) === 1;
     }
 
-    const sample = toPointerSample(e);
-    this.pointers.set(e.pointerId, sample);
-    const {snapshot, actionIndex} = this.snapshotPointers(e.pointerId, sample);
+    const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     return new MotionEvent({
       action: wasEmpty ? MotionAction.DOWN : MotionAction.POINTER_DOWN,
       downTime: this.downTime,
       eventTime,
       actionIndex,
-      pointerType: e.pointerType || 'touch',
+      pointerType,
       pointers: snapshot,
       originalEvent: e,
     });
@@ -332,9 +359,7 @@ export class MotionEventStream {
       }
     }
 
-    const sample = toPointerSample(e);
-    this.pointers.set(e.pointerId, sample);
-    const {snapshot, actionIndex} = this.snapshotPointers(e.pointerId, sample);
+    const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     return new MotionEvent({
       action: MotionAction.MOVE,
@@ -354,13 +379,12 @@ export class MotionEventStream {
     }
 
     const eventTime = readTimestamp(e);
-    const sample = toPointerSample(e);
-    this.pointers.set(e.pointerId, sample);
-    const {snapshot, actionIndex} = this.snapshotPointers(e.pointerId, sample);
+    const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     this.pointers.delete(e.pointerId);
-    if (this.primaryTouchId === e.pointerId || this.pointers.size === 0) {
-      this.primaryTouchId = null;
+    if (this.pointers.size === 0) {
+      this.streamPointerType = null;
+      this.mouseButtonsTracked = false;
     }
 
     return new MotionEvent({
@@ -380,12 +404,8 @@ export class MotionEventStream {
     }
 
     const eventTime = readTimestamp(e);
-    const sample = toPointerSample(e);
-    this.pointers.set(e.pointerId, sample);
-    const {snapshot, actionIndex} = this.snapshotPointers(e.pointerId, sample);
-
-    this.pointers.clear();
-    this.primaryTouchId = null;
+    const {snapshot, actionIndex} = this.recordAndSnapshot(e);
+    this.clearStreamState();
 
     return new MotionEvent({
       action: MotionAction.CANCEL,
@@ -405,12 +425,13 @@ export class MotionEventStream {
     }
   }
 
-  /** Aborts all active pointers on `window` `blur` or `document` `visibilitychange` (`hidden`). */
+  /** Aborts all active pointers on `window` `blur`, hidden `visibilitychange`, or stuck mouse release. */
   cancelAll(triggerEvent: Event): MotionEvent | null {
     if (this.pointers.size === 0) {
       return null;
     }
     const snapshot = Array.from(this.pointers.values());
+    const pointerType = this.streamPointerType ?? 'touch';
     const eventTime =
       typeof triggerEvent.timeStamp === 'number' &&
       Number.isFinite(triggerEvent.timeStamp) &&
@@ -418,38 +439,44 @@ export class MotionEventStream {
         ? triggerEvent.timeStamp
         : performance.now();
 
-    this.pointers.clear();
-    this.primaryTouchId = null;
+    this.clearStreamState();
 
     return new MotionEvent({
       action: MotionAction.CANCEL,
       downTime: this.downTime,
       eventTime,
       actionIndex: 0,
-      pointerType: 'touch',
+      pointerType,
       pointers: snapshot,
-      originalEvent: triggerEvent as PointerEvent,
+      originalEvent: triggerEvent,
     });
   }
 
   reset(): void {
-    this.pointers.clear();
+    this.clearStreamState();
     this.downTime = 0;
-    this.primaryTouchId = null;
   }
 
-  private snapshotPointers(
-    actionPointerId: number,
-    actionSample: PointerSample
-  ): {snapshot: readonly PointerSample[]; actionIndex: number} {
+  private clearStreamState(): void {
+    this.pointers.clear();
+    this.streamPointerType = null;
+    this.mouseButtonsTracked = false;
+  }
+
+  private recordAndSnapshot(e: PointerEvent): {
+    snapshot: readonly PointerSample[];
+    actionIndex: number;
+  } {
+    const sample = toPointerSample(e);
+    this.pointers.set(e.pointerId, sample);
     if (this.pointers.size === 1) {
-      return {snapshot: [actionSample], actionIndex: 0};
+      return {snapshot: [sample], actionIndex: 0};
     }
     const snapshot = new Array<PointerSample>(this.pointers.size);
     let actionIndex = 0;
     let idx = 0;
     for (const p of this.pointers.values()) {
-      if (p.pointerId === actionPointerId) {
+      if (p.pointerId === e.pointerId) {
         actionIndex = idx;
       }
       snapshot[idx++] = p;

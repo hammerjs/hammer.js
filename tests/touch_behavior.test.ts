@@ -59,7 +59,7 @@ describe('TouchBehavior', () => {
     expect(resolveSupportedTouchAction('pan-y pinch-zoom')).toBe('pan-y pinch-zoom');
   });
 
-  it('applies touch-action without blocking selection on tap-only surfaces, and enables selection/drag guards when needed', () => {
+  it('applies touch-action without blocking selection on tap-only surfaces, and restores prior inline styles cleanly', () => {
     // Tap-only (`preventSelectionAndDrag = false`):
     const cleanupPassive = applySurfaceBehavior(element, 'manipulation', false);
     expect(element.style.touchAction).toBe('manipulation');
@@ -72,8 +72,9 @@ describe('TouchBehavior', () => {
     cleanupPassive();
     expect(element.style.touchAction || '').toBe('');
 
-    // Prior inline style is preserved and restored on cleanup when `preventSelectionAndDrag = true`:
+    // Prior inline styles are preserved and restored on cleanup when `preventSelectionAndDrag = true`:
     element.style.touchAction = 'pan-x';
+    element.style.userSelect = 'text';
     const cleanupActive = applySurfaceBehavior(element, 'pan-y', true);
     expect(element.style.touchAction).toBe('pan-y');
     expect(element.style.userSelect).toBe('none');
@@ -87,33 +88,12 @@ describe('TouchBehavior', () => {
 
     cleanupActive();
     expect(element.style.touchAction).toBe('pan-x');
-    expect(element.style.userSelect || '').toBe('');
+    expect(element.style.userSelect).toBe('text');
+    expect((element.style as unknown as Record<string, string>).webkitTouchCallout || '').toBe('');
 
     const postCleanupDrag = new Event('dragstart', {cancelable: true});
     const postSpy = vi.spyOn(postCleanupDrag, 'preventDefault');
     element.dispatchEvent(postCleanupDrag);
     expect(postSpy).not.toHaveBeenCalled();
-  });
-
-  it('supports native CSSStyleDeclaration setProperty/getPropertyValue/removeProperty when touch-action is in the CSS table', () => {
-    const customEl = document.createElement('div');
-    const styleMap = new Map<string, string>([['touch-action', 'manipulation']]);
-    customEl.style.getPropertyValue = (prop: string) => styleMap.get(prop) || '';
-    customEl.style.setProperty = (prop: string, value: string) => {
-      styleMap.set(prop, value);
-    };
-    customEl.style.removeProperty = (prop: string) => {
-      const prev = styleMap.get(prop) || '';
-      styleMap.delete(prop);
-      return prev;
-    };
-
-    const cleanup = applySurfaceBehavior(customEl, 'none', true);
-    expect(customEl.style.getPropertyValue('touch-action')).toBe('none');
-    expect(customEl.style.getPropertyValue('user-select')).toBe('none');
-
-    cleanup();
-    expect(customEl.style.getPropertyValue('touch-action')).toBe('manipulation');
-    expect(customEl.style.getPropertyValue('user-select')).toBe('');
   });
 });

@@ -2,14 +2,17 @@
   "name": "hammerjs",
   "version": "3.0.0-experimental",
   "type": "module",
+  "sideEffects": false,
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --emitDeclarationOnly",
     "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit --project package",
+    "test:browser": "vitest run --project browser",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --project unit --project package --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "gts lint",
@@ -19,21 +22,22 @@
     "posttest": "npm run lint"
   },
   "devDependencies": {
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@vitest/coverage-v8": "^4.0.9",
-    "gts": "^5.3.1",
-    "jsdom": "^27.2.0",
-    "prettier": "^3.3.3",
-    "typescript": "~5.9.3",
-    "vite": "^7.2.2",
-    "vitest": "^4.0.9"
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/user-event": "^14.6.9",
+    "@vitest/browser-playwright": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "gts": "^7.0.0",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.65.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/hammer.es.js",
-      "require": "./dist/hammer.umd.js"
+      "default": "./dist/hammer.es.js"
     }
   },
   "types": "./dist/types/index.d.ts",

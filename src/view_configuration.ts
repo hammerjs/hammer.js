@@ -62,6 +62,12 @@ export interface ViewConfiguration {
 
   /** Pause threshold in `ms` after which `VelocityTracker` assumes the pointer stopped and resets history. Default: `40`. */
   readonly assumePointerStoppedMs: number;
+
+  /**
+   * Window in `ms` after a continuous gesture (`Pan`, `Scale`, `LongPress`, ...) ends during which
+   * a trailing browser-synthesized `click` on the element is suppressed. Default: `400`.
+   */
+  readonly ghostClickTimeout: number;
 }
 
 export const DEFAULT_VIEW_CONFIGURATION: ViewConfiguration = Object.freeze({
@@ -81,12 +87,13 @@ export const DEFAULT_VIEW_CONFIGURATION: ViewConfiguration = Object.freeze({
   maximumFlingVelocity: 8000,
   velocityHorizonMs: 100,
   assumePointerStoppedMs: 40,
+  ghostClickTimeout: 400,
 });
 
 export function resolveViewConfiguration(
   overrides?: Partial<ViewConfiguration>
 ): ViewConfiguration {
-  if (!overrides) {
+  if (!overrides || Object.keys(overrides).length === 0) {
     return DEFAULT_VIEW_CONFIGURATION;
   }
   return Object.freeze({

@@ -1,6 +1,6 @@
 import {GestureArena} from './gesture_arena';
 import type {GestureRecognizer} from './gesture_recognizer';
-import {type MotionEvent, MotionEventStream} from './motion_event';
+import {MotionEventStream} from './motion_event';
 import {
   allowsPinchZoom,
   applySurfaceBehavior,
@@ -10,19 +10,60 @@ import {
 } from './touch_behavior';
 import type {ViewConfiguration} from './view_configuration';
 
-const GHOST_CLICK_WINDOW_MS = 400;
+type Cleanup = () => void;
+
+/** Adds an event listener and returns its matching removal. */
+function listen(
+  target: EventTarget,
+  type: string,
+  handler: (e: never) => void,
+  options?: AddEventListenerOptions | boolean
+): Cleanup {
+  const listener = handler as EventListener;
+  target.addEventListener(type, listener, options);
+  return () => target.removeEventListener(type, listener, options);
+}
+
+function runAll(cleanups: readonly Cleanup[]): void {
+  for (let i = cleanups.length - 1; i >= 0; i--) {
+    cleanups[i]();
+  }
+}
+
+function supportsGestureEvents(win: Window | null): boolean {
+  return !!win && 'GestureEvent' in win;
+}
+
+function isRelatedClickTarget(event: Event, element: HTMLElement): boolean {
+  if (typeof event.composedPath === 'function' && event.composedPath().includes(element)) {
+    return true;
+  }
+  const target = event.target;
+  if (!(target instanceof Node)) {
+    return true;
+  }
+  let current: Node | null = element;
+  while (current) {
+    if (target.contains(current)) {
+      return true;
+    }
+    const root = current.getRootNode();
+    current = root instanceof ShadowRoot ? root.host : null;
+  }
+  return false;
+}
 
 export interface GestureManagerOptions {
   /**
    * Pointer device types to observe (`'touch'`, `'pen'`, `'mouse'`).
    * Default: `['touch', 'pen', 'mouse']`.
    */
-  supportedPointerTypes: ('mouse' | 'touch' | 'pen' | string)[];
+  supportedPointerTypes: readonly ('mouse' | 'touch' | 'pen' | (string & {}))[];
   /**
    * CSS `touch-action` & mobile coexistence policy:
    * - `'compute'` (default): automatically derives the least-restrictive W3C
-   *   `touch-action` from registered recognizers (`Tap`/`LongPress` -> `'manipulation'`,
-   *   horizontal `Pan`/`Fling` -> `'pan-y pinch-zoom'`, `Scale`/`Rotate` -> `'pan-x pan-y'`,
+   *   `touch-action` from registered recognizers (`Tap`/`LongPress`/`QuickScale` -> `'manipulation'`,
+   *   horizontal `Pan` -> `'pan-y pinch-zoom'`, `Scale`/`Rotate` -> `'pan-x pan-y'`,
    *   2D `Pan` -> `'none'`) so mobile pages never suffer accidental scroll-locks.
    * - Any explicit `TouchActionValue` (e.g. `'pan-y'`, `'manipulation'`, `'none'`).
    * - `false`: leaves element inline styles and extra touch/selection guards untouched.
@@ -30,6 +71,8 @@ export interface GestureManagerOptions {
   touchAction: TouchActionSetting;
   /** Optional overrides for gesture slops, timeouts, and velocity bounds. */
   viewConfiguration?: Partial<ViewConfiguration>;
+  /** Optional initial recognizers to register at construction. */
+  recognizers?: GestureRecognizer[];
 }
 
 /**
@@ -39,22 +82,25 @@ export interface GestureManagerOptions {
  */
 export class GestureManager {
   readonly element: HTMLElement;
-  private readonly stream: MotionEventStream;
+  private readonly stream = new MotionEventStream();
   private readonly arena: GestureArena;
   private readonly options: GestureManagerOptions;
-  private readonly unbindEvents: () => void;
   private readonly capturedPointers = new Set<number>();
+  private readonly unbindEvents: Cleanup;
 
-  private unsetSurfaceBehavior: (() => void) | null = null;
-  private unbindDocumentTracking: (() => void) | null = null;
-  private lastProcessedEvent: Event | null = null;
-  private suppressClickUntil = 0;
+  private unsetSurfaceBehavior: Cleanup | null = null;
+  private unbindActiveTracking: Cleanup | null = null;
+  private disarmClickSuppression: Cleanup | null = null;
+  private lastHandledDown: Event | null = null;
+  private appliedSurfaceKey = '';
+  private preventsPinchZoom = false;
+  private suppressesTouchContextMenu = false;
   private destroyed = false;
 
-  static DEFAULTS: GestureManagerOptions = {
-    supportedPointerTypes: ['touch', 'pen', 'mouse'],
-    touchAction: 'compute',
-  };
+  static readonly DEFAULTS: GestureManagerOptions = Object.freeze({
+    supportedPointerTypes: Object.freeze(['touch', 'pen', 'mouse']),
+    touchAction: 'compute' as const,
+  });
 
   constructor(element: HTMLElement, options: Partial<GestureManagerOptions> = {}) {
     this.element = element;
@@ -63,10 +109,12 @@ export class GestureManager {
       ...options,
     };
 
-    this.stream = new MotionEventStream();
     this.arena = new GestureArena(this.options.viewConfiguration, {
       onActiveGestureStart: () => this.captureActivePointers(),
     });
+    for (const recognizer of options.recognizers ?? []) {
+      this.arena.add(recognizer);
+    }
     this.unbindEvents = this.bindEvents();
     this.syncTouchAction();
   }
@@ -80,33 +128,30 @@ export class GestureManager {
     return this.arena.computeTouchAction();
   }
 
-  register(recognizer: GestureRecognizer): this {
-    if (!this.destroyed) {
-      this.arena.add(recognizer);
+  register(...recognizers: GestureRecognizer[]): this {
+    if (!this.destroyed && recognizers.length > 0) {
+      for (const recognizer of recognizers) {
+        this.arena.add(recognizer);
+      }
       this.syncTouchAction();
     }
     return this;
   }
 
-  unregister(recognizer: GestureRecognizer): this {
-    if (!this.destroyed) {
-      this.arena.remove(recognizer);
+  unregister(...recognizers: GestureRecognizer[]): this {
+    if (!this.destroyed && recognizers.length > 0) {
+      for (const recognizer of recognizers) {
+        this.arena.remove(recognizer);
+      }
       this.syncTouchAction();
     }
     return this;
-  }
-
-  /** Directly dispatches a `MotionEvent` into the underlying `GestureArena`. */
-  onTouchEvent(event: MotionEvent): void {
-    if (!this.destroyed) {
-      this.arena.dispatch(event);
-    }
   }
 
   reset(): void {
-    this.suppressClickUntil = 0;
+    this.clearClickSuppression();
     this.releaseAllCapturedPointers();
-    this.stopDocumentTracking();
+    this.stopActiveTracking();
     this.stream.reset();
     this.arena.reset();
   }
@@ -116,34 +161,176 @@ export class GestureManager {
       return;
     }
     this.destroyed = true;
-    this.suppressClickUntil = 0;
+    this.clearClickSuppression();
     this.releaseAllCapturedPointers();
-    this.stopDocumentTracking();
+    this.stopActiveTracking();
     this.unbindEvents();
     this.cleanupSurfaceBehavior();
     this.stream.reset();
     this.arena.destroy();
   }
 
+  // --- Shared DOM guard handlers (allocated once, attached to the element and/or document) ---
+
+  /**
+   * Non-passive `touchmove` guard. Prevents native pinch-zoom when a recognizer claims it, and
+   * native scrolling while a gesture owns the stream. Scroll ownership only applies to touches
+   * that started on `element` (touch events always target their `touchstart` element).
+   */
+  private readonly onTouchMove = (e: TouchEvent): void => {
+    if (!e.cancelable) {
+      return;
+    }
+    const isGuardedPinch = this.preventsPinchZoom && !!e.touches && e.touches.length >= 2;
+    const ownsScroll = e.currentTarget === this.element && this.arena.shouldPreventTouchMove;
+    if (isGuardedPinch || ownsScroll) {
+      e.preventDefault();
+    }
+  };
+
+  /**
+   * WebKit `gesturestart` / `gesturechange` guard: iOS Safari ignores `touch-action: pan-x pan-y`
+   * for two-finger viewport zoom unless these proprietary events are prevented.
+   */
+  private readonly onSafariGesture = (e: Event): void => {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  };
+
+  /**
+   * Keeps desktop mouse context menus native (aborting a mouse drag whose `pointerup` the menu
+   * will swallow) while suppressing touch/pen long-press context menus on non-tap surfaces.
+   */
+  private readonly onContextMenu = (e: Event): void => {
+    const pointerType = (e as Partial<PointerEvent>).pointerType;
+    if (pointerType === 'mouse' || this.stream.activePointerType === 'mouse') {
+      if (this.stream.activePointerCount > 0) {
+        this.abortActiveStream(e);
+      }
+      return;
+    }
+    if (
+      this.suppressesTouchContextMenu &&
+      (this.stream.activePointerCount > 0 || pointerType === 'touch' || pointerType === 'pen')
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  // --- Pointer stream handlers ---
+
+  private readonly onElementPointerDown = (e: PointerEvent): void => {
+    this.lastHandledDown = e;
+    if (this.isValidPointer(e)) {
+      this.processPointerDown(e);
+    }
+  };
+
+  private readonly onDocumentPointerDown = (e: PointerEvent): void => {
+    if (e === this.lastHandledDown || !this.isValidPointer(e)) {
+      return;
+    }
+    // Allow secondary touch fingers landing outside `this.element` to join an active multi-touch stream:
+    if (
+      e.pointerType === 'touch' &&
+      !e.isPrimary &&
+      this.arena.acceptsMultiTouch &&
+      this.stream.activePointerCount > 0 &&
+      this.stream.activePointerType === 'touch'
+    ) {
+      this.processPointerDown(e);
+      return;
+    }
+    // If a brand-new primary touch or mouse press starts outside `this.element`, any active stream on
+    // `this.element` was orphaned by a swallowed `pointerup`; abort it cleanly without interfering.
+    if ((e.pointerType === 'touch' && e.isPrimary) || e.pointerType === 'mouse') {
+      this.abortActiveStream(e);
+    }
+  };
+
+  private readonly onPointerMove = (e: PointerEvent): void => {
+    if (this.stream.activePointerCount === 0 || !this.isValidPointer(e)) {
+      return;
+    }
+    if (this.stream.hasReleasedMouseButton(e)) {
+      this.abortActiveStream(e);
+      return;
+    }
+    if (!this.arena.hasLiveRecognizers) {
+      this.stream.updatePointerSilent(e);
+      return;
+    }
+    const motionEvent = this.stream.onPointerMove(e, this.arena.needsVelocity);
+    if (motionEvent) {
+      this.arena.dispatch(motionEvent);
+    }
+  };
+
+  private readonly onPointerUp = (e: PointerEvent): void => {
+    if (this.stream.activePointerCount === 0 || !this.isValidPointer(e)) {
+      return;
+    }
+    const motionEvent = this.stream.onPointerUp(e);
+    if (motionEvent) {
+      this.arena.dispatch(motionEvent);
+    }
+    this.releaseCapturedPointer(e.pointerId);
+    if (this.stream.activePointerCount === 0) {
+      if (this.arena.didSuppressingGestureWin) {
+        this.armClickSuppression();
+      }
+      this.stopActiveTracking();
+    }
+  };
+
+  private readonly onPointerCancel = (e: PointerEvent): void => {
+    if (this.stream.activePointerCount === 0 || !this.isValidPointer(e)) {
+      return;
+    }
+    this.cancelPointer(e);
+  };
+
+  private readonly onLostPointerCapture = (e: PointerEvent): void => {
+    // Ignore `lostpointercapture` bubbling up from child descendants losing implicit touch capture.
+    if (e.target !== this.element) {
+      return;
+    }
+    this.capturedPointers.delete(e.pointerId);
+    this.cancelPointer(e);
+  };
+
+  private readonly onWindowBlur = (e: Event): void => {
+    this.abortActiveStream(e);
+  };
+
+  private readonly onVisibilityChange = (e: Event): void => {
+    if (this.element.ownerDocument.visibilityState === 'hidden') {
+      this.abortActiveStream(e);
+    }
+  };
+
   private isValidPointer(e: PointerEvent): boolean {
-    return this.options.supportedPointerTypes.includes(e.pointerType);
+    return this.options.supportedPointerTypes.includes(e.pointerType || 'touch');
   }
 
   private cleanupSurfaceBehavior(): void {
-    if (this.unsetSurfaceBehavior) {
-      this.unsetSurfaceBehavior();
-      this.unsetSurfaceBehavior = null;
-    }
+    this.unsetSurfaceBehavior?.();
+    this.unsetSurfaceBehavior = null;
+    this.appliedSurfaceKey = '';
+    this.preventsPinchZoom = false;
+    this.suppressesTouchContextMenu = false;
   }
 
   private syncTouchAction(): void {
-    this.cleanupSurfaceBehavior();
     if (this.destroyed || this.options.touchAction === false) {
+      this.cleanupSurfaceBehavior();
       return;
     }
 
     const recognizers = this.arena.getRecognizers();
     if (recognizers.length === 0 && this.options.touchAction === 'compute') {
+      this.cleanupSurfaceBehavior();
       return;
     }
 
@@ -157,126 +344,147 @@ export class GestureManager {
       !allowsPinchZoom(resolvedAction) ||
       recognizers.some(r => !allowsPinchZoom(r.getTouchAction()));
 
-    const cleanups: Array<() => void> = [
-      applySurfaceBehavior(this.element, resolvedAction, hasNonTapRecognizer),
-    ];
-
-    if (hasNonTapRecognizer) {
-      // Suppress touch/stylus long-press context menus while preserving desktop right-click.
-      const onContextMenu = (e: Event) => {
-        const pType = (e as Partial<PointerEvent>).pointerType;
-        if (this.stream.activePointerCount > 0 || pType === 'touch' || pType === 'pen') {
-          e.preventDefault();
-        }
-      };
-      this.element.addEventListener('contextmenu', onContextMenu);
-      cleanups.push(() => this.element.removeEventListener('contextmenu', onContextMenu));
-    }
-
-    // 1. Selective `{passive: false}` `touchmove` guard (never attached on `Tap`-only surfaces
-    //    or when CSS `touch-action: none` already blocks compositor scrolling).
-    if (hasNonTapRecognizer && resolvedAction !== 'none') {
-      const onTouchMove = (e: TouchEvent) => {
-        if (!e.cancelable) {
-          return;
-        }
-        if (
-          this.arena.shouldPreventTouchMove ||
-          (preventsPinchZoom && e.touches && e.touches.length >= 2)
-        ) {
-          e.preventDefault();
-        }
-      };
-      this.element.addEventListener('touchmove', onTouchMove, {passive: false});
-      cleanups.push(() => this.element.removeEventListener('touchmove', onTouchMove));
-    }
-
-    // 2. WebKit / iOS Safari `GestureEvent` (`gesturestart` / `gesturechange`) guard:
-    //    iOS Safari ignores `touch-action: pan-x pan-y` for 2-finger viewport zoom unless
-    //    `gesturestart`/`gesturechange` is prevented.
-    const win = this.element.ownerDocument.defaultView;
-    if (preventsPinchZoom && recognizers.length > 0 && win && 'GestureEvent' in win) {
-      const onSafariGesture = (e: Event) => {
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      };
-      this.element.addEventListener('gesturestart', onSafariGesture, {passive: false});
-      this.element.addEventListener('gesturechange', onSafariGesture, {passive: false});
-      cleanups.push(() => {
-        this.element.removeEventListener('gesturestart', onSafariGesture);
-        this.element.removeEventListener('gesturechange', onSafariGesture);
-      });
-    }
-
-    this.unsetSurfaceBehavior = () => {
-      for (let i = cleanups.length - 1; i >= 0; i--) {
-        cleanups[i]();
-      }
-    };
-  }
-
-  private bindEvents(): () => void {
-    const onPointerDown = (e: PointerEvent) => this.handlePointerDown(e);
-    const onPointerMove = (e: PointerEvent) => this.handlePointerMove(e);
-    const onPointerUp = (e: PointerEvent) => this.handlePointerUp(e);
-    const onPointerCancel = (e: PointerEvent) => this.handlePointerCancel(e);
-    const onLostCapture = (e: PointerEvent) => this.handleLostPointerCapture(e);
-    const onClickCapture = (e: MouseEvent) => this.handleClickCapture(e);
-
-    this.element.addEventListener('pointerdown', onPointerDown);
-    this.element.addEventListener('pointermove', onPointerMove);
-    this.element.addEventListener('pointerup', onPointerUp);
-    this.element.addEventListener('pointercancel', onPointerCancel);
-    this.element.addEventListener('lostpointercapture', onLostCapture);
-    this.element.addEventListener('click', onClickCapture, true);
-
-    return () => {
-      this.element.removeEventListener('pointerdown', onPointerDown);
-      this.element.removeEventListener('pointermove', onPointerMove);
-      this.element.removeEventListener('pointerup', onPointerUp);
-      this.element.removeEventListener('pointercancel', onPointerCancel);
-      this.element.removeEventListener('lostpointercapture', onLostCapture);
-      this.element.removeEventListener('click', onClickCapture, true);
-    };
-  }
-
-  private ensureDocumentTracking(): void {
-    if (this.unbindDocumentTracking || !this.element.isConnected) {
+    const nextKey = `${resolvedAction}|${hasNonTapRecognizer ? 1 : 0}|${preventsPinchZoom ? 1 : 0}`;
+    if (nextKey === this.appliedSurfaceKey) {
       return;
     }
-    const doc = this.element.ownerDocument;
-    const win = doc.defaultView;
-    const onMove = (e: PointerEvent) => this.handlePointerMove(e);
-    const onUp = (e: PointerEvent) => this.handlePointerUp(e);
-    const onCancel = (e: PointerEvent) => this.handlePointerCancel(e);
-    const onWindowBlur = (e: Event) => this.abortActiveStream(e);
-    const onVisibilityChange = (e: Event) => {
-      if (doc.visibilityState === 'hidden') {
-        this.abortActiveStream(e);
+
+    this.cleanupSurfaceBehavior();
+    this.appliedSurfaceKey = nextKey;
+    this.preventsPinchZoom = preventsPinchZoom;
+    this.suppressesTouchContextMenu = hasNonTapRecognizer;
+
+    const el = this.element;
+    const cleanups: Cleanup[] = [applySurfaceBehavior(el, resolvedAction, hasNonTapRecognizer)];
+
+    if (hasNonTapRecognizer) {
+      cleanups.push(listen(el, 'contextmenu', this.onContextMenu));
+      // Never attached on `Tap`-only surfaces (keeping them fully passive), nor when CSS
+      // `touch-action: none` already blocks compositor scrolling.
+      if (resolvedAction !== 'none') {
+        cleanups.push(listen(el, 'touchmove', this.onTouchMove, {passive: false}));
       }
-    };
+    }
 
-    doc.addEventListener('pointermove', onMove);
-    doc.addEventListener('pointerup', onUp);
-    doc.addEventListener('pointercancel', onCancel);
-    doc.addEventListener('visibilitychange', onVisibilityChange);
-    win?.addEventListener('blur', onWindowBlur);
+    if (
+      preventsPinchZoom &&
+      recognizers.length > 0 &&
+      supportsGestureEvents(el.ownerDocument.defaultView)
+    ) {
+      cleanups.push(
+        listen(el, 'gesturestart', this.onSafariGesture, {passive: false}),
+        listen(el, 'gesturechange', this.onSafariGesture, {passive: false})
+      );
+    }
 
-    this.unbindDocumentTracking = () => {
-      doc.removeEventListener('pointermove', onMove);
-      doc.removeEventListener('pointerup', onUp);
-      doc.removeEventListener('pointercancel', onCancel);
-      doc.removeEventListener('visibilitychange', onVisibilityChange);
-      win?.removeEventListener('blur', onWindowBlur);
-    };
+    this.unsetSurfaceBehavior = () => runAll(cleanups);
   }
 
-  private stopDocumentTracking(): void {
-    if (this.unbindDocumentTracking) {
-      this.unbindDocumentTracking();
-      this.unbindDocumentTracking = null;
+  private bindEvents(): Cleanup {
+    const cleanups = [
+      listen(this.element, 'pointerdown', this.onElementPointerDown),
+      listen(this.element, 'lostpointercapture', this.onLostPointerCapture),
+    ];
+    return () => runAll(cleanups);
+  }
+
+  /** Attaches document-level listeners for the lifetime of a single pointer stream. */
+  private ensureActiveTracking(): void {
+    if (this.unbindActiveTracking) {
+      return;
     }
+
+    const doc = this.element.ownerDocument;
+    const win = doc.defaultView;
+    const cleanups: Cleanup[] = [
+      listen(doc, 'pointerdown', this.onDocumentPointerDown),
+      listen(doc, 'pointermove', this.onPointerMove),
+      listen(doc, 'pointerup', this.onPointerUp),
+      listen(doc, 'pointercancel', this.onPointerCancel),
+      listen(doc, 'contextmenu', this.onContextMenu),
+      listen(doc, 'visibilitychange', this.onVisibilityChange),
+    ];
+    if (win) {
+      cleanups.push(listen(win, 'blur', this.onWindowBlur));
+    }
+
+    // Straddling pinches whose second finger lands outside `element` dispatch touch/gesture
+    // events to other targets, so mirror the pinch-zoom guards on the document while active.
+    if (this.preventsPinchZoom) {
+      cleanups.push(listen(doc, 'touchmove', this.onTouchMove, {passive: false}));
+      if (supportsGestureEvents(win)) {
+        cleanups.push(
+          listen(doc, 'gesturestart', this.onSafariGesture, {passive: false}),
+          listen(doc, 'gesturechange', this.onSafariGesture, {passive: false})
+        );
+      }
+    }
+
+    this.unbindActiveTracking = () => runAll(cleanups);
+  }
+
+  private stopActiveTracking(): void {
+    this.lastHandledDown = null;
+    this.unbindActiveTracking?.();
+    this.unbindActiveTracking = null;
+  }
+
+  private clearClickSuppression(): void {
+    this.disarmClickSuppression?.();
+    this.disarmClickSuppression = null;
+  }
+
+  private armClickSuppression(): void {
+    this.clearClickSuppression();
+    const doc = this.element.ownerDocument;
+    const suppressUntil = performance.now() + this.config.ghostClickTimeout;
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (performance.now() > suppressUntil) {
+        this.clearClickSuppression();
+        return;
+      }
+      // `detail === 0` marks programmatic / keyboard-activated clicks, which are never ghosts.
+      if (e.detail === 0 || !isRelatedClickTarget(e, this.element)) {
+        return;
+      }
+      this.clearClickSuppression();
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+
+    const cleanups = [
+      listen(doc, 'pointerdown', () => this.clearClickSuppression(), true),
+      listen(doc, 'click', onClickCapture, true),
+    ];
+    this.disarmClickSuppression = () => runAll(cleanups);
+  }
+
+  private processPointerDown(e: PointerEvent): void {
+    this.clearClickSuppression();
+
+    const motionEvent = this.stream.onPointerDown(e);
+    if (!motionEvent) {
+      return;
+    }
+
+    this.ensureActiveTracking();
+    this.arena.dispatch(motionEvent);
+
+    if (this.arena.hasActiveGesture) {
+      this.captureActivePointers();
+    }
+  }
+
+  private cancelPointer(e: PointerEvent): void {
+    const motionEvent = this.stream.onPointerCancel(e);
+    // Ignore pointers outside this stream (e.g. a finger natively scrolling elsewhere on the page).
+    if (!motionEvent) {
+      return;
+    }
+    this.arena.dispatch(motionEvent);
+    this.releaseAllCapturedPointers();
+    this.stopActiveTracking();
   }
 
   private abortActiveStream(triggerEvent: Event): void {
@@ -285,7 +493,7 @@ export class GestureManager {
       this.arena.dispatch(cancelEvent);
     }
     this.releaseAllCapturedPointers();
-    this.stopDocumentTracking();
+    this.stopActiveTracking();
   }
 
   private captureActivePointers(): void {
@@ -294,10 +502,10 @@ export class GestureManager {
         continue;
       }
       try {
-        this.element.setPointerCapture?.(pointerId);
+        this.element.setPointerCapture(pointerId);
         this.capturedPointers.add(pointerId);
       } catch {
-        // Synthetic PointerEvents in test environments may not support hardware capture.
+        // `NotFoundError` if the pointer is no longer active (e.g. lifted between events).
       }
     }
   }
@@ -307,7 +515,7 @@ export class GestureManager {
       return;
     }
     try {
-      if (this.element.hasPointerCapture?.(pointerId)) {
+      if (this.element.hasPointerCapture(pointerId)) {
         this.element.releasePointerCapture(pointerId);
       }
     } catch {
@@ -316,124 +524,8 @@ export class GestureManager {
   }
 
   private releaseAllCapturedPointers(): void {
-    if (this.capturedPointers.size === 0) {
-      return;
-    }
-    for (const pointerId of Array.from(this.capturedPointers)) {
+    for (const pointerId of this.capturedPointers) {
       this.releaseCapturedPointer(pointerId);
     }
-  }
-
-  private handlePointerDown(e: PointerEvent): void {
-    if (!this.isValidPointer(e)) {
-      return;
-    }
-    this.suppressClickUntil = 0;
-
-    const motionEvent = this.stream.onPointerDown(e);
-    if (!motionEvent) {
-      return;
-    }
-
-    this.ensureDocumentTracking();
-    this.arena.dispatch(motionEvent);
-
-    if (this.arena.hasActiveGesture) {
-      this.captureActivePointers();
-    }
-  }
-
-  private handlePointerMove(e: PointerEvent): void {
-    if (
-      this.stream.activePointerCount === 0 ||
-      e === this.lastProcessedEvent ||
-      !this.isValidPointer(e)
-    ) {
-      return;
-    }
-    this.lastProcessedEvent = e;
-
-    if (!this.arena.hasLiveRecognizers) {
-      this.stream.updatePointerSilent(e);
-      return;
-    }
-
-    const motionEvent = this.stream.onPointerMove(e, this.arena.needsVelocity);
-    if (motionEvent) {
-      this.arena.dispatch(motionEvent);
-    }
-  }
-
-  private handlePointerUp(e: PointerEvent): void {
-    if (
-      this.stream.activePointerCount === 0 ||
-      e === this.lastProcessedEvent ||
-      !this.isValidPointer(e)
-    ) {
-      return;
-    }
-    this.lastProcessedEvent = e;
-
-    const motionEvent = this.stream.onPointerUp(e);
-    if (motionEvent) {
-      this.arena.dispatch(motionEvent);
-    }
-
-    this.releaseCapturedPointer(e.pointerId);
-    if (this.stream.activePointerCount === 0) {
-      if (this.arena.didSuppressingGestureWin) {
-        this.suppressClickUntil = performance.now() + GHOST_CLICK_WINDOW_MS;
-      }
-      this.stopDocumentTracking();
-    }
-  }
-
-  private handlePointerCancel(e: PointerEvent): void {
-    if (
-      this.stream.activePointerCount === 0 ||
-      e === this.lastProcessedEvent ||
-      !this.isValidPointer(e)
-    ) {
-      return;
-    }
-    this.lastProcessedEvent = e;
-
-    const motionEvent = this.stream.onPointerCancel(e);
-    if (motionEvent) {
-      this.arena.dispatch(motionEvent);
-    }
-
-    this.releaseAllCapturedPointers();
-    this.stopDocumentTracking();
-  }
-
-  private handleLostPointerCapture(e: PointerEvent): void {
-    this.capturedPointers.delete(e.pointerId);
-    if (!this.stream.hasPointer(e.pointerId)) {
-      return;
-    }
-    const motionEvent = this.stream.onPointerCancel(e);
-    if (motionEvent) {
-      this.arena.dispatch(motionEvent);
-    }
-    this.releaseAllCapturedPointers();
-    this.stopDocumentTracking();
-  }
-
-  private handleClickCapture(e: MouseEvent): void {
-    if (this.suppressClickUntil === 0) {
-      return;
-    }
-    if (performance.now() > this.suppressClickUntil) {
-      this.suppressClickUntil = 0;
-      return;
-    }
-    if (e.detail === 0) {
-      return;
-    }
-    this.suppressClickUntil = 0;
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
   }
 }

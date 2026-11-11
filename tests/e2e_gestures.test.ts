@@ -1,14 +1,10 @@
-import {readFileSync} from 'node:fs';
-import {resolve} from 'node:path';
-import {runInNewContext} from 'node:vm';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {userEvent} from '@testing-library/user-event';
-import Hammer from '../src/index';
-import UmdEntryHammer from '../src/umd';
+import {GestureManager, PanRecognizer, TapRecognizer} from '../src/index';
 
 describe('Gesture Engine E2E', () => {
   let element: HTMLElement;
-  let hammer: Hammer;
+  let manager: GestureManager;
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
@@ -16,11 +12,11 @@ describe('Gesture Engine E2E', () => {
     document.body.innerHTML =
       '<div id="touch-area" style="width: 500px; height: 500px;"><button id="inner-btn" type="button">Action</button></div>';
     element = document.getElementById('touch-area')!;
-    hammer = new Hammer(element);
+    manager = new GestureManager(element);
   });
 
   afterEach(() => {
-    hammer.destroy();
+    manager.destroy();
     document.body.innerHTML = '';
   });
 
@@ -32,7 +28,7 @@ describe('Gesture Engine E2E', () => {
     const innerBtn = document.getElementById('inner-btn')!;
     innerBtn.addEventListener('click', btnClickSpy);
 
-    hammer.register(new Hammer.Tap({onTap: tapSpy})).register(new Hammer.Pan({onPan: panSpy}));
+    manager.register(new TapRecognizer({onTap: tapSpy}), new PanRecognizer({onPan: panSpy}));
 
     await user.click(innerBtn);
 
@@ -43,7 +39,7 @@ describe('Gesture Engine E2E', () => {
 
   it('recognizes a double-tap gesture via user-event', async () => {
     const doubleTapSpy = vi.fn();
-    hammer.register(new Hammer.Tap({onTap: doubleTapSpy}, {taps: 2}));
+    manager.register(new TapRecognizer({onTap: doubleTapSpy}, {taps: 2}));
 
     await user.dblClick(element);
 
@@ -60,8 +56,9 @@ describe('Gesture Engine E2E', () => {
     const innerBtn = document.getElementById('inner-btn')!;
     innerBtn.addEventListener('click', btnClickSpy);
 
-    hammer.register(new Hammer.Tap({onTap: tapSpy})).register(
-      new Hammer.Pan(
+    manager.register(
+      new TapRecognizer({onTap: tapSpy}),
+      new PanRecognizer(
         {
           onPanStart: startSpy,
           onPan: panSpy,
@@ -83,27 +80,5 @@ describe('Gesture Engine E2E', () => {
     expect(endSpy).toHaveBeenCalledTimes(1);
     expect(tapSpy).not.toHaveBeenCalled();
     expect(btnClickSpy).not.toHaveBeenCalled();
-  });
-
-  it('exposes Hammer directly as a constructor in the UMD bundle without a .default wrapper', () => {
-    const umdPath = resolve(__dirname, '../dist/hammer.umd.js');
-    const code = readFileSync(umdPath, 'utf8');
-    const sandbox: Record<string, unknown> = {};
-    sandbox.globalThis = sandbox;
-    sandbox.self = sandbox;
-    runInNewContext(code, sandbox);
-
-    const UmdHammer = sandbox.Hammer as typeof Hammer & {default?: unknown};
-    expect(typeof UmdHammer).toBe('function');
-    expect(UmdHammer.default).toBeUndefined();
-    expect(typeof UmdHammer.Pan).toBe('function');
-    expect(typeof UmdHammer.VelocityTracker).toBe('function');
-    expect(UmdEntryHammer).toBe(Hammer);
-  });
-
-  it('ignores unregistered gestures', async () => {
-    const tapSpy = vi.fn();
-    await user.click(element);
-    expect(tapSpy).not.toHaveBeenCalled();
   });
 });

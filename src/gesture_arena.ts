@@ -1,12 +1,10 @@
 import {MotionAction, type MotionEvent} from './motion_event';
 import {
-  type ArenaContext,
   type GestureRecognizer,
   RecognizerState,
   type RecognizerStateType,
 } from './gesture_recognizer';
 import {mergeTouchActions, type TouchActionValue} from './touch_behavior';
-import {VelocityTracker} from './velocity_tracker';
 import {resolveViewConfiguration, type ViewConfiguration} from './view_configuration';
 
 interface PendingClaim {
@@ -28,22 +26,21 @@ function isDispatchEligible(recognizer: GestureRecognizer): boolean {
 
 /**
  * Coordinates competing `GestureRecognizer`s using the **Mediator** pattern:
- * - Maintains a shared `VelocityTracker` across the stream.
  * - Arbitrates mutual exclusion unless either peer opts into `canRecognizeSimultaneouslyWith`.
  * - Resolves `.requireFailureOf(...)` dependencies with registration-order-independent batching.
  */
-export class GestureArena implements ArenaContext {
+export class GestureArena {
   readonly config: ViewConfiguration;
-  readonly velocityTracker: VelocityTracker;
 
   private readonly onActiveGestureStart?: () => void;
-  private readonly recognizers: GestureRecognizer[] = [];
+  private recognizers: readonly GestureRecognizer[] = [];
   private readonly winners = new Set<GestureRecognizer>();
   private readonly pendingClaims = new Map<GestureRecognizer, PendingClaim>();
 
   private dispatchDepth = 0;
   private nextDispatchToken = 0;
   private velocityNeeded = false;
+  private multiTouchAccepted = false;
   private totalWinnersInStream = 0;
   private yieldedWinnersInStream = 0;
   private suppressingWinnerInStream = false;
@@ -51,10 +48,6 @@ export class GestureArena implements ArenaContext {
   constructor(configOverrides?: Partial<ViewConfiguration>, options: GestureArenaOptions = {}) {
     this.config = resolveViewConfiguration(configOverrides);
     this.onActiveGestureStart = options.onActiveGestureStart;
-    this.velocityTracker = new VelocityTracker({
-      horizonMs: this.config.velocityHorizonMs,
-      assumePointerStoppedMs: this.config.assumePointerStoppedMs,
-    });
   }
 
   get hasActiveGesture(): boolean {
@@ -70,6 +63,10 @@ export class GestureArena implements ArenaContext {
     return this.velocityNeeded;
   }
 
+  get acceptsMultiTouch(): boolean {
+    return this.multiTouchAccepted;
+  }
+
   get didSuppressingGestureWin(): boolean {
     return this.suppressingWinnerInStream;
   }
@@ -80,7 +77,7 @@ export class GestureArena implements ArenaContext {
     }
     for (let i = 0; i < this.recognizers.length; i++) {
       const r = this.recognizers[i];
-      if (r.state === RecognizerState.POSSIBLE && r._locksTouchMove) {
+      if (r.state === RecognizerState.POSSIBLE && r.isPrioritized) {
         return true;
       }
     }
@@ -89,8 +86,7 @@ export class GestureArena implements ArenaContext {
 
   get hasLiveRecognizers(): boolean {
     for (let i = 0; i < this.recognizers.length; i++) {
-      const r = this.recognizers[i];
-      const state = r.state;
+      const state = this.recognizers[i].state;
       if (
         state === RecognizerState.POSSIBLE ||
         state === RecognizerState.PENDING ||
@@ -111,21 +107,20 @@ export class GestureArena implements ArenaContext {
     if (this.recognizers.includes(recognizer)) {
       return;
     }
-    this.recognizers.push(recognizer);
-    this.velocityNeeded = this.recognizers.some(r => r.usesVelocity);
-    recognizer._attach(this);
+    this.recognizers = [...this.recognizers, recognizer];
+    this.refreshCapabilities();
+    recognizer.attach(this);
   }
 
   remove(recognizer: GestureRecognizer): void {
-    const idx = this.recognizers.indexOf(recognizer);
-    if (idx === -1) {
+    if (!this.recognizers.includes(recognizer)) {
       return;
     }
-    this.recognizers.splice(idx, 1);
-    this.velocityNeeded = this.recognizers.some(r => r.usesVelocity);
+    this.recognizers = this.recognizers.filter(r => r !== recognizer);
+    this.refreshCapabilities();
     this.winners.delete(recognizer);
     this.pendingClaims.delete(recognizer);
-    recognizer._attach(null);
+    recognizer.attach(null);
     if (this.dispatchDepth === 0) {
       this.evaluatePendingClaims();
     }
@@ -136,26 +131,31 @@ export class GestureArena implements ArenaContext {
   }
 
   dispatch(event: MotionEvent): void {
-    if (this.velocityNeeded) {
-      this.velocityTracker.recordStreamEvent(event, this.config.maximumFlingVelocity);
-    }
-
     this.dispatchDepth++;
     try {
+      const recognizers = this.recognizers;
+
       if (event.action === MotionAction.DOWN) {
-        for (let i = 0; i < this.recognizers.length; i++) {
-          this.recognizers[i]._prepareForDown(event);
+        // If a prior stream was orphaned without `UP`/`CANCEL`, cancel active winners cleanly first.
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (r.isAttachedTo(this) && r.active) {
+            r.denyByArena();
+          }
+        }
+
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (r.isAttachedTo(this)) {
+            r.prepareForDown(event);
+          }
         }
         this.evaluatePendingClaims();
+        this.clearStreamTracking(false);
 
-        this.winners.clear();
-        this.totalWinnersInStream = 0;
-        this.yieldedWinnersInStream = 0;
-        this.suppressingWinnerInStream = false;
-
-        for (let i = 0; i < this.recognizers.length; i++) {
-          const r = this.recognizers[i];
-          if (r._shouldResetOnDown(event)) {
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (r.isAttachedTo(this) && r.shouldResetOnDown(event)) {
             this.pendingClaims.delete(r);
             r.reset();
           }
@@ -164,10 +164,10 @@ export class GestureArena implements ArenaContext {
 
       if (event.action === MotionAction.POINTER_DOWN) {
         const token = ++this.nextDispatchToken;
-        for (let i = 0; i < this.recognizers.length; i++) {
-          const r = this.recognizers[i];
-          if (r.active) {
-            r._lastDispatchToken = token;
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (r.isAttachedTo(this) && r.active) {
+            r.lastDispatchToken = token;
             r.onMotionEvent(event);
           }
         }
@@ -177,12 +177,13 @@ export class GestureArena implements ArenaContext {
           this.yieldedWinnersInStream === this.totalWinnersInStream;
 
         if (canHandoffToMultiTouch) {
-          for (let i = 0; i < this.recognizers.length; i++) {
-            const r = this.recognizers[i];
+          for (let i = 0; i < recognizers.length; i++) {
+            const r = recognizers[i];
             if (
+              r.isAttachedTo(this) &&
               r.state === RecognizerState.FAILED &&
-              r._deniedByArena &&
-              r._canRearmOnPointerDown(event) &&
+              r.deniedByArena &&
+              r.canRearmOnPointerDown(event) &&
               this.hasCompatibleWinners(r)
             ) {
               r.reset();
@@ -190,31 +191,38 @@ export class GestureArena implements ArenaContext {
           }
         }
 
-        for (let i = 0; i < this.recognizers.length; i++) {
-          const r = this.recognizers[i];
-          if (!isDispatchEligible(r) || r._lastDispatchToken === token) continue;
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (!r.isAttachedTo(this) || !isDispatchEligible(r) || r.lastDispatchToken === token) {
+            continue;
+          }
           r.onMotionEvent(event);
         }
         return;
       }
 
       const token = ++this.nextDispatchToken;
-      for (let i = 0; i < this.recognizers.length; i++) {
-        const r = this.recognizers[i];
-        if (isDispatchEligible(r) && r._isPrioritized) {
-          r._lastDispatchToken = token;
+      for (let i = 0; i < recognizers.length; i++) {
+        const r = recognizers[i];
+        if (r.isAttachedTo(this) && isDispatchEligible(r) && r.isPrioritized) {
+          r.lastDispatchToken = token;
           r.onMotionEvent(event);
         }
       }
-      for (let i = 0; i < this.recognizers.length; i++) {
-        const r = this.recognizers[i];
-        if (!isDispatchEligible(r) || r._lastDispatchToken === token) continue;
+      for (let i = 0; i < recognizers.length; i++) {
+        const r = recognizers[i];
+        if (!r.isAttachedTo(this) || !isDispatchEligible(r) || r.lastDispatchToken === token) {
+          continue;
+        }
         r.onMotionEvent(event);
       }
 
       if (event.action === MotionAction.CANCEL) {
-        for (let i = 0; i < this.recognizers.length; i++) {
-          this.recognizers[i]._denyByArena();
+        for (let i = 0; i < recognizers.length; i++) {
+          const r = recognizers[i];
+          if (r.isAttachedTo(this)) {
+            r.denyByArena();
+          }
         }
         this.winners.clear();
         this.pendingClaims.clear();
@@ -224,39 +232,37 @@ export class GestureArena implements ArenaContext {
       this.dispatchDepth--;
       if (this.dispatchDepth === 0) {
         this.evaluatePendingClaims();
-        for (let i = 0; i < this.recognizers.length; i++) {
-          this.recognizers[i]._observeStreamEvent(event);
-        }
       }
     }
   }
 
+  /** @internal */
   requestClaim(
     recognizer: GestureRecognizer,
     targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
     onGranted: () => void
   ): boolean {
     if (!this.hasCompatibleWinners(recognizer)) {
-      recognizer._denyByArena();
+      recognizer.denyByArena();
       return false;
     }
 
     const dependencyStatus = this.checkFailureDependencies(recognizer);
     if (dependencyStatus === 'defeated') {
-      recognizer._denyByArena();
+      recognizer.denyByArena();
       return false;
     }
 
     if (dependencyStatus === 'waiting') {
       this.pendingClaims.set(recognizer, {targetState, onGranted});
-      recognizer._markPending();
+      recognizer.markPending();
       return false;
     }
 
-    this.grantClaim(recognizer, targetState, onGranted);
-    return true;
+    return this.grantClaim(recognizer, targetState, onGranted);
   }
 
+  /** @internal */
   notifyStateChanged(
     recognizer: GestureRecognizer,
     nextState: RecognizerStateType,
@@ -275,24 +281,37 @@ export class GestureArena implements ArenaContext {
   }
 
   reset(): void {
-    this.winners.clear();
-    this.pendingClaims.clear();
-    this.velocityTracker.clear();
-    this.totalWinnersInStream = 0;
-    this.yieldedWinnersInStream = 0;
-    this.suppressingWinnerInStream = false;
-    for (const r of this.recognizers) {
-      r.reset();
+    const recognizers = this.recognizers;
+    this.clearStreamTracking(true);
+    for (let i = 0; i < recognizers.length; i++) {
+      recognizers[i].reset();
     }
   }
 
   destroy(): void {
-    this.reset();
-    for (const r of this.recognizers) {
-      r._attach(null);
-    }
-    this.recognizers.length = 0;
+    const recognizers = this.recognizers;
+    this.recognizers = [];
+    this.clearStreamTracking(true);
     this.velocityNeeded = false;
+    this.multiTouchAccepted = false;
+    for (let i = 0; i < recognizers.length; i++) {
+      recognizers[i].attach(null);
+    }
+  }
+
+  private clearStreamTracking(includePendingClaims: boolean): void {
+    this.winners.clear();
+    if (includePendingClaims) {
+      this.pendingClaims.clear();
+    }
+    this.totalWinnersInStream = 0;
+    this.yieldedWinnersInStream = 0;
+    this.suppressingWinnerInStream = false;
+  }
+
+  private refreshCapabilities(): void {
+    this.velocityNeeded = this.recognizers.some(r => r.usesVelocity);
+    this.multiTouchAccepted = this.recognizers.some(r => r.acceptsMultiTouch);
   }
 
   private areCompatible(a: GestureRecognizer, b: GestureRecognizer): boolean {
@@ -311,8 +330,8 @@ export class GestureArena implements ArenaContext {
   private checkFailureDependencies(
     recognizer: GestureRecognizer
   ): 'satisfied' | 'waiting' | 'defeated' {
-    for (const dep of recognizer._requiredFailures) {
-      if (!this.recognizers.includes(dep)) {
+    for (const dep of recognizer.requiredFailures) {
+      if (!dep.isAttachedTo(this)) {
         continue;
       }
       if (
@@ -329,11 +348,12 @@ export class GestureArena implements ArenaContext {
     return 'satisfied';
   }
 
+  /** Returns `false` if a re-entrant callback detached `winner` while defeating its competitors. */
   private grantClaim(
     winner: GestureRecognizer,
     targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
     onGranted: () => void
-  ): void {
+  ): boolean {
     this.pendingClaims.delete(winner);
     this.winners.add(winner);
     this.totalWinnersInStream++;
@@ -341,27 +361,40 @@ export class GestureArena implements ArenaContext {
       this.suppressingWinnerInStream = true;
     }
 
+    winner.setClaimState(targetState);
+
+    const recognizers = this.recognizers;
+    for (let i = 0; i < recognizers.length; i++) {
+      const other = recognizers[i];
+      if (other === winner || !other.isAttachedTo(this)) continue;
+      if (!this.areCompatible(winner, other) || other.requiredFailures.has(winner)) {
+        this.pendingClaims.delete(other);
+        other.denyByArena();
+      }
+    }
+
+    if (!winner.isAttachedTo(this)) {
+      return false;
+    }
+
     if (targetState === RecognizerState.BEGAN) {
       this.onActiveGestureStart?.();
     }
 
-    winner._acceptClaim(targetState, onGranted);
-
-    for (const other of this.recognizers) {
-      if (other === winner) continue;
-      if (!this.areCompatible(winner, other) || other._requiredFailures.has(winner)) {
-        this.pendingClaims.delete(other);
-        other._denyByArena();
-      }
-    }
+    onGranted();
+    return true;
   }
 
   private evaluatePendingClaims(): void {
     if (this.pendingClaims.size === 0) {
       return;
     }
-    for (const [recognizer, claim] of Array.from(this.pendingClaims.entries())) {
-      if (!this.pendingClaims.has(recognizer)) continue;
+    for (const [recognizer, claim] of this.pendingClaims) {
+      if (!this.hasCompatibleWinners(recognizer)) {
+        this.pendingClaims.delete(recognizer);
+        recognizer.denyByArena();
+        continue;
+      }
       if (this.checkFailureDependencies(recognizer) === 'satisfied') {
         this.grantClaim(recognizer, claim.targetState, claim.onGranted);
       }

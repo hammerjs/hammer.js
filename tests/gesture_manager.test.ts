@@ -1,10 +1,10 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureManager} from '../src/gesture_manager';
 import {GestureRecognizer} from '../src/gesture_recognizer';
-import {MotionAction, type MotionEvent, MotionEventStream} from '../src/motion_event';
-import {FlingRecognizer} from '../src/recognizers/fling_recognizer';
+import {MotionAction, type MotionEvent} from '../src/motion_event';
 import {LongPressRecognizer} from '../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../src/recognizers/pan_recognizer';
+import {QuickScaleRecognizer} from '../src/recognizers/quick_scale_recognizer';
 import {RotateRecognizer} from '../src/recognizers/rotate_recognizer';
 import {ScaleRecognizer} from '../src/recognizers/scale_recognizer';
 import {TapRecognizer} from '../src/recognizers/tap_recognizer';
@@ -14,6 +14,11 @@ class SpyRecognizer extends GestureRecognizer {
   readonly type = 'spy';
   readonly events: MotionEvent[] = [];
   cancelled = false;
+
+  /** @internal */
+  override get acceptsMultiTouch(): boolean {
+    return true;
+  }
 
   onMotionEvent(event: MotionEvent): void {
     this.events.push(event);
@@ -35,9 +40,11 @@ describe('GestureManager', () => {
   beforeEach(() => {
     element = document.createElement('div');
     document.body.appendChild(element);
-    manager = new GestureManager(element, {supportedPointerTypes: ['touch', 'mouse']});
     recognizer = new SpyRecognizer();
-    manager.register(recognizer);
+    manager = new GestureManager(element, {
+      supportedPointerTypes: ['touch', 'mouse'],
+      recognizers: [recognizer],
+    });
   });
 
   afterEach(() => {
@@ -45,7 +52,11 @@ describe('GestureManager', () => {
     element.remove();
   });
 
-  it('dispatches normalized MotionEvents for supported pointer types', () => {
+  it('dispatches normalized MotionEvents for supported pointer types and attaches zero idle pointermove listeners', () => {
+    // Unpressed mouse hover over `element` invokes zero recognizer work:
+    element.dispatchEvent(pointerEvent('pointermove', {pointerType: 'mouse', pointerId: 1}));
+    expect(recognizer.events).toHaveLength(0);
+
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.events).toHaveLength(1);
     expect(recognizer.events[0].action).toBe(MotionAction.DOWN);
@@ -77,7 +88,7 @@ describe('GestureManager', () => {
     const onTap = vi.fn();
     const onPanStart = vi.fn();
     const gm = new GestureManager(container, {supportedPointerTypes: ['touch', 'mouse']});
-    gm.register(new TapRecognizer({onTap})).register(new PanRecognizer({onPanStart}, {slop: 8}));
+    gm.register(new TapRecognizer({onTap}), new PanRecognizer({onPanStart}, {slop: 8}));
 
     // 1. Simple tap on `<button>`: MUST NOT call `setPointerCapture`!
     childButton.dispatchEvent(
@@ -112,6 +123,292 @@ describe('GestureManager', () => {
     container.remove();
   });
 
+  it('detects multi-touch gestures when fingers start on different child elements and ignores bubbling child lostpointercapture', () => {
+    const container = document.createElement('div');
+    const childSpan = document.createElement('span');
+    const childButton = document.createElement('button');
+    container.append(childSpan, childButton);
+    document.body.appendChild(container);
+
+    // Simulate real W3C touch implicit pointer capture: when `container.setPointerCapture(id)` is called,
+    // the child element that originally received `pointerdown` fires a bubbling `lostpointercapture` event!
+    const implicitChildOwner = new Map<number, HTMLElement>([
+      [1, childSpan],
+      [2, childButton],
+    ]);
+    container.setPointerCapture = (pointerId: number) => {
+      const prevOwner = implicitChildOwner.get(pointerId);
+      if (prevOwner) {
+        implicitChildOwner.delete(pointerId);
+        prevOwner.dispatchEvent(pointerEvent('lostpointercapture', {pointerId}));
+      }
+    };
+    container.hasPointerCapture = () => true;
+    container.releasePointerCapture = vi.fn();
+
+    const onScaleStart = vi.fn();
+    const onScale = vi.fn();
+    const onScaleCancel = vi.fn();
+    const onRotate = vi.fn();
+
+    const gm = new GestureManager(container);
+    const rotate = new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 20});
+    gm.register(
+      new ScaleRecognizer(
+        {onScaleStart, onScale, onScaleCancel},
+        {spanSlop: 8, minSpan: 20}
+      ).simultaneousWith(rotate),
+      rotate
+    );
+
+    // Finger 1 starts on `<span>`, Finger 2 starts on `<button>`:
+    childSpan.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerId: 1,
+        isPrimary: true,
+        clientX: 0,
+        clientY: 0,
+        timeStamp: 0,
+      })
+    );
+    childButton.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerId: 2,
+        isPrimary: false,
+        clientX: 100,
+        clientY: 0,
+        timeStamp: 5,
+      })
+    );
+
+    // Pinching & rotating crosses slop -> triggers `container.setPointerCapture` -> bubbles `lostpointercapture` from children!
+    childButton.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 150, clientY: 50, timeStamp: 20})
+    );
+    container.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 200, clientY: 100, timeStamp: 35})
+    );
+
+    expect(onScaleStart).toHaveBeenCalledTimes(1);
+    expect(onScale).toHaveBeenCalledTimes(2);
+    expect(onScaleCancel).not.toHaveBeenCalled();
+    expect(onRotate).toHaveBeenCalled();
+
+    gm.destroy();
+    container.remove();
+  });
+
+  it('tracks secondary fingers landing outside target for multi-touch surfaces without interfering with separate 1-finger controls', () => {
+    (window as unknown as Record<string, unknown>).GestureEvent = class MockGestureEvent extends (
+      Event
+    ) {};
+    try {
+      const photo = document.createElement('div');
+      const outside = document.createElement('div');
+      const sliderA = document.createElement('div');
+      const sliderB = document.createElement('div');
+      document.body.append(photo, outside, sliderA, sliderB);
+
+      const onScale = vi.fn();
+      const onScaleCancel = vi.fn();
+      const gmPhoto = new GestureManager(photo, {
+        recognizers: [new ScaleRecognizer({onScale, onScaleCancel}, {spanSlop: 8, minSpan: 20})],
+      });
+
+      // 1. Finger 1 touches `photo`, Finger 2 lands outside on `outside` (`isPrimary: false`):
+      photo.dispatchEvent(
+        pointerEvent('pointerdown', {
+          pointerId: 1,
+          isPrimary: true,
+          clientX: 50,
+          clientY: 50,
+          timeStamp: 0,
+        })
+      );
+      outside.dispatchEvent(
+        pointerEvent('pointerdown', {
+          pointerId: 2,
+          isPrimary: false,
+          clientX: 150,
+          clientY: 50,
+          timeStamp: 10,
+        })
+      );
+
+      // Document-level zoom guards prevent straddling 2-finger `touchmove` and Safari `gesturestart`:
+      const straddleTouchMove = new Event('touchmove', {bubbles: true, cancelable: true});
+      Object.defineProperty(straddleTouchMove, 'touches', {
+        value: [{identifier: 1}, {identifier: 2}],
+      });
+      outside.dispatchEvent(straddleTouchMove);
+      expect(straddleTouchMove.defaultPrevented).toBe(true);
+
+      const straddleSafariGesture = new Event('gesturestart', {bubbles: true, cancelable: true});
+      outside.dispatchEvent(straddleSafariGesture);
+      expect(straddleSafariGesture.defaultPrevented).toBe(true);
+
+      outside.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 250, clientY: 50, timeStamp: 25})
+      );
+      expect(onScale).toHaveBeenCalledTimes(1);
+
+      // If `pointerup` was swallowed and user starts a brand-new `isPrimary: true` touch outside `photo`,
+      // `gmPhoto` aborts its orphaned stream cleanly:
+      outside.dispatchEvent(
+        pointerEvent('pointerdown', {
+          pointerId: 3,
+          isPrimary: true,
+          clientX: 300,
+          clientY: 300,
+          timeStamp: 500,
+        })
+      );
+      expect(onScaleCancel).toHaveBeenCalledTimes(1);
+
+      // 2. Two independent 1-finger `Pan` sliders operate simultaneously without stealing each other's touch:
+      const onSliderA = vi.fn();
+      const onSliderB = vi.fn();
+      const gmA = new GestureManager(sliderA, {
+        recognizers: [new PanRecognizer({onPan: onSliderA}, {numPointers: 1, slop: 4})],
+      });
+      const gmB = new GestureManager(sliderB, {
+        recognizers: [new PanRecognizer({onPan: onSliderB}, {numPointers: 1, slop: 4})],
+      });
+
+      sliderA.dispatchEvent(
+        pointerEvent('pointerdown', {
+          pointerId: 10,
+          isPrimary: true,
+          clientX: 0,
+          clientY: 0,
+          timeStamp: 600,
+        })
+      );
+      sliderB.dispatchEvent(
+        pointerEvent('pointerdown', {
+          pointerId: 11,
+          isPrimary: false,
+          clientX: 200,
+          clientY: 0,
+          timeStamp: 605,
+        })
+      );
+      sliderA.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 10, clientX: 30, clientY: 0, timeStamp: 620})
+      );
+      sliderB.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 11, clientX: 230, clientY: 0, timeStamp: 620})
+      );
+      expect(onSliderA).toHaveBeenCalledTimes(1);
+      expect(onSliderB).toHaveBeenCalledTimes(1);
+
+      gmA.destroy();
+      gmB.destroy();
+      gmPhoto.destroy();
+      photo.remove();
+      outside.remove();
+      sliderA.remove();
+      sliderB.remove();
+    } finally {
+      delete (window as unknown as Record<string, unknown>).GestureEvent;
+    }
+  });
+
+  it('recovers from swallowed off-page mouse pointerup (buttons === 0), mid-drag desktop contextmenu, and ignores macOS Ctrl+Click', () => {
+    const box = document.createElement('div');
+    document.body.appendChild(box);
+    const onPanStart = vi.fn();
+    const onPanCancel = vi.fn();
+    const gm = new GestureManager(box, {
+      recognizers: [new PanRecognizer({onPanStart, onPanCancel}, {slop: 4})],
+    });
+
+    // 1. macOS Ctrl+Click (`button: 0, ctrlKey: true`) does not start a gesture or block desktop contextmenu:
+    box.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        button: 0,
+        buttons: 1,
+        ctrlKey: true,
+        clientX: 10,
+        clientY: 10,
+        timeStamp: 0,
+      })
+    );
+    const ctrlContextMenu = pointerEvent('contextmenu', {pointerType: 'mouse', button: 0});
+    box.dispatchEvent(ctrlContextMenu);
+    expect(ctrlContextMenu.defaultPrevented).toBe(false);
+    expect(onPanStart).not.toHaveBeenCalled();
+
+    // 2. Mouse drag leaves page/iframe, releases off-page (`pointerup` swallowed), and returns with `buttons: 0`:
+    box.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        button: 0,
+        buttons: 1,
+        clientX: 10,
+        clientY: 10,
+        timeStamp: 20,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        buttons: 1,
+        clientX: 40,
+        clientY: 10,
+        timeStamp: 36,
+      })
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
+
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        buttons: 0,
+        clientX: 60,
+        clientY: 10,
+        timeStamp: 100,
+      })
+    );
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    // 3. Mid-drag desktop right-click (`contextmenu`) cancels active mouse drag without preventing native menu:
+    onPanCancel.mockClear();
+    box.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        button: 0,
+        buttons: 1,
+        clientX: 10,
+        clientY: 10,
+        timeStamp: 200,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'mouse',
+        pointerId: 1,
+        buttons: 1,
+        clientX: 40,
+        clientY: 10,
+        timeStamp: 216,
+      })
+    );
+    const midDragMenu = pointerEvent('contextmenu', {pointerType: 'mouse', button: 2});
+    box.dispatchEvent(midDragMenu);
+    expect(midDragMenu.defaultPrevented).toBe(false);
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    gm.destroy();
+    box.remove();
+  });
+
   it('cancels active gestures cleanly on lostpointercapture mid-gesture', () => {
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.active).toBe(true);
@@ -130,8 +427,9 @@ describe('GestureManager', () => {
     expect(recognizer.events).toHaveLength(0);
   });
 
-  it('covers config, unregister, onTouchEvent, reset, document pointerup/cancel, and touchAction: false', () => {
+  it('covers config, unregister, reset, document pointerup/cancel, and touchAction: false', () => {
     const unstyledEl = document.createElement('div');
+    document.body.appendChild(unstyledEl);
     const customManager = new GestureManager(unstyledEl, {
       supportedPointerTypes: ['touch', 'mouse'],
       touchAction: false,
@@ -144,24 +442,17 @@ describe('GestureManager', () => {
     customManager.register(spy);
     expect(unstyledEl.style.touchAction || '').toBe('');
 
-    // Disconnected element still dispatches element-bound events cleanly:
     unstyledEl.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
-    expect(spy.events).toHaveLength(1);
+    unstyledEl.dispatchEvent(pointerEvent('pointermove', {pointerType: 'touch', pointerId: 1}));
+    unstyledEl.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 1}));
+    expect(spy.events).toHaveLength(3);
     customManager.reset();
 
-    // Direct `onTouchEvent` dispatch & `unregister`:
-    const localStream = new MotionEventStream();
-    const directDown = localStream.onPointerDown(
-      pointerEvent('pointerdown', {pointerId: 5, clientX: 10, clientY: 10, timeStamp: 0})
-    )!;
-    customManager.onTouchEvent(directDown);
-    expect(spy.events).toHaveLength(2);
-
     customManager.unregister(spy);
-    customManager.onTouchEvent(directDown);
-    expect(spy.events).toHaveLength(2);
+    unstyledEl.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 5}));
+    expect(spy.events).toHaveLength(3);
     customManager.destroy();
-    customManager.onTouchEvent(directDown); // ignored after destroy
+    unstyledEl.remove();
 
     // Document-level pointerup & pointercancel outside `element`, plus harmless post-up lostpointercapture:
     const captureSetSpy = vi.fn();
@@ -171,28 +462,23 @@ describe('GestureManager', () => {
     element.releasePointerCapture = captureReleaseSpy;
 
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 10}));
-    // Second finger joining an already-active gesture captures immediately on pointerdown:
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 11}));
     expect(captureSetSpy).toHaveBeenCalledWith(10);
     expect(captureSetSpy).toHaveBeenCalledWith(11);
 
-    // Non-primary mouse button on pointerdown is ignored by stream:
     element.dispatchEvent(
       pointerEvent('pointerdown', {pointerType: 'mouse', pointerId: 12, button: 2})
     );
 
-    // Release pointer 10 & 11 via `document` (outside element):
     document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 10}));
     document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 11}));
     expect(captureReleaseSpy).toHaveBeenCalledWith(10);
     expect(captureReleaseSpy).toHaveBeenCalledWith(11);
 
-    // Normal post-pointerup `lostpointercapture` is a harmless no-op:
     element.dispatchEvent(
       pointerEvent('lostpointercapture', {pointerType: 'touch', pointerId: 10})
     );
 
-    // Start another gesture and cancel via `element` & `document`:
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 20}));
     document.dispatchEvent(pointerEvent('pointercancel', {pointerType: 'touch', pointerId: 20}));
     expect(recognizer.cancelled).toBe(true);
@@ -203,12 +489,11 @@ describe('GestureManager', () => {
     expect(recognizer.cancelled).toBe(true);
   });
 
-  it('dynamically computes least-restrictive CSS touch-action without scroll-locking mobile pages', () => {
+  it('dynamically computes and diffs least-restrictive CSS touch-action without scroll-locking mobile pages', () => {
     const card = document.createElement('div');
     document.body.appendChild(card);
 
     const addListenerSpy = vi.spyOn(card, 'addEventListener');
-    // Default options support touch, pen, AND desktop mouse out of the box, with touchAction: 'compute':
     const gm = new GestureManager(card);
     expect(card.style.touchAction || '').toBe('');
 
@@ -220,6 +505,13 @@ describe('GestureManager', () => {
     expect(card.style.touchAction).toBe('manipulation');
     expect(card.style.userSelect || '').toBe('');
     expect(addListenerSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
+
+    // Registering a second `TapRecognizer` has an identical surface signature -> zero redundant DOM churn:
+    const listenerCountBeforeSecondTap = addListenerSpy.mock.calls.length;
+    const secondTap = new TapRecognizer({});
+    gm.register(secondTap);
+    expect(addListenerSpy.mock.calls.length).toBe(listenerCountBeforeSecondTap);
+    gm.unregister(secondTap);
 
     // Desktop mouse tap works out of the box without custom `supportedPointerTypes`:
     card.dispatchEvent(
@@ -254,26 +546,25 @@ describe('GestureManager', () => {
     gm.register(scale);
     expect(card.style.touchAction).toBe('pan-y');
 
-    // 4. Unregistering horizontal Pan leaves Tap + Scale -> `pan-x pan-y` (1-finger X/Y scroll preserved!):
+    // 4. Unregistering horizontal Pan leaves Tap + Scale -> `pan-x pan-y`:
     gm.unregister(horizPan);
     expect(card.style.touchAction).toBe('pan-x pan-y');
 
-    // 5. Check vertical Pan, Rotate, LongPress, and directional Fling touch-action mappings:
+    // 5. Check vertical/cardinal Pan, QuickScale, Rotate, and LongPress touch-action mappings:
     expect(new PanRecognizer({}, {direction: 'vertical'}).getTouchAction()).toBe(
       'pan-x pinch-zoom'
     );
-    expect(new FlingRecognizer({}, {direction: 'left'}).getTouchAction()).toBe('pan-y pinch-zoom');
-    expect(new FlingRecognizer({}, {direction: 'up'}).getTouchAction()).toBe('pan-x pinch-zoom');
-    expect(new FlingRecognizer({}, {direction: 'all'}).getTouchAction()).toBe('none');
+    expect(new PanRecognizer({}, {direction: 'left'}).getTouchAction()).toBe('pan-y pinch-zoom');
+    expect(new PanRecognizer({}, {direction: 'up'}).getTouchAction()).toBe('pan-x pinch-zoom');
+    expect(new PanRecognizer({}, {direction: 'all'}).getTouchAction()).toBe('none');
+    expect(new QuickScaleRecognizer({}).getTouchAction()).toBe('manipulation');
     expect(new LongPressRecognizer({onLongPress: () => {}}).getTouchAction()).toBe('manipulation');
     expect(new RotateRecognizer({}).getTouchAction()).toBe('pan-x pan-y');
 
     // 6. Unregistering all recognizers restores inline styles cleanly to empty:
-    gm.unregister(scale);
-    expect(card.style.touchAction).toBe('manipulation');
-    expect(card.style.userSelect || '').toBe('');
-    gm.unregister(tap);
+    gm.unregister(scale, tap);
     expect(card.style.touchAction).toBe('');
+    expect(card.style.userSelect || '').toBe('');
 
     // 7. Explicit `touchAction` string override:
     const explicitActionEl = document.createElement('div');
@@ -285,7 +576,7 @@ describe('GestureManager', () => {
     card.remove();
   });
 
-  it('coexists cleanly with iOS Safari scrolling, 2-finger GestureEvent zoom, Quick-Scale, and directional Fling', () => {
+  it('coexists cleanly with iOS Safari scrolling, 2-finger GestureEvent zoom, QuickScaleRecognizer, and directional Pan/Fling', () => {
     const dispatchTouchMove = (
       target: HTMLElement,
       touchCount: number,
@@ -306,7 +597,6 @@ describe('GestureManager', () => {
     const gmCarousel = new GestureManager(carousel);
     gmCarousel.register(new PanRecognizer({onPan}, {direction: 'horizontal', slop: 8}));
 
-    // A1. User scrolls page vertically (`dy = 25, dx = 2`): Pan fails, `touchmove` is NOT prevented!
     carousel.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
     );
@@ -314,13 +604,11 @@ describe('GestureManager', () => {
       pointerEvent('pointermove', {pointerId: 1, clientX: 52, clientY: 75, timeStamp: 16})
     );
     expect(dispatchTouchMove(carousel, 1).prevented).toBe(false);
-    // 2-finger pinch-zoom on horizontal carousel is ALSO preserved for accessibility:
     expect(dispatchTouchMove(carousel, 2).prevented).toBe(false);
     carousel.dispatchEvent(
       pointerEvent('pointerup', {pointerId: 1, clientX: 52, clientY: 75, timeStamp: 32})
     );
 
-    // A2. User drags carousel horizontally (`dx = 20, dy = 2`): `touchmove` IS prevented on that exact frame!
     carousel.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 50, timeStamp: 100})
     );
@@ -329,7 +617,6 @@ describe('GestureManager', () => {
     );
     expect(onPan).toHaveBeenCalled();
     expect(dispatchTouchMove(carousel, 1, true).prevented).toBe(true);
-    // Non-cancelable `touchmove` (`cancelable: false`) is safely ignored without errors:
     expect(dispatchTouchMove(carousel, 1, false).prevented).toBe(false);
     carousel.dispatchEvent(
       pointerEvent('pointerup', {pointerId: 2, clientX: 70, clientY: 52, timeStamp: 132})
@@ -337,14 +624,13 @@ describe('GestureManager', () => {
     gmCarousel.destroy();
     carousel.remove();
 
-    // --- Part B: Standalone Directional Fling (`direction: 'left'` & `'up'`) ---
+    // --- Part B: Directional Swipe (`Pan` with `onFling`, `direction: 'left'` & `'up'`) ---
     const swipeCard = document.createElement('div');
     document.body.appendChild(swipeCard);
     const onFling = vi.fn();
     const gmSwipe = new GestureManager(swipeCard);
-    gmSwipe.register(new FlingRecognizer({onFling}, {direction: 'left'}));
+    gmSwipe.register(new PanRecognizer({onFling}, {direction: 'left'}));
 
-    // Vertical scroll does NOT lock `touchmove`:
     swipeCard.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 0})
     );
@@ -356,7 +642,6 @@ describe('GestureManager', () => {
       pointerEvent('pointerup', {pointerId: 1, clientX: 101, clientY: 120, timeStamp: 32})
     );
 
-    // Horizontal flick locks `touchmove` once past `touchSlop` so iOS diagonal drift cannot cancel it:
     swipeCard.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 100, timeStamp: 50})
     );
@@ -365,14 +650,16 @@ describe('GestureManager', () => {
     );
     expect(dispatchTouchMove(swipeCard, 1).prevented).toBe(true);
     swipeCard.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 20, clientY: 105, timeStamp: 78})
+    );
+    swipeCard.dispatchEvent(
       pointerEvent('pointerup', {pointerId: 2, clientX: 20, clientY: 105, timeStamp: 80})
     );
     expect(onFling).toHaveBeenCalledTimes(1);
 
-    // Also verify vertical Fling axis lock (`direction: 'up'`):
     gmSwipe.destroy();
     const gmVertSwipe = new GestureManager(swipeCard);
-    gmVertSwipe.register(new FlingRecognizer({}, {direction: 'up'}));
+    gmVertSwipe.register(new PanRecognizer({}, {direction: 'up'}));
     swipeCard.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 3, clientX: 100, clientY: 100, timeStamp: 100})
     );
@@ -386,7 +673,7 @@ describe('GestureManager', () => {
     gmVertSwipe.destroy();
     swipeCard.remove();
 
-    // --- Part C: iOS Safari WebKit `GestureEvent` + `Scale({quickScale: true})` ---
+    // --- Part C: iOS Safari WebKit `GestureEvent` + `ScaleRecognizer` + `QuickScaleRecognizer` ---
     (window as unknown as Record<string, unknown>).GestureEvent = class MockGestureEvent extends (
       Event
     ) {};
@@ -394,10 +681,9 @@ describe('GestureManager', () => {
       const photo = document.createElement('div');
       document.body.appendChild(photo);
       const gmPhoto = new GestureManager(photo);
-      gmPhoto.register(new ScaleRecognizer({}, {quickScale: true}));
+      gmPhoto.register(new ScaleRecognizer({}), new QuickScaleRecognizer({}));
       expect(photo.style.touchAction).toBe('pan-x pan-y');
 
-      // 1-finger page scroll over zoomable photo is NOT prevented:
       photo.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
       );
@@ -409,7 +695,6 @@ describe('GestureManager', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 80, timeStamp: 32})
       );
 
-      // 2-finger pinch immediately prevents `touchmove` AND Safari `gesturestart`/`gesturechange`:
       expect(dispatchTouchMove(photo, 2).prevented).toBe(true);
 
       const gsCancelable = new Event('gesturestart', {cancelable: true});
@@ -420,7 +705,7 @@ describe('GestureManager', () => {
       photo.dispatchEvent(gcNonCancelable);
       expect(gcNonCancelable.defaultPrevented).toBe(false);
 
-      // Armed Quick-Scale stroke (tap then second press within 300ms) locks `touchmove` immediately:
+      // Armed QuickScale stroke (tap then second press within 300ms) locks `touchmove` immediately:
       photo.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 60, clientY: 60, timeStamp: 500})
       );
@@ -455,28 +740,33 @@ describe('GestureManager', () => {
     }
   });
 
-  it('aborts stuck pointers on window blur and hidden visibilitychange, suppresses trailing ghost clicks, and short-circuits dead streams', () => {
+  it('aborts stuck pointers on window blur and hidden visibilitychange, suppresses ancestor ghost clicks without eating fast clicks elsewhere, and short-circuits dead streams', () => {
     vi.useFakeTimers();
     try {
-      const link = document.createElement('a');
-      link.href = '#target';
-      document.body.appendChild(link);
+      const outerLink = document.createElement('a');
+      outerLink.href = '#target';
+      const innerCard = document.createElement('div');
+      outerLink.appendChild(innerCard);
+      const otherBtn = document.createElement('button');
+      document.body.append(outerLink, otherBtn);
 
       const onPanCancel = vi.fn();
       const onPanEnd = vi.fn();
-      const clickSpy = vi.fn((e: MouseEvent) => e.preventDefault());
-      link.addEventListener('click', clickSpy);
+      const linkClickSpy = vi.fn((e: MouseEvent) => e.preventDefault());
+      const otherClickSpy = vi.fn();
+      outerLink.addEventListener('click', linkClickSpy);
+      otherBtn.addEventListener('click', otherClickSpy);
 
-      const gm = new GestureManager(link);
+      const gm = new GestureManager(innerCard);
       const tap = new TapRecognizer({});
       const pan = new PanRecognizer({onPanCancel, onPanEnd}, {slop: 5});
-      gm.register(tap).register(pan);
+      gm.register(tap, pan);
 
       // 1. `window` `blur` aborts active gesture stream cleanly:
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 10})
       );
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointermove', {pointerId: 1, clientX: 30, clientY: 10, timeStamp: 20})
       );
       window.dispatchEvent(new Event('blur'));
@@ -484,10 +774,10 @@ describe('GestureManager', () => {
 
       // 2. `document` `visibilitychange` cancels ONLY when `visibilityState === 'hidden'`:
       onPanCancel.mockClear();
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 10, clientY: 10, timeStamp: 30})
       );
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointermove', {pointerId: 2, clientX: 30, clientY: 10, timeStamp: 40})
       );
       Object.defineProperty(document, 'visibilityState', {value: 'visible', configurable: true});
@@ -499,72 +789,145 @@ describe('GestureManager', () => {
       expect(onPanCancel).toHaveBeenCalledTimes(1);
       Object.defineProperty(document, 'visibilityState', {value: 'visible', configurable: true});
 
-      // 3. Trailing pointer `click` (`detail: 1`) after `Pan` is suppressed, while keyboard `detail: 0` works:
-      link.dispatchEvent(
+      // 3. Trailing pointer `click` (`detail: 1`) after `Pan` is suppressed EVEN on ancestor `<a>`,
+      //    while keyboard `detail: 0` works:
+      innerCard.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 3, clientX: 10, clientY: 10, timeStamp: 100})
       );
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointermove', {pointerId: 3, clientX: 40, clientY: 10, timeStamp: 116})
       );
-      link.dispatchEvent(
+      innerCard.dispatchEvent(
         pointerEvent('pointerup', {pointerId: 3, clientX: 40, clientY: 10, timeStamp: 132})
       );
       expect(onPanEnd).toHaveBeenCalledTimes(1);
 
       // Keyboard activation (`detail === 0`) is NOT suppressed:
       const kbClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 0});
-      link.dispatchEvent(kbClick);
-      expect(clickSpy).toHaveBeenCalledTimes(1);
+      outerLink.dispatchEvent(kbClick);
+      expect(linkClickSpy).toHaveBeenCalledTimes(1);
 
-      // Browser's trailing pointer click (`detail === 1`) IS suppressed!
+      // Synthetic pointer click (`detail === 1`) dispatched on unrelated sibling `otherBtn` (without a preceding `pointerdown`) is NOT swallowed:
+      otherBtn.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1}));
+      expect(otherClickSpy).toHaveBeenCalledTimes(1);
+      otherClickSpy.mockClear();
+
+      // Browser's trailing pointer click dispatched on ancestor `outerLink` (`detail === 1`) IS suppressed!
       const ghostClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-      link.dispatchEvent(ghostClick);
+      outerLink.dispatchEvent(ghostClick);
       expect(ghostClick.defaultPrevented).toBe(true);
-      expect(clickSpy).toHaveBeenCalledTimes(1);
+      expect(linkClickSpy).toHaveBeenCalledTimes(1);
+
+      // Fast genuine click on `otherBtn` 50ms after a Pan (preceded by its own `pointerdown`) is NOT eaten!
+      innerCard.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 4, clientX: 10, clientY: 10, timeStamp: 150})
+      );
+      innerCard.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 4, clientX: 40, clientY: 10, timeStamp: 166})
+      );
+      innerCard.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 4, clientX: 40, clientY: 10, timeStamp: 180})
+      );
+      otherBtn.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 5, clientX: 200, clientY: 200, timeStamp: 210})
+      );
+      otherBtn.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 5, clientX: 200, clientY: 200, timeStamp: 225})
+      );
+      otherBtn.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1}));
+      expect(otherClickSpy).toHaveBeenCalledTimes(1);
 
       // Expired suppression window (`> 400ms`) allows normal clicks again:
-      link.dispatchEvent(
-        pointerEvent('pointerdown', {pointerId: 4, clientX: 10, clientY: 10, timeStamp: 200})
+      innerCard.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 6, clientX: 10, clientY: 10, timeStamp: 250})
       );
-      link.dispatchEvent(
-        pointerEvent('pointermove', {pointerId: 4, clientX: 40, clientY: 10, timeStamp: 216})
+      innerCard.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 6, clientX: 40, clientY: 10, timeStamp: 266})
       );
-      link.dispatchEvent(
-        pointerEvent('pointerup', {pointerId: 4, clientX: 40, clientY: 10, timeStamp: 232})
+      innerCard.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 6, clientX: 40, clientY: 10, timeStamp: 280})
       );
       vi.advanceTimersByTime(500);
       const laterClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-      link.dispatchEvent(laterClick);
-      expect(clickSpy).toHaveBeenCalledTimes(2);
+      outerLink.dispatchEvent(laterClick);
+      expect(linkClickSpy).toHaveBeenCalledTimes(2);
 
       // 4. 120Hz short-circuit on Tap-only surface: skips `getCoalescedEvents` AND dead-stream moves!
       gm.unregister(pan);
       const coalescedSpy = vi.fn(() => []);
-      link.dispatchEvent(
-        pointerEvent('pointerdown', {pointerId: 5, clientX: 0, clientY: 0, timeStamp: 300})
+      innerCard.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 7, clientX: 0, clientY: 0, timeStamp: 300})
       );
       const movePastSlop = pointerEvent('pointermove', {
-        pointerId: 5,
+        pointerId: 7,
         clientX: 25,
         clientY: 0,
         timeStamp: 316,
       });
       Object.defineProperty(movePastSlop, 'getCoalescedEvents', {value: coalescedSpy});
-      link.dispatchEvent(movePastSlop);
+      innerCard.dispatchEvent(movePastSlop);
       expect(coalescedSpy).not.toHaveBeenCalled();
 
-      // Subsequent move frame hits `!arena.hasLiveRecognizers` silent fast path:
       const moveSpy = vi.spyOn(tap, 'onMotionEvent');
-      link.dispatchEvent(
-        pointerEvent('pointermove', {pointerId: 5, clientX: 60, clientY: 0, timeStamp: 332})
+      innerCard.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 7, clientX: 60, clientY: 0, timeStamp: 332})
       );
       expect(moveSpy).not.toHaveBeenCalled();
-      link.dispatchEvent(
-        pointerEvent('pointerup', {pointerId: 5, clientX: 60, clientY: 0, timeStamp: 348})
+      innerCard.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 7, clientX: 60, clientY: 0, timeStamp: 348})
       );
 
       gm.destroy();
-      link.remove();
+      outerLink.remove();
+      otherBtn.remove();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('ignores foreign pointer types, unknown pointer ids, and normalizes empty pointerType mid-stream', () => {
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerType: '', pointerId: 1}));
+    expect(recognizer.events).toHaveLength(1);
+    expect(recognizer.events[0].pointerType).toBe('touch');
+
+    // A pen is not a supported type here; its document-level events never reach the stream:
+    document.dispatchEvent(pointerEvent('pointermove', {pointerType: 'pen', pointerId: 9}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'pen', pointerId: 9}));
+    document.dispatchEvent(pointerEvent('pointercancel', {pointerType: 'pen', pointerId: 9}));
+    // Release/cancel of a pointer that never joined the stream is a no-op:
+    document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 42}));
+    document.dispatchEvent(pointerEvent('pointercancel', {pointerType: 'touch', pointerId: 42}));
+    expect(recognizer.events).toHaveLength(1);
+    expect(recognizer.cancelled).toBe(false);
+
+    document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 1}));
+    expect(recognizer.events.at(-1)?.action).toBe(MotionAction.UP);
+  });
+
+  it('suppresses ghost clicks retargeted to a light-DOM ancestor of a shadow-DOM surface', () => {
+    vi.useFakeTimers();
+    try {
+      const outer = document.createElement('a');
+      const host = document.createElement('div');
+      outer.appendChild(host);
+      document.body.appendChild(outer);
+      const surface = document.createElement('div');
+      host.attachShadow({mode: 'open'}).appendChild(surface);
+
+      const gm = new GestureManager(surface, {
+        recognizers: [new PanRecognizer({}, {slop: 4})],
+      });
+      surface.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0, clientY: 0}));
+      surface.dispatchEvent(pointerEvent('pointermove', {pointerId: 3, clientX: 30, clientY: 0}));
+      surface.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 30, clientY: 0}));
+
+      // The click lands on the common ancestor `<a>` (outside the shadow root):
+      const ghost = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
+      outer.dispatchEvent(ghost);
+      expect(ghost.defaultPrevented).toBe(true);
+
+      gm.destroy();
+      outer.remove();
     } finally {
       vi.useRealTimers();
     }

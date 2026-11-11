@@ -16,6 +16,8 @@ export interface VelocityVector extends Point {
   readonly speed: number;
 }
 
+export const ZERO_VELOCITY: VelocityVector = Object.freeze({x: 0, y: 0, speed: 0});
+
 /**
  * Per-pointer circular buffer storing `(timeMs, x, y)` samples and estimating 2D
  * velocity via Android AOSP's default unweighted 2nd-order polynomial least-squares
@@ -61,7 +63,9 @@ class PointerVelocityBuffer {
       this.clear();
       return;
     }
-    if (dt > 0 && (x !== this.xs[this.head] || y !== this.ys[this.head])) {
+    // Only record liftoff coordinates when no `pointermove` arrived (`size < 2`);
+    // when move samples exist, ignore capacitive finger peel-off shifts (matching AOSP).
+    if (this.size < 2 && dt > 0 && (x !== this.xs[this.head] || y !== this.ys[this.head])) {
       this.add(timeMs, x, y, assumePointerStoppedMs);
     }
   }
@@ -235,10 +239,12 @@ export class VelocityTracker {
       }
 
       case MotionAction.POINTER_DOWN: {
-        const p = event.pointers[event.actionIndex];
-        if (p) {
-          this.clearPointer(p.pointerId);
-          this.addPoint(p.pointerId, event.eventTime, p.x, p.y);
+        for (let i = 0; i < event.pointers.length; i++) {
+          const p = event.pointers[i];
+          if (i === event.actionIndex || !this.pointers.has(p.pointerId)) {
+            this.clearPointer(p.pointerId);
+            this.addPoint(p.pointerId, event.eventTime, p.x, p.y);
+          }
         }
         break;
       }
@@ -293,20 +299,29 @@ export class VelocityTracker {
   }
 
   /**
-   * Feeds `event` into `addMovement(event)` and applies Android `GestureDetector`'s
-   * `POINTER_UP` opposing-vector cancellation so lifting one finger from a pinch
-   * clears residual velocity instead of misfiring a fling.
+   * Applies Android `GestureDetector`'s `POINTER_UP` opposing-vector cancellation
+   * after recognizers inspect `POINTER_UP` so lifting one finger from a pinch clears
+   * residual velocity without starving 2-pointer `onPanEnd` handlers.
+   */
+  finalizePointerUp(event: MotionEvent, maxFlingVelocity = Number.POSITIVE_INFINITY): void {
+    if (event.action !== MotionAction.POINTER_UP) {
+      return;
+    }
+    const upId = event.actionPointerId;
+    if (this.hasOpposingVelocity(upId, event.getActivePointers(), maxFlingVelocity)) {
+      this.clear();
+    } else {
+      this.clearPointer(upId);
+    }
+  }
+
+  /**
+   * Feeds `event` into `addMovement(event)` and immediately applies `POINTER_UP`
+   * opposing-vector pinch cancellation.
    */
   recordStreamEvent(event: MotionEvent, maxFlingVelocity = Number.POSITIVE_INFINITY): void {
     this.addMovement(event);
-    if (event.action === MotionAction.POINTER_UP) {
-      const upId = event.actionPointerId;
-      if (this.hasOpposingVelocity(upId, event.getActivePointers(), maxFlingVelocity)) {
-        this.clear();
-      } else {
-        this.clearPointer(upId);
-      }
-    }
+    this.finalizePointerUp(event, maxFlingVelocity);
   }
 
   /** Directly records a single `(x, y)` sample at `timeMs` for `pointerId`. */
@@ -364,7 +379,7 @@ export class VelocityTracker {
   getVelocity(pointerId?: number): VelocityVector {
     const x = this.getXVelocity(pointerId);
     const y = this.getYVelocity(pointerId);
-    return {x, y, speed: Math.hypot(x, y)};
+    return x === 0 && y === 0 ? ZERO_VELOCITY : {x, y, speed: Math.hypot(x, y)};
   }
 
   /**
@@ -394,8 +409,8 @@ export class VelocityTracker {
       }
     }
 
-    if (count === 0) {
-      return {x: 0, y: 0, speed: 0};
+    if (count === 0 || (sumX === 0 && sumY === 0)) {
+      return ZERO_VELOCITY;
     }
 
     const x = sumX / count;

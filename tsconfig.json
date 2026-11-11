@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "lib": ["DOM", "ES2020"],
+    "moduleResolution": "bundler",
+    "lib": ["DOM", "ES2022"],
     "sourceMap": true,
     "declaration": true,
     "declarationDir": "dist/types",
@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "emitDeclarationOnly": true,
+    "stripInternal": true,
     "isolatedModules": true,
     "skipLibCheck": true
   },

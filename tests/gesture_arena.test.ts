@@ -2,9 +2,9 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../src/gesture_arena';
 import {GestureRecognizer, RecognizerState} from '../src/gesture_recognizer';
 import {MotionAction, type MotionEvent, MotionEventStream} from '../src/motion_event';
-import {FlingRecognizer} from '../src/recognizers/fling_recognizer';
 import {LongPressRecognizer} from '../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../src/recognizers/pan_recognizer';
+import {QuickScaleRecognizer} from '../src/recognizers/quick_scale_recognizer';
 import {RotateRecognizer} from '../src/recognizers/rotate_recognizer';
 import {ScaleRecognizer} from '../src/recognizers/scale_recognizer';
 import {TapRecognizer} from '../src/recognizers/tap_recognizer';
@@ -124,7 +124,7 @@ describe('GestureArena conflict resolution', () => {
     expect(onSingleTap).not.toHaveBeenCalled();
   });
 
-  it('recognizes Quick-Scale even when Tap and Pan are registered BEFORE Scale', () => {
+  it('recognizes QuickScaleRecognizer even when Tap and Pan are registered BEFORE QuickScale', () => {
     const onSingleTapConfirmed = vi.fn();
     const onDoubleTap = vi.fn();
     const onPan = vi.fn();
@@ -134,16 +134,11 @@ describe('GestureArena conflict resolution', () => {
     const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
     const singleTap = new TapRecognizer({onTap: onSingleTapConfirmed}).requireFailureOf(doubleTap);
 
-    // Register Tap, DoubleTap, AND Pan ahead of Scale({quickScale: true}):
+    // Register Tap, DoubleTap, AND Pan ahead of QuickScaleRecognizer:
     arena.add(singleTap);
     arena.add(doubleTap);
     arena.add(new PanRecognizer({onPan}, {slop: 8}));
-    arena.add(
-      new ScaleRecognizer(
-        {onScale, onScaleEnd},
-        {quickScale: true, quickScaleSensitivity: 100, spanSlop: 16}
-      )
-    );
+    arena.add(new QuickScaleRecognizer({onScale, onScaleEnd}, {sensitivity: 100, slop: 8}));
 
     // Stroke 0: cancelled tap does NOT arm Quick-Scale:
     arena.dispatch(
@@ -177,9 +172,9 @@ describe('GestureArena conflict resolution', () => {
     );
     for (const [y, t] of [
       [104, 136],
-      [110, 152], // crosses touchSlop (8px) before spanSlop (16px)!
+      [110, 152],
       [158, 168],
-      [208, 184], // 100px past quickStartY (108) -> 2^1 = 2.0x scale!
+      [208, 184], // 100px past startY (108) -> 2^1 = 2.0x scale!
     ]) {
       arena.dispatch(
         stream.onPointerMove(
@@ -202,14 +197,22 @@ describe('GestureArena conflict resolution', () => {
     expect(onDoubleTap).not.toHaveBeenCalled();
   });
 
-  it('allows Scale and Rotate simultaneously while suppressing Fling after opposing pinch liftoff', () => {
+  it('allows Scale and Rotate simultaneously while suppressing Pan onFling after opposing pinch liftoff', () => {
     const onScale = vi.fn();
     const onRotate = vi.fn();
     const onFling = vi.fn();
 
-    arena.add(new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}));
-    arena.add(new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 10}));
-    arena.add(new FlingRecognizer({onFling}));
+    const scale = new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10});
+    const rotate = new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 10});
+    const pan = new PanRecognizer({onFling}, {numPointers: 0, slop: 2}).simultaneousWith(
+      scale,
+      rotate
+    );
+    scale.simultaneousWith(rotate);
+
+    arena.add(scale);
+    arena.add(rotate);
+    arena.add(pan);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -250,16 +253,26 @@ describe('GestureArena conflict resolution', () => {
     expect(onFling).not.toHaveBeenCalled();
   });
 
-  it('cancels active 1-finger Pan cleanly when a 2nd finger joins for Scale', () => {
+  it('cancels active 1-finger Pan cleanly when a 2nd finger joins for Scale, Rotate, or 2-finger Pan', () => {
     const onPanCancel = vi.fn();
+    const onTwoFingerPan = vi.fn();
     const onScale = vi.fn();
     const onRotate = vi.fn();
     const onTap = vi.fn();
 
+    const scale = new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10});
+    const rotate = new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 10});
+    const twoFingerPan = new PanRecognizer(
+      {onPan: onTwoFingerPan},
+      {numPointers: 2, slop: 4}
+    ).simultaneousWith(scale, rotate);
+    scale.simultaneousWith(rotate);
+
     arena.add(new PanRecognizer({onPanCancel}, {numPointers: 1, slop: 5}));
     arena.add(new TapRecognizer({onTap}, {slop: 50}));
-    arena.add(new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}));
-    arena.add(new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 10}));
+    arena.add(scale);
+    arena.add(rotate);
+    arena.add(twoFingerPan);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -286,7 +299,60 @@ describe('GestureArena conflict resolution', () => {
     );
     expect(onScale).toHaveBeenCalled();
     expect(onRotate).toHaveBeenCalled();
+    expect(onTwoFingerPan).toHaveBeenCalled();
     expect(onTap).not.toHaveBeenCalled();
+  });
+
+  it('cancels orphaned active winners and resets stale timers when ghost-pointer recovery dispatches a fresh DOWN', () => {
+    const onPanStart = vi.fn();
+    const onPanCancel = vi.fn();
+    const onLongPress = vi.fn();
+
+    arena.add(new PanRecognizer({onPanStart, onPanCancel}, {slop: 4}));
+    arena.add(new LongPressRecognizer({onLongPress}, {duration: 500, slop: 100}));
+
+    // Stream 1 starts panning, then `pointerup` is swallowed by an OS banner:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {
+          pointerId: 1,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: 0,
+          clientY: 0,
+          timeStamp: 0,
+        })
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 0, timeStamp: 16})
+      )!
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
+
+    // Stream 2 recovers as a fresh `DOWN` (`isPrimary: true`):
+    // Active `Pan` from Stream 1 MUST fire `onPanCancel`, and Stream 2 can pan again cleanly!
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {
+          pointerId: 2,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: 50,
+          clientY: 50,
+          timeStamp: 300,
+        })
+      )!
+    );
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 80, clientY: 50, timeStamp: 316})
+      )!
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(2);
   });
 
   it('handles recognizer removal, duplicate registration, competing pending claims, and defeated dependencies', () => {
@@ -377,12 +443,97 @@ describe('GestureArena conflict resolution', () => {
     expect(defeatedDepDynamic.state).toBe(RecognizerState.FAILED);
   });
 
+  describe('arena invariants with dynamic compatibility and re-entrant callbacks', () => {
+    class ScriptedRecognizer extends GestureRecognizer {
+      readonly type = 'scripted';
+      compatibleWithAll = false;
+      granted = false;
+      cancelled = false;
+      onCancelHook: (() => void) | null = null;
+
+      onMotionEvent(): void {}
+
+      override canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
+        return this.compatibleWithAll || super.canRecognizeSimultaneouslyWith(other);
+      }
+
+      begin(): boolean {
+        return this.tryBegin(() => {
+          this.granted = true;
+        });
+      }
+
+      recognize(): boolean {
+        return this.tryRecognizeDiscrete(() => {
+          this.granted = true;
+        });
+      }
+
+      failNow(): void {
+        this.fail();
+      }
+
+      protected override onCancel(): void {
+        this.cancelled = true;
+        this.onCancelHook?.();
+      }
+    }
+
+    const down = () =>
+      arena.dispatch(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+        )!
+      );
+
+    it('denies a pending claim when an existing winner has since become incompatible', () => {
+      const winner = new ScriptedRecognizer();
+      winner.compatibleWithAll = true;
+      const dep = new ScriptedRecognizer();
+      const pending = new ScriptedRecognizer().requireFailureOf(dep);
+      arena.add(winner);
+      arena.add(dep);
+      arena.add(pending);
+      down();
+
+      expect(winner.begin()).toBe(true);
+      expect(pending.recognize()).toBe(false);
+      expect(pending.state).toBe(RecognizerState.PENDING);
+
+      winner.compatibleWithAll = false;
+      dep.failNow();
+
+      expect(pending.granted).toBe(false);
+      expect(pending.state).toBe(RecognizerState.FAILED);
+    });
+
+    it('does not grant a winner that a defeated competitor detaches from its cancel callback', () => {
+      const claimer = new ScriptedRecognizer();
+      const victim = new ScriptedRecognizer();
+      claimer.simultaneousWith(victim);
+      victim.onCancelHook = () => arena.remove(claimer);
+      arena.add(victim);
+      arena.add(claimer);
+      down();
+
+      expect(victim.begin()).toBe(true);
+      victim.requireFailureOf(claimer);
+
+      expect(claimer.begin()).toBe(false);
+      expect(victim.cancelled).toBe(true);
+      expect(claimer.granted).toBe(false);
+      expect(arena.getRecognizers()).not.toContain(claimer);
+    });
+  });
+
   it('supports standalone GestureRecognizer usage without GestureArena and validates base guards', () => {
     const onPan = vi.fn();
     const onFling = vi.fn();
     const onTap = vi.fn();
-    const standalonePan = new PanRecognizer({onPan}, {numPointers: 0, slop: 2});
-    const standaloneFling = new FlingRecognizer({onFling}, {minVelocity: 200, minDistance: 20});
+    const standalonePan = new PanRecognizer(
+      {onPan, onFling},
+      {numPointers: 0, slop: 2, minFlingVelocity: 200, minFlingDistance: 20}
+    );
     const standaloneTap = new TapRecognizer({onTap});
 
     const d1 = stream.onPointerDown(
@@ -399,13 +550,8 @@ describe('GestureArena conflict resolution', () => {
       standalonePan.onMotionEvent(ev);
     }
     expect(onPan).toHaveBeenCalled();
-    expect(onPan.mock.calls[0][0].velocityX).toBe(0); // No arena VelocityTracker attached
-
-    // Standalone Fling without arena fails safely without throwing when `velocityTracker` is null:
-    standaloneFling.onMotionEvent(d1);
-    standaloneFling.onMotionEvent(m1);
-    standaloneFling.onMotionEvent(up1);
-    expect(onFling).not.toHaveBeenCalled();
+    expect(onPan.mock.calls[0][0].velocityX).toBeGreaterThan(1000);
+    expect(onFling).toHaveBeenCalledTimes(1);
 
     stream.reset();
     const td = stream.onPointerDown(
@@ -423,7 +569,7 @@ describe('GestureArena conflict resolution', () => {
       readonly type = 'probe';
       exerciseGuards(): void {
         expect(this.getTouchAction()).toBe('none');
-        expect(this.usesVelocity).toBe(true);
+        expect(this.usesVelocity).toBe(false);
         expect(this.suppressesClick).toBe(true);
         this.emitChange(() => {});
         this.completeActive(() => {});
@@ -462,8 +608,7 @@ describe('GestureArena conflict resolution', () => {
       {rotationSlop: 2, minSpan: 10}
     );
     pan.simultaneousWith(scale, rotate);
-    scale.simultaneousWith(pan);
-    rotate.simultaneousWith(pan);
+    scale.simultaneousWith(rotate);
 
     arena.add(pan);
     arena.add(scale);
@@ -504,5 +649,100 @@ describe('GestureArena conflict resolution', () => {
     expect(onRotateStart).toHaveBeenCalledTimes(1);
     expect(onRotate).toHaveBeenCalled();
     expect(onRotateEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('composes singleTap.requireFailureOf(doubleTap, quickScale) and handles re-entrant unregister/destroy safely', () => {
+    const onSingle = vi.fn();
+    const onDouble = vi.fn();
+    const onQuickScale = vi.fn();
+
+    const doubleTap = new TapRecognizer({onTap: onDouble}, {taps: 2});
+    const quickScale = new QuickScaleRecognizer({onScale: onQuickScale}, {slop: 6});
+    const singleTap = new TapRecognizer({onTap: onSingle}).requireFailureOf(doubleTap, quickScale);
+
+    arena.add(singleTap);
+    arena.add(doubleTap);
+    arena.add(quickScale);
+
+    // 1. Single tap waits for both `doubleTap` AND `quickScale` to time out, then fires once:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 40})
+      )!
+    );
+    expect(onSingle).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(310);
+    expect(onSingle).toHaveBeenCalledTimes(1);
+    expect(onDouble).not.toHaveBeenCalled();
+    expect(onQuickScale).not.toHaveBeenCalled();
+
+    // 2. Double-tap-and-drag activates `quickScale` and suppresses `singleTap` AND `doubleTap`:
+    onSingle.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 500})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 530})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 610})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 50, clientY: 120, timeStamp: 630})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 120, timeStamp: 650})
+      )!
+    );
+    vi.advanceTimersByTime(350);
+    expect(onQuickScale).toHaveBeenCalledTimes(1);
+    expect(onSingle).not.toHaveBeenCalled();
+    expect(onDouble).not.toHaveBeenCalled();
+
+    // 3. Re-entrant `arena.remove()` inside a winner's callback settles competitors first and never skips peers:
+    const reentrantArena = new GestureArena();
+    const peerTapSpy = vi.fn();
+    let competitorStateInCallback = '';
+    const competitor = new LongPressRecognizer({onLongPress: vi.fn()}, {duration: 500});
+    const selfRemovingTap = new TapRecognizer({
+      onTap: () => {
+        competitorStateInCallback = competitor.state;
+        reentrantArena.remove(selfRemovingTap);
+      },
+    });
+    const siblingTap = new TapRecognizer({onTap: peerTapSpy});
+    selfRemovingTap.simultaneousWith(siblingTap);
+
+    reentrantArena.add(competitor);
+    reentrantArena.add(selfRemovingTap);
+    reentrantArena.add(siblingTap);
+
+    reentrantArena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 1200})
+      )!
+    );
+    reentrantArena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 1230})
+      )!
+    );
+    expect(competitorStateInCallback).toBe(RecognizerState.FAILED);
+    expect(peerTapSpy).toHaveBeenCalledTimes(1);
+    reentrantArena.destroy();
   });
 });

@@ -99,30 +99,10 @@ export function mergeTouchActions(actions: readonly TouchActionValue[]): TouchAc
   return resolveSupportedTouchAction(maskToTouchAction(mask));
 }
 
-function kebabToCamel(property: string): string {
-  return property.replace(/^-/, '').replace(/-([a-z])/g, (_, ch: string) => ch.toUpperCase());
-}
-
-function applyStyleRule(element: HTMLElement, property: string, value: string): () => void {
-  const camel = kebabToCamel(property);
-  const styleRecord = element.style as unknown as Record<string, string>;
-  const previousCss = element.style.getPropertyValue(property);
-  const previousCamel = styleRecord[camel] || '';
-
-  element.style.setProperty(property, value);
-  if (element.style.getPropertyValue(property) !== value) {
-    styleRecord[camel] = value;
-  }
-
-  return () => {
-    if (previousCss) {
-      element.style.setProperty(property, previousCss);
-    } else {
-      element.style.removeProperty(property);
-      styleRecord[camel] = previousCamel;
-    }
-  };
-}
+type WebkitStyle = CSSStyleDeclaration & {
+  webkitUserSelect?: string;
+  webkitTouchCallout?: string;
+};
 
 /**
  * Applies computed CSS `touch-action` and (when non-tap gestures are present)
@@ -134,25 +114,34 @@ export function applySurfaceBehavior(
   touchAction: TouchActionValue,
   preventSelectionAndDrag: boolean
 ): () => void {
-  const cleanups: Array<() => void> = [
-    applyStyleRule(element, 'touch-action', resolveSupportedTouchAction(touchAction)),
-  ];
+  const style = element.style as WebkitStyle;
+  const prevTouchAction = style.touchAction ?? '';
+  style.touchAction = resolveSupportedTouchAction(touchAction);
 
-  if (preventSelectionAndDrag) {
-    cleanups.push(applyStyleRule(element, '-webkit-user-select', 'none'));
-    cleanups.push(applyStyleRule(element, 'user-select', 'none'));
-    cleanups.push(applyStyleRule(element, '-webkit-touch-callout', 'none'));
-
-    const onDragStart = (e: Event) => {
-      e.preventDefault();
+  if (!preventSelectionAndDrag) {
+    return () => {
+      style.touchAction = prevTouchAction;
     };
-    element.addEventListener('dragstart', onDragStart);
-    cleanups.push(() => element.removeEventListener('dragstart', onDragStart));
   }
 
+  const prevWebkitUserSelect = style.webkitUserSelect ?? '';
+  const prevUserSelect = style.userSelect ?? '';
+  const prevTouchCallout = style.webkitTouchCallout ?? '';
+
+  style.webkitUserSelect = 'none';
+  style.userSelect = 'none';
+  style.webkitTouchCallout = 'none';
+
+  const onDragStart = (e: Event) => {
+    e.preventDefault();
+  };
+  element.addEventListener('dragstart', onDragStart);
+
   return () => {
-    for (let i = cleanups.length - 1; i >= 0; i--) {
-      cleanups[i]();
-    }
+    element.removeEventListener('dragstart', onDragStart);
+    style.webkitTouchCallout = prevTouchCallout;
+    style.userSelect = prevUserSelect;
+    style.webkitUserSelect = prevWebkitUserSelect;
+    style.touchAction = prevTouchAction;
   };
 }

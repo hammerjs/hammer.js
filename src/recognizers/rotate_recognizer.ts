@@ -1,15 +1,12 @@
 import {MotionAction, type MotionEvent} from '../motion_event';
 import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
 import type {TouchActionValue} from '../touch_behavior';
-import {ScaleRecognizer} from './scale_recognizer';
 
 export interface RotateOptions {
   /** Angular change in degrees required before rotation begins. */
   rotationSlop: number;
   /** Minimum pointer span in pixels required to evaluate angle reliably. */
   minSpan: number;
-  /** Recognize simultaneously with `ScaleRecognizer` by default. Default: `true`. */
-  simultaneousWithScale: boolean;
 }
 
 export interface RotateEventData extends GestureEventData {
@@ -57,12 +54,9 @@ export class RotateRecognizer extends GestureRecognizer {
     return 'pan-x pan-y';
   }
 
-  override get usesVelocity(): boolean {
-    return false;
-  }
-
-  get simultaneousWithScale(): boolean {
-    return this.userOptions.simultaneousWithScale ?? true;
+  /** @internal */
+  override get acceptsMultiTouch(): boolean {
+    return true;
   }
 
   private get rotationSlop(): number {
@@ -73,16 +67,8 @@ export class RotateRecognizer extends GestureRecognizer {
     return this.userOptions.minSpan ?? this.config.minScalingSpan;
   }
 
-  override canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
-    if (other instanceof ScaleRecognizer) {
-      if (this.simultaneousWithScale && other.simultaneousWithRotate) {
-        return true;
-      }
-    }
-    return super.canRecognizeSimultaneouslyWith(other);
-  }
-
-  protected override canRearmOnPointerDown(event: MotionEvent): boolean {
+  /** @internal */
+  override canRearmOnPointerDown(event: MotionEvent): boolean {
     return event.activePointerCount >= 2;
   }
 
@@ -96,12 +82,24 @@ export class RotateRecognizer extends GestureRecognizer {
       }
 
       case MotionAction.POINTER_DOWN: {
+        if (!this.active) {
+          this.rawPreSlopRotation = 0;
+        }
         this.anchorPointerPair(event);
         break;
       }
 
       case MotionAction.MOVE: {
-        if (event.activePointerCount < 2 || event.getSpan() < this.minSpan) {
+        if (event.activePointerCount < 2) {
+          return;
+        }
+        if (event.getSpan() < this.minSpan) {
+          // Keep re-anchoring while pointers are closer than `minSpan` so pinching outward
+          // later starts cleanly at 0 deg instead of snapping to close-proximity angle noise.
+          this.anchorPointerPair(event);
+          if (!this.active) {
+            this.rawPreSlopRotation = 0;
+          }
           return;
         }
 
@@ -130,27 +128,21 @@ export class RotateRecognizer extends GestureRecognizer {
           this.totalRotation = 0;
 
           const started = this.tryBegin(() => {
-            if (this.callbacks.onRotateStart) {
-              this.callbacks.onRotateStart(this.buildEventData(event, 0));
-            }
+            this.callbacks.onRotateStart?.(this.buildEventData(event, 0));
           });
 
-          if (started && postSlopDeg !== 0) {
+          if (started) {
             this.totalRotation = postSlopDeg;
-            if (this.callbacks.onRotate) {
-              this.emitChange(() => {
-                this.callbacks.onRotate?.(this.buildEventData(event, postSlopDeg));
-              });
-            }
+            this.emitChange(() => {
+              this.callbacks.onRotate?.(this.buildEventData(event, postSlopDeg));
+            });
           }
           return;
         }
 
         this.totalRotation += stepDeg;
         this.emitChange(() => {
-          if (this.callbacks.onRotate) {
-            this.callbacks.onRotate(this.buildEventData(event, stepDeg));
-          }
+          this.callbacks.onRotate?.(this.buildEventData(event, stepDeg));
         });
         break;
       }
@@ -158,28 +150,24 @@ export class RotateRecognizer extends GestureRecognizer {
       case MotionAction.POINTER_UP: {
         if (event.activePointerCount < 2) {
           if (this.active) {
-            const endPayload = this.buildEventData(event, 0);
             this.completeActive(() => {
-              this.callbacks.onRotateEnd?.(endPayload);
+              this.callbacks.onRotateEnd?.(this.buildEventData(event, 0));
             });
           } else {
             this.fail();
           }
           return;
         }
+        if (!this.active) {
+          this.rawPreSlopRotation = 0;
+        }
         this.anchorPointerPair(event);
         break;
       }
 
       case MotionAction.UP: {
-        if (this.active) {
-          const endPayload = this.buildEventData(event, 0);
-          this.completeActive(() => {
-            this.callbacks.onRotateEnd?.(endPayload);
-          });
-        } else {
-          this.fail();
-        }
+        // An active rotation always ends on the preceding `POINTER_UP` (fewer than 2 pointers).
+        this.fail();
         break;
       }
 

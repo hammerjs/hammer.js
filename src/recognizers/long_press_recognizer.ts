@@ -1,5 +1,5 @@
 import {MotionAction, type MotionEvent, type Point} from '../motion_event';
-import {type GestureEventData, GestureRecognizer, RecognizerState} from '../gesture_recognizer';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
 import type {TouchActionValue} from '../touch_behavior';
 
 export interface LongPressOptions {
@@ -47,8 +47,14 @@ export class LongPressRecognizer extends GestureRecognizer {
     return 'manipulation';
   }
 
-  override get usesVelocity(): boolean {
-    return false;
+  /** @internal */
+  override get acceptsMultiTouch(): boolean {
+    return this.numPointers >= 2;
+  }
+
+  /** @internal */
+  override canRearmOnPointerDown(event: MotionEvent): boolean {
+    return this.numPointers >= 2 && event.activePointerCount >= this.numPointers;
   }
 
   private get numPointers(): number {
@@ -69,8 +75,8 @@ export class LongPressRecognizer extends GestureRecognizer {
     switch (event.action) {
       case MotionAction.DOWN: {
         this.downPositions.clear();
-        const p = event.pointers[0];
-        if (p) {
+        for (let i = 0; i < event.pointers.length; i++) {
+          const p = event.pointers[i];
           this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         }
         if (event.activePointerCount > this.numPointers) {
@@ -84,10 +90,9 @@ export class LongPressRecognizer extends GestureRecognizer {
       }
 
       case MotionAction.POINTER_DOWN: {
+        // An active long press already holds exactly `numPointers`; any extra finger ends it.
         if (this.active) {
-          if (event.activePointerCount !== this.numPointers) {
-            this.cancel(false);
-          }
+          this.cancel();
           return;
         }
         if (event.activePointerCount > this.numPointers) {
@@ -95,9 +100,7 @@ export class LongPressRecognizer extends GestureRecognizer {
           return;
         }
         const p = event.pointers[event.actionIndex];
-        if (p) {
-          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
-        }
+        this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         if (event.activePointerCount === this.numPointers) {
           this.armLongPress(event);
         }
@@ -106,16 +109,13 @@ export class LongPressRecognizer extends GestureRecognizer {
 
       case MotionAction.MOVE: {
         if (this.active) {
-          if (this.callbacks.onLongPressMove) {
-            this.emitChange(() => {
-              this.callbacks.onLongPressMove?.(this.buildEventData(event));
-            });
-          }
+          this.emitChange(() => {
+            this.callbacks.onLongPressMove?.(this.buildEventData(event));
+          });
           return;
         }
 
         const moved = event.pointers[event.actionIndex];
-        if (!moved) break;
         const start = this.downPositions.get(moved.pointerId);
         if (start && Math.hypot(moved.x - start.x, moved.y - start.y) > this.slop) {
           this.fail();
@@ -123,19 +123,8 @@ export class LongPressRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.POINTER_UP: {
-        if (this.active) {
-          if (event.activePointerCount < this.numPointers) {
-            this.completeActive(() => {
-              this.callbacks.onLongPressUp?.(this.buildEventData(event));
-            });
-          }
-        } else {
-          this.fail();
-        }
-        break;
-      }
-
+      // Lifting any finger ends the press (an active press holds exactly `numPointers`).
+      case MotionAction.POINTER_UP:
       case MotionAction.UP: {
         if (this.active) {
           this.completeActive(() => {
@@ -167,10 +156,7 @@ export class LongPressRecognizer extends GestureRecognizer {
   private armLongPress(armEvent: MotionEvent): void {
     this.anchorFocus = armEvent.focus;
     this.setTimer(LONG_PRESS_TIMER, this.duration, () => {
-      const triggerEvent = this.lastEvent;
-      if (this.state !== RecognizerState.POSSIBLE || !triggerEvent) {
-        return;
-      }
+      const triggerEvent = this.lastEvent ?? armEvent;
       this.tryBegin(() => {
         this.anchorFocus = triggerEvent.focus;
         this.callbacks.onLongPress(this.buildEventData(triggerEvent));

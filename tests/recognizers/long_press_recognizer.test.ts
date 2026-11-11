@@ -2,6 +2,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
 import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_event';
 import {LongPressRecognizer} from '../../src/recognizers/long_press_recognizer';
+import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
 
 describe('LongPressRecognizer', () => {
@@ -215,5 +216,26 @@ describe('LongPressRecognizer', () => {
         originalEvent: pointerEvent('pointerdown'),
       })
     );
+  });
+
+  it('re-arms a 2-finger long press when a 1-finger Pan yields to a second finger', () => {
+    const onPanCancel = vi.fn();
+    const onLongPress = vi.fn();
+    arena.add(new PanRecognizer({onPanCancel}, {slop: 4}));
+    arena.add(new LongPressRecognizer({onLongPress}, {numPointers: 2, duration: 500}));
+
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
+    );
+    arena.dispatch(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 1, clientX: 20, timeStamp: 16}))!
+    );
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 80, timeStamp: 32}))!
+    );
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(500);
+    expect(onLongPress).toHaveBeenCalledTimes(1);
   });
 });

@@ -75,10 +75,12 @@ describe('VelocityTracker', () => {
       expect(tracker.getYVelocity(1)).toBe(0);
     });
 
-    it('preserves full release velocity when stationary pointerup arrives within a frame of last move, and records displaced pointerup', () => {
+    it('ignores capacitive finger peel-off shifts on pointerup when move samples exist, while recording single-frame flicks', () => {
       const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
 
+      // Steady +2500 px/s rightward drag (0 -> 20 -> 40 -> 60 at 8ms intervals),
+      // followed by a capacitive peel-off shift backward to x=45 at t=26ms (2ms later):
       tracker.addMovement(
         stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
       );
@@ -98,13 +100,13 @@ describe('VelocityTracker', () => {
         )!
       );
       tracker.addMovement(
-        stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 60, timeStamp: 28}))!
+        stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 45, timeStamp: 26}))!
       );
 
       tracker.computeCurrentVelocity(1000);
       expect(tracker.getXVelocity(1)).toBeCloseTo(2500, 1);
 
-      // Displaced pointerup without an intermediate move records liftoff sample:
+      // Displaced pointerup WITHOUT intermediate move (`size < 2`) still records liftoff sample:
       stream.reset();
       tracker.addMovement(
         stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, timeStamp: 0}))!

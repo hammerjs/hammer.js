@@ -236,32 +236,143 @@ describe('TapRecognizer', () => {
     arenaWithTimeouts.destroy();
   });
 
-  it('supports multi-pointer taps (numPointers: 2)', () => {
-    const onTap = vi.fn();
-    arena.add(new TapRecognizer({onTap}, {numPointers: 2}));
+  it('reports the multi-finger midpoint as center for 2-finger single and double taps', () => {
+    const onTwoFingerSingle = vi.fn();
+    const onTwoFingerDouble = vi.fn();
+    const twoFingerDouble = new TapRecognizer(
+      {onTap: onTwoFingerDouble},
+      {numPointers: 2, taps: 2, multiTapSlop: 30}
+    );
+    const twoFingerSingle = new TapRecognizer(
+      {onTap: onTwoFingerSingle},
+      {numPointers: 2}
+    ).requireFailureOf(twoFingerDouble);
+    arena.add(twoFingerSingle);
+    arena.add(twoFingerDouble);
 
+    // 1. 2-finger single tap with fingers 200px apart at (0, 50) and (200, 50) -> center is (100, 50)!
     arena.dispatch(
       stream.onPointerDown(
-        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 50, timeStamp: 0})
       )!
     );
     arena.dispatch(
       stream.onPointerDown(
-        pointerEvent('pointerdown', {pointerId: 2, clientX: 40, clientY: 0, timeStamp: 10})
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 200, clientY: 50, timeStamp: 10})
       )!
     );
     arena.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 50})
+        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 50, timeStamp: 40})
       )!
     );
     arena.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 2, clientX: 40, clientY: 0, timeStamp: 60})
+        pointerEvent('pointerup', {pointerId: 2, clientX: 200, clientY: 50, timeStamp: 45})
+      )!
+    );
+    vi.advanceTimersByTime(350);
+    expect(onTwoFingerSingle).toHaveBeenCalledTimes(1);
+    expect(onTwoFingerSingle.mock.calls[0][0].center).toEqual({x: 100, y: 50});
+
+    // 2. 2-finger double tap with fingers 200px apart (> multiTapSlop=30, but centroid shifts only 2px!):
+    onTwoFingerSingle.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 50, timeStamp: 500})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 200, clientY: 50, timeStamp: 505})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 50, timeStamp: 530})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 200, clientY: 50, timeStamp: 535})
       )!
     );
 
-    expect(onTap).toHaveBeenCalledTimes(1);
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 3, clientX: 2, clientY: 50, timeStamp: 620})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 4, clientX: 202, clientY: 50, timeStamp: 625})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 4, clientX: 204, clientY: 50, timeStamp: 635})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 3, clientX: 2, clientY: 50, timeStamp: 650})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 4, clientX: 204, clientY: 50, timeStamp: 655})
+      )!
+    );
+    vi.advanceTimersByTime(350);
+
+    expect(onTwoFingerDouble).toHaveBeenCalledTimes(1);
+    expect(onTwoFingerDouble.mock.calls[0][0].center).toEqual({x: 103, y: 50});
+    expect(onTwoFingerSingle).not.toHaveBeenCalled();
+
+    // 3. Distant 2nd 2-finger tap (> multiTapSlop) rejects double-tap once 2nd finger lands:
+    onTwoFingerDouble.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 5, clientX: 0, clientY: 50, timeStamp: 1100})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 6, clientX: 200, clientY: 50, timeStamp: 1105})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 5, clientX: 0, clientY: 50, timeStamp: 1130})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 6, clientX: 200, clientY: 50, timeStamp: 1135})
+      )!
+    );
+
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 7, clientX: 200, clientY: 300, timeStamp: 1200})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 8, clientX: 400, clientY: 300, timeStamp: 1205})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 7, clientX: 200, clientY: 300, timeStamp: 1230})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 8, clientX: 400, clientY: 300, timeStamp: 1235})
+      )!
+    );
+    expect(onTwoFingerDouble).not.toHaveBeenCalled();
   });
 
   it('rejects excess pointers, displaced liftoff, and distant follow-up taps', () => {
@@ -368,5 +479,123 @@ describe('TapRecognizer', () => {
         originalEvent: pointerEvent('pointerdown'),
       })
     );
+
+    // Hybrid modality mismatch (`mouse` Tap 1 -> `touch` Tap 2) and mid-stroke lift-and-repress both fail:
+    onDouble.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {
+          pointerId: 1,
+          pointerType: 'mouse',
+          clientX: 10,
+          clientY: 10,
+          timeStamp: 2000,
+        })
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {
+          pointerId: 1,
+          pointerType: 'mouse',
+          clientX: 10,
+          clientY: 10,
+          timeStamp: 2020,
+        })
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {
+          pointerId: 2,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: 10,
+          clientY: 10,
+          timeStamp: 2100,
+        })
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {
+          pointerId: 2,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: 10,
+          clientY: 10,
+          timeStamp: 2120,
+        })
+      )!
+    );
+    expect(onDouble).not.toHaveBeenCalled();
+
+    // 2-finger tap where Finger 2 lifts and presses down AGAIN before Finger 1 lifts (`totalPointersInStroke === 3 !== 2`) fails:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 3000})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 2, clientY: 0, timeStamp: 3005})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 2, clientY: 0, timeStamp: 3015})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 3, clientX: 2, clientY: 0, timeStamp: 3025})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 3, clientX: 2, clientY: 0, timeStamp: 3035})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 3040})
+      )!
+    );
+    expect(onDouble).not.toHaveBeenCalled();
+  });
+
+  it('requires all numPointers fingers to be down simultaneously for a multi-finger tap', () => {
+    const onTap = vi.fn();
+    arena.add(new TapRecognizer({onTap}, {numPointers: 3}));
+    const down = (id: number, t: number) =>
+      arena.dispatch(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: id, clientX: id * 20, timeStamp: t})
+        )!
+      );
+    const up = (id: number, t: number) =>
+      arena.dispatch(
+        stream.onPointerUp(
+          pointerEvent('pointerup', {pointerId: id, clientX: id * 20, timeStamp: t})
+        )!
+      );
+
+    // Three fingers touch in total, but never more than two at once:
+    down(1, 0);
+    down(2, 10);
+    up(2, 20);
+    down(3, 30);
+    up(3, 40);
+    up(1, 50);
+    expect(onTap).not.toHaveBeenCalled();
+
+    // A genuine 3-finger tap:
+    down(1, 400);
+    down(2, 405);
+    down(3, 410);
+    up(3, 450);
+    up(2, 455);
+    up(1, 460);
+    expect(onTap).toHaveBeenCalledTimes(1);
   });
 });

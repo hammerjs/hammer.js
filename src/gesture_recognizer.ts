@@ -1,6 +1,5 @@
 import type {MotionEvent, Point} from './motion_event';
 import type {TouchActionValue} from './touch_behavior';
-import type {VelocityTracker} from './velocity_tracker';
 import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration';
 
 export const RecognizerState = {
@@ -27,13 +26,13 @@ export interface GestureEventData {
   readonly center: Point;
   /** Underlying normalized multi-pointer `MotionEvent`. */
   readonly motionEvent: MotionEvent;
-  /** Raw browser `PointerEvent` that triggered this update. */
-  readonly originalEvent: PointerEvent;
+  /** DOM event that triggered this update (a `PointerEvent` for every pointer-driven update). */
+  readonly originalEvent: Event;
 }
 
+/** @internal */
 export interface ArenaContext {
   readonly config: ViewConfiguration;
-  readonly velocityTracker: VelocityTracker;
   requestClaim(
     recognizer: GestureRecognizer,
     targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
@@ -51,12 +50,13 @@ export interface ArenaContext {
  * **Template Method** patterns in coordination with `GestureArena`.
  */
 export abstract class GestureRecognizer {
+  /** Human-readable label for logging and debugging (never used for arbitration). */
   abstract readonly type: string;
 
   /** @internal */
-  _lastDispatchToken = 0;
+  lastDispatchToken = 0;
   /** @internal */
-  _deniedByArena = false;
+  deniedByArena = false;
 
   private currentState: RecognizerStateType = RecognizerState.POSSIBLE;
   private arena: ArenaContext | null = null;
@@ -106,14 +106,14 @@ export abstract class GestureRecognizer {
     return 'none';
   }
 
-  /** Whether this recognizer consumes pointer velocity (`VelocityTracker`). */
+  /** Whether this recognizer consumes high-frequency pointer history / velocity. */
   get usesVelocity(): boolean {
-    return true;
+    return false;
   }
 
   /**
    * Whether winning this gesture should suppress trailing synthetic DOM `click`s
-   * on pointer release (true for `Pan`, `Fling`, `LongPress`, `Scale`, `Rotate`; false for `Tap`).
+   * on pointer release (true for `Pan`, `LongPress`, `Scale`, `QuickScale`, `Rotate`; false for `Tap`).
    */
   get suppressesClick(): boolean {
     return true;
@@ -131,27 +131,27 @@ export abstract class GestureRecognizer {
   reset(): void {
     this.clearAllTimers();
     this.currentState = RecognizerState.POSSIBLE;
-    this._deniedByArena = false;
+    this.deniedByArena = false;
     this.onReset();
   }
 
   /** @internal */
-  get _requiredFailures(): ReadonlySet<GestureRecognizer> {
+  get requiredFailures(): ReadonlySet<GestureRecognizer> {
     return this.failureDependencies;
   }
 
   /** @internal */
-  get _isPrioritized(): boolean {
-    return this.isPrioritized;
+  get isPrioritized(): boolean {
+    return false;
   }
 
   /** @internal */
-  get _locksTouchMove(): boolean {
-    return this.locksTouchMove;
+  get acceptsMultiTouch(): boolean {
+    return false;
   }
 
   /** @internal */
-  _attach(arena: ArenaContext | null): void {
+  attach(arena: ArenaContext | null): void {
     if (this.arena && !arena) {
       this.reset();
     }
@@ -159,27 +159,25 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
-  _observeStreamEvent(event: MotionEvent): void {
-    this.observeStreamEvent(event);
+  isAttachedTo(arena: ArenaContext): boolean {
+    return this.arena === arena;
   }
 
   /** @internal */
-  _prepareForDown(event: MotionEvent): void {
-    this.prepareForDown(event);
+  prepareForDown(_event: MotionEvent): void {}
+
+  /** @internal */
+  shouldResetOnDown(_event: MotionEvent): boolean {
+    return this.currentState !== RecognizerState.PENDING;
   }
 
   /** @internal */
-  _shouldResetOnDown(event: MotionEvent): boolean {
-    return this.shouldResetOnDown(event);
+  canRearmOnPointerDown(_event: MotionEvent): boolean {
+    return false;
   }
 
   /** @internal */
-  _canRearmOnPointerDown(event: MotionEvent): boolean {
-    return this.canRearmOnPointerDown(event);
-  }
-
-  /** @internal */
-  _denyByArena(): void {
+  denyByArena(): void {
     if (
       this.currentState === RecognizerState.POSSIBLE ||
       this.currentState === RecognizerState.PENDING
@@ -191,49 +189,20 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
-  _markPending(): void {
+  markPending(): void {
     this.currentState = RecognizerState.PENDING;
   }
 
   /** @internal */
-  _acceptClaim(
-    targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
-    onGranted: () => void
-  ): void {
+  setClaimState(targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED): void {
+    if (targetState === RecognizerState.ENDED) {
+      this.clearAllTimers();
+    }
     this.currentState = targetState;
-    onGranted();
   }
 
   protected get config(): ViewConfiguration {
     return this.arena?.config ?? DEFAULT_VIEW_CONFIGURATION;
-  }
-
-  protected get velocityTracker(): VelocityTracker | null {
-    return this.arena?.velocityTracker ?? null;
-  }
-
-  protected get isPrioritized(): boolean {
-    return false;
-  }
-
-  protected get locksTouchMove(): boolean {
-    return this.isPrioritized;
-  }
-
-  protected observeStreamEvent(_event: MotionEvent): void {}
-
-  protected prepareForDown(_event: MotionEvent): void {}
-
-  protected shouldResetOnDown(_event: MotionEvent): boolean {
-    return (
-      this.currentState === RecognizerState.ENDED ||
-      this.currentState === RecognizerState.FAILED ||
-      this.currentState === RecognizerState.CANCELLED
-    );
-  }
-
-  protected canRearmOnPointerDown(_event: MotionEvent): boolean {
-    return false;
   }
 
   protected onReset(): void {}
@@ -285,10 +254,7 @@ export abstract class GestureRecognizer {
       onRecognized();
       return true;
     }
-    return this.arena.requestClaim(this, RecognizerState.ENDED, () => {
-      this.clearAllTimers();
-      onRecognized();
-    });
+    return this.arena.requestClaim(this, RecognizerState.ENDED, onRecognized);
   }
 
   protected fail(): void {
@@ -352,7 +318,7 @@ export abstract class GestureRecognizer {
     ) {
       return;
     }
-    this._deniedByArena = byArena;
+    this.deniedByArena = byArena;
     this.clearAllTimers();
     this.currentState = RecognizerState.FAILED;
     this.onFail();
