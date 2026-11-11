@@ -446,5 +446,13 @@ describe('MotionEvent & MotionEventStream', () => {
     const zeroBlur = new Event('blur');
     Object.defineProperty(zeroBlur, 'timeStamp', {value: 0});
     expect(stream.cancelAll(zeroBlur)!.action).toBe(MotionAction.CANCEL);
+
+    // Orphaned stylus (`pen`) pointer recovers cleanly on next pen press:
+    stream.onPointerDown(pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 11}));
+    const freshPen = stream.onPointerDown(
+      pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 12})
+    )!;
+    expect(freshPen.action).toBe(MotionAction.DOWN);
+    expect(freshPen.pointerCount).toBe(1);
   });
 });

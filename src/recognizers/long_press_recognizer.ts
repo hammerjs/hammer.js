@@ -1,6 +1,6 @@
-import {MotionAction, type MotionEvent, type Point} from '../motion_event';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
+import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
 
 export interface LongPressOptions {
   /** Number of simultaneous pointers required. Default: `1`. */
@@ -30,17 +30,22 @@ const LONG_PRESS_TIMER = 'longPress';
 export class LongPressRecognizer extends GestureRecognizer {
   readonly type = 'longPress';
 
-  private readonly callbacks: LongPressCallbacks;
+  private callbacks: LongPressCallbacks;
   private readonly userOptions: Partial<LongPressOptions>;
 
   private readonly downPositions = new Map<number, Point>();
-  private anchorFocus: Point = {x: 0, y: 0};
+  private anchorFocus: Point = ZERO_POINT;
   private lastEvent: MotionEvent | null = null;
 
   constructor(callbacks: LongPressCallbacks, options: Partial<LongPressOptions> = {}) {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: LongPressCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -149,7 +154,7 @@ export class LongPressRecognizer extends GestureRecognizer {
 
   protected override onReset(): void {
     this.downPositions.clear();
-    this.anchorFocus = {x: 0, y: 0};
+    this.anchorFocus = ZERO_POINT;
     this.lastEvent = null;
   }
 

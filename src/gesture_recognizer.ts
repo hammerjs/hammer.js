@@ -1,6 +1,6 @@
-import type {MotionEvent, Point} from './motion_event';
-import type {TouchActionValue} from './touch_behavior';
-import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration';
+import type {MotionEvent, Point} from './motion_event.js';
+import type {TouchActionValue} from './touch_behavior.js';
+import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 
 export const RecognizerState = {
   /** Evaluating incoming events; has not yet claimed the gesture arena. */
@@ -119,7 +119,7 @@ export abstract class GestureRecognizer {
     return true;
   }
 
-  /** Subclasses may override for default simultaneous cooperation (e.g. `Scale` + `Rotate`). */
+  /** Subclasses may override for conditional simultaneous cooperation (e.g. `QuickScale` stroke #1). */
   canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
     return this.simultaneousPeers.has(other);
   }
@@ -165,6 +165,9 @@ export abstract class GestureRecognizer {
 
   /** @internal */
   prepareForDown(_event: MotionEvent): void {}
+
+  /** @internal */
+  onPendingMotionEvent(_event: MotionEvent): void {}
 
   /** @internal */
   shouldResetOnDown(_event: MotionEvent): boolean {

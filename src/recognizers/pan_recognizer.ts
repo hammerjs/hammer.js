@@ -1,8 +1,8 @@
-import {MotionAction, type MotionEvent, type Point} from '../motion_event';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
-import {VelocityTracker, type VelocityVector, ZERO_VELOCITY} from '../velocity_tracker';
-import type {ViewConfiguration} from '../view_configuration';
+import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
+import {VelocityTracker, type VelocityVector, ZERO_VELOCITY} from '../velocity_tracker.js';
+import type {ViewConfiguration} from '../view_configuration.js';
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
 export type GestureAxis = 'horizontal' | 'vertical';
@@ -76,6 +76,16 @@ function computeCardinalDirection(
   };
 }
 
+interface MutablePoint {
+  x: number;
+  y: number;
+}
+
+function setPoint(pt: MutablePoint, x: number, y: number): void {
+  pt.x = x;
+  pt.y = y;
+}
+
 /** Centroid of every pointer in `event`, including the one lifting (`pointers` is never empty). */
 function computeAllPointersCentroid(event: MotionEvent): Point {
   const pts = event.pointers;
@@ -91,19 +101,15 @@ function computeAllPointersCentroid(event: MotionEvent): Point {
 export class PanRecognizer extends GestureRecognizer {
   readonly type = 'pan';
 
-  private readonly callbacks: PanCallbacks;
+  private callbacks: PanCallbacks;
   private readonly userOptions: Partial<PanOptions>;
 
-  private downFocusX = 0;
-  private downFocusY = 0;
-  private lastFocusX = 0;
-  private lastFocusY = 0;
-  private minFocusX = 0;
-  private maxFocusX = 0;
-  private minFocusY = 0;
-  private maxFocusY = 0;
-  private totalDeltaX = 0;
-  private totalDeltaY = 0;
+  private downFocus: Point = ZERO_POINT;
+  private lastFocus: Point = ZERO_POINT;
+  private readonly rawTravel: MutablePoint = {x: 0, y: 0};
+  private readonly minTravel: MutablePoint = {x: 0, y: 0};
+  private readonly maxTravel: MutablePoint = {x: 0, y: 0};
+  private readonly totalDelta: MutablePoint = {x: 0, y: 0};
   private anchorReady = false;
 
   private tracker: VelocityTracker | null = null;
@@ -113,6 +119,11 @@ export class PanRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: PanCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override get usesVelocity(): boolean {
@@ -171,8 +182,7 @@ export class PanRecognizer extends GestureRecognizer {
     try {
       switch (event.action) {
         case MotionAction.DOWN: {
-          this.totalDeltaX = 0;
-          this.totalDeltaY = 0;
+          setPoint(this.totalDelta, 0, 0);
           if (this.numPointers > 0 && event.activePointerCount > this.numPointers) {
             this.fail();
             return;
@@ -199,15 +209,17 @@ export class PanRecognizer extends GestureRecognizer {
             return;
           }
 
-          this.recordExtremum(event.focusX, event.focusY);
+          const stepX = event.focus.x - this.lastFocus.x;
+          const stepY = event.focus.y - this.lastFocus.y;
+          this.lastFocus = event.focus;
+          this.rawTravel.x += stepX;
+          this.rawTravel.y += stepY;
+          this.recordExtremum();
 
           if (!this.active) {
-            const dxFromDown = event.focusX - this.downFocusX;
-            const dyFromDown = event.focusY - this.downFocusY;
+            const dxFromDown = event.focus.x - this.downFocus.x;
+            const dyFromDown = event.focus.y - this.downFocus.y;
             const distFromDown = Math.hypot(dxFromDown, dyFromDown);
-
-            this.lastFocusX = event.focusX;
-            this.lastFocusY = event.focusY;
 
             if (distFromDown <= this.slop) {
               return;
@@ -222,16 +234,14 @@ export class PanRecognizer extends GestureRecognizer {
             const postSlopX = dxFromDown * (1 - slopRatio);
             const postSlopY = dyFromDown * (1 - slopRatio);
 
-            this.totalDeltaX = 0;
-            this.totalDeltaY = 0;
+            setPoint(this.totalDelta, 0, 0);
 
             const started = this.tryBegin(() => {
               this.callbacks.onPanStart?.(this.buildEventData(event, 0, 0));
             });
 
             if (started && (postSlopX !== 0 || postSlopY !== 0)) {
-              this.totalDeltaX = postSlopX;
-              this.totalDeltaY = postSlopY;
+              setPoint(this.totalDelta, postSlopX, postSlopY);
               this.emitChange(() => {
                 this.callbacks.onPan?.(this.buildEventData(event, postSlopX, postSlopY));
               });
@@ -239,14 +249,9 @@ export class PanRecognizer extends GestureRecognizer {
             return;
           }
 
-          const stepX = event.focusX - this.lastFocusX;
-          const stepY = event.focusY - this.lastFocusY;
-          this.lastFocusX = event.focusX;
-          this.lastFocusY = event.focusY;
-
           if (stepX !== 0 || stepY !== 0) {
-            this.totalDeltaX += stepX;
-            this.totalDeltaY += stepY;
+            this.totalDelta.x += stepX;
+            this.totalDelta.y += stepY;
             this.emitChange(() => {
               this.callbacks.onPan?.(this.buildEventData(event, stepX, stepY));
             });
@@ -286,16 +291,12 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   protected override onReset(): void {
-    this.downFocusX = 0;
-    this.downFocusY = 0;
-    this.lastFocusX = 0;
-    this.lastFocusY = 0;
-    this.minFocusX = 0;
-    this.maxFocusX = 0;
-    this.minFocusY = 0;
-    this.maxFocusY = 0;
-    this.totalDeltaX = 0;
-    this.totalDeltaY = 0;
+    this.downFocus = ZERO_POINT;
+    this.lastFocus = ZERO_POINT;
+    setPoint(this.rawTravel, 0, 0);
+    setPoint(this.minTravel, 0, 0);
+    setPoint(this.maxTravel, 0, 0);
+    setPoint(this.totalDelta, 0, 0);
     this.anchorReady = false;
     this.tracker?.clear();
   }
@@ -316,36 +317,35 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   private reanchor(focus: Point, ready: boolean): void {
-    this.downFocusX = focus.x;
-    this.downFocusY = focus.y;
-    this.lastFocusX = focus.x;
-    this.lastFocusY = focus.y;
+    this.downFocus = focus;
+    this.lastFocus = focus;
     if (!this.active) {
-      this.minFocusX = focus.x;
-      this.maxFocusX = focus.x;
-      this.minFocusY = focus.y;
-      this.maxFocusY = focus.y;
-    } else {
-      this.recordExtremum(focus.x, focus.y);
+      setPoint(this.rawTravel, 0, 0);
+      setPoint(this.minTravel, 0, 0);
+      setPoint(this.maxTravel, 0, 0);
     }
     this.anchorReady = ready;
   }
 
-  private recordExtremum(x: number, y: number): void {
-    if (x < this.minFocusX) this.minFocusX = x;
-    if (x > this.maxFocusX) this.maxFocusX = x;
-    if (y < this.minFocusY) this.minFocusY = y;
-    if (y > this.maxFocusY) this.maxFocusY = y;
+  private recordExtremum(): void {
+    const {x, y} = this.rawTravel;
+    if (x < this.minTravel.x) this.minTravel.x = x;
+    if (x > this.maxTravel.x) this.maxTravel.x = x;
+    if (y < this.minTravel.y) this.minTravel.y = y;
+    if (y > this.maxTravel.y) this.maxTravel.y = y;
   }
 
   private finishGesture(event: MotionEvent, endFocus: Point, centerOverride?: Point): void {
     if (this.anchorReady) {
-      this.recordExtremum(endFocus.x, endFocus.y);
+      this.rawTravel.x += endFocus.x - this.lastFocus.x;
+      this.rawTravel.y += endFocus.y - this.lastFocus.y;
+      this.lastFocus = endFocus;
+      this.recordExtremum();
     }
 
     if (this.active) {
       const endData = this.buildEndEventData(event, centerOverride);
-      const swipeData = this.evaluateSwipe(endFocus, endData);
+      const swipeData = this.evaluateSwipe(endData);
       this.completeActive(() => {
         this.callbacks.onPanEnd?.(endData);
         if (swipeData) {
@@ -357,15 +357,14 @@ export class PanRecognizer extends GestureRecognizer {
 
     // Handle single-frame flicks where `UP` arrives past `slop` without an intermediate `MOVE`:
     if (this.anchorReady && this.callbacks.onSwipe) {
-      const dx = endFocus.x - this.downFocusX;
-      const dy = endFocus.y - this.downFocusY;
+      const dx = endFocus.x - this.downFocus.x;
+      const dy = endFocus.y - this.downFocus.y;
       const dist = Math.hypot(dx, dy);
       if (dist > this.slop && this.matchesDirectionLock(dx, dy)) {
         const slopRatio = this.slop / dist;
-        this.totalDeltaX = dx * (1 - slopRatio);
-        this.totalDeltaY = dy * (1 - slopRatio);
+        setPoint(this.totalDelta, dx * (1 - slopRatio), dy * (1 - slopRatio));
         const endData = this.buildEndEventData(event, centerOverride);
-        const swipeData = this.evaluateSwipe(endFocus, endData);
+        const swipeData = this.evaluateSwipe(endData);
         if (swipeData) {
           this.tryRecognizeDiscrete(() => {
             this.callbacks.onSwipe?.(swipeData);
@@ -378,7 +377,7 @@ export class PanRecognizer extends GestureRecognizer {
     this.fail();
   }
 
-  private evaluateSwipe(endFocus: Point, endData: PanEventData): SwipeEventData | null {
+  private evaluateSwipe(endData: PanEventData): SwipeEventData | null {
     if (!this.callbacks.onSwipe) {
       return null;
     }
@@ -387,10 +386,13 @@ export class PanRecognizer extends GestureRecognizer {
       return null;
     }
 
-    // Measure travel toward `endFocus` from the stroke's opposing extremum along `(vx, vy)` so
-    // pull-out-then-flick-back succeeds while tiny liftoff recoil (`< minSwipeDistance`) fails.
-    const spanX = vx >= 0 ? endFocus.x - this.minFocusX : this.maxFocusX - endFocus.x;
-    const spanY = vy >= 0 ? endFocus.y - this.minFocusY : this.maxFocusY - endFocus.y;
+    // Measure continuous focal travel from the stroke's opposing extremum along `(vx, vy)` so
+    // pull-out-then-flick-back succeeds, liftoff recoil (`< minSwipeDistance`) fails, and
+    // multi-pointer re-anchoring jumps neither fabricate nor erase swipe travel.
+    const spanX =
+      vx >= 0 ? this.rawTravel.x - this.minTravel.x : this.maxTravel.x - this.rawTravel.x;
+    const spanY =
+      vy >= 0 ? this.rawTravel.y - this.minTravel.y : this.maxTravel.y - this.rawTravel.y;
     const travelInVelocityDir = (spanX * Math.abs(vx) + spanY * Math.abs(vy)) / speed;
     if (travelInVelocityDir < this.minSwipeDistance) {
       return null;
@@ -434,8 +436,8 @@ export class PanRecognizer extends GestureRecognizer {
     const vel = this.readActiveVelocity(event);
     return {
       ...this.createEventData(event),
-      deltaX: this.totalDeltaX,
-      deltaY: this.totalDeltaY,
+      deltaX: this.totalDelta.x,
+      deltaY: this.totalDelta.y,
       stepX,
       stepY,
       velocityX: vel.x,
@@ -458,8 +460,8 @@ export class PanRecognizer extends GestureRecognizer {
     }
     return {
       ...this.createEventData(event, centerOverride),
-      deltaX: this.totalDeltaX,
-      deltaY: this.totalDeltaY,
+      deltaX: this.totalDelta.x,
+      deltaY: this.totalDelta.y,
       stepX: 0,
       stepY: 0,
       velocityX: vel.x,

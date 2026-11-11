@@ -1,3 +1,5 @@
+export type GestureTarget = HTMLElement | SVGElement;
+
 export type TouchActionValue =
   | 'auto'
   | 'manipulation'
@@ -110,7 +112,7 @@ type WebkitStyle = CSSStyleDeclaration & {
  * guards, returning a cleanup callback that restores the element's prior state.
  */
 export function applySurfaceBehavior(
-  element: HTMLElement,
+  element: GestureTarget,
   touchAction: TouchActionValue,
   preventSelectionAndDrag: boolean
 ): () => void {

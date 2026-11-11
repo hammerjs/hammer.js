@@ -33,6 +33,8 @@ function playgroundDevPlugin(): Plugin {
 export default defineConfig({
   plugins: [playgroundDevPlugin()],
   build: {
+    sourcemap: true,
+    minify: false,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],

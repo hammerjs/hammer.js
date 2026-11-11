@@ -428,5 +428,121 @@ describe('Hammer', () => {
     expect(onTapDown).toHaveBeenCalledTimes(2);
     expect(onDoubleTap).toHaveBeenCalledTimes(1);
     feedbackAndDouble.destroy();
+
+    vi.useFakeTimers();
+    try {
+      const downWithTap = vi.fn();
+      const showPressWithTap = vi.fn();
+      const confirmedTap = vi.fn();
+      const confirmedDouble = vi.fn();
+      const fullTapHammer = new Hammer(element, {
+        onTapDown: downWithTap,
+        onShowPress: showPressWithTap,
+        onTap: confirmedTap,
+        onDoubleTap: confirmedDouble,
+      });
+      element.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 8, clientX: 10, clientY: 10, timeStamp: 2000})
+      );
+      document.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 8, clientX: 10, clientY: 10, timeStamp: 2020})
+      );
+      element.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 9, clientX: 10, clientY: 10, timeStamp: 2100})
+      );
+      vi.advanceTimersByTime(190);
+      expect(showPressWithTap).toHaveBeenCalledTimes(1);
+      document.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 9, clientX: 10, clientY: 10, timeStamp: 2290})
+      );
+      expect(downWithTap).toHaveBeenCalledTimes(2);
+      expect(confirmedDouble).toHaveBeenCalledTimes(1);
+      expect(confirmedTap).not.toHaveBeenCalled();
+      fullTapHammer.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('supports SVGElement targets and in-place setOptions updates mid-gesture', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svg);
+
+    const calls: string[] = [];
+    const hammer = new Hammer(svg, {
+      onTap: () => calls.push('tap1'),
+      onDoubleTap: () => calls.push('dbl1'),
+      onLongPress: () => calls.push('lp1'),
+      onPan: ev => calls.push(`v1:${ev.deltaX}`),
+      onScale: ev => calls.push(`scale:${ev.scale.toFixed(1)}`),
+      onRotate: () => calls.push('rot1'),
+      quickScale: true,
+      pan: {numPointers: 0, slop: 4},
+      scale: {spanSlop: 8, minSpan: 20},
+    });
+    expect(hammer.element).toBe(svg);
+
+    // Start an active 1-finger pan, then swap closures via `setOptions` mid-drag without interruption:
+    svg.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 1, clientX: 14, clientY: 0, timeStamp: 10})
+    );
+    expect(calls).toEqual(['v1:10']);
+
+    hammer.setOptions({
+      onTap: () => calls.push('tap2'),
+      onDoubleTap: () => calls.push('dbl2'),
+      onLongPress: () => calls.push('lp2'),
+      onPan: ev => calls.push(`v2:${ev.deltaX}`),
+      onScale: ev => calls.push(`scale2:${ev.scale.toFixed(1)}`),
+      onRotate: () => calls.push('rot2'),
+      quickScale: true,
+      pan: {numPointers: 0, slop: 4},
+      scale: {spanSlop: 8, minSpan: 20},
+    });
+
+    // Active pan continues smoothly with the updated callback and coexists with 2-finger scale:
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 1, clientX: 24, clientY: 0, timeStamp: 20})
+    );
+    svg.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerId: 2,
+        isPrimary: false,
+        clientX: 124,
+        clientY: 0,
+        timeStamp: 25,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerId: 2,
+        isPrimary: false,
+        clientX: 240,
+        clientY: 0,
+        timeStamp: 35,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 2, isPrimary: false, clientX: 240, clientY: 0})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 24, clientY: 0}));
+    expect(calls).toContain('v2:20');
+    expect(calls).toContain('scale2:2.0');
+
+    // Changing recognizer topology via `setOptions` recomputes `touch-action` dynamically:
+    hammer.setOptions({
+      onPan: () => {},
+      pan: {direction: 'horizontal'},
+      viewConfiguration: {touchSlop: 14},
+    });
+    expect(hammer.computeTouchAction()).toBe('pan-y pinch-zoom');
+    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
+    expect(hammer.config.touchSlop).toBe(14);
+
+    hammer.destroy();
+    svg.remove();
   });
 });

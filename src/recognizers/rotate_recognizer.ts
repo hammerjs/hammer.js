@@ -1,6 +1,6 @@
-import {MotionAction, type MotionEvent} from '../motion_event';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
+import {MotionAction, type MotionEvent} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
 
 export interface RotateOptions {
   /** Angular change in degrees required before rotation begins. */
@@ -36,7 +36,7 @@ function shortestAngleDelta(fromDeg: number, toDeg: number): number {
 export class RotateRecognizer extends GestureRecognizer {
   readonly type = 'rotate';
 
-  private readonly callbacks: RotateCallbacks;
+  private callbacks: RotateCallbacks;
   private readonly userOptions: Partial<RotateOptions>;
 
   private trackedPair: [number, number] | null = null;
@@ -49,6 +49,11 @@ export class RotateRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: RotateCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override getTouchAction(): TouchActionValue {

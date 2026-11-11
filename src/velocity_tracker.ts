@@ -1,4 +1,10 @@
-import {MotionAction, type MotionEvent, type Point, type PointerSample} from './motion_event';
+import {
+  MotionAction,
+  type MotionEvent,
+  type Point,
+  type PointerSample,
+  ZERO_POINT,
+} from './motion_event.js';
 
 const HISTORY_CAPACITY = 20;
 const DEFAULT_HORIZON_MS = 100;
@@ -30,8 +36,7 @@ class PointerVelocityBuffer {
   private head = 0;
   private size = 0;
 
-  computedVx = 0;
-  computedVy = 0;
+  computed: Point = ZERO_POINT;
 
   add(timeMs: number, x: number, y: number, assumePointerStoppedMs: number): void {
     if (this.size > 0) {
@@ -74,14 +79,14 @@ class PointerVelocityBuffer {
     horizonMs: number,
     assumePointerStoppedMs: number,
     referenceTimeMs?: number
-  ): {vx: number; vy: number} {
+  ): Point {
     if (this.size < 2) {
-      return {vx: 0, vy: 0};
+      return ZERO_POINT;
     }
 
     const newestTime = this.times[this.head];
     if (referenceTimeMs !== undefined && referenceTimeMs - newestTime > assumePointerStoppedMs) {
-      return {vx: 0, vy: 0};
+      return ZERO_POINT;
     }
 
     let prevTime = newestTime;
@@ -100,7 +105,7 @@ class PointerVelocityBuffer {
     }
 
     if (count < 2) {
-      return {vx: 0, vy: 0};
+      return ZERO_POINT;
     }
 
     const x0 = this.xs[this.head];
@@ -109,8 +114,8 @@ class PointerVelocityBuffer {
 
     if (count === 2) {
       return {
-        vx: (x0 - this.xs[oldestIdx]) / spanSec,
-        vy: (y0 - this.ys[oldestIdx]) / spanSec,
+        x: (x0 - this.xs[oldestIdx]) / spanSec,
+        y: (y0 - this.ys[oldestIdx]) / spanSec,
       };
     }
 
@@ -156,8 +161,8 @@ class PointerVelocityBuffer {
 
     if (Math.abs(det) <= SINGULAR_DET_EPSILON) {
       return {
-        vx: (x0 - this.xs[oldestIdx]) / spanSec,
-        vy: (y0 - this.ys[oldestIdx]) / spanSec,
+        x: (x0 - this.xs[oldestIdx]) / spanSec,
+        y: (y0 - this.ys[oldestIdx]) / spanSec,
       };
     }
 
@@ -165,38 +170,33 @@ class PointerVelocityBuffer {
     const detY = s0 * (by1 * s4 - s3 * by2) - by0 * c01 + s2 * (s1 * by2 - by1 * s2);
 
     return {
-      vx: detX / det / spanSec,
-      vy: detY / det / spanSec,
+      x: detX / det / spanSec,
+      y: detY / det / spanSec,
     };
   }
 
   clear(): void {
     this.head = 0;
     this.size = 0;
-    this.computedVx = 0;
-    this.computedVy = 0;
+    this.computed = ZERO_POINT;
   }
 }
 
-function clampVelocityRadially(
-  vx: number,
-  vy: number,
-  maxVelocity: number
-): {vx: number; vy: number} {
-  const cleanX = Number.isFinite(vx) ? vx : 0;
-  const cleanY = Number.isFinite(vy) ? vy : 0;
-  if (maxVelocity <= 0) {
-    return {vx: 0, vy: 0};
+function clampVelocityRadially(vx: number, vy: number, maxVelocity: number): Point {
+  const x = Number.isFinite(vx) ? vx : 0;
+  const y = Number.isFinite(vy) ? vy : 0;
+  if (maxVelocity <= 0 || (x === 0 && y === 0)) {
+    return ZERO_POINT;
   }
   if (!Number.isFinite(maxVelocity)) {
-    return {vx: cleanX, vy: cleanY};
+    return {x, y};
   }
-  const speed = Math.hypot(cleanX, cleanY);
+  const speed = Math.hypot(x, y);
   if (speed > maxVelocity) {
     const ratio = maxVelocity / speed;
-    return {vx: cleanX * ratio, vy: cleanY * ratio};
+    return {x: x * ratio, y: y * ratio};
   }
-  return {vx: cleanX, vy: cleanY};
+  return {x, y};
 }
 
 /**
@@ -356,9 +356,7 @@ export class VelocityTracker {
         this.assumePointerStoppedMs,
         this.latestEventTime
       );
-      const clamped = clampVelocityRadially(raw.vx * unitScale, raw.vy * unitScale, maxVelocity);
-      buf.computedVx = clamped.vx;
-      buf.computedVy = clamped.vy;
+      buf.computed = clampVelocityRadially(raw.x * unitScale, raw.y * unitScale, maxVelocity);
     }
 
     this.dirty = false;
@@ -368,12 +366,12 @@ export class VelocityTracker {
 
   getXVelocity(pointerId?: number): number {
     const id = pointerId ?? this.activePointerId;
-    return id === null ? 0 : (this.pointers.get(id)?.computedVx ?? 0);
+    return id === null ? 0 : (this.pointers.get(id)?.computed.x ?? 0);
   }
 
   getYVelocity(pointerId?: number): number {
     const id = pointerId ?? this.activePointerId;
-    return id === null ? 0 : (this.pointers.get(id)?.computedVy ?? 0);
+    return id === null ? 0 : (this.pointers.get(id)?.computed.y ?? 0);
   }
 
   getVelocity(pointerId?: number): VelocityVector {
@@ -397,14 +395,14 @@ export class VelocityTracker {
         const id = typeof item === 'number' ? item : item.pointerId;
         const buf = this.pointers.get(id);
         if (!buf) continue;
-        sumX += buf.computedVx;
-        sumY += buf.computedVy;
+        sumX += buf.computed.x;
+        sumY += buf.computed.y;
         count++;
       }
     } else {
       for (const buf of this.pointers.values()) {
-        sumX += buf.computedVx;
-        sumY += buf.computedVy;
+        sumX += buf.computed.x;
+        sumY += buf.computed.y;
         count++;
       }
     }

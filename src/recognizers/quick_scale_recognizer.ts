@@ -1,7 +1,7 @@
-import {MotionAction, type MotionEvent, type Point} from '../motion_event';
-import {GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
-import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer';
+import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
+import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer.js';
 
 const QUICK_SCALE_BASE_SPAN = 100;
 const MAX_TAP_TIMER = 'maxTap';
@@ -22,11 +22,10 @@ export interface QuickScaleOptions {
 export class QuickScaleRecognizer extends GestureRecognizer {
   readonly type = 'quickScale';
 
-  private readonly callbacks: ScaleCallbacks;
+  private callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<QuickScaleOptions>;
 
-  private tapDownX = 0;
-  private tapDownY = 0;
+  private tapDown: Point = ZERO_POINT;
   private tapDownTime = 0;
 
   private firstTapDownFocus: Point | null = null;
@@ -34,7 +33,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   private lastTapPointerType = '';
 
   private quickScaleCandidate = false;
-  private anchor: Point = {x: 0, y: 0};
+  private anchor: Point = ZERO_POINT;
   private startY = 0;
   private prevScale = 1;
   private cumulativeScale = 1;
@@ -44,6 +43,11 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: ScaleCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -125,8 +129,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         this.cumulativeScale = 1;
 
         if (!this.quickScaleCandidate) {
-          this.tapDownX = event.focusX;
-          this.tapDownY = event.focusY;
+          this.tapDown = event.focus;
           this.tapDownTime = event.eventTime;
           // A first stroke held longer than a tap can never arm Quick-Scale.
           this.setTimer(MAX_TAP_TIMER, this.config.maxTapDuration, () => this.fail());
@@ -148,7 +151,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
       case MotionAction.MOVE: {
         if (!this.quickScaleCandidate) {
           if (
-            Math.hypot(event.focusX - this.tapDownX, event.focusY - this.tapDownY) >
+            Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) >
             this.config.tapSlop
           ) {
             this.fail();
@@ -226,10 +229,10 @@ export class QuickScaleRecognizer extends GestureRecognizer {
 
         const duration = event.eventTime - this.tapDownTime;
         const withinSlop =
-          Math.hypot(event.focusX - this.tapDownX, event.focusY - this.tapDownY) <=
+          Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) <=
           this.config.tapSlop;
         if (duration <= this.config.maxTapDuration && withinSlop) {
-          this.firstTapDownFocus = {x: this.tapDownX, y: this.tapDownY};
+          this.firstTapDownFocus = this.tapDown;
           this.lastTapUpTime = event.eventTime;
           this.lastTapPointerType = event.pointerType;
           this.setTimer(MULTI_TAP_TIMER, this.config.doubleTapTimeout, () => {
@@ -258,10 +261,9 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   protected override onReset(): void {
     this.clearMultiTapSequence();
     this.quickScaleCandidate = false;
-    this.tapDownX = 0;
-    this.tapDownY = 0;
+    this.tapDown = ZERO_POINT;
     this.tapDownTime = 0;
-    this.anchor = {x: 0, y: 0};
+    this.anchor = ZERO_POINT;
     this.startY = 0;
     this.prevScale = 1;
     this.cumulativeScale = 1;

@@ -1,11 +1,11 @@
-import {MotionAction, type MotionEvent} from './motion_event';
+import {MotionAction, type MotionEvent} from './motion_event.js';
 import {
   type GestureRecognizer,
   RecognizerState,
   type RecognizerStateType,
-} from './gesture_recognizer';
-import {mergeTouchActions, type TouchActionValue} from './touch_behavior';
-import {resolveViewConfiguration, type ViewConfiguration} from './view_configuration';
+} from './gesture_recognizer.js';
+import {mergeTouchActions, type TouchActionValue} from './touch_behavior.js';
+import {resolveViewConfiguration, type ViewConfiguration} from './view_configuration.js';
 
 interface PendingClaim {
   readonly targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED;
@@ -30,7 +30,7 @@ function isDispatchEligible(recognizer: GestureRecognizer): boolean {
  * - Resolves `.requireFailureOf(...)` dependencies with registration-order-independent batching.
  */
 export class GestureArena {
-  readonly config: ViewConfiguration;
+  private currentConfig: ViewConfiguration;
 
   private readonly onActiveGestureStart?: () => void;
   private recognizers: readonly GestureRecognizer[] = [];
@@ -47,8 +47,16 @@ export class GestureArena {
   private suppressingWinnerInStream = false;
 
   constructor(configOverrides?: Partial<ViewConfiguration>, options: GestureArenaOptions = {}) {
-    this.config = resolveViewConfiguration(configOverrides);
+    this.currentConfig = resolveViewConfiguration(configOverrides);
     this.onActiveGestureStart = options.onActiveGestureStart;
+  }
+
+  get config(): ViewConfiguration {
+    return this.currentConfig;
+  }
+
+  setConfig(configOverrides?: Partial<ViewConfiguration>): void {
+    this.currentConfig = resolveViewConfiguration(configOverrides);
   }
 
   get hasActiveGesture(): boolean {
@@ -194,10 +202,16 @@ export class GestureArena {
 
         for (let i = 0; i < recognizers.length; i++) {
           const r = recognizers[i];
-          if (!r.isAttachedTo(this) || !isDispatchEligible(r) || r.lastDispatchToken === token) {
+          if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
             continue;
           }
-          r.onMotionEvent(event);
+          if (isDispatchEligible(r)) {
+            r.lastDispatchToken = token;
+            r.onMotionEvent(event);
+          } else if (r.state === RecognizerState.PENDING) {
+            r.lastDispatchToken = token;
+            r.onPendingMotionEvent(event);
+          }
         }
         return;
       }
@@ -212,10 +226,16 @@ export class GestureArena {
       }
       for (let i = 0; i < recognizers.length; i++) {
         const r = recognizers[i];
-        if (!r.isAttachedTo(this) || !isDispatchEligible(r) || r.lastDispatchToken === token) {
+        if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
           continue;
         }
-        r.onMotionEvent(event);
+        if (isDispatchEligible(r)) {
+          r.lastDispatchToken = token;
+          r.onMotionEvent(event);
+        } else if (r.state === RecognizerState.PENDING) {
+          r.lastDispatchToken = token;
+          r.onPendingMotionEvent(event);
+        }
       }
 
       if (event.action === MotionAction.CANCEL) {

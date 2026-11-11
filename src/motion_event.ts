@@ -40,6 +40,7 @@ export interface HistoricalSample {
 
 const EMPTY_HISTORY: readonly HistoricalSample[] = Object.freeze([]);
 const EMPTY_POINTERS: readonly PointerSample[] = Object.freeze([]);
+export const ZERO_POINT: Point = Object.freeze({x: 0, y: 0});
 
 export interface MotionEventInit {
   readonly action: MotionActionType;
@@ -74,8 +75,7 @@ export class MotionEvent {
   readonly originalEvent: Event;
   readonly focus: Point;
 
-  private cachedSpanX: number | null = null;
-  private cachedSpanY: number | null = null;
+  private cachedSpan: Point | null = null;
   private cachedActivePointers: readonly PointerSample[] | null = null;
 
   constructor(init: MotionEventInit) {
@@ -145,23 +145,18 @@ export class MotionEvent {
    * matching Android's `ScaleGestureDetector` (`|x1 - x0|` for 2 pointers, generalizing to 3+).
    */
   getSpanX(): number {
-    if (this.cachedSpanX === null) {
-      this.computeSpans();
-    }
-    return this.cachedSpanX!;
+    return (this.cachedSpan ??= this.computeSpans()).x;
   }
 
   /** Average vertical span across active pointers around `focusY` (`2 * mean(|y - focusY|)`). */
   getSpanY(): number {
-    if (this.cachedSpanY === null) {
-      this.computeSpans();
-    }
-    return this.cachedSpanY!;
+    return (this.cachedSpan ??= this.computeSpans()).y;
   }
 
   /** Euclidean span `hypot(spanX, spanY)` across active pointers (`0` when `< 2` active pointers). */
   getSpan(): number {
-    return Math.hypot(this.getSpanX(), this.getSpanY());
+    const span = (this.cachedSpan ??= this.computeSpans());
+    return Math.hypot(span.x, span.y);
   }
 
   /** Active pointers remaining on the surface (excluding `actionIndex` during `POINTER_UP`). */
@@ -181,7 +176,7 @@ export class MotionEvent {
   private computeFocus(): Point {
     const n = this.pointers.length;
     if (n === 0) {
-      return {x: 0, y: 0};
+      return ZERO_POINT;
     }
     if (n === 1) {
       return {x: this.pointers[0].x, y: this.pointers[0].y};
@@ -203,12 +198,10 @@ export class MotionEvent {
     return {x: sumX / count, y: sumY / count};
   }
 
-  private computeSpans(): void {
+  private computeSpans(): Point {
     const active = this.getActivePointers();
     if (active.length < 2) {
-      this.cachedSpanX = 0;
-      this.cachedSpanY = 0;
-      return;
+      return ZERO_POINT;
     }
 
     let devSumX = 0;
@@ -218,8 +211,10 @@ export class MotionEvent {
       devSumY += Math.abs(active[i].y - this.focus.y);
     }
 
-    this.cachedSpanX = (devSumX / active.length) * 2;
-    this.cachedSpanY = (devSumY / active.length) * 2;
+    return {
+      x: (devSumX / active.length) * 2,
+      y: (devSumY / active.length) * 2,
+    };
   }
 }
 
@@ -291,8 +286,9 @@ export class MotionEventStream {
     // when a primary touch lifted cleanly and a secondary touch was orphaned):
     if (
       this.pointers.size > 0 &&
-      ((pointerType === 'touch' && e.isPrimary === true) ||
+      (e.isPrimary === true ||
         pointerType === 'mouse' ||
+        pointerType === 'pen' ||
         this.pointers.has(e.pointerId) ||
         (this.streamPointerType !== null && this.streamPointerType !== pointerType))
     ) {

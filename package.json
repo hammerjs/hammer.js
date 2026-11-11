@@ -1,6 +1,28 @@
 {
   "name": "hammerjs",
   "version": "3.0.0-experimental",
+  "description": "Modern multi-touch and pointer gesture recognition library for the web",
+  "license": "MIT",
+  "author": "Jorik Tangelder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hammerjs/hammer.js.git"
+  },
+  "keywords": [
+    "gestures",
+    "touch",
+    "pointer-events",
+    "multitouch",
+    "pan",
+    "swipe",
+    "pinch",
+    "zoom",
+    "rotate",
+    "tap"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "type": "module",
   "sideEffects": false,
   "scripts": {

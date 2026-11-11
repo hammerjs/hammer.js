@@ -1,6 +1,6 @@
-import {MotionAction, type MotionEvent, type Point} from '../motion_event';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
+import {MotionAction, type MotionEvent, type Point} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
 
 export interface TapOptions {
   /** Required number of consecutive taps (`1` for single-tap, `2` for double-tap, etc.). Default: `1`. */
@@ -52,7 +52,7 @@ const MULTI_TAP_TIMER = 'multiTap';
 export class TapRecognizer extends GestureRecognizer {
   readonly type = 'tap';
 
-  private readonly callbacks: TapCallbacks;
+  private callbacks: TapCallbacks;
   private readonly userOptions: Partial<TapOptions>;
 
   private readonly downPositions = new Map<number, Point>();
@@ -61,6 +61,7 @@ export class TapRecognizer extends GestureRecognizer {
   private strokeDownCenter: Point | null = null;
   private strokeCenter: Point | null = null;
   private lastEvent: MotionEvent | null = null;
+  private pressFeedbackEligible = false;
 
   private completedTaps = 0;
   private firstTapDownFocus: Point | null = null;
@@ -71,6 +72,11 @@ export class TapRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: TapCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -147,6 +153,80 @@ export class TapRecognizer extends GestureRecognizer {
     return super.shouldResetOnDown(event);
   }
 
+  /** @internal */
+  override onPendingMotionEvent(event: MotionEvent): void {
+    if (!this.callbacks.onDown && !this.callbacks.onShowPress) {
+      return;
+    }
+    this.lastEvent = event;
+
+    switch (event.action) {
+      case MotionAction.DOWN: {
+        this.clearTimer(SHOW_PRESS_TIMER);
+        this.downPositions.clear();
+        for (let i = 0; i < event.pointers.length; i++) {
+          const p = event.pointers[i];
+          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+        }
+        this.totalPointersInStroke = event.pointerCount;
+        this.pressFeedbackEligible = this.totalPointersInStroke <= this.numPointers;
+        if (!this.pressFeedbackEligible) {
+          return;
+        }
+        if (event.activePointerCount === this.numPointers) {
+          this.callbacks.onDown?.(this.buildTapEvent(event, 1));
+        }
+        if (this.callbacks.onShowPress && this.numPointers === 1) {
+          this.setTimer(SHOW_PRESS_TIMER, this.config.tapTimeout, () => {
+            this.callbacks.onShowPress?.(this.buildTapEvent(this.lastEvent!, 1));
+          });
+        }
+        break;
+      }
+
+      case MotionAction.POINTER_DOWN: {
+        this.clearTimer(SHOW_PRESS_TIMER);
+        if (!this.pressFeedbackEligible) {
+          return;
+        }
+        this.totalPointersInStroke = Math.max(this.totalPointersInStroke + 1, event.pointerCount);
+        if (this.totalPointersInStroke > this.numPointers) {
+          this.pressFeedbackEligible = false;
+          return;
+        }
+        const p = event.pointers[event.actionIndex];
+        this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+        if (event.activePointerCount === this.numPointers) {
+          this.callbacks.onDown?.(this.buildTapEvent(event, 1));
+        }
+        break;
+      }
+
+      case MotionAction.MOVE: {
+        if (this.pressFeedbackEligible && this.exceedsSlop(event)) {
+          this.clearTimer(SHOW_PRESS_TIMER);
+          this.pressFeedbackEligible = false;
+        }
+        break;
+      }
+
+      case MotionAction.POINTER_UP: {
+        this.clearTimer(SHOW_PRESS_TIMER);
+        if (this.pressFeedbackEligible && this.exceedsSlop(event)) {
+          this.pressFeedbackEligible = false;
+        }
+        break;
+      }
+
+      case MotionAction.UP:
+      case MotionAction.CANCEL: {
+        this.clearTimer(SHOW_PRESS_TIMER);
+        this.pressFeedbackEligible = false;
+        break;
+      }
+    }
+  }
+
   onMotionEvent(event: MotionEvent): void {
     this.lastEvent = event;
 
@@ -169,7 +249,9 @@ export class TapRecognizer extends GestureRecognizer {
         }
 
         const tapNumber = this.completedTaps + 1;
-        this.callbacks.onDown?.(this.buildTapEvent(event, tapNumber));
+        if (event.activePointerCount === this.numPointers) {
+          this.callbacks.onDown?.(this.buildTapEvent(event, tapNumber));
+        }
 
         if (this.callbacks.onShowPress && this.numPointers === 1) {
           this.setTimer(SHOW_PRESS_TIMER, this.config.tapTimeout, () => {
@@ -204,6 +286,7 @@ export class TapRecognizer extends GestureRecognizer {
             this.fail();
             return;
           }
+          this.callbacks.onDown?.(this.buildTapEvent(event, this.completedTaps + 1));
         }
         break;
       }
@@ -282,6 +365,7 @@ export class TapRecognizer extends GestureRecognizer {
     this.strokeDownCenter = null;
     this.strokeCenter = null;
     this.lastEvent = null;
+    this.pressFeedbackEligible = false;
     this.clearMultiTapSequence();
   }
 

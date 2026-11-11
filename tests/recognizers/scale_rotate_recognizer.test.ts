@@ -228,7 +228,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     expect(rotations[1]).toBeCloseTo(28, 2);
   });
 
-  it('covers QuickScale horizontal yield to Pan, pointer_down cancel, minSpan completion, 3->2 re-anchor, and negative angle wrap', () => {
+  it('covers QuickScale horizontal yield to Pan, pointer_down cancel, sub-minSpan pinch recovery, 3->2 re-anchor, and negative angle wrap', () => {
     const onPan = vi.fn();
     const onScaleStart = vi.fn();
     const onScaleEnd = vi.fn();
@@ -401,8 +401,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     stream.reset();
     arena.reset();
 
+    const scale3Values: number[] = [];
     const arenaScale = new GestureArena();
-    const scale3 = new ScaleRecognizer({onScaleEnd, onScaleCancel}, {spanSlop: 5, minSpan: 40});
+    const scale3 = new ScaleRecognizer(
+      {onScale: ev => scale3Values.push(ev.scale), onScaleEnd, onScaleCancel},
+      {spanSlop: 5, minSpan: 40}
+    );
     arenaScale.add(scale3);
     arenaScale.dispatch(
       stream.onPointerDown(
@@ -429,9 +433,29 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         pointerEvent('pointermove', {pointerId: 2, clientX: 150, clientY: 0, timeStamp: 520})
       )!
     );
+    // Pinching below minSpan (40px) clamps at minSpan without killing the active gesture:
     arenaScale.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 20, clientY: 0, timeStamp: 530})
+      )!
+    );
+    arenaScale.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 10, clientY: 0, timeStamp: 535})
+      )!
+    );
+    expect(onScaleEnd).not.toHaveBeenCalled();
+    expect(scale3.active).toBe(true);
+    // Spreading back out past minSpan resumes scaling seamlessly without lifting fingers:
+    arenaScale.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 105, clientY: 0, timeStamp: 540})
+      )!
+    );
+    expect(scale3Values.at(-1)).toBeCloseTo(1.0, 5);
+    arenaScale.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 105, clientY: 0, timeStamp: 545})
       )!
     );
     expect(onScaleEnd).toHaveBeenCalledTimes(1);

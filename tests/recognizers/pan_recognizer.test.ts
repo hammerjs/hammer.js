@@ -519,4 +519,91 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     expect(onHorizOnlySwipe).not.toHaveBeenCalled();
     axisArena.destroy();
   });
+
+  it('keeps swipe travel extrema invariant across pointer additions and lifts in numPointers: 0 mode', () => {
+    const onSwipe = vi.fn();
+    arena.add(
+      new PanRecognizer(
+        {onSwipe},
+        {numPointers: 0, slop: 4, minSwipeVelocity: 400, minSwipeDistance: 30}
+      )
+    );
+
+    // 1. Stationary multi-touch re-anchor + tiny liftoff wobble (< 30px) must NOT fabricate a swipe:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 112, clientY: 100, timeStamp: 12})
+      )!
+    );
+    // Finger #2 lands 200px away, shifting raw focusX by +100px without moving the user's hand:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 312, clientY: 100, timeStamp: 20})
+      )!
+    );
+    // Finger #2 lifts after a pause (> 40ms), then finger #1 wobbles 6px left at fast speed:
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 312, clientY: 100, timeStamp: 70})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 106, clientY: 100, timeStamp: 75})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 106, clientY: 100, timeStamp: 78})
+      )!
+    );
+    expect(onSwipe).not.toHaveBeenCalled();
+
+    // 2. Real fast 2-finger swipe where the leading finger lifts first MUST still fire onSwipe:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 100, timeStamp: 200})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 100, timeStamp: 210})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 212})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: -60, clientY: 100, timeStamp: 224})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 220, clientY: 100, timeStamp: 224})
+      )!
+    );
+    // Left finger lifts first (shifting raw focusX up to +220), then right finger lifts 2ms later:
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: -60, clientY: 100, timeStamp: 226})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 220, clientY: 100, timeStamp: 228})
+      )!
+    );
+    expect(onSwipe).toHaveBeenCalledTimes(1);
+    expect(onSwipe).toHaveBeenCalledWith(
+      expect.objectContaining({direction: 'left', axis: 'horizontal'})
+    );
+  });
 });

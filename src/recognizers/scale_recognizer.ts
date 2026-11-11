@@ -1,6 +1,6 @@
-import {MotionAction, type MotionEvent} from '../motion_event';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer';
-import type {TouchActionValue} from '../touch_behavior';
+import {MotionAction, type MotionEvent} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_behavior.js';
 
 export interface ScaleOptions {
   /** Span change in `px` required before multi-pointer scaling begins. */
@@ -38,7 +38,7 @@ export interface ScaleCallbacks {
 export class ScaleRecognizer extends GestureRecognizer {
   readonly type = 'scale';
 
-  private readonly callbacks: ScaleCallbacks;
+  private callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<ScaleOptions>;
 
   private initialSpan = 0;
@@ -51,6 +51,11 @@ export class ScaleRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.userOptions = options;
+  }
+
+  setCallbacks(callbacks: ScaleCallbacks): this {
+    this.callbacks = callbacks;
+    return this;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -138,19 +143,18 @@ export class ScaleRecognizer extends GestureRecognizer {
           return;
         }
 
-        this.currSpan = span;
-        if (span < this.minSpan) {
-          this.finish(event);
-          return;
-        }
+        // Clamp at `minSpan` while active (matching `RotateRecognizer` and `3->2` re-anchors)
+        // so pinching close and spreading back out stays alive without zoom spikes.
+        const effectiveSpan = Math.max(1, this.minSpan, span);
+        this.currSpan = effectiveSpan;
 
-        const scaleFactor = span / this.prevSpan;
+        const scaleFactor = effectiveSpan / this.prevSpan;
         if (scaleFactor !== 1) {
           this.cumulativeScale *= scaleFactor;
           this.emitChange(() => {
             this.callbacks.onScale?.(this.buildEvent(event, scaleFactor, timeDelta));
           });
-          this.prevSpan = span;
+          this.prevSpan = effectiveSpan;
           this.prevTime = event.eventTime;
         }
         break;

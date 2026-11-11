@@ -910,4 +910,64 @@ describe('GestureManager', () => {
     );
     expect(released).toEqual([1]);
   });
+
+  it('keeps directional Pan / LongPress surfaces free of idle touchmove listeners and supports SVGElement targets', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svg);
+
+    const addSpy = vi.spyOn(svg, 'addEventListener');
+    const removeSpy = vi.spyOn(svg, 'removeEventListener');
+    const onPan = vi.fn();
+    const onPanCancel = vi.fn();
+
+    const gm = new GestureManager(svg, {
+      recognizers: [new PanRecognizer({onPan, onPanCancel}, {direction: 'horizontal', slop: 6})],
+    });
+    expect(gm.element).toBe(svg);
+    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
+    // Zero idle non-passive `touchmove` listeners on directional Pan surfaces:
+    expect(addSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
+
+    // Mouse input never attaches a `touchmove` listener:
+    svg.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0})
+    );
+    expect(addSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0})
+    );
+
+    // Touch input attaches `touchmove` dynamically and detaches it as soon as vertical scroll fails Pan:
+    svg.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 0})
+    );
+    expect(addSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 20})
+    );
+    expect(removeSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerType: 'touch', pointerId: 2, clientX: 0, clientY: 20})
+    );
+
+    gm.setOptions({touchAction: 'none', viewConfiguration: {touchSlop: 16}});
+    expect(gm.config.touchSlop).toBe(16);
+    expect(svg.style.touchAction).toBe('none');
+
+    // Orphaned stylus (`pen`) drag aborts cleanly if a new pen press starts outside the target:
+    svg.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 9, clientX: 0, clientY: 0})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerType: 'pen', pointerId: 9, clientX: 20, clientY: 0})
+    );
+    document.body.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 10, clientX: 300, clientY: 300})
+    );
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    gm.destroy();
+    gm.setOptions({touchAction: 'manipulation'});
+    svg.remove();
+  });
 });

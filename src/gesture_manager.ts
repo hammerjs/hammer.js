@@ -1,14 +1,15 @@
-import {GestureArena} from './gesture_arena';
-import type {GestureRecognizer} from './gesture_recognizer';
-import {MotionAction, MotionEventStream} from './motion_event';
+import {GestureArena} from './gesture_arena.js';
+import type {GestureRecognizer} from './gesture_recognizer.js';
+import {MotionAction, MotionEventStream} from './motion_event.js';
 import {
   allowsPinchZoom,
   applySurfaceBehavior,
+  type GestureTarget,
   resolveSupportedTouchAction,
   type TouchActionSetting,
   type TouchActionValue,
-} from './touch_behavior';
-import type {ViewConfiguration} from './view_configuration';
+} from './touch_behavior.js';
+import type {ViewConfiguration} from './view_configuration.js';
 
 type Cleanup = () => void;
 
@@ -34,7 +35,7 @@ function supportsGestureEvents(win: Window | null): boolean {
   return !!win && 'GestureEvent' in win;
 }
 
-function isRelatedClickTarget(event: Event, element: HTMLElement): boolean {
+function isRelatedClickTarget(event: Event, element: GestureTarget): boolean {
   if (typeof event.composedPath === 'function' && event.composedPath().includes(element)) {
     return true;
   }
@@ -76,24 +77,30 @@ export interface GestureManagerOptions {
 }
 
 /**
- * Attaches DOM `PointerEvent` listeners to an `HTMLElement`, translates them into
- * unified `MotionEvent` snapshots via `MotionEventStream`, and arbitrates registered
+ * Attaches DOM `PointerEvent` listeners to an `HTMLElement` or `SVGElement`, translates them
+ * into unified `MotionEvent` snapshots via `MotionEventStream`, and arbitrates registered
  * `GestureRecognizer`s through `GestureArena`.
  */
-export class GestureManager {
-  readonly element: HTMLElement;
+export class GestureManager<T extends GestureTarget = GestureTarget> {
+  readonly element: T;
   private readonly stream = new MotionEventStream();
   private readonly arena: GestureArena;
-  private readonly options: GestureManagerOptions;
+  private readonly options: {
+    supportedPointerTypes: GestureManagerOptions['supportedPointerTypes'];
+    touchAction: TouchActionSetting;
+    viewConfiguration?: Partial<ViewConfiguration>;
+  };
   private readonly capturedPointers = new Set<number>();
   private readonly unbindEvents: Cleanup;
 
   private unsetSurfaceBehavior: Cleanup | null = null;
   private unbindActiveTracking: Cleanup | null = null;
+  private unbindScrollGuard: Cleanup | null = null;
   private disarmClickSuppression: Cleanup | null = null;
   private lastHandledDown: Event | null = null;
   private appliedSurfaceKey = '';
   private preventsPinchZoom = false;
+  private needsDynamicScrollGuard = false;
   private suppressesTouchContextMenu = false;
   private destroyed = false;
 
@@ -102,19 +109,19 @@ export class GestureManager {
     touchAction: 'compute' as const,
   });
 
-  constructor(element: HTMLElement, options: Partial<GestureManagerOptions> = {}) {
+  constructor(element: T, options: Partial<GestureManagerOptions> = {}) {
     this.element = element;
     this.options = {
       supportedPointerTypes:
         options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
       touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
       viewConfiguration: options.viewConfiguration,
-      recognizers: options.recognizers,
     };
 
     this.arena = new GestureArena(this.options.viewConfiguration, {
       onActiveGestureStart: () => this.captureActivePointers(),
     });
+
     for (const recognizer of options.recognizers ?? []) {
       this.arena.add(recognizer);
     }
@@ -148,6 +155,29 @@ export class GestureManager {
       }
       this.syncTouchAction();
     }
+    return this;
+  }
+
+  setOptions(
+    options: Partial<
+      Pick<GestureManagerOptions, 'supportedPointerTypes' | 'touchAction' | 'viewConfiguration'>
+    >
+  ): this {
+    if (this.destroyed) {
+      return this;
+    }
+    if ('supportedPointerTypes' in options) {
+      this.options.supportedPointerTypes =
+        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes;
+    }
+    if ('touchAction' in options) {
+      this.options.touchAction = options.touchAction ?? GestureManager.DEFAULTS.touchAction;
+    }
+    if ('viewConfiguration' in options) {
+      this.options.viewConfiguration = options.viewConfiguration;
+      this.arena.setConfig(options.viewConfiguration);
+    }
+    this.syncTouchAction();
     return this;
   }
 
@@ -242,9 +272,9 @@ export class GestureManager {
       this.processPointerDown(e);
       return;
     }
-    // If a brand-new primary touch or mouse press starts outside `this.element`, any active stream on
-    // `this.element` was orphaned by a swallowed `pointerup`; abort it cleanly without interfering.
-    if ((pointerType === 'touch' && e.isPrimary) || pointerType === 'mouse') {
+    // If a brand-new primary touch, pen, or mouse press starts outside `this.element`, any active
+    // stream on `this.element` was orphaned by a swallowed `pointerup`; abort it cleanly.
+    if (e.isPrimary === true || pointerType === 'mouse' || pointerType === 'pen') {
       this.abortActiveStream(e);
     }
   };
@@ -258,12 +288,16 @@ export class GestureManager {
       return;
     }
     if (!this.arena.hasLiveRecognizers) {
+      this.releaseScrollGuard();
       this.stream.updatePointerSilent(e);
       return;
     }
     const motionEvent = this.stream.onPointerMove(e, this.arena.needsVelocity);
     if (motionEvent) {
       this.arena.dispatch(motionEvent);
+      if (!this.arena.hasLiveRecognizers) {
+        this.releaseScrollGuard();
+      }
     }
   };
 
@@ -315,11 +349,26 @@ export class GestureManager {
   }
 
   private cleanupSurfaceBehavior(): void {
+    this.releaseScrollGuard();
     this.unsetSurfaceBehavior?.();
     this.unsetSurfaceBehavior = null;
     this.appliedSurfaceKey = '';
     this.preventsPinchZoom = false;
+    this.needsDynamicScrollGuard = false;
     this.suppressesTouchContextMenu = false;
+  }
+
+  private ensureScrollGuard(): void {
+    if (!this.unbindScrollGuard) {
+      this.unbindScrollGuard = listen(this.element, 'touchmove', this.onTouchMove, {
+        passive: false,
+      });
+    }
+  }
+
+  private releaseScrollGuard(): void {
+    this.unbindScrollGuard?.();
+    this.unbindScrollGuard = null;
   }
 
   private syncTouchAction(): void {
@@ -352,6 +401,8 @@ export class GestureManager {
     this.cleanupSurfaceBehavior();
     this.appliedSurfaceKey = nextKey;
     this.preventsPinchZoom = preventsPinchZoom;
+    this.needsDynamicScrollGuard =
+      hasNonTapRecognizer && !preventsPinchZoom && resolvedAction !== 'none';
     this.suppressesTouchContextMenu = hasNonTapRecognizer;
 
     const el = this.element;
@@ -359,11 +410,20 @@ export class GestureManager {
 
     if (hasNonTapRecognizer) {
       cleanups.push(listen(el, 'contextmenu', this.onContextMenu));
-      // Never attached on `Tap`-only surfaces (keeping them fully passive), nor when CSS
-      // `touch-action: none` already blocks compositor scrolling.
-      if (resolvedAction !== 'none') {
+      // Keep directional `Pan` / `LongPress` / `QuickScale` surfaces free of idle non-passive
+      // `touchmove` listeners so compositor fast-scroll regions stay unblocked until touched;
+      // only attach statically when 2-finger pinch-zoom must be blocked on a scrollable surface.
+      if (preventsPinchZoom && resolvedAction !== 'none') {
         cleanups.push(listen(el, 'touchmove', this.onTouchMove, {passive: false}));
       }
+    }
+
+    if (
+      this.needsDynamicScrollGuard &&
+      this.unbindActiveTracking &&
+      this.stream.activePointerType === 'touch'
+    ) {
+      this.ensureScrollGuard();
     }
 
     if (
@@ -390,6 +450,9 @@ export class GestureManager {
 
   /** Attaches document-level listeners for the lifetime of a single pointer stream. */
   private ensureActiveTracking(): void {
+    if (this.needsDynamicScrollGuard && this.stream.activePointerType === 'touch') {
+      this.ensureScrollGuard();
+    }
     if (this.unbindActiveTracking) {
       return;
     }
@@ -425,6 +488,7 @@ export class GestureManager {
 
   private stopActiveTracking(): void {
     this.lastHandledDown = null;
+    this.releaseScrollGuard();
     this.unbindActiveTracking?.();
     this.unbindActiveTracking = null;
   }
