@@ -4,7 +4,7 @@ import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_eve
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
 
-describe('PanRecognizer (with integrated Fling)', () => {
+describe('PanRecognizer (with integrated Swipe)', () => {
   let arena: GestureArena;
   let stream: MotionEventStream;
 
@@ -36,7 +36,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
     );
     expect(onPanStart).not.toHaveBeenCalled();
 
-    // Move to x=20 with slop=5: starts at 0 and emits post-slop deltaX = 15 (no 5px jump!)
     arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 0, timeStamp: 20})
@@ -72,7 +71,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
       )
     );
 
-    // Finger 1 starts at x=0 and moves to x=10 -> post-slop deltaX = 8
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -85,14 +83,12 @@ describe('PanRecognizer (with integrated Fling)', () => {
     );
     expect(deltas).toEqual([8]);
 
-    // Finger 2 touches down far away at x=210 (focus shifts to 110, deltaX must NOT jump!)
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 210, clientY: 0, timeStamp: 10})
       )!
     );
 
-    // Finger 1 stays still while Finger 2 moves +20px in 10ms (+2000 px/s) -> centroid moves +10px (+1000 px/s)!
     arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 230, clientY: 0, timeStamp: 20})
@@ -101,7 +97,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
     expect(deltas[deltas.length - 1]).toBeCloseTo(18);
     expect(latestVelocityX).toBeGreaterThan(800);
 
-    // Finger 2 lifts -> focus shifts back to Finger 1 at x=10, then Finger 1 moves +5px to x=15 -> deltaX = 23!
     arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 2, clientX: 230, clientY: 0, timeStamp: 28})
@@ -115,7 +110,7 @@ describe('PanRecognizer (with integrated Fling)', () => {
     expect(deltas[deltas.length - 1]).toBeCloseTo(23);
   });
 
-  it('respects horizontal, vertical, and cardinal direction constraints', () => {
+  it('respects horizontal and vertical axis constraints', () => {
     const onPan = vi.fn();
     arena.add(new PanRecognizer({onPan}, {direction: 'horizontal', slop: 5}));
 
@@ -151,7 +146,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
       )
     );
 
-    // 1. 1st finger moving before 2nd finger arrives is ignored (`!anchorReady`):
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -164,7 +158,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
     );
     expect(onPanStart).not.toHaveBeenCalled();
 
-    // 2nd finger arrives -> vertical drag begins -> lifting 2nd finger (`POINTER_UP`) ends 2-pointer pan cleanly:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 40, clientY: 30, timeStamp: 12})
@@ -197,7 +190,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
       )!
     );
 
-    // 2. Early `POINTER_UP` before active fails; 3rd finger before active fails; `CANCEL` fires `onPanCancel`:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 100})
@@ -259,7 +251,6 @@ describe('PanRecognizer (with integrated Fling)', () => {
     );
     expect(onPanCancel).toHaveBeenCalledTimes(1);
 
-    // Synthetic 2-pointer DOWN on 1-pointer Pan fails immediately:
     const singleFingerPan = new PanRecognizer({}, {numPointers: 1});
     singleFingerPan.onMotionEvent(
       new MotionEvent({
@@ -277,11 +268,10 @@ describe('PanRecognizer (with integrated Fling)', () => {
     );
   });
 
-  it('detects fast horizontal/vertical/2-pointer flings, single-frame flicks, and rejects >40ms pauses or short flicks', () => {
-    const onFling = vi.fn();
-    arena.add(new PanRecognizer({onFling}, {minFlingVelocity: 500, minFlingDistance: 40}));
+  it('detects fast horizontal, vertical, 2-pointer, and single-frame swipes while rejecting >40ms pauses or short flicks', () => {
+    const onSwipe = vi.fn();
+    arena.add(new PanRecognizer({onSwipe}, {minSwipeVelocity: 500, minSwipeDistance: 40}));
 
-    // 1. 40px every 10ms = 4000 px/s rightward
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -302,13 +292,12 @@ describe('PanRecognizer (with integrated Fling)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 80, clientY: 0, timeStamp: 24})
       )!
     );
-    expect(onFling).toHaveBeenCalledWith(
+    expect(onSwipe).toHaveBeenCalledWith(
       expect.objectContaining({direction: 'right', axis: 'horizontal'})
     );
-    expect(onFling.mock.calls[0][0].velocityX).toBeCloseTo(4000, 0);
+    expect(onSwipe.mock.calls[0][0].velocityX).toBeCloseTo(4000, 0);
 
-    // 2. Stationary pause >40ms before liftoff does NOT misfire fling:
-    onFling.mockClear();
+    onSwipe.mockClear();
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 100})
@@ -329,9 +318,8 @@ describe('PanRecognizer (with integrated Fling)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 200, clientY: 0, timeStamp: 232})
       )!
     );
-    expect(onFling).not.toHaveBeenCalled();
+    expect(onSwipe).not.toHaveBeenCalled();
 
-    // 3. Single-frame `DOWN -> UP` flick without intermediate `MOVE`:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 100, timeStamp: 300})
@@ -342,61 +330,59 @@ describe('PanRecognizer (with integrated Fling)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20, timeStamp: 315})
       )!
     );
-    expect(onFling).toHaveBeenCalledWith(
+    expect(onSwipe).toHaveBeenCalledWith(
       expect.objectContaining({direction: 'up', axis: 'vertical'})
     );
 
-    // 4. Short flick (< minFlingDistance) & directional mismatch (`direction: 'left'`):
-    const onLeftFling = vi.fn();
-    const leftArena = new GestureArena();
-    leftArena.add(
+    const onHorizSwipe = vi.fn();
+    const horizArena = new GestureArena();
+    horizArena.add(
       new PanRecognizer(
-        {onFling: onLeftFling},
-        {direction: 'left', minFlingVelocity: 300, minFlingDistance: 100}
+        {onSwipe: onHorizSwipe},
+        {direction: 'horizontal', minSwipeVelocity: 300, minSwipeDistance: 100}
       )
     );
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 0, timeStamp: 400})
       )!
     );
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 50, clientY: 0, timeStamp: 415})
       )!
     );
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 0, timeStamp: 420})
       )!
     );
-    expect(onLeftFling).not.toHaveBeenCalled();
+    expect(onHorizSwipe).not.toHaveBeenCalled();
 
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 500})
       )!
     );
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerMove(
-        pointerEvent('pointermove', {pointerId: 1, clientX: 150, clientY: 0, timeStamp: 515})
+        pointerEvent('pointermove', {pointerId: 1, clientX: 0, clientY: 150, timeStamp: 515})
       )!
     );
-    leftArena.dispatch(
+    horizArena.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 150, clientY: 0, timeStamp: 520})
+        pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 150, timeStamp: 520})
       )!
     );
-    expect(onLeftFling).not.toHaveBeenCalled();
-    leftArena.destroy();
+    expect(onHorizSwipe).not.toHaveBeenCalled();
+    horizArena.destroy();
 
-    // 5. 2-pointer downward fling (`numPointers: 2`, `direction: 'down'`):
     const onTwoFingerDown = vi.fn();
     const arena2 = new GestureArena();
     arena2.add(
       new PanRecognizer(
-        {onFling: onTwoFingerDown},
-        {numPointers: 2, direction: 'down', minFlingVelocity: 300, minFlingDistance: 30}
+        {onSwipe: onTwoFingerDown},
+        {numPointers: 2, direction: 'vertical', minSwipeVelocity: 300, minSwipeDistance: 30}
       )
     );
     arena2.dispatch(
@@ -435,16 +421,15 @@ describe('PanRecognizer (with integrated Fling)', () => {
     arena2.destroy();
   });
 
-  it('recognizes pull-out-then-flick-back flings returning to origin while rejecting tiny liftoff recoil', () => {
-    const onFling = vi.fn();
+  it('recognizes pull-out-then-flick-back swipes returning to origin while rejecting tiny liftoff recoil', () => {
+    const onSwipe = vi.fn();
     arena.add(
       new PanRecognizer(
-        {onFling},
-        {direction: 'horizontal', minFlingVelocity: 400, minFlingDistance: 50}
+        {onSwipe},
+        {direction: 'horizontal', minSwipeVelocity: 400, minSwipeDistance: 50}
       )
     );
 
-    // 1. Pull drawer right from x=0 to x=150, then flick it back closed to x=0 (net displacement = 0, return travel = 150px >= 50px):
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -470,13 +455,12 @@ describe('PanRecognizer (with integrated Fling)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 134})
       )!
     );
-    expect(onFling).toHaveBeenCalledTimes(1);
-    expect(onFling).toHaveBeenCalledWith(
+    expect(onSwipe).toHaveBeenCalledTimes(1);
+    expect(onSwipe).toHaveBeenCalledWith(
       expect.objectContaining({direction: 'left', axis: 'horizontal'})
     );
 
-    // 2. Drag right to x=150, pause, then tiny 8px backward recoil on move before liftoff (8px < 50px minFlingDistance):
-    onFling.mockClear();
+    onSwipe.mockClear();
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 200})
@@ -502,38 +486,37 @@ describe('PanRecognizer (with integrated Fling)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 136, clientY: 0, timeStamp: 328})
       )!
     );
-    expect(onFling).not.toHaveBeenCalled();
+    expect(onSwipe).not.toHaveBeenCalled();
 
-    // 3. Cardinal filter `'right'` allows panning out then back without firing a `'left'` fling:
-    const onRightOnlyFling = vi.fn();
-    const rightArena = new GestureArena();
-    rightArena.add(
+    const onHorizOnlySwipe = vi.fn();
+    const axisArena = new GestureArena();
+    axisArena.add(
       new PanRecognizer(
-        {onFling: onRightOnlyFling},
-        {direction: 'right', minFlingVelocity: 400, minFlingDistance: 40}
+        {onSwipe: onHorizOnlySwipe},
+        {direction: 'horizontal', minSwipeVelocity: 400, minSwipeDistance: 40}
       )
     );
-    rightArena.dispatch(
+    axisArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 400})
       )!
     );
-    rightArena.dispatch(
+    axisArena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 120, clientY: 0, timeStamp: 420})
       )!
     );
-    rightArena.dispatch(
+    axisArena.dispatch(
       stream.onPointerMove(
-        pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 0, timeStamp: 435})
+        pointerEvent('pointermove', {pointerId: 1, clientX: 120, clientY: 100, timeStamp: 435})
       )!
     );
-    rightArena.dispatch(
+    axisArena.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 20, clientY: 0, timeStamp: 438})
+        pointerEvent('pointerup', {pointerId: 1, clientX: 120, clientY: 100, timeStamp: 438})
       )!
     );
-    expect(onRightOnlyFling).not.toHaveBeenCalled();
-    rightArena.destroy();
+    expect(onHorizOnlySwipe).not.toHaveBeenCalled();
+    axisArena.destroy();
   });
 });

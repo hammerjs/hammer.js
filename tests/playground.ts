@@ -1,6 +1,5 @@
 import {
   DEFAULT_VIEW_CONFIGURATION,
-  type FlingEventData,
   GestureManager,
   type GestureRecognizer,
   type LongPressEventData,
@@ -14,6 +13,7 @@ import {
   RotateRecognizer,
   type ScaleEventData,
   ScaleRecognizer,
+  type SwipeEventData,
   type TapEventData,
   TapRecognizer,
   type TouchActionSetting,
@@ -39,7 +39,7 @@ interface PlaygroundConfig {
   enableLongPressMove: boolean;
 
   enablePan: boolean;
-  enableFling: boolean;
+  enableSwipe: boolean;
   panDirection: PanDirection;
   panPointers: number;
   panSimultaneousScaleRotate: boolean;
@@ -116,9 +116,9 @@ const VIEW_CONFIG_KEYS: ReadonlyArray<keyof ViewConfiguration> = [
   'doubleTapTimeout',
   'doubleTapMinTime',
   'longPressTimeout',
-  'minimumFlingVelocity',
-  'minimumFlingDistance',
-  'maximumFlingVelocity',
+  'minimumSwipeVelocity',
+  'minimumSwipeDistance',
+  'maximumSwipeVelocity',
   'velocityHorizonMs',
   'assumePointerStoppedMs',
   'ghostClickTimeout',
@@ -146,8 +146,8 @@ function createBaseConfig(): PlaygroundConfig {
     enableLongPressMove: false,
 
     enablePan: true,
-    enableFling: true,
-    panDirection: 'all',
+    enableSwipe: true,
+    panDirection: 'both',
     panPointers: 1,
     panSimultaneousScaleRotate: false,
 
@@ -174,7 +174,7 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
   switch (preset) {
     case 'carousel':
       next.enablePan = true;
-      next.enableFling = true;
+      next.enableSwipe = true;
       next.panDirection = 'horizontal';
       next.enableScale = false;
       next.enableQuickScale = false;
@@ -184,7 +184,7 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
 
     case 'drawer':
       next.enablePan = true;
-      next.enableFling = true;
+      next.enableSwipe = true;
       next.panDirection = 'vertical';
       next.enableScale = false;
       next.enableQuickScale = false;
@@ -199,7 +199,7 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
       next.enableTapFeedback = true;
       next.enableLongPress = true;
       next.enablePan = false;
-      next.enableFling = false;
+      next.enableSwipe = false;
       next.enableScale = false;
       next.enableQuickScale = false;
       next.enableRotate = false;
@@ -210,7 +210,7 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
       next.enableDoubleTap = true;
       next.enableLongPress = false;
       next.enablePan = false;
-      next.enableFling = false;
+      next.enableSwipe = false;
       next.enableScale = true;
       next.enableQuickScale = true;
       next.enableRotate = true;
@@ -224,8 +224,8 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
       next.enableTwoFingerTap = true;
       next.enableLongPress = true;
       next.enablePan = true;
-      next.enableFling = true;
-      next.panDirection = 'all';
+      next.enableSwipe = true;
+      next.panDirection = 'both';
       next.panPointers = 0;
       next.panSimultaneousScaleRotate = true;
       next.enableScale = true;
@@ -241,8 +241,8 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
       next.enableLongPress = true;
       next.longPressPointers = 2;
       next.enablePan = true;
-      next.enableFling = true;
-      next.panDirection = 'all';
+      next.enableSwipe = true;
+      next.panDirection = 'both';
       next.panPointers = 2;
       next.enableScale = true;
       next.enableQuickScale = false;
@@ -355,7 +355,7 @@ function resetStageTransform(animate = true): void {
   updateCardTransform(animate);
 }
 
-function settleOrPersistTransform(flingVx = 0, flingVy = 0): void {
+function settleOrPersistTransform(swipeVx = 0, swipeVy = 0): void {
   if (persistTransform) {
     const rect = hitarea.getBoundingClientRect();
     const maxOffsetX = Math.max(80, rect.width * 0.42);
@@ -371,10 +371,10 @@ function settleOrPersistTransform(flingVx = 0, flingVy = 0): void {
     return;
   }
 
-  if (flingVx !== 0 || flingVy !== 0) {
-    // Brief visual impulse in the fling vector before springing cleanly back to center
-    activeTx += Math.max(-48, Math.min(48, flingVx * 0.035));
-    activeTy += Math.max(-48, Math.min(48, flingVy * 0.035));
+  if (swipeVx !== 0 || swipeVy !== 0) {
+    // Brief visual impulse in the swipe vector before springing cleanly back to center
+    activeTx += Math.max(-48, Math.min(48, swipeVx * 0.035));
+    activeTy += Math.max(-48, Math.min(48, swipeVy * 0.035));
     updateCardTransform(true);
     setTimeout(() => {
       if (activePointers.size === 0 && !persistTransform) {
@@ -607,8 +607,11 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
     );
   }
   if (cfg.enableSingleTap) {
-    const chain =
-      cfg.enableDoubleTap && cfg.requireDoubleTapFailure ? '.requireFailureOf(doubleTap)' : '';
+    const chain = cfg.enableDoubleTap
+      ? cfg.requireDoubleTapFailure
+        ? '.requireFailureOf(doubleTap)'
+        : '.simultaneousWith(doubleTap)'
+      : '';
     const cbParts = ["onTap: ev => console.log('Tap', ev)"];
     if (cfg.enableTapFeedback) {
       cbParts.unshift("onDown: () => console.log('Down')");
@@ -659,11 +662,11 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
   }
   if (cfg.enablePan) {
     const panCbs = ["onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY)"];
-    if (cfg.enableFling) {
-      panCbs.push("onFling: ev => console.log('Fling', ev.direction, ev.speed)");
+    if (cfg.enableSwipe) {
+      panCbs.push("onSwipe: ev => console.log('Swipe', ev.direction, ev.speed)");
     }
     const panOptEntries: string[] = [];
-    if (cfg.panDirection !== 'all') panOptEntries.push(`direction: '${cfg.panDirection}'`);
+    if (cfg.panDirection !== 'both') panOptEntries.push(`direction: '${cfg.panDirection}'`);
     if (cfg.panPointers !== 1) panOptEntries.push(`numPointers: ${cfg.panPointers}`);
     const panOptsStr = panOptEntries.length > 0 ? `, {${panOptEntries.join(', ')}}` : '';
     lines.push(`const pan = new PanRecognizer({${panCbs.join(', ')}}${panOptsStr});`);
@@ -793,8 +796,12 @@ function rebuildHammer(): void {
         scheduleArenaStateWatch();
       },
     });
-    if (doubleTapRec && config.requireDoubleTapFailure) {
-      singleTap.requireFailureOf(doubleTapRec);
+    if (doubleTapRec) {
+      if (config.requireDoubleTapFailure) {
+        singleTap.requireFailureOf(doubleTapRec);
+      } else {
+        singleTap.simultaneousWith(doubleTapRec);
+      }
     }
     trackedRecognizers.push({label: 'SingleTap', recognizer: singleTap});
   }
@@ -1008,12 +1015,12 @@ function rebuildHammer(): void {
   }
 
   if (config.enablePan) {
-    let flungInStroke = false;
+    let swipedInStroke = false;
     const pan = new PanRecognizer(
       {
         onPanStart: (ev: PanEventData) => {
           gestureCount++;
-          flungInStroke = false;
+          swipedInStroke = false;
           peakStrokeSpeed = ev.speed;
           panOriginX = baseTx;
           panOriginY = baseTy;
@@ -1055,28 +1062,28 @@ function rebuildHammer(): void {
             'PanEnd',
             `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} speed=${Math.round(ev.speed)}px/s`
           );
-          if (!config.enableFling) {
+          if (!config.enableSwipe) {
             settleOrPersistTransform();
           } else {
-            // Defer settle by a microtask so `onFling` (emitted immediately after `onPanEnd`) can supply fling velocity
+            // Defer settle by a microtask so `onSwipe` (emitted immediately after `onPanEnd`) can supply swipe velocity
             queueMicrotask(() => {
-              if (!flungInStroke) {
+              if (!swipedInStroke) {
                 settleOrPersistTransform();
               }
             });
           }
           scheduleArenaStateWatch();
         },
-        onFling: config.enableFling
-          ? (ev: FlingEventData) => {
-              flungInStroke = true;
+        onSwipe: config.enableSwipe
+          ? (ev: SwipeEventData) => {
+              swipedInStroke = true;
               gestureCount++;
               flashStage();
-              updateCommonTelemetry(`Fling (${ev.direction})`, ev.motionEvent);
-              telVelocity.textContent = `FLING ${ev.direction} · ${Math.round(ev.speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)})`;
+              updateCommonTelemetry(`Swipe (${ev.direction})`, ev.motionEvent);
+              telVelocity.textContent = `SWIPE ${ev.direction} · ${Math.round(ev.speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)})`;
               appendLog(
                 'lifecycle',
-                `Fling:${ev.direction}`,
+                `Swipe:${ev.direction}`,
                 `axis=${ev.axis} speed=${Math.round(ev.speed)}px/s vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} dx=${round(ev.deltaX)} dy=${round(ev.deltaY)}`
               );
               settleOrPersistTransform(ev.velocityX, ev.velocityY);
@@ -1156,8 +1163,8 @@ function syncFormFromConfig(cfg: PlaygroundConfig): void {
   el<HTMLInputElement>('enableLongPressMove').checked = cfg.enableLongPressMove;
 
   el<HTMLInputElement>('enablePan').checked = cfg.enablePan;
-  el<HTMLInputElement>('enableFling').checked = cfg.enableFling;
-  el<HTMLInputElement>('enableFling').disabled = !cfg.enablePan;
+  el<HTMLInputElement>('enableSwipe').checked = cfg.enableSwipe;
+  el<HTMLInputElement>('enableSwipe').disabled = !cfg.enablePan;
   el<HTMLSelectElement>('panDirection').value = cfg.panDirection;
   el<HTMLSelectElement>('panPointers').value = String(cfg.panPointers);
   el<HTMLInputElement>('panSimultaneousScaleRotate').checked = cfg.panSimultaneousScaleRotate;
@@ -1205,7 +1212,7 @@ function readConfigFromForm(): PlaygroundConfig {
     enableLongPressMove: el<HTMLInputElement>('enableLongPressMove').checked,
 
     enablePan: el<HTMLInputElement>('enablePan').checked,
-    enableFling: el<HTMLInputElement>('enableFling').checked,
+    enableSwipe: el<HTMLInputElement>('enableSwipe').checked,
     panDirection: el<HTMLSelectElement>('panDirection').value as PanDirection,
     panPointers: Number(el<HTMLSelectElement>('panPointers').value),
     panSimultaneousScaleRotate: el<HTMLInputElement>('panSimultaneousScaleRotate').checked,
@@ -1242,8 +1249,8 @@ function serializeConfigToQuery(cfg: PlaygroundConfig): string {
   if (cfg.longPressPointers !== 1) params.set('lpp', String(cfg.longPressPointers));
   if (cfg.enableLongPressMove) params.set('lpm', '1');
   if (cfg.enablePan !== def.enablePan) params.set('pan', cfg.enablePan ? '1' : '0');
-  if (cfg.enableFling !== def.enableFling) params.set('fl', cfg.enableFling ? '1' : '0');
-  if (cfg.panDirection !== 'all') params.set('dir', cfg.panDirection);
+  if (cfg.enableSwipe !== def.enableSwipe) params.set('sw', cfg.enableSwipe ? '1' : '0');
+  if (cfg.panDirection !== 'both') params.set('dir', cfg.panDirection);
   if (cfg.panPointers !== 1) params.set('ppn', String(cfg.panPointers));
   if (cfg.panSimultaneousScaleRotate) params.set('psim', '1');
   if (cfg.enableScale !== def.enableScale) params.set('sc', cfg.enableScale ? '1' : '0');
@@ -1291,7 +1298,7 @@ function loadConfigFromUrl(): PlaygroundConfig {
   if (params.has('lpp')) cfg.longPressPointers = Number(params.get('lpp')) || 1;
   cfg.enableLongPressMove = boolParam('lpm', cfg.enableLongPressMove);
   cfg.enablePan = boolParam('pan', cfg.enablePan);
-  cfg.enableFling = boolParam('fl', cfg.enableFling);
+  cfg.enableSwipe = boolParam('sw', cfg.enableSwipe);
   if (params.has('dir')) cfg.panDirection = params.get('dir') as PanDirection;
   if (params.has('ppn')) cfg.panPointers = Number(params.get('ppn'));
   cfg.panSimultaneousScaleRotate = boolParam('psim', cfg.panSimultaneousScaleRotate);
@@ -1498,7 +1505,6 @@ function init(): void {
 
   window.addEventListener('resize', renderEnvironmentTable);
 
-  // Theme selector (`auto`, `light`, `dark`)
   const themeSelect = el<HTMLSelectElement>('themeSelect');
   themeSelect.addEventListener('change', () => {
     const val = themeSelect.value;
@@ -1511,7 +1517,6 @@ function init(): void {
     }
   });
 
-  // Preset selector
   const presetSelect = el<HTMLSelectElement>('presetSelect');
   presetSelect.addEventListener('change', () => {
     config = applyPresetOverrides(presetSelect.value, config);
@@ -1520,7 +1525,6 @@ function init(): void {
     rebuildHammer();
   });
 
-  // Form controls
   const configForm = el<HTMLFormElement>('configForm');
   configForm.addEventListener('submit', e => e.preventDefault());
   configForm.addEventListener('change', e => {
@@ -1534,14 +1538,12 @@ function init(): void {
     rebuildHammer();
   });
 
-  // Reset ViewConfiguration defaults
   el<HTMLButtonElement>('resetViewConfigBtn').addEventListener('click', () => {
     config.viewConfig = {...DEFAULT_VIEW_CONFIGURATION};
     syncFormFromConfig(config);
     rebuildHammer();
   });
 
-  // Reset entire playground
   el<HTMLButtonElement>('resetAllBtn').addEventListener('click', () => {
     config = createBaseConfig();
     childClickCount = 0;
@@ -1554,7 +1556,6 @@ function init(): void {
     rebuildHammer();
   });
 
-  // Stage transform controls
   const persistToggle = el<HTMLInputElement>('persistTransformToggle');
   persistToggle.addEventListener('change', () => {
     persistTransform = persistToggle.checked;
@@ -1572,7 +1573,6 @@ function init(): void {
     hitarea.classList.toggle('tall-stage', tallStageToggle.checked);
   });
 
-  // Log filters & actions
   filterLifecycle.addEventListener('change', renderLog);
   filterMove.addEventListener('change', renderLog);
   filterDom.addEventListener('change', renderLog);

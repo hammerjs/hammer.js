@@ -54,13 +54,11 @@ describe('TouchBehavior', () => {
     expect(resolveSupportedTouchAction('pan-x pinch-zoom')).toBe('pan-x pinch-zoom');
     expect(resolveSupportedTouchAction('pinch-zoom')).toBe('pinch-zoom');
 
-    // Missing `window.CSS` falls back to returning the requested token directly:
     window.CSS = undefined as unknown as typeof CSS;
     expect(resolveSupportedTouchAction('pan-y pinch-zoom')).toBe('pan-y pinch-zoom');
   });
 
   it('applies touch-action without blocking selection on tap-only surfaces, and restores prior inline styles cleanly', () => {
-    // Tap-only (`preventSelectionAndDrag = false`):
     const cleanupPassive = applySurfaceBehavior(element, 'manipulation', false);
     expect(element.style.touchAction).toBe('manipulation');
     expect(element.style.userSelect || '').toBe('');
@@ -72,7 +70,6 @@ describe('TouchBehavior', () => {
     cleanupPassive();
     expect(element.style.touchAction || '').toBe('');
 
-    // Prior inline styles are preserved and restored on cleanup when `preventSelectionAndDrag = true`:
     element.style.touchAction = 'pan-x';
     element.style.userSelect = 'text';
     const cleanupActive = applySurfaceBehavior(element, 'pan-y', true);

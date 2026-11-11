@@ -1,6 +1,6 @@
 import {GestureArena} from './gesture_arena';
 import type {GestureRecognizer} from './gesture_recognizer';
-import {MotionEventStream} from './motion_event';
+import {MotionAction, MotionEventStream} from './motion_event';
 import {
   allowsPinchZoom,
   applySurfaceBehavior,
@@ -105,8 +105,11 @@ export class GestureManager {
   constructor(element: HTMLElement, options: Partial<GestureManagerOptions> = {}) {
     this.element = element;
     this.options = {
-      ...GestureManager.DEFAULTS,
-      ...options,
+      supportedPointerTypes:
+        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
+      touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
+      viewConfiguration: options.viewConfiguration,
+      recognizers: options.recognizers,
     };
 
     this.arena = new GestureArena(this.options.viewConfiguration, {
@@ -170,8 +173,6 @@ export class GestureManager {
     this.arena.destroy();
   }
 
-  // --- Shared DOM guard handlers (allocated once, attached to the element and/or document) ---
-
   /**
    * Non-passive `touchmove` guard. Prevents native pinch-zoom when a recognizer claims it, and
    * native scrolling while a gesture owns the stream. Scroll ownership only applies to touches
@@ -218,8 +219,6 @@ export class GestureManager {
     }
   };
 
-  // --- Pointer stream handlers ---
-
   private readonly onElementPointerDown = (e: PointerEvent): void => {
     this.lastHandledDown = e;
     if (this.isValidPointer(e)) {
@@ -231,9 +230,10 @@ export class GestureManager {
     if (e === this.lastHandledDown || !this.isValidPointer(e)) {
       return;
     }
+    const pointerType = e.pointerType || 'touch';
     // Allow secondary touch fingers landing outside `this.element` to join an active multi-touch stream:
     if (
-      e.pointerType === 'touch' &&
+      pointerType === 'touch' &&
       !e.isPrimary &&
       this.arena.acceptsMultiTouch &&
       this.stream.activePointerCount > 0 &&
@@ -244,7 +244,7 @@ export class GestureManager {
     }
     // If a brand-new primary touch or mouse press starts outside `this.element`, any active stream on
     // `this.element` was orphaned by a swallowed `pointerup`; abort it cleanly without interfering.
-    if ((e.pointerType === 'touch' && e.isPrimary) || e.pointerType === 'mouse') {
+    if ((pointerType === 'touch' && e.isPrimary) || pointerType === 'mouse') {
       this.abortActiveStream(e);
     }
   };
@@ -466,6 +466,9 @@ export class GestureManager {
     const motionEvent = this.stream.onPointerDown(e);
     if (!motionEvent) {
       return;
+    }
+    if (motionEvent.action === MotionAction.DOWN && this.capturedPointers.size > 0) {
+      this.releaseAllCapturedPointers();
     }
 
     this.ensureActiveTracking();

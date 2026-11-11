@@ -48,14 +48,14 @@ export interface ViewConfiguration {
   /** Stationary hold duration in `ms` within `touchSlop` required to trigger a long press. Default: `500`. */
   readonly longPressTimeout: number;
 
-  /** Minimum release speed in `px/s` required to recognize a fling. Default: `300`. */
-  readonly minimumFlingVelocity: number;
+  /** Minimum release speed in `px/s` required to recognize a swipe. Default: `300`. */
+  readonly minimumSwipeVelocity: number;
 
-  /** Minimum net displacement in `px` required to recognize a fling. Default: `30`. */
-  readonly minimumFlingDistance: number;
+  /** Minimum net displacement in `px` required to recognize a swipe. Default: `30`. */
+  readonly minimumSwipeDistance: number;
 
-  /** Radial upper bound in `px/s` applied to computed velocities (`hypot(vx, vy) <= maximumFlingVelocity`). Default: `8000`. */
-  readonly maximumFlingVelocity: number;
+  /** Radial upper bound in `px/s` applied to computed velocities (`hypot(vx, vy) <= maximumSwipeVelocity`). Default: `8000`. */
+  readonly maximumSwipeVelocity: number;
 
   /** Rolling lookback window in `ms` used by `VelocityTracker` (`LSQ2`). Default: `100`. */
   readonly velocityHorizonMs: number;
@@ -82,9 +82,9 @@ export const DEFAULT_VIEW_CONFIGURATION: ViewConfiguration = Object.freeze({
   doubleTapTimeout: 300,
   doubleTapMinTime: 40,
   longPressTimeout: 500,
-  minimumFlingVelocity: 300,
-  minimumFlingDistance: 30,
-  maximumFlingVelocity: 8000,
+  minimumSwipeVelocity: 300,
+  minimumSwipeDistance: 30,
+  maximumSwipeVelocity: 8000,
   velocityHorizonMs: 100,
   assumePointerStoppedMs: 40,
   ghostClickTimeout: 400,
@@ -93,11 +93,7 @@ export const DEFAULT_VIEW_CONFIGURATION: ViewConfiguration = Object.freeze({
 export function resolveViewConfiguration(
   overrides?: Partial<ViewConfiguration>
 ): ViewConfiguration {
-  if (!overrides || Object.keys(overrides).length === 0) {
-    return DEFAULT_VIEW_CONFIGURATION;
-  }
-  return Object.freeze({
-    ...DEFAULT_VIEW_CONFIGURATION,
-    ...overrides,
-  });
+  return overrides
+    ? Object.freeze({...DEFAULT_VIEW_CONFIGURATION, ...overrides})
+    : DEFAULT_VIEW_CONFIGURATION;
 }

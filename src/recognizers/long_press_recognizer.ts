@@ -19,7 +19,7 @@ export interface LongPressEventData extends GestureEventData {
 }
 
 export interface LongPressCallbacks {
-  onLongPress: (event: LongPressEventData) => void;
+  onLongPress?: (event: LongPressEventData) => void;
   onLongPressMove?: (event: LongPressEventData) => void;
   onLongPressUp?: (event: LongPressEventData) => void;
   onLongPressCancel?: () => void;
@@ -159,7 +159,7 @@ export class LongPressRecognizer extends GestureRecognizer {
       const triggerEvent = this.lastEvent ?? armEvent;
       this.tryBegin(() => {
         this.anchorFocus = triggerEvent.focus;
-        this.callbacks.onLongPress(this.buildEventData(triggerEvent));
+        this.callbacks.onLongPress?.(this.buildEventData(triggerEvent));
       });
     });
   }

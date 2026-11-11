@@ -60,6 +60,7 @@ export class TapRecognizer extends GestureRecognizer {
   private totalPointersInStroke = 0;
   private strokeDownCenter: Point | null = null;
   private strokeCenter: Point | null = null;
+  private lastEvent: MotionEvent | null = null;
 
   private completedTaps = 0;
   private firstTapDownFocus: Point | null = null;
@@ -86,7 +87,7 @@ export class TapRecognizer extends GestureRecognizer {
   }
 
   private get targetTaps(): number {
-    return Math.max(1, this.userOptions.taps ?? 1);
+    return this.userOptions.taps ?? 1;
   }
 
   private get numPointers(): number {
@@ -147,6 +148,8 @@ export class TapRecognizer extends GestureRecognizer {
   }
 
   onMotionEvent(event: MotionEvent): void {
+    this.lastEvent = event;
+
     switch (event.action) {
       case MotionAction.DOWN: {
         this.clearTimer(SHOW_PRESS_TIMER);
@@ -170,7 +173,7 @@ export class TapRecognizer extends GestureRecognizer {
 
         if (this.callbacks.onShowPress && this.numPointers === 1) {
           this.setTimer(SHOW_PRESS_TIMER, this.config.tapTimeout, () => {
-            this.callbacks.onShowPress?.(this.buildTapEvent(event, tapNumber));
+            this.callbacks.onShowPress?.(this.buildTapEvent(this.lastEvent!, tapNumber));
           });
         }
 
@@ -278,6 +281,7 @@ export class TapRecognizer extends GestureRecognizer {
     this.totalPointersInStroke = 0;
     this.strokeDownCenter = null;
     this.strokeCenter = null;
+    this.lastEvent = null;
     this.clearMultiTapSequence();
   }
 

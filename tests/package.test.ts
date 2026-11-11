@@ -14,7 +14,6 @@ describe('Published package', () => {
       default: './dist/hammer.es.js',
     });
 
-    // Verify `@internal` members are stripped from emitted `.d.ts` declarations:
     const recognizerDts = readFileSync(
       resolve(__dirname, '../dist/types/gesture_recognizer.d.ts'),
       'utf8'
@@ -22,21 +21,19 @@ describe('Published package', () => {
     expect(recognizerDts).not.toContain('denyByArena');
     expect(recognizerDts).not.toContain('lastDispatchToken');
 
-    // Internals stay out of the public entry point:
     const esEntry = resolve(__dirname, '../dist/hammer.es.js').replace(/\\/g, '/');
     const publicApi = (await import(/* @vite-ignore */ esEntry)) as Record<string, unknown>;
     expect(publicApi.default).toBeUndefined();
     expect(publicApi.GestureArena).toBeUndefined();
     expect(publicApi.MotionEventStream).toBeUndefined();
     expect(publicApi.applySurfaceBehavior).toBeUndefined();
+    expect(typeof publicApi.Hammer).toBe('function');
     expect(typeof publicApi.GestureManager).toBe('function');
     expect(typeof publicApi.QuickScaleRecognizer).toBe('function');
 
-    // CommonJS consumers load the same ESM build through `require(esm)` (Node >= 20.19):
     const required = createRequire(import.meta.url)(esEntry) as Record<string, unknown>;
     expect(Object.keys(required).sort()).toEqual(Object.keys(publicApi).sort());
 
-    // Verify named imports (`GestureManager` + `TapRecognizer`) tree-shake out unused recognizers & VelocityTracker:
     const buildResult = await build({
       configFile: false,
       logLevel: 'silent',
@@ -69,6 +66,7 @@ describe('Published package', () => {
     const shakenCode = output.output[0].code;
     const fullEsCode = readFileSync(esEntry, 'utf8');
     expect(shakenCode).toContain('TapRecognizer');
+    expect(shakenCode).not.toContain('requireDoubleTapFailure');
     expect(shakenCode).not.toContain('onPanStart');
     expect(shakenCode).not.toContain('onScaleStart');
     expect(shakenCode).not.toContain('onRotateStart');

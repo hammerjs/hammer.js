@@ -1,4 +1,4 @@
-// Core
+export {Hammer, type HammerOptions} from './hammer';
 export {GestureManager, type GestureManagerOptions} from './gesture_manager';
 export {
   GestureRecognizer,
@@ -22,7 +22,6 @@ export {
 export {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration';
 export type {TouchActionSetting, TouchActionValue} from './touch_behavior';
 
-// Recognizers
 export {
   LongPressRecognizer,
   type LongPressCallbacks,
@@ -32,12 +31,12 @@ export {
 export {
   PanRecognizer,
   type CardinalDirection,
-  type FlingEventData,
   type GestureAxis,
   type PanCallbacks,
   type PanDirection,
   type PanEventData,
   type PanOptions,
+  type SwipeEventData,
 } from './recognizers/pan_recognizer';
 export {QuickScaleRecognizer, type QuickScaleOptions} from './recognizers/quick_scale_recognizer';
 export {

@@ -66,6 +66,11 @@
         gap: 0.5rem;
       }
 
+      header nav > * {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+      }
+
       header h1 {
         font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
         margin: 0;
@@ -90,13 +95,22 @@
         margin: 0;
         padding: 0.4rem 0.75rem;
         width: auto;
+        max-inline-size: 100%;
+      }
+
+      .top-controls select {
+        text-overflow: ellipsis;
       }
 
       .playground-grid {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 1rem;
         align-items: start;
+      }
+
+      .playground-grid > * {
+        min-inline-size: 0;
       }
 
       @media (min-width: 992px) {
@@ -106,6 +120,8 @@
       }
 
       article {
+        min-inline-size: 0;
+        max-inline-size: 100%;
         margin-bottom: 1rem;
         padding: 1rem;
       }
@@ -243,6 +259,7 @@
         margin-top: 0.65rem;
         font-size: 0.85rem;
         color: var(--pico-muted-color);
+        overflow-wrap: break-word;
       }
 
       .surface-meta p {
@@ -328,24 +345,39 @@
         text-overflow: ellipsis;
       }
 
-      #eventLog {
-        margin: 0;
-        max-height: 36dvh;
+      #eventLog,
+      .code-preview-block {
+        inline-size: 100%;
+        max-inline-size: 100%;
         overflow: auto;
         overscroll-behavior: contain;
+      }
+
+      #eventLog {
+        margin: 0;
+        max-block-size: 36dvh;
+        scrollbar-gutter: stable;
         font-size: 0.78rem;
         line-height: 1.45;
       }
 
+      #eventLog > code,
+      .code-preview-block > code {
+        display: block;
+        inline-size: max-content;
+        min-inline-size: 100%;
+        overflow: visible;
+      }
+
       .config-grid-2 {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
         gap: 0.6rem 0.85rem;
       }
 
       .vc-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
         gap: 0.5rem 0.75rem;
       }
 
@@ -361,6 +393,8 @@
       }
 
       details {
+        min-inline-size: 0;
+        max-inline-size: 100%;
         margin-bottom: 0.75rem;
         padding-bottom: 0.5rem;
       }
@@ -378,6 +412,10 @@
 
       .checkbox-row label {
         margin-bottom: 0;
+      }
+
+      .checkbox-row code {
+        overflow-wrap: anywhere;
       }
 
       .recognizer-group {
@@ -399,6 +437,8 @@
       }
 
       .env-table {
+        inline-size: 100%;
+        max-inline-size: 100%;
         font-size: 0.82rem;
         margin-bottom: 0;
       }
@@ -409,7 +449,12 @@
       }
 
       .env-table td {
+        overflow-wrap: anywhere;
         word-break: break-word;
+      }
+
+      .code-preview-block {
+        margin: 0;
       }
 
       #codePreview {
@@ -675,15 +720,15 @@
                 </div>
 
                 <div class="recognizer-group">
-                  <h3>Pan &amp; Fling</h3>
+                  <h3>Pan &amp; Swipe</h3>
                   <div class="checkbox-row">
                     <label for="enablePan">
                       <input type="checkbox" id="enablePan" name="enablePan" checked />
                       Enable Pan
                     </label>
-                    <label for="enableFling">
-                      <input type="checkbox" id="enableFling" name="enableFling" checked />
-                      Enable <code>onFling</code>
+                    <label for="enableSwipe">
+                      <input type="checkbox" id="enableSwipe" name="enableSwipe" checked />
+                      Enable <code>onSwipe</code>
                     </label>
                     <label for="panSimultaneousScaleRotate">
                       <input
@@ -698,13 +743,9 @@
                     <label for="panDirection">
                       Direction Lock
                       <select id="panDirection" name="panDirection">
-                        <option value="all">all (2D unrestricted)</option>
-                        <option value="horizontal">horizontal (left + right)</option>
-                        <option value="vertical">vertical (up + down)</option>
-                        <option value="left">left only</option>
-                        <option value="right">right only</option>
-                        <option value="up">up only</option>
-                        <option value="down">down only</option>
+                        <option value="both">both (2D unrestricted)</option>
+                        <option value="horizontal">horizontal</option>
+                        <option value="vertical">vertical</option>
                       </select>
                     </label>
                     <label for="panPointers">
@@ -862,32 +903,32 @@
                       step="25"
                     />
                   </label>
-                  <label for="vc_minimumFlingVelocity">
-                    minFlingVelocity (px/s)
+                  <label for="vc_minimumSwipeVelocity">
+                    minSwipeVelocity (px/s)
                     <input
                       type="number"
-                      id="vc_minimumFlingVelocity"
-                      name="vc_minimumFlingVelocity"
+                      id="vc_minimumSwipeVelocity"
+                      name="vc_minimumSwipeVelocity"
                       min="10"
                       step="25"
                     />
                   </label>
-                  <label for="vc_minimumFlingDistance">
-                    minFlingDistance (px)
+                  <label for="vc_minimumSwipeDistance">
+                    minSwipeDistance (px)
                     <input
                       type="number"
-                      id="vc_minimumFlingDistance"
-                      name="vc_minimumFlingDistance"
+                      id="vc_minimumSwipeDistance"
+                      name="vc_minimumSwipeDistance"
                       min="0"
                       step="5"
                     />
                   </label>
-                  <label for="vc_maximumFlingVelocity">
-                    maxFlingVelocity (px/s)
+                  <label for="vc_maximumSwipeVelocity">
+                    maxSwipeVelocity (px/s)
                     <input
                       type="number"
-                      id="vc_maximumFlingVelocity"
-                      name="vc_maximumFlingVelocity"
+                      id="vc_maximumSwipeVelocity"
+                      name="vc_maximumSwipeVelocity"
                       min="500"
                       step="250"
                     />
@@ -945,7 +986,7 @@
                   Copy Snippet
                 </button>
               </p>
-              <pre tabindex="0"><code id="codePreview"></code></pre>
+              <pre class="code-preview-block" tabindex="0"><code id="codePreview"></code></pre>
             </details>
           </article>
         </section>

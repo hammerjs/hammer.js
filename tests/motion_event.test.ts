@@ -38,7 +38,6 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(move.focus).toEqual({x: 200, y: 100});
     expect(move.getSpan()).toBeCloseTo(200);
 
-    // When pointer 1 lifts (`POINTER_UP`), `focus` excludes pointer 1 and smoothly shifts to pointer 2!
     const up1 = stream.onPointerUp(
       pointerEvent('pointerup', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 40})
     )!;
@@ -68,14 +67,12 @@ describe('MotionEvent & MotionEventStream', () => {
       )
     ).toBeNull();
 
-    // Stylus barrel-button press (`button: 2`) is also ignored:
     expect(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, pointerType: 'pen', button: 2})
       )
     ).toBeNull();
 
-    // macOS Ctrl+Click (`button: 0, ctrlKey: true`) opens native context menu and must be ignored:
     expect(
       stream.onPointerDown(
         pointerEvent('pointerdown', {
@@ -87,7 +84,6 @@ describe('MotionEvent & MotionEventStream', () => {
       )
     ).toBeNull();
 
-    // Primary mouse press with `buttons: 1` tracks button state and detects off-page release (`buttons: 0`):
     stream.onPointerDown(
       pointerEvent('pointerdown', {pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1})
     );
@@ -226,11 +222,9 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(down2.getSpanY()).toBeCloseTo(100);
     expect([...stream.activePointerIds]).toContain(20);
 
-    // Untracked pointerup / pointercancel return null:
     expect(stream.onPointerUp(pointerEvent('pointerup', {pointerId: 777}))).toBeNull();
     expect(stream.onPointerCancel(pointerEvent('pointercancel', {pointerId: 777}))).toBeNull();
 
-    // Non-finite timestamp, empty pointerType, and undefined pressure fallbacks:
     stream.reset();
     expect(stream.activePointerCount).toBe(0);
     const rawEv = new Event('pointerdown') as PointerEvent;
@@ -288,7 +282,6 @@ describe('MotionEvent & MotionEventStream', () => {
     });
     expect(stream.onPointerCancel(rawCancel)!.pointerType).toBe('touch');
 
-    // Synthetic empty and single-pointer POINTER_UP snapshots:
     const emptySnapshot = new MotionEvent({
       action: MotionAction.DOWN,
       downTime: 0,
@@ -313,8 +306,7 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(degeneratePointerUp.focus).toEqual({x: 42, y: 84});
   });
 
-  it('recovers from primary and secondary orphaned ghost pointers, modality switches, and WebKit 0ms coalesced samples', () => {
-    // 1. Primary touch #1 lifts cleanly, secondary touch #2 is orphaned -> next primary touch #3 recovers as fresh DOWN:
+  it('recovers from orphaned ghost pointers and modality switches', () => {
     stream.onPointerDown(
       pointerEvent('pointerdown', {
         pointerId: 1,
@@ -345,7 +337,7 @@ describe('MotionEvent & MotionEventStream', () => {
         timeStamp: 25,
       })
     );
-    // Now `pointerId: 2` is orphaned in `stream`. A new primary touch `pointerId: 3` arrives:
+    // Secondary pointerId 2 was never released; next primary touch starts a clean stream.
     const recoveredDown = stream.onPointerDown(
       pointerEvent('pointerdown', {
         pointerId: 3,
@@ -360,7 +352,6 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(recoveredDown.pointerCount).toBe(1);
     expect(recoveredDown.downTime).toBe(500);
 
-    // 2. Modality switch (`touch` -> `pen`) & duplicate `pointerId` recover as fresh DOWN:
     const penDown = stream.onPointerDown(
       pointerEvent('pointerdown', {
         pointerId: 9,
@@ -384,8 +375,19 @@ describe('MotionEvent & MotionEventStream', () => {
     )!;
     expect(dupDown.action).toBe(MotionAction.DOWN);
     expect(dupDown.downTime).toBe(600);
+  });
 
-    // 3. `includeHistory = false` skips `getCoalescedEvents()` completely on 120Hz moves:
+  it('filters bogus coalesced samples, skips history when disabled, and supports silent updates and cancelAll', () => {
+    stream.onPointerDown(
+      pointerEvent('pointerdown', {
+        pointerId: 9,
+        pointerType: 'mouse',
+        clientX: 70,
+        clientY: 80,
+        timeStamp: 600,
+      })
+    );
+
     const coalescedSpy = vi.fn(() => []);
     const noHistoryEv = pointerEvent('pointermove', {
       pointerId: 9,
@@ -398,7 +400,6 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(coalescedSpy).not.toHaveBeenCalled();
     expect(fastMove.history).toHaveLength(0);
 
-    // 4. WebKit bogus `timeStamp === 0` or future coalesced samples are filtered out:
     const bogusZero = pointerEvent('pointermove', {
       pointerId: 9,
       clientX: 76,
@@ -428,13 +429,11 @@ describe('MotionEvent & MotionEventStream', () => {
     )!;
     expect(webkitMove.history).toHaveLength(0);
 
-    // 5. `updatePointerSilent` updates active pointer & ignores unknown pointers:
     stream.updatePointerSilent(pointerEvent('pointermove', {pointerId: 999, clientX: 1}));
     stream.updatePointerSilent(
       pointerEvent('pointermove', {pointerId: 9, clientX: 120, clientY: 130})
     );
 
-    // 6. `cancelAll` aborts active pointers with finite & fallback timestamps:
     const blurEv = new Event('blur');
     Object.defineProperty(blurEv, 'timeStamp', {value: 700});
     const cancelled = stream.cancelAll(blurEv)!;
@@ -443,7 +442,6 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(cancelled.focus).toEqual({x: 120, y: 130});
     expect(stream.cancelAll(blurEv)).toBeNull();
 
-    // Fallback timestamp when `triggerEvent.timeStamp <= 0`:
     stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 3, isPrimary: true}));
     const zeroBlur = new Event('blur');
     Object.defineProperty(zeroBlur, 'timeStamp', {value: 0});

@@ -144,7 +144,7 @@ export class ScaleRecognizer extends GestureRecognizer {
           return;
         }
 
-        const scaleFactor = this.prevSpan > 0 ? span / this.prevSpan : 1;
+        const scaleFactor = span / this.prevSpan;
         if (scaleFactor !== 1) {
           this.cumulativeScale *= scaleFactor;
           this.emitChange(() => {
@@ -204,7 +204,7 @@ export class ScaleRecognizer extends GestureRecognizer {
   private configureMultiPointerSpan(event: MotionEvent): void {
     const span = event.getSpan();
     this.initialSpan = span;
-    this.prevSpan = span;
+    this.prevSpan = this.active ? Math.max(1, this.minSpan, span) : span;
     this.currSpan = span;
     this.prevTime = event.eventTime;
   }

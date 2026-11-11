@@ -6,7 +6,7 @@ import type {ViewConfiguration} from '../view_configuration';
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
 export type GestureAxis = 'horizontal' | 'vertical';
-export type PanDirection = 'all' | GestureAxis | CardinalDirection;
+export type PanDirection = 'horizontal' | 'vertical' | 'both';
 
 export interface PanOptions {
   /**
@@ -16,14 +16,14 @@ export interface PanOptions {
   numPointers: number;
   /** Movement distance in `px` required before panning begins. */
   slop: number;
-  /** Axis or cardinal direction constraint. Default: `'all'`. */
+  /** Axis constraint (`'horizontal'`, `'vertical'`, or `'both'`). Default: `'both'`. */
   direction: PanDirection;
-  /** Minimum release speed in `px/s` required to trigger `onFling`. */
-  minFlingVelocity: number;
+  /** Minimum release speed in `px/s` required to trigger `onSwipe`. */
+  minSwipeVelocity: number;
   /** Maximum radial velocity magnitude in `px/s`. */
-  maxFlingVelocity: number;
-  /** Minimum travel distance in `px` along the release velocity vector required to trigger `onFling`. */
-  minFlingDistance: number;
+  maxSwipeVelocity: number;
+  /** Minimum travel distance in `px` along the release velocity vector required to trigger `onSwipe`. */
+  minSwipeDistance: number;
 }
 
 export interface PanEventData extends GestureEventData {
@@ -45,7 +45,7 @@ export interface PanEventData extends GestureEventData {
   readonly pointerCount: number;
 }
 
-export interface FlingEventData extends PanEventData {
+export interface SwipeEventData extends PanEventData {
   /** Primary cardinal direction of the release velocity vector. */
   readonly direction: CardinalDirection;
   /** Primary axis of the release velocity vector (`'horizontal'` | `'vertical'`). */
@@ -56,7 +56,7 @@ export interface PanCallbacks {
   onPanStart?: (data: PanEventData) => void;
   onPan?: (data: PanEventData) => void;
   onPanEnd?: (data: PanEventData) => void;
-  onFling?: (data: FlingEventData) => void;
+  onSwipe?: (data: SwipeEventData) => void;
   onPanCancel?: () => void;
 }
 
@@ -122,14 +122,10 @@ export class PanRecognizer extends GestureRecognizer {
   override getTouchAction(): TouchActionValue {
     switch (this.direction) {
       case 'horizontal':
-      case 'left':
-      case 'right':
         return 'pan-y pinch-zoom';
       case 'vertical':
-      case 'up':
-      case 'down':
         return 'pan-x pinch-zoom';
-      case 'all':
+      case 'both':
         return 'none';
     }
   }
@@ -153,19 +149,19 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   private get direction(): PanDirection {
-    return this.userOptions.direction ?? 'all';
+    return this.userOptions.direction ?? 'both';
   }
 
-  private get minFlingVelocity(): number {
-    return this.userOptions.minFlingVelocity ?? this.config.minimumFlingVelocity;
+  private get minSwipeVelocity(): number {
+    return this.userOptions.minSwipeVelocity ?? this.config.minimumSwipeVelocity;
   }
 
-  private get maxFlingVelocity(): number {
-    return this.userOptions.maxFlingVelocity ?? this.config.maximumFlingVelocity;
+  private get maxSwipeVelocity(): number {
+    return this.userOptions.maxSwipeVelocity ?? this.config.maximumSwipeVelocity;
   }
 
-  private get minFlingDistance(): number {
-    return this.userOptions.minFlingDistance ?? this.config.minimumFlingDistance;
+  private get minSwipeDistance(): number {
+    return this.userOptions.minSwipeDistance ?? this.config.minimumSwipeDistance;
   }
 
   onMotionEvent(event: MotionEvent): void {
@@ -280,7 +276,7 @@ export class PanRecognizer extends GestureRecognizer {
       }
     } finally {
       if (event.action === MotionAction.POINTER_UP) {
-        tracker.finalizePointerUp(event, this.maxFlingVelocity);
+        tracker.finalizePointerUp(event, this.maxSwipeVelocity);
       }
     }
   }
@@ -310,32 +306,13 @@ export class PanRecognizer extends GestureRecognizer {
 
   private matchesDirectionLock(dx: number, dy: number): boolean {
     switch (this.direction) {
-      case 'all':
-        return true;
       case 'horizontal':
         return Math.abs(dx) >= Math.abs(dy);
       case 'vertical':
         return Math.abs(dy) >= Math.abs(dx);
-      case 'left':
-        return Math.abs(dx) >= Math.abs(dy) && dx < 0;
-      case 'right':
-        return Math.abs(dx) >= Math.abs(dy) && dx > 0;
-      case 'up':
-        return Math.abs(dy) >= Math.abs(dx) && dy < 0;
-      case 'down':
-        return Math.abs(dy) >= Math.abs(dx) && dy > 0;
+      case 'both':
+        return true;
     }
-  }
-
-  private matchesFlingDirection(direction: CardinalDirection, axis: GestureAxis): boolean {
-    const filter = this.direction;
-    if (filter === 'all') {
-      return true;
-    }
-    if (filter === 'horizontal' || filter === 'vertical') {
-      return axis === filter;
-    }
-    return direction === filter;
   }
 
   private reanchor(focus: Point, ready: boolean): void {
@@ -368,18 +345,18 @@ export class PanRecognizer extends GestureRecognizer {
 
     if (this.active) {
       const endData = this.buildEndEventData(event, centerOverride);
-      const flingData = this.evaluateFling(endFocus, endData);
+      const swipeData = this.evaluateSwipe(endFocus, endData);
       this.completeActive(() => {
         this.callbacks.onPanEnd?.(endData);
-        if (flingData) {
-          this.callbacks.onFling?.(flingData);
+        if (swipeData) {
+          this.callbacks.onSwipe?.(swipeData);
         }
       });
       return;
     }
 
     // Handle single-frame flicks where `UP` arrives past `slop` without an intermediate `MOVE`:
-    if (this.anchorReady && this.callbacks.onFling) {
+    if (this.anchorReady && this.callbacks.onSwipe) {
       const dx = endFocus.x - this.downFocusX;
       const dy = endFocus.y - this.downFocusY;
       const dist = Math.hypot(dx, dy);
@@ -388,10 +365,10 @@ export class PanRecognizer extends GestureRecognizer {
         this.totalDeltaX = dx * (1 - slopRatio);
         this.totalDeltaY = dy * (1 - slopRatio);
         const endData = this.buildEndEventData(event, centerOverride);
-        const flingData = this.evaluateFling(endFocus, endData);
-        if (flingData) {
+        const swipeData = this.evaluateSwipe(endFocus, endData);
+        if (swipeData) {
           this.tryRecognizeDiscrete(() => {
-            this.callbacks.onFling?.(flingData);
+            this.callbacks.onSwipe?.(swipeData);
           });
           return;
         }
@@ -401,26 +378,26 @@ export class PanRecognizer extends GestureRecognizer {
     this.fail();
   }
 
-  private evaluateFling(endFocus: Point, endData: PanEventData): FlingEventData | null {
-    if (!this.callbacks.onFling) {
+  private evaluateSwipe(endFocus: Point, endData: PanEventData): SwipeEventData | null {
+    if (!this.callbacks.onSwipe) {
       return null;
     }
     const {velocityX: vx, velocityY: vy, speed} = endData;
-    if (speed < this.minFlingVelocity || speed <= 0) {
+    if (speed < this.minSwipeVelocity || speed <= 0) {
       return null;
     }
 
     // Measure travel toward `endFocus` from the stroke's opposing extremum along `(vx, vy)` so
-    // pull-out-then-flick-back succeeds while tiny liftoff recoil (`< minFlingDistance`) fails.
+    // pull-out-then-flick-back succeeds while tiny liftoff recoil (`< minSwipeDistance`) fails.
     const spanX = vx >= 0 ? endFocus.x - this.minFocusX : this.maxFocusX - endFocus.x;
     const spanY = vy >= 0 ? endFocus.y - this.minFocusY : this.maxFocusY - endFocus.y;
     const travelInVelocityDir = (spanX * Math.abs(vx) + spanY * Math.abs(vy)) / speed;
-    if (travelInVelocityDir < this.minFlingDistance) {
+    if (travelInVelocityDir < this.minSwipeDistance) {
       return null;
     }
 
     const {direction, axis} = computeCardinalDirection(vx, vy);
-    if (!this.matchesFlingDirection(direction, axis)) {
+    if (this.direction !== 'both' && axis !== this.direction) {
       return null;
     }
 
@@ -445,7 +422,7 @@ export class PanRecognizer extends GestureRecognizer {
 
   private readActiveVelocity(event: MotionEvent): VelocityVector {
     const tracker = this.ensureTracker();
-    tracker.computeCurrentVelocity(1000, this.maxFlingVelocity);
+    tracker.computeCurrentVelocity(1000, this.maxSwipeVelocity);
     const active = event.getActivePointers();
     if (active.length <= 1) {
       return tracker.getVelocity(active[0]?.pointerId ?? event.actionPointerId);
@@ -469,11 +446,11 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   private buildEndEventData(event: MotionEvent, centerOverride?: Point): PanEventData {
-    const hasEndConsumer = Boolean(this.callbacks.onPanEnd || this.callbacks.onFling);
+    const hasEndConsumer = Boolean(this.callbacks.onPanEnd || this.callbacks.onSwipe);
     let vel = ZERO_VELOCITY;
     if (hasEndConsumer) {
       const tracker = this.ensureTracker();
-      tracker.computeCurrentVelocity(1000, this.maxFlingVelocity);
+      tracker.computeCurrentVelocity(1000, this.maxSwipeVelocity);
       vel =
         event.pointerCount > 1
           ? tracker.getCentroidVelocity(event.pointers)

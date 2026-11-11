@@ -303,12 +303,12 @@ export class VelocityTracker {
    * after recognizers inspect `POINTER_UP` so lifting one finger from a pinch clears
    * residual velocity without starving 2-pointer `onPanEnd` handlers.
    */
-  finalizePointerUp(event: MotionEvent, maxFlingVelocity = Number.POSITIVE_INFINITY): void {
+  finalizePointerUp(event: MotionEvent, maxVelocity = Number.POSITIVE_INFINITY): void {
     if (event.action !== MotionAction.POINTER_UP) {
       return;
     }
     const upId = event.actionPointerId;
-    if (this.hasOpposingVelocity(upId, event.getActivePointers(), maxFlingVelocity)) {
+    if (this.hasOpposingVelocity(upId, event.getActivePointers(), maxVelocity)) {
       this.clear();
     } else {
       this.clearPointer(upId);
@@ -319,9 +319,9 @@ export class VelocityTracker {
    * Feeds `event` into `addMovement(event)` and immediately applies `POINTER_UP`
    * opposing-vector pinch cancellation.
    */
-  recordStreamEvent(event: MotionEvent, maxFlingVelocity = Number.POSITIVE_INFINITY): void {
+  recordStreamEvent(event: MotionEvent, maxVelocity = Number.POSITIVE_INFINITY): void {
     this.addMovement(event);
-    this.finalizePointerUp(event, maxFlingVelocity);
+    this.finalizePointerUp(event, maxVelocity);
   }
 
   /** Directly records a single `(x, y)` sample at `timeMs` for `pointerId`. */

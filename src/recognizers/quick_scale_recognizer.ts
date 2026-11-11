@@ -72,7 +72,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   }
 
   private get sensitivity(): number {
-    return Math.max(1, this.userOptions.sensitivity ?? 200);
+    return this.userOptions.sensitivity ?? 200;
   }
 
   /** @internal */
@@ -92,6 +92,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
 
     this.clearMultiTapSequence();
     if (
+      event.activePointerCount === 1 &&
       !pointerMismatch &&
       dt >= minDt &&
       dt <= this.config.doubleTapTimeout &&
@@ -115,6 +116,10 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   onMotionEvent(event: MotionEvent): void {
     switch (event.action) {
       case MotionAction.DOWN: {
+        if (event.activePointerCount > 1) {
+          this.fail();
+          return;
+        }
         this.prevTime = event.eventTime;
         this.prevScale = 1;
         this.cumulativeScale = 1;

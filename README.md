@@ -9,10 +9,34 @@ Modern TypeScript gesture recognition engine built on W3C Pointer Events, combin
 - **`GestureArena` & `GestureRecognizer` (`src/gesture_arena.ts`, `src/gesture_recognizer.ts`)**: Order-independent arena arbitration (`possible` -> `pending` -> `began` -> `changed` -> `ended` | `cancelled` | `failed`) with simultaneous cooperation (`.simultaneousWith(...)`) and causal failure dependencies (`.requireFailureOf(...)`).
 - **Zero-Scroll-Lock Web `touch-action` & iOS Safari Coexistence (`src/touch_behavior.ts`, `src/gesture_manager.ts`)**: Automatically computes the least-restrictive W3C CSS `touch-action` (`touchAction: 'compute'` by default) from the registered recognizers (`Tap` / `LongPress` / `QuickScale` -> `'manipulation'`, horizontal `Pan` -> `'pan-y pinch-zoom'`, `Scale` / `Rotate` -> `'pan-x pan-y'`, 2D `Pan` -> `'none'`) with `CSS.supports()` fallbacks for older WebKit parsers. Paired with selective `{passive: false}` `touchmove` and WebKit `GestureEvent` guards only when non-tap gestures coexist with native scroll/zoom—keeping `Tap`-only surfaces 100% passive and preserving 120fps native page scrolling.
 - **Lazy Pointer Capture & Scoped Ghost-Click Guard (`src/gesture_manager.ts`)**: Attaches only `pointerdown` and `lostpointercapture` while idle, acquires `setPointerCapture()` lazily when a continuous gesture enters `began` (ignoring bubbling descendant implicit-capture transfers, and tracking straddling multi-touch pointers landing outside the target), preserves native `click` events on child controls during taps, and suppresses accidental trailing `click`s (within `ViewConfiguration.ghostClickTimeout`) after continuous gestures.
-- **Tree-Shakeable Recognizers (`src/recognizers/*`)**: Focused, decoupled recognizers (`TapRecognizer`, `LongPressRecognizer`, `PanRecognizer` with integrated `onFling`, `ScaleRecognizer`, `QuickScaleRecognizer`, `RotateRecognizer`) with `"sideEffects": false` for dead-code elimination when using named imports—bundles omitting `PanRecognizer` automatically tree-shake `VelocityTracker` as well.
+- **Tree-Shakeable Recognizers (`src/recognizers/*`)**: Focused, decoupled recognizers (`TapRecognizer`, `LongPressRecognizer`, `PanRecognizer` with integrated `onSwipe`, `ScaleRecognizer`, `QuickScaleRecognizer`, `RotateRecognizer`) with `"sideEffects": false` for dead-code elimination when using named imports—bundles omitting `PanRecognizer` automatically tree-shake `VelocityTracker` as well.
 - **ESM-only package**: a single `dist/hammer.es.js` build. CommonJS consumers on Node >= 20.19 load it through native `require(esm)`.
 
 ## Usage
+
+### Quick Start (`Hammer`)
+
+`Hammer` sets up only the recognizers needed for the callbacks you pass, pairs simultaneous gestures (`Scale` + `Rotate`), coordinates `onTap` with `onDoubleTap` / `QuickScale`, and computes the least-restrictive CSS `touch-action`:
+
+```ts
+import {Hammer} from 'hammerjs';
+
+const hammer = new Hammer(myElement, {
+  onTap: ev => console.log('Confirmed single tap', ev.center),
+  onDoubleTap: ev => console.log('Double tap', ev.center),
+  onLongPress: ev => console.log('LongPress', ev),
+  onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
+  onSwipe: ev => console.log('Swipe', ev.direction, ev.speed),
+  pan: {direction: 'horizontal'},
+  onScale: ev => console.log('Scale', ev.scale),
+  onRotate: ev => console.log('Rotate', ev.rotation),
+  quickScale: true,
+});
+```
+
+### Custom Arena Composition (`GestureManager`)
+
+For custom recognizer graphs or minimal tree-shaken bundles, wire `GestureManager` and individual recognizers directly:
 
 ```ts
 import {
@@ -38,7 +62,7 @@ const scale = new ScaleRecognizer({
 }).simultaneousWith(rotate);
 
 const manager = new GestureManager(myElement, {
-  touchAction: 'compute', // Automatically keeps unclaimed scroll/zoom axes native!
+  touchAction: 'compute', // Keeps unclaimed scroll and zoom axes native
   recognizers: [
     singleTap,
     doubleTap,
@@ -48,7 +72,7 @@ const manager = new GestureManager(myElement, {
       onPanStart: ev => console.log('Pan start', ev),
       onPan: ev => console.log('Pan delta', ev.deltaX, ev.deltaY, 'step', ev.stepX, ev.stepY),
       onPanEnd: ev => console.log('Release velocity (px/s)', ev.velocityX, ev.velocityY),
-      onFling: ev => console.log('Fling', ev.direction, ev.velocityX, ev.velocityY),
+      onSwipe: ev => console.log('Swipe', ev.direction, ev.velocityX, ev.velocityY),
     }),
     scale,
     rotate,

@@ -38,6 +38,7 @@ export class GestureArena {
   private readonly pendingClaims = new Map<GestureRecognizer, PendingClaim>();
 
   private dispatchDepth = 0;
+  private evaluatingPending = false;
   private nextDispatchToken = 0;
   private velocityNeeded = false;
   private multiTouchAccepted = false;
@@ -386,18 +387,29 @@ export class GestureArena {
   }
 
   private evaluatePendingClaims(): void {
-    if (this.pendingClaims.size === 0) {
+    if (this.evaluatingPending || this.pendingClaims.size === 0) {
       return;
     }
-    for (const [recognizer, claim] of this.pendingClaims) {
-      if (!this.hasCompatibleWinners(recognizer)) {
-        this.pendingClaims.delete(recognizer);
-        recognizer.denyByArena();
-        continue;
+    this.evaluatingPending = true;
+    try {
+      let progressed = true;
+      while (progressed && this.pendingClaims.size > 0) {
+        progressed = false;
+        for (const [recognizer, claim] of this.pendingClaims) {
+          if (!this.hasCompatibleWinners(recognizer)) {
+            this.pendingClaims.delete(recognizer);
+            recognizer.denyByArena();
+            progressed = true;
+            continue;
+          }
+          if (this.checkFailureDependencies(recognizer) === 'satisfied') {
+            this.grantClaim(recognizer, claim.targetState, claim.onGranted);
+            progressed = true;
+          }
+        }
       }
-      if (this.checkFailureDependencies(recognizer) === 'satisfied') {
-        this.grantClaim(recognizer, claim.targetState, claim.onGranted);
-      }
+    } finally {
+      this.evaluatingPending = false;
     }
   }
 }

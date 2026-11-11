@@ -106,7 +106,6 @@ describe('LongPressRecognizer', () => {
       )
     );
 
-    // 1. 2-finger hold -> triggers -> POINTER_UP completes with `onLongPressUp`:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -120,7 +119,6 @@ describe('LongPressRecognizer', () => {
     vi.advanceTimersByTime(400);
     expect(onLongPress).toHaveBeenCalledTimes(1);
 
-    // Move while active without `onLongPressMove` callback is a safe no-op:
     arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 5, clientY: 0, timeStamp: 430})
@@ -139,7 +137,6 @@ describe('LongPressRecognizer', () => {
       )!
     );
 
-    // 2. Early POINTER_UP before duration fails:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 500})
@@ -163,7 +160,6 @@ describe('LongPressRecognizer', () => {
     vi.advanceTimersByTime(500);
     expect(onLongPress).toHaveBeenCalledTimes(1);
 
-    // 3. 3rd finger before duration fails; CANCEL while active triggers `onLongPressCancel`:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 1100})
@@ -200,7 +196,6 @@ describe('LongPressRecognizer', () => {
     );
     expect(onLongPressCancel).toHaveBeenCalledTimes(1);
 
-    // Synthetic multi-pointer DOWN exceeding 1-pointer LongPress fails immediately:
     const oneFingerLp = new LongPressRecognizer({onLongPress: vi.fn()}, {numPointers: 1});
     oneFingerLp.onMotionEvent(
       new MotionEvent({

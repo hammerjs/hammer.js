@@ -51,7 +51,6 @@ describe('TapRecognizer', () => {
     const onTap = vi.fn();
     arena.add(new TapRecognizer({onTap}, {slop: 10, maxTime: 250}));
 
-    // Exceeds slop:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -69,7 +68,6 @@ describe('TapRecognizer', () => {
     );
     expect(onTap).not.toHaveBeenCalled();
 
-    // Exceeds maxTime:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 100})
@@ -83,7 +81,6 @@ describe('TapRecognizer', () => {
     );
     expect(onTap).not.toHaveBeenCalled();
 
-    // Pointer cancel:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 500})
@@ -97,7 +94,7 @@ describe('TapRecognizer', () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
-  it('composes onDown, tapTimeout onShowPress, immediate tap, confirmed single-tap, and double-tap via GestureArena', () => {
+  it('composes onDown, onShowPress, immediate tap, confirmed single-tap, and double-tap via GestureArena', () => {
     const onDown = vi.fn();
     const onShowPress = vi.fn();
     const onSingleTapUp = vi.fn();
@@ -127,7 +124,6 @@ describe('TapRecognizer', () => {
     arenaWithTimeouts.add(singleTapConfirmed);
     arenaWithTimeouts.add(doubleTap);
 
-    // 1. Hold past `tapTimeout` (180ms) -> fires `onDown` on DOWN, `onShowPress` at 180ms, `onSingleTapUp` on UP, and `onSingleTapConfirmed` after 300ms:
     arenaWithTimeouts.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
@@ -136,12 +132,18 @@ describe('TapRecognizer', () => {
     expect(onDown).toHaveBeenCalledTimes(1);
     expect(onShowPress).not.toHaveBeenCalled();
 
+    arenaWithTimeouts.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 53, clientY: 52, timeStamp: 90})
+      )!
+    );
+
     vi.advanceTimersByTime(185);
-    expect(onShowPress).toHaveBeenCalledTimes(1);
+    expect(onShowPress).toHaveBeenCalledWith(expect.objectContaining({center: {x: 53, y: 52}}));
 
     arenaWithTimeouts.dispatch(
       stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 200})
+        pointerEvent('pointerup', {pointerId: 1, clientX: 53, clientY: 52, timeStamp: 200})
       )!
     );
     expect(onSingleTapUp).toHaveBeenCalledTimes(1);
@@ -151,7 +153,7 @@ describe('TapRecognizer', () => {
     expect(onSingleTapConfirmed).toHaveBeenCalledTimes(1);
     expect(onDoubleTap).not.toHaveBeenCalled();
 
-    // 2. Touch bounce (< `doubleTapMinTime` = 40ms) is rejected, flushing Tap 1's `onSingleTapConfirmed`:
+    // Second tap within doubleTapMinTime (15ms < 40ms) is rejected as touch bounce.
     onSingleTapConfirmed.mockClear();
     arenaWithTimeouts.dispatch(
       stream.onPointerDown(
@@ -177,7 +179,6 @@ describe('TapRecognizer', () => {
     );
     vi.advanceTimersByTime(350);
 
-    // 3. Valid rapid double tap (`dt = 80ms >= 40ms`) suppresses `onSingleTapConfirmed` and triggers `onDoubleTap`!
     onSingleTapConfirmed.mockClear();
     onShowPress.mockClear();
     arenaWithTimeouts.dispatch(
@@ -202,11 +203,10 @@ describe('TapRecognizer', () => {
     );
 
     vi.advanceTimersByTime(350);
-    expect(onShowPress).not.toHaveBeenCalled(); // Quick taps (< 180ms) never flash `onShowPress`!
+    expect(onShowPress).not.toHaveBeenCalled();
     expect(onDoubleTap).toHaveBeenCalledTimes(1);
     expect(onSingleTapConfirmed).not.toHaveBeenCalled();
 
-    // 4. Explicit `minTapInterval` option overrides `doubleTapMinTime`:
     const customDouble = vi.fn();
     const fastArena = new GestureArena();
     fastArena.add(new TapRecognizer({onTap: customDouble}, {taps: 2, minTapInterval: 10}));
@@ -250,7 +250,6 @@ describe('TapRecognizer', () => {
     arena.add(twoFingerSingle);
     arena.add(twoFingerDouble);
 
-    // 1. 2-finger single tap with fingers 200px apart at (0, 50) and (200, 50) -> center is (100, 50)!
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 50, timeStamp: 0})
@@ -275,7 +274,6 @@ describe('TapRecognizer', () => {
     expect(onTwoFingerSingle).toHaveBeenCalledTimes(1);
     expect(onTwoFingerSingle.mock.calls[0][0].center).toEqual({x: 100, y: 50});
 
-    // 2. 2-finger double tap with fingers 200px apart (> multiTapSlop=30, but centroid shifts only 2px!):
     onTwoFingerSingle.mockClear();
     arena.dispatch(
       stream.onPointerDown(
@@ -329,7 +327,6 @@ describe('TapRecognizer', () => {
     expect(onTwoFingerDouble.mock.calls[0][0].center).toEqual({x: 103, y: 50});
     expect(onTwoFingerSingle).not.toHaveBeenCalled();
 
-    // 3. Distant 2nd 2-finger tap (> multiTapSlop) rejects double-tap once 2nd finger lands:
     onTwoFingerDouble.mockClear();
     arena.dispatch(
       stream.onPointerDown(
@@ -375,7 +372,7 @@ describe('TapRecognizer', () => {
     expect(onTwoFingerDouble).not.toHaveBeenCalled();
   });
 
-  it('rejects excess pointers, displaced liftoff, and distant follow-up taps', () => {
+  it('rejects excess pointers, displaced liftoff, modality mismatches, and distant follow-up taps', () => {
     const onSingleConfirmed = vi.fn();
     const onDouble = vi.fn();
 
@@ -386,8 +383,6 @@ describe('TapRecognizer', () => {
     arena.add(singleTap);
     arena.add(doubleTap);
 
-    // 1. Tap 1 at (0, 0), followed by Tap 2 far away at (200, 200) -> doubleTap fails in `prepareForDown`,
-    //    immediately flushing Tap 1's pending `onSingleConfirmed`!
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -408,7 +403,6 @@ describe('TapRecognizer', () => {
     expect(onSingleConfirmed).toHaveBeenCalledTimes(1);
     expect(onDouble).not.toHaveBeenCalled();
 
-    // 2nd finger added during 1-finger tap fails immediately:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 210, clientY: 200, timeStamp: 110})
@@ -426,7 +420,6 @@ describe('TapRecognizer', () => {
     );
     expect(onSingleConfirmed).toHaveBeenCalledTimes(1);
 
-    // Displaced UP without intermediate MOVE (and multi-pointer POINTER_UP exceeding slop) fails:
     const twoFingerTap = new TapRecognizer({onTap: onDouble}, {numPointers: 2, slop: 5});
     arena.add(twoFingerTap);
 
@@ -452,7 +445,6 @@ describe('TapRecognizer', () => {
     );
     expect(onDouble).not.toHaveBeenCalled();
 
-    // Single-pointer UP jumping past slop without MOVE, and synthetic 2-pointer DOWN on 1-pointer Tap:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 1000})
@@ -480,7 +472,6 @@ describe('TapRecognizer', () => {
       })
     );
 
-    // Hybrid modality mismatch (`mouse` Tap 1 -> `touch` Tap 2) and mid-stroke lift-and-repress both fail:
     onDouble.mockClear();
     arena.dispatch(
       stream.onPointerDown(
@@ -530,7 +521,6 @@ describe('TapRecognizer', () => {
     );
     expect(onDouble).not.toHaveBeenCalled();
 
-    // 2-finger tap where Finger 2 lifts and presses down AGAIN before Finger 1 lifts (`totalPointersInStroke === 3 !== 2`) fails:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 3000})
@@ -580,7 +570,6 @@ describe('TapRecognizer', () => {
         )!
       );
 
-    // Three fingers touch in total, but never more than two at once:
     down(1, 0);
     down(2, 10);
     up(2, 20);
@@ -589,7 +578,6 @@ describe('TapRecognizer', () => {
     up(1, 50);
     expect(onTap).not.toHaveBeenCalled();
 
-    // A genuine 3-finger tap:
     down(1, 400);
     down(2, 405);
     down(3, 410);

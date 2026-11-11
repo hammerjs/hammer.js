@@ -40,6 +40,7 @@ export class RotateRecognizer extends GestureRecognizer {
   private readonly userOptions: Partial<RotateOptions>;
 
   private trackedPair: [number, number] | null = null;
+  private pairAnchored = false;
   private prevAngle = 0;
   private rawPreSlopRotation = 0;
   private totalRotation = 0;
@@ -93,19 +94,33 @@ export class RotateRecognizer extends GestureRecognizer {
         if (event.activePointerCount < 2) {
           return;
         }
-        if (event.getSpan() < this.minSpan) {
-          // Keep re-anchoring while pointers are closer than `minSpan` so pinching outward
-          // later starts cleanly at 0 deg instead of snapping to close-proximity angle noise.
+        if (!this.trackedPair) {
           this.anchorPointerPair(event);
+          return;
+        }
+        const idx0 = event.findPointerIndex(this.trackedPair[0]);
+        const idx1 = event.findPointerIndex(this.trackedPair[1]);
+        if (idx0 === -1 || idx1 === -1) {
+          this.anchorPointerPair(event);
+          return;
+        }
+
+        const dx = event.pointers[idx1].x - event.pointers[idx0].x;
+        const dy = event.pointers[idx1].y - event.pointers[idx0].y;
+        if (Math.hypot(dx, dy) < Math.max(1, this.minSpan)) {
+          // Wait to anchor angle until the tracked pair separates past `minSpan` so pinching
+          // outward from close proximity starts cleanly at 0 deg instead of snapping.
+          this.pairAnchored = false;
           if (!this.active) {
             this.rawPreSlopRotation = 0;
           }
           return;
         }
 
-        const currentAngle = this.readPairAngle(event);
-        if (currentAngle === null) {
-          this.anchorPointerPair(event);
+        const currentAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+        if (!this.pairAnchored) {
+          this.prevAngle = currentAngle;
+          this.pairAnchored = true;
           return;
         }
 
@@ -184,6 +199,7 @@ export class RotateRecognizer extends GestureRecognizer {
 
   protected override onReset(): void {
     this.trackedPair = null;
+    this.pairAnchored = false;
     this.prevAngle = 0;
     this.rawPreSlopRotation = 0;
     this.totalRotation = 0;
@@ -193,26 +209,18 @@ export class RotateRecognizer extends GestureRecognizer {
     const active = event.getActivePointers();
     if (active.length < 2) {
       this.trackedPair = null;
+      this.pairAnchored = false;
       return;
     }
     this.trackedPair = [active[0].pointerId, active[1].pointerId];
     const dx = active[1].x - active[0].x;
     const dy = active[1].y - active[0].y;
-    this.prevAngle = Math.atan2(dy, dx) * (180 / Math.PI);
-  }
-
-  private readPairAngle(event: MotionEvent): number | null {
-    if (!this.trackedPair) {
-      return null;
+    if (Math.hypot(dx, dy) >= Math.max(1, this.minSpan)) {
+      this.prevAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+      this.pairAnchored = true;
+    } else {
+      this.pairAnchored = false;
     }
-    const idx0 = event.findPointerIndex(this.trackedPair[0]);
-    const idx1 = event.findPointerIndex(this.trackedPair[1]);
-    if (idx0 === -1 || idx1 === -1) {
-      return null;
-    }
-    const p0 = event.pointers[idx0];
-    const p1 = event.pointers[idx1];
-    return Math.atan2(p1.y - p0.y, p1.x - p0.x) * (180 / Math.PI);
   }
 
   private buildEventData(event: MotionEvent, rotationDelta: number): RotateEventData {

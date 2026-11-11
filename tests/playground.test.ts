@@ -7,35 +7,38 @@ describe('Playground UI & Diagnostics', () => {
   it('mounts playground.html, switches presets, updates touch-action, and logs gestures', async () => {
     const html = readFileSync(resolve(__dirname, './playground.html'), 'utf8');
     const parsed = new DOMParser().parseFromString(html, 'text/html');
+    document.head.innerHTML = parsed.head.innerHTML;
     document.body.innerHTML = parsed.body.innerHTML;
 
     await import('./playground');
 
     const hitarea = document.getElementById('hitarea')!;
+    const eventLog = document.getElementById('eventLog')!;
     const presetSelect = document.getElementById('presetSelect') as HTMLSelectElement;
     const childButton = document.getElementById('childButton') as HTMLButtonElement;
     const childClickCount = document.getElementById('childClickCount')!;
     const eventLogCode = document.getElementById('eventLogCode')!;
     const codePreview = document.getElementById('codePreview')!;
     const arenaStates = document.getElementById('arenaStates')!;
+    const playgroundGrid = document.querySelector('.playground-grid') as HTMLElement;
 
-    // Default preset includes 2D Pan -> computed touch-action is `none`
+    expect(getComputedStyle(playgroundGrid).gridTemplateColumns).toBe('minmax(0, 1fr)');
+    expect(getComputedStyle(eventLog).overflow).toBe('auto');
+    expect(getComputedStyle(eventLogCode).overflow).toBe('visible');
+
     expect(hitarea.style.touchAction).toBe('none');
     expect(arenaStates.textContent).toContain('SingleTap: possible');
     expect(codePreview.textContent).toContain("from 'hammerjs';");
 
-    // Switch to Horizontal Carousel preset -> touch-action becomes `pan-y pinch-zoom`
     presetSelect.value = 'carousel';
     presetSelect.dispatchEvent(new Event('change', {bubbles: true}));
     expect(hitarea.style.touchAction).toBe('pan-y pinch-zoom');
     expect(codePreview.textContent).toContain("direction: 'horizontal'");
 
-    // Switch to Feed Card preset -> touch-action becomes `manipulation`
     presetSelect.value = 'feed-card';
     presetSelect.dispatchEvent(new Event('change', {bubbles: true}));
     expect(hitarea.style.touchAction).toBe('manipulation');
 
-    // Disable DoubleTap so SingleTap confirms immediately on click, then click Child Button
     const enableDoubleTap = document.getElementById('enableDoubleTap') as HTMLInputElement;
     enableDoubleTap.checked = false;
     enableDoubleTap.dispatchEvent(new Event('change', {bubbles: true}));
