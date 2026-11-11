@@ -166,14 +166,13 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     if (this.destroyed) {
       return this;
     }
-    if ('supportedPointerTypes' in options) {
-      this.options.supportedPointerTypes =
-        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes;
+    if (options.supportedPointerTypes !== undefined) {
+      this.options.supportedPointerTypes = options.supportedPointerTypes;
     }
-    if ('touchAction' in options) {
-      this.options.touchAction = options.touchAction ?? GestureManager.DEFAULTS.touchAction;
+    if (options.touchAction !== undefined) {
+      this.options.touchAction = options.touchAction;
     }
-    if ('viewConfiguration' in options) {
+    if (options.viewConfiguration !== undefined) {
       this.options.viewConfiguration = options.viewConfiguration;
       this.arena.setConfig(options.viewConfiguration);
     }

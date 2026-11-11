@@ -164,8 +164,7 @@ export class TapRecognizer extends GestureRecognizer {
       case MotionAction.DOWN: {
         this.clearTimer(SHOW_PRESS_TIMER);
         this.downPositions.clear();
-        for (let i = 0; i < event.pointers.length; i++) {
-          const p = event.pointers[i];
+        for (const p of event.pointers) {
           this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         }
         this.totalPointersInStroke = event.pointerCount;
@@ -234,8 +233,7 @@ export class TapRecognizer extends GestureRecognizer {
       case MotionAction.DOWN: {
         this.clearTimer(SHOW_PRESS_TIMER);
         this.downPositions.clear();
-        for (let i = 0; i < event.pointers.length; i++) {
-          const p = event.pointers[i];
+        for (const p of event.pointers) {
           this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         }
         this.strokeDownTime = event.eventTime;

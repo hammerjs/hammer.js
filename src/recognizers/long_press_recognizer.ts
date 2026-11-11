@@ -80,8 +80,7 @@ export class LongPressRecognizer extends GestureRecognizer {
     switch (event.action) {
       case MotionAction.DOWN: {
         this.downPositions.clear();
-        for (let i = 0; i < event.pointers.length; i++) {
-          const p = event.pointers[i];
+        for (const p of event.pointers) {
           this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
         }
         if (event.activePointerCount > this.numPointers) {

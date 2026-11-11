@@ -954,6 +954,11 @@ describe('GestureManager', () => {
     expect(gm.config.touchSlop).toBe(16);
     expect(svg.style.touchAction).toBe('none');
 
+    // Partial `setOptions` updates only specified properties without wiping existing config:
+    gm.setOptions({supportedPointerTypes: ['touch', 'pen']});
+    expect(gm.config.touchSlop).toBe(16);
+    expect(svg.style.touchAction).toBe('none');
+
     // Orphaned stylus (`pen`) drag aborts cleanly if a new pen press starts outside the target:
     svg.dispatchEvent(
       pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 9, clientX: 0, clientY: 0})

@@ -536,11 +536,20 @@ describe('Hammer', () => {
     hammer.setOptions({
       onPan: () => {},
       pan: {direction: 'horizontal'},
+      touchAction: 'none',
       viewConfiguration: {touchSlop: 14},
     });
     expect(hammer.computeTouchAction()).toBe('pan-y pinch-zoom');
-    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
+    expect(svg.style.touchAction).toBe('none');
     expect(hammer.config.touchSlop).toBe(14);
+
+    // Omitting `touchAction` and `viewConfiguration` in `Hammer.setOptions` restores defaults:
+    hammer.setOptions({
+      onPan: () => {},
+      pan: {direction: 'horizontal'},
+    });
+    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
+    expect(hammer.config.touchSlop).toBe(8);
 
     hammer.destroy();
     svg.remove();

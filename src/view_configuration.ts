@@ -93,7 +93,7 @@ export const DEFAULT_VIEW_CONFIGURATION: ViewConfiguration = Object.freeze({
 export function resolveViewConfiguration(
   overrides?: Partial<ViewConfiguration>
 ): ViewConfiguration {
-  return overrides
+  return overrides && overrides !== DEFAULT_VIEW_CONFIGURATION
     ? Object.freeze({...DEFAULT_VIEW_CONFIGURATION, ...overrides})
     : DEFAULT_VIEW_CONFIGURATION;
 }

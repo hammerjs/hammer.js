@@ -2,7 +2,6 @@ import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_
 import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
 import {VelocityTracker, type VelocityVector, ZERO_VELOCITY} from '../velocity_tracker.js';
-import type {ViewConfiguration} from '../view_configuration.js';
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
 export type GestureAxis = 'horizontal' | 'vertical';
@@ -91,9 +90,9 @@ function computeAllPointersCentroid(event: MotionEvent): Point {
   const pts = event.pointers;
   let sumX = 0;
   let sumY = 0;
-  for (let i = 0; i < pts.length; i++) {
-    sumX += pts[i].x;
-    sumY += pts[i].y;
+  for (const p of pts) {
+    sumX += p.x;
+    sumY += p.y;
   }
   return {x: sumX / pts.length, y: sumY / pts.length};
 }
@@ -113,7 +112,6 @@ export class PanRecognizer extends GestureRecognizer {
   private anchorReady = false;
 
   private tracker: VelocityTracker | null = null;
-  private trackerConfig: ViewConfiguration | null = null;
 
   constructor(callbacks: PanCallbacks, options: Partial<PanOptions> = {}) {
     super();
@@ -412,12 +410,15 @@ export class PanRecognizer extends GestureRecognizer {
 
   private ensureTracker(): VelocityTracker {
     const cfg = this.config;
-    if (!this.tracker || this.trackerConfig !== cfg) {
+    if (
+      !this.tracker ||
+      this.tracker.horizonMs !== cfg.velocityHorizonMs ||
+      this.tracker.assumePointerStoppedMs !== cfg.assumePointerStoppedMs
+    ) {
       this.tracker = new VelocityTracker({
         horizonMs: cfg.velocityHorizonMs,
         assumePointerStoppedMs: cfg.assumePointerStoppedMs,
       });
-      this.trackerConfig = cfg;
     }
     return this.tracker;
   }

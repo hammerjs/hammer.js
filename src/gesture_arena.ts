@@ -84,8 +84,7 @@ export class GestureArena {
     if (this.hasActiveGesture) {
       return true;
     }
-    for (let i = 0; i < this.recognizers.length; i++) {
-      const r = this.recognizers[i];
+    for (const r of this.recognizers) {
       if (r.state === RecognizerState.POSSIBLE && r.isPrioritized) {
         return true;
       }
@@ -94,8 +93,7 @@ export class GestureArena {
   }
 
   get hasLiveRecognizers(): boolean {
-    for (let i = 0; i < this.recognizers.length; i++) {
-      const state = this.recognizers[i].state;
+    for (const {state} of this.recognizers) {
       if (
         state === RecognizerState.POSSIBLE ||
         state === RecognizerState.PENDING ||
@@ -146,15 +144,13 @@ export class GestureArena {
 
       if (event.action === MotionAction.DOWN) {
         // If a prior stream was orphaned without `UP`/`CANCEL`, cancel active winners cleanly first.
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (r.isAttachedTo(this) && r.active) {
             r.denyByArena();
           }
         }
 
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (r.isAttachedTo(this)) {
             r.prepareForDown(event);
           }
@@ -162,8 +158,7 @@ export class GestureArena {
         this.evaluatePendingClaims();
         this.clearStreamTracking(false);
 
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (r.isAttachedTo(this) && r.shouldResetOnDown(event)) {
             this.pendingClaims.delete(r);
             r.reset();
@@ -173,8 +168,7 @@ export class GestureArena {
 
       if (event.action === MotionAction.POINTER_DOWN) {
         const token = ++this.nextDispatchToken;
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (r.isAttachedTo(this) && r.active) {
             r.lastDispatchToken = token;
             r.onMotionEvent(event);
@@ -186,8 +180,7 @@ export class GestureArena {
           this.yieldedWinnersInStream === this.totalWinnersInStream;
 
         if (canHandoffToMultiTouch) {
-          for (let i = 0; i < recognizers.length; i++) {
-            const r = recognizers[i];
+          for (const r of recognizers) {
             if (
               r.isAttachedTo(this) &&
               r.state === RecognizerState.FAILED &&
@@ -200,8 +193,7 @@ export class GestureArena {
           }
         }
 
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
             continue;
           }
@@ -217,15 +209,13 @@ export class GestureArena {
       }
 
       const token = ++this.nextDispatchToken;
-      for (let i = 0; i < recognizers.length; i++) {
-        const r = recognizers[i];
+      for (const r of recognizers) {
         if (r.isAttachedTo(this) && isDispatchEligible(r) && r.isPrioritized) {
           r.lastDispatchToken = token;
           r.onMotionEvent(event);
         }
       }
-      for (let i = 0; i < recognizers.length; i++) {
-        const r = recognizers[i];
+      for (const r of recognizers) {
         if (!r.isAttachedTo(this) || r.lastDispatchToken === token) {
           continue;
         }
@@ -239,8 +229,7 @@ export class GestureArena {
       }
 
       if (event.action === MotionAction.CANCEL) {
-        for (let i = 0; i < recognizers.length; i++) {
-          const r = recognizers[i];
+        for (const r of recognizers) {
           if (r.isAttachedTo(this)) {
             r.denyByArena();
           }
@@ -304,8 +293,8 @@ export class GestureArena {
   reset(): void {
     const recognizers = this.recognizers;
     this.clearStreamTracking(true);
-    for (let i = 0; i < recognizers.length; i++) {
-      recognizers[i].reset();
+    for (const r of recognizers) {
+      r.reset();
     }
   }
 
@@ -315,8 +304,8 @@ export class GestureArena {
     this.clearStreamTracking(true);
     this.velocityNeeded = false;
     this.multiTouchAccepted = false;
-    for (let i = 0; i < recognizers.length; i++) {
-      recognizers[i].attach(null);
+    for (const r of recognizers) {
+      r.attach(null);
     }
   }
 
@@ -384,9 +373,7 @@ export class GestureArena {
 
     winner.setClaimState(targetState);
 
-    const recognizers = this.recognizers;
-    for (let i = 0; i < recognizers.length; i++) {
-      const other = recognizers[i];
+    for (const other of this.recognizers) {
       if (other === winner || !other.isAttachedTo(this)) continue;
       if (!this.areCompatible(winner, other) || other.requiredFailures.has(winner)) {
         this.pendingClaims.delete(other);

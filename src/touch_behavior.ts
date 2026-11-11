@@ -95,8 +95,8 @@ export function resolveSupportedTouchAction(value: TouchActionValue): TouchActio
  */
 export function mergeTouchActions(actions: readonly TouchActionValue[]): TouchActionValue {
   let mask = ALLOW_ALL;
-  for (let i = 0; i < actions.length; i++) {
-    mask &= touchActionToMask(actions[i]);
+  for (const action of actions) {
+    mask &= touchActionToMask(action);
   }
   return resolveSupportedTouchAction(maskToTouchAction(mask));
 }

@@ -120,12 +120,7 @@ export class MotionEvent {
   }
 
   findPointerIndex(pointerId: number): number {
-    for (let i = 0; i < this.pointers.length; i++) {
-      if (this.pointers[i].pointerId === pointerId) {
-        return i;
-      }
-    }
-    return -1;
+    return this.pointers.findIndex(p => p.pointerId === pointerId);
   }
 
   /**
@@ -183,15 +178,15 @@ export class MotionEvent {
     }
 
     // Exclude lifting pointer during `POINTER_UP` so remaining pointers become the new focus cleanly.
-    const skipIndex = this.action === MotionAction.POINTER_UP ? this.actionIndex : -1;
+    const skip = this.action === MotionAction.POINTER_UP ? this.pointers[this.actionIndex] : null;
     let sumX = 0;
     let sumY = 0;
     let count = 0;
 
-    for (let i = 0; i < n; i++) {
-      if (i === skipIndex) continue;
-      sumX += this.pointers[i].x;
-      sumY += this.pointers[i].y;
+    for (const p of this.pointers) {
+      if (p === skip) continue;
+      sumX += p.x;
+      sumY += p.y;
       count++;
     }
 
@@ -206,9 +201,9 @@ export class MotionEvent {
 
     let devSumX = 0;
     let devSumY = 0;
-    for (let i = 0; i < active.length; i++) {
-      devSumX += Math.abs(active[i].x - this.focus.x);
-      devSumY += Math.abs(active[i].y - this.focus.y);
+    for (const p of active) {
+      devSumX += Math.abs(p.x - this.focus.x);
+      devSumY += Math.abs(p.y - this.focus.y);
     }
 
     return {

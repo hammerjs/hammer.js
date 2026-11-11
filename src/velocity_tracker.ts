@@ -204,9 +204,9 @@ function clampVelocityRadially(vx: number, vy: number, maxVelocity: number): Poi
  * Android's `android.view.VelocityTracker`.
  */
 export class VelocityTracker {
+  readonly horizonMs: number;
+  readonly assumePointerStoppedMs: number;
   private readonly pointers = new Map<number, PointerVelocityBuffer>();
-  private readonly horizonMs: number;
-  private readonly assumePointerStoppedMs: number;
 
   private activePointerId: number | null = null;
   private latestEventTime: number | undefined = undefined;
@@ -239,9 +239,9 @@ export class VelocityTracker {
       }
 
       case MotionAction.POINTER_DOWN: {
-        for (let i = 0; i < event.pointers.length; i++) {
-          const p = event.pointers[i];
-          if (i === event.actionIndex || !this.pointers.has(p.pointerId)) {
+        const added = event.pointers[event.actionIndex];
+        for (const p of event.pointers) {
+          if (p === added || !this.pointers.has(p.pointerId)) {
             this.clearPointer(p.pointerId);
             this.addPoint(p.pointerId, event.eventTime, p.x, p.y);
           }
@@ -254,8 +254,7 @@ export class VelocityTracker {
         if (!moved) {
           break;
         }
-        for (let h = 0; h < event.history.length; h++) {
-          const sample = event.history[h];
+        for (const sample of event.history) {
           this.addPoint(moved.pointerId, sample.eventTime, sample.x, sample.y);
         }
         this.addPoint(moved.pointerId, event.eventTime, moved.x, moved.y);
@@ -390,8 +389,7 @@ export class VelocityTracker {
     let count = 0;
 
     if (pointers) {
-      for (let i = 0; i < pointers.length; i++) {
-        const item = pointers[i];
+      for (const item of pointers) {
         const id = typeof item === 'number' ? item : item.pointerId;
         const buf = this.pointers.get(id);
         if (!buf) continue;
@@ -429,8 +427,7 @@ export class VelocityTracker {
     const x1 = this.getXVelocity(upPointerId);
     const y1 = this.getYVelocity(upPointerId);
 
-    for (let i = 0; i < remaining.length; i++) {
-      const item = remaining[i];
+    for (const item of remaining) {
       const otherId = typeof item === 'number' ? item : item.pointerId;
       if (otherId === upPointerId) continue;
       if (x1 * this.getXVelocity(otherId) + y1 * this.getYVelocity(otherId) < 0) {

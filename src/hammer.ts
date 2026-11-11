@@ -115,6 +115,12 @@ function resolveQuickScaleCallbacks(options: HammerOptions): ResolvedQuickScaleC
   };
 }
 
+type StructureSignature = readonly (string | number | boolean | undefined)[];
+
+function sameStructure(a: StructureSignature, b: StructureSignature): boolean {
+  return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
+}
+
 function resolveRecognizerDescriptor(options: HammerOptions) {
   const requireDoubleTapFailure = options.requireDoubleTapFailure ?? true;
   const hasPanRecognizer = Boolean(
@@ -160,7 +166,7 @@ function resolveRecognizerDescriptor(options: HammerOptions) {
     options.onRotateStart || options.onRotate || options.onRotateEnd || options.onRotateCancel
   );
 
-  const structureKey = JSON.stringify([
+  const structure: StructureSignature = [
     hasSingleTap,
     Boolean(options.onTap),
     requireDoubleTapFailure,
@@ -170,17 +176,37 @@ function resolveRecognizerDescriptor(options: HammerOptions) {
     hasPanRecognizer,
     hasScale,
     hasRotate,
-    options.tap ?? null,
-    options.doubleTap ?? null,
-    quickScaleOpts ?? null,
-    options.longPress ?? null,
-    options.pan ?? null,
-    options.scale ?? null,
-    options.rotate ?? null,
-  ]);
+    options.tap?.numPointers,
+    options.tap?.slop,
+    options.tap?.maxTime,
+    options.tap?.multiTapInterval,
+    options.tap?.minTapInterval,
+    options.tap?.multiTapSlop,
+    options.doubleTap?.numPointers,
+    options.doubleTap?.slop,
+    options.doubleTap?.maxTime,
+    options.doubleTap?.multiTapInterval,
+    options.doubleTap?.minTapInterval,
+    options.doubleTap?.multiTapSlop,
+    quickScaleOpts?.slop,
+    quickScaleOpts?.sensitivity,
+    options.longPress?.numPointers,
+    options.longPress?.slop,
+    options.longPress?.duration,
+    options.pan?.numPointers,
+    options.pan?.slop,
+    options.pan?.direction,
+    options.pan?.minSwipeVelocity,
+    options.pan?.maxSwipeVelocity,
+    options.pan?.minSwipeDistance,
+    options.scale?.spanSlop,
+    options.scale?.minSpan,
+    options.rotate?.rotationSlop,
+    options.rotate?.minSpan,
+  ];
 
   return {
-    structureKey,
+    structure,
     requireDoubleTapFailure,
     hasPanRecognizer,
     panPointers,
@@ -195,7 +221,7 @@ function resolveRecognizerDescriptor(options: HammerOptions) {
 }
 
 interface BuiltRecognizers {
-  readonly structureKey: string;
+  readonly structure: StructureSignature;
   readonly list: GestureRecognizer[];
   readonly singleTap: TapRecognizer | null;
   readonly doubleTap: TapRecognizer | null;
@@ -337,7 +363,7 @@ function buildRecognizers(options: HammerOptions): BuiltRecognizers {
   }
 
   return {
-    structureKey: desc.structureKey,
+    structure: desc.structure,
     list: recognizers,
     singleTap,
     doubleTap,
@@ -382,7 +408,14 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
    */
   setOptions(options: HammerOptions): this {
     const desc = resolveRecognizerDescriptor(options);
-    if (desc.structureKey === this.built.structureKey) {
+    const managerOptions = {
+      supportedPointerTypes:
+        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
+      touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
+      viewConfiguration: options.viewConfiguration ?? DEFAULT_VIEW_CONFIGURATION,
+    };
+
+    if (sameStructure(desc.structure, this.built.structure)) {
       this.built.singleTap?.setCallbacks({
         onDown: options.onTapDown,
         onShowPress: options.onShowPress,
@@ -420,21 +453,13 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
         onRotateEnd: options.onRotateEnd,
         onRotateCancel: options.onRotateCancel,
       });
-      this.manager.setOptions({
-        supportedPointerTypes: options.supportedPointerTypes,
-        touchAction: options.touchAction,
-        viewConfiguration: options.viewConfiguration,
-      });
+      this.manager.setOptions(managerOptions);
       return this;
     }
 
     this.manager.unregister(...this.built.list);
     this.built = buildRecognizers(options);
-    this.manager.setOptions({
-      supportedPointerTypes: options.supportedPointerTypes,
-      touchAction: options.touchAction,
-      viewConfiguration: options.viewConfiguration,
-    });
+    this.manager.setOptions(managerOptions);
     this.manager.register(...this.built.list);
     return this;
   }
