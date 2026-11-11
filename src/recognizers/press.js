@@ -24,6 +24,7 @@ export default class PressRecognizer extends Recognizer {
     super(...arguments);
     this._timer = null;
     this._input = null;
+    this._pressed = false;
   }
 
   getTouchAction() {
@@ -32,7 +33,8 @@ export default class PressRecognizer extends Recognizer {
 
   process(input) {
     let { options } = this;
-    let validPointers = input.pointers.length === options.pointers;
+    let validPointers = input.pointers.length === options.pointers &&
+        input.maxPointers === options.pointers;
     let validMovement = input.distance < options.threshold;
     let validTime = input.deltaTime > options.time;
 
@@ -48,7 +50,7 @@ export default class PressRecognizer extends Recognizer {
         this.state = STATE_RECOGNIZED;
         this.tryEmit();
       }, options.time, this);
-    } else if (input.eventType & INPUT_END) {
+    } else if (this._pressed && (input.eventType & INPUT_END)) {
       return STATE_RECOGNIZED;
     }
     return STATE_FAILED;
@@ -56,6 +58,7 @@ export default class PressRecognizer extends Recognizer {
 
   reset() {
     clearTimeout(this._timer);
+    this._pressed = false;
   }
 
   emit(input) {
@@ -64,9 +67,11 @@ export default class PressRecognizer extends Recognizer {
     }
 
     if (input && (input.eventType & INPUT_END)) {
+      this._pressed = false;
       this.manager.emit(`${this.options.event}up`, input);
     } else {
       this._input.timeStamp = now();
+      this._pressed = true;
       this.manager.emit(this.options.event, this._input);
     }
   }

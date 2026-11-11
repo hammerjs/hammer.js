@@ -28,11 +28,7 @@ const TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 export default class TouchInput extends Input {
 
   constructor() {
-    TouchInput.prototype.evTarget = TOUCH_TARGET_EVENTS;
-    TouchInput.prototype.targetIds = {};
     super(...arguments);
-
-    this.evTarget = TOUCH_TARGET_EVENTS;
     this.targetIds = {};
   }
 
@@ -65,8 +61,13 @@ function getTouches(ev, type) {
 
   // when there is only one touch, the process can be simplified
   if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
-    targetIds[allTouches[0].identifier] = true;
-    return [allTouches, allTouches];
+    if (type === INPUT_START) {
+      targetIds[allTouches[0].identifier] = true;
+    }
+    if (targetIds[allTouches[0].identifier]) {
+      return [allTouches, allTouches];
+    }
+    return;
   }
 
   let i;
@@ -113,3 +114,5 @@ function getTouches(ev, type) {
       changedTargetTouches
   ];
 }
+
+TouchInput.prototype.evTarget = TOUCH_TARGET_EVENTS;

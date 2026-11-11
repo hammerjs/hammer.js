@@ -6,5 +6,6 @@
  */
 
 export default function splitStr(str) {
-  return str.trim().split(/\s+/g);
+  let trimmed = str.trim();
+  return trimmed ? trimmed.split(/\s+/g) : [];
 }

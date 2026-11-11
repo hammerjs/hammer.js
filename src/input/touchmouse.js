@@ -47,7 +47,8 @@ export default class TouchMouseInput extends Input {
     let isTouch = (inputData.pointerType === INPUT_TYPE_TOUCH);
     let isMouse = (inputData.pointerType === INPUT_TYPE_MOUSE);
 
-    if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+    if (isMouse && inputData.srcEvent && inputData.srcEvent.sourceCapabilities &&
+        inputData.srcEvent.sourceCapabilities.firesTouchEvents) {
       return;
     }
 
@@ -59,6 +60,19 @@ export default class TouchMouseInput extends Input {
     }
 
     this.callback(manager, inputEvent, inputData);
+  }
+
+  /**
+   * @private
+   * bind the events
+   */
+  init() {
+    if (this.touch) {
+      this.touch.target = this.target;
+      this.mouse.target = this.target;
+      this.touch.init();
+      this.mouse.init();
+    }
   }
 
   /**

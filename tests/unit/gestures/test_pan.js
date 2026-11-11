@@ -65,3 +65,48 @@ QUnit.test('Pan event flow should be start -> left -> end', function(assert) {
         done();
       });
   });
+
+QUnit.test('Pan with DIRECTION_ALL recognizes vertical movement within COMPUTE_INTERVAL', function(assert) {
+    assert.expect(2);
+
+    var pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+    hammer.add(pan);
+
+    var panStarted = false;
+    var panDown = false;
+    hammer.on('panstart', function() {
+        panStarted = true;
+      });
+    hammer.on('pandown', function() {
+        panDown = true;
+      });
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'move', 50, 80);
+    utils.dispatchTouchEvent(el, 'end', 50, 80);
+
+    assert.equal(panStarted, true, 'vertical panstart recognized immediately');
+    assert.equal(panDown, true, 'pandown recognized with DIRECTION_ALL');
+  });
+
+QUnit.test('Consecutive pans with identical final delta are both recognized', function(assert) {
+    assert.expect(1);
+
+    var pan = new Hammer.Pan({ threshold: 10 });
+    hammer.add(pan);
+
+    var panStartCount = 0;
+    hammer.on('panstart', function() {
+        panStartCount++;
+      });
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'move', 70, 50);
+    utils.dispatchTouchEvent(el, 'end', 70, 50);
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'move', 70, 50);
+    utils.dispatchTouchEvent(el, 'end', 70, 50);
+
+    assert.equal(panStartCount, 2, 'second identical pan was not dropped by stale pX/pY');
+  });

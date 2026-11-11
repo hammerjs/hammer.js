@@ -195,3 +195,39 @@ QUnit.test('check whether Hammer.defaults.cssProps is restored', function(assert
         }
       });
   });
+
+QUnit.test('Hammer can be called without `new` keyword', function(assert) {
+    assert.expect(2);
+
+    hammer = Hammer(el, { touchAction: 'none' });
+    assert.ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    assert.equal(hammer.touchAction.actions, 'none', 'sets options properly');
+  });
+
+QUnit.test('destroy cancels pending recognizer timers and cleans touchAction style', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
+
+    var domPressFired = false;
+    el.addEventListener('press', function() {
+        domPressFired = true;
+      });
+
+    hammer = new Hammer(el, { domEvents: true });
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+
+    hammer.destroy();
+    hammer = null;
+
+    var touchActionProp = Hammer.prefixed(el.style, 'touchAction');
+    if (touchActionProp) {
+      assert.equal(el.style[ touchActionProp ], '', 'touchAction style is cleaned on destroy');
+    } else {
+      assert.ok(true, 'no native touchAction property to clean');
+    }
+
+    setTimeout(function() {
+        assert.equal(domPressFired, false, 'pending press timer did not fire after destroy');
+        done();
+      }, 300);
+  });

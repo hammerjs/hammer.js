@@ -116,3 +116,50 @@ QUnit.test('When pan recognizes the gesture, a press gesture cannot be fired', f
       done();
     }, pressPeriod + 100);
   });
+
+QUnit.test('`requireFailure` should be one-way so pan still works after press is recognized', function(assert) {
+    var done = assert.async();
+    assert.expect(3);
+
+    assert.equal(hammer.get('pan').requireFail.length, 0, 'pan should not require press to fail');
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+
+    setTimeout(function() {
+      assert.equal(pressCount, 1, 'press recognized first');
+
+      utils.dispatchTouchEvent(el, 'move', 80, 50);
+      utils.dispatchTouchEvent(el, 'end', 80, 50);
+
+      assert.ok(panStartCount > 0, 'pan still recognized after press because dependency is one-way');
+      done();
+    }, pressPeriod + 50);
+  });
+
+QUnit.test('`tap.requireFailure(doubletap)` fires doubletap immediately without waiting for interval', function(assert) {
+    assert.expect(2);
+
+    var localEl = utils.createHitArea();
+    var mc = new Hammer.Manager(localEl, { recognizers: [] });
+    var tap = new Hammer.Tap();
+    var doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
+
+    mc.add([ tap, doubleTap ]);
+    doubleTap.recognizeWith(tap);
+    tap.requireFailure(doubleTap);
+
+    var doubleTapFired = 0;
+    mc.on('doubletap', function() {
+        doubleTapFired++;
+      });
+
+    utils.dispatchTouchEvent(localEl, 'start', 50, 50);
+    utils.dispatchTouchEvent(localEl, 'end', 50, 50);
+    utils.dispatchTouchEvent(localEl, 'start', 50, 50);
+    utils.dispatchTouchEvent(localEl, 'end', 50, 50);
+
+    assert.equal(doubleTap.requireFail.length, 0, 'doubletap does not require tap to fail');
+    assert.equal(doubleTapFired, 1, 'doubletap fired synchronously on second touchend');
+
+    mc.destroy();
+  });

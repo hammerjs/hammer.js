@@ -95,3 +95,64 @@ QUnit.test('When a tap is fired, tripleTap and doubleTap should not be recognize
         done();
       }, 350);
   });
+
+QUnit.test('Lifting a two-finger touch sequentially should not fire a single-finger tap', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
+
+    var touch0 = { clientX: 50, clientY: 50, identifier: 0, target: el };
+    var touch1 = { clientX: 70, clientY: 50, identifier: 1, target: el };
+
+    var start0 = document.createEvent('Event');
+    start0.initEvent('touchstart', true, true);
+    start0.touches = start0.targetTouches = [ touch0 ];
+    start0.changedTouches = [ touch0 ];
+    el.dispatchEvent(start0);
+
+    var start1 = document.createEvent('Event');
+    start1.initEvent('touchstart', true, true);
+    start1.touches = start1.targetTouches = [ touch0, touch1 ];
+    start1.changedTouches = [ touch1 ];
+    el.dispatchEvent(start1);
+
+    var end1 = document.createEvent('Event');
+    end1.initEvent('touchend', true, true);
+    end1.touches = end1.targetTouches = [ touch0 ];
+    end1.changedTouches = [ touch1 ];
+    el.dispatchEvent(end1);
+
+    var end0 = document.createEvent('Event');
+    end0.initEvent('touchend', true, true);
+    end0.touches = end0.targetTouches = [];
+    end0.changedTouches = [ touch0 ];
+    el.dispatchEvent(end0);
+
+    setTimeout(function() {
+        assert.equal(tapCount, 0, 'No ghost single tap recognized after 2-finger touch');
+        done();
+      }, 350);
+  });
+
+QUnit.test('An intervening pan between two taps within interval should not fire doubleTap', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
+
+    // First tap
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+
+    // Intervening drag/pan exceeding tap movement threshold
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'move', 100, 50);
+    utils.dispatchTouchEvent(el, 'end', 100, 50);
+
+    // Second tap within interval at original location
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+
+    setTimeout(function() {
+        assert.equal(doubleTapCount, 0, 'No doubleTap recognized across intervening pan');
+        assert.equal(tapCount, 1, 'Second tap recognized as a single tap');
+        done();
+      }, 350);
+  });

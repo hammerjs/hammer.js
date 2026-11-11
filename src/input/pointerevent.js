@@ -45,8 +45,6 @@ if (window.MSPointerEvent && !window.PointerEvent) {
 export default class PointerEventInput extends Input {
   constructor() {
     super(...arguments);
-    this.evEl = POINTER_ELEMENT_EVENTS;
-    this.evWin = POINTER_WINDOW_EVENTS;
 
     this.store = (this.manager.session.pointerEvents = []);
   }
@@ -77,6 +75,9 @@ export default class PointerEventInput extends Input {
       }
     } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
       removePointer = true;
+    } else if (eventType & INPUT_MOVE && ev.buttons === 0) {
+      eventType = INPUT_END;
+      removePointer = true;
     }
 
     // it not found, so the pointer hasn't been down (so it's probably a hover)
@@ -86,17 +87,21 @@ export default class PointerEventInput extends Input {
 
     // update the event in the store
     store[storeIndex] = ev;
-
-    this.callback(this.manager, eventType, {
-      pointers: store,
-      changedPointers: [ev],
-      pointerType,
-      srcEvent: ev
-    });
+    let pointers = store.slice();
 
     if (removePointer) {
       // remove from the store
       store.splice(storeIndex, 1);
     }
+
+    this.callback(this.manager, eventType, {
+      pointers,
+      changedPointers: [ev],
+      pointerType,
+      srcEvent: ev
+    });
   }
 }
+
+PointerEventInput.prototype.evEl = POINTER_ELEMENT_EVENTS;
+PointerEventInput.prototype.evWin = POINTER_WINDOW_EVENTS;
