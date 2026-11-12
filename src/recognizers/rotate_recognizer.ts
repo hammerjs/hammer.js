@@ -34,8 +34,6 @@ function shortestAngleDelta(fromDeg: number, toDeg: number): number {
 }
 
 export class RotateRecognizer extends GestureRecognizer {
-  readonly type = 'rotate';
-
   private readonly callbacks: RotateCallbacks;
   private readonly userOptions: Partial<RotateOptions>;
 

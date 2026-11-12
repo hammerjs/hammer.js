@@ -255,13 +255,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     singleFingerPan.onMotionEvent(
       new MotionEvent({
         action: MotionAction.DOWN,
-        downTime: 0,
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 20, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 20, y: 0},
         ],
         originalEvent: pointerEvent('pointerdown'),
       })
@@ -292,9 +291,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 80, clientY: 0, timeStamp: 24})
       )!
     );
-    expect(onSwipe).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'right', axis: 'horizontal'})
-    );
+    expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'right'}));
     expect(onSwipe.mock.calls[0][0].velocityX).toBeCloseTo(4000, 0);
 
     onSwipe.mockClear();
@@ -335,9 +332,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20, timeStamp: 316})
       )!
     );
-    expect(onSwipe).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'up', axis: 'vertical'})
-    );
+    expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'up'}));
 
     const onHorizSwipe = vi.fn();
     const horizArena = new GestureArena();
@@ -420,9 +415,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 60, timeStamp: 622})
       )!
     );
-    expect(onTwoFingerDown).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'down', axis: 'vertical'})
-    );
+    expect(onTwoFingerDown).toHaveBeenCalledWith(expect.objectContaining({direction: 'down'}));
     arena2.destroy();
   });
 
@@ -461,9 +454,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
       )!
     );
     expect(onSwipe).toHaveBeenCalledTimes(1);
-    expect(onSwipe).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'left', axis: 'horizontal'})
-    );
+    expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'left'}));
 
     onSwipe.mockClear();
     arena.dispatch(
@@ -607,8 +598,6 @@ describe('PanRecognizer (with integrated Swipe)', () => {
       )!
     );
     expect(onSwipe).toHaveBeenCalledTimes(1);
-    expect(onSwipe).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'left', axis: 'horizontal'})
-    );
+    expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'left'}));
   });
 });

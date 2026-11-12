@@ -17,20 +17,20 @@ describe('Hammer', () => {
   it('registers only requested recognizers and leaves empty instances passive', () => {
     const empty = new Hammer(element);
     expect(empty.element).toBe(element);
-    expect(empty.computeTouchAction()).toBe('auto');
+    expect(empty.manager.computeTouchAction()).toBe('auto');
     expect(element.style.touchAction || '').toBe('');
-    expect(empty.config.touchSlop).toBe(8);
-    empty.reset();
+    expect(empty.manager.config.touchSlop).toBe(8);
+    empty.manager.reset();
     empty.destroy();
 
     const onTap = vi.fn();
     const tapOnly = new Hammer(element, {
       onTap,
       supportedPointerTypes: ['touch'],
-      viewConfiguration: {tapSlop: 14},
+      viewConfiguration: {touchSlop: 14},
     });
-    expect(tapOnly.config.tapSlop).toBe(14);
-    expect(tapOnly.computeTouchAction()).toBe('manipulation');
+    expect(tapOnly.manager.config.touchSlop).toBe(14);
+    expect(tapOnly.manager.computeTouchAction()).toBe('manipulation');
     expect(element.style.touchAction).toBe('manipulation');
     expect(element.style.userSelect || '').toBe('');
 
@@ -52,14 +52,12 @@ describe('Hammer', () => {
     tapOnly.destroy();
   });
 
-  it('waits for double-tap failure before firing onTap by default', () => {
+  it('waits for double-tap failure before firing onTap', () => {
     vi.useFakeTimers();
     try {
       const onTap = vi.fn();
-      const onTapDown = vi.fn();
-      const onShowPress = vi.fn();
       const onDoubleTap = vi.fn();
-      const hammer = new Hammer(element, {onTap, onTapDown, onShowPress, onDoubleTap});
+      const hammer = new Hammer(element, {onTap, onDoubleTap});
 
       element.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 0})
@@ -67,7 +65,6 @@ describe('Hammer', () => {
       element.dispatchEvent(
         pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 30})
       );
-      expect(onTapDown).toHaveBeenCalledTimes(1);
       expect(onTap).not.toHaveBeenCalled();
 
       element.dispatchEvent(
@@ -82,48 +79,16 @@ describe('Hammer', () => {
       element.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 3, clientX: 20, clientY: 20, timeStamp: 600})
       );
-      vi.advanceTimersByTime(hammer.config.tapTimeout + 5);
-      expect(onShowPress).toHaveBeenCalledTimes(1);
-
       element.dispatchEvent(
-        pointerEvent('pointerup', {pointerId: 3, clientX: 20, clientY: 20, timeStamp: 790})
+        pointerEvent('pointerup', {pointerId: 3, clientX: 20, clientY: 20, timeStamp: 630})
       );
       expect(onTap).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(hammer.config.doubleTapTimeout + 5);
+      vi.advanceTimersByTime(hammer.manager.config.doubleTapTimeout + 5);
       expect(onTap).toHaveBeenCalledTimes(1);
       hammer.destroy();
     } finally {
       vi.useRealTimers();
     }
-  });
-
-  it('fires onTap immediately alongside onDoubleTap when requireDoubleTapFailure is false', () => {
-    const onTap = vi.fn();
-    const onDoubleTap = vi.fn();
-    const hammer = new Hammer(element, {
-      onTap,
-      onDoubleTap,
-      requireDoubleTapFailure: false,
-    });
-
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 0})
-    );
-    element.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 20})
-    );
-    expect(onTap).toHaveBeenCalledTimes(1);
-    expect(onDoubleTap).not.toHaveBeenCalled();
-
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 2, clientX: 10, clientY: 10, timeStamp: 100})
-    );
-    element.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 2, clientX: 10, clientY: 10, timeStamp: 120})
-    );
-    expect(onTap).toHaveBeenCalledTimes(2);
-    expect(onDoubleTap).toHaveBeenCalledTimes(1);
-    hammer.destroy();
   });
 
   it('computes touch-action from pan.direction and dispatches onPan and onSwipe', () => {
@@ -132,7 +97,7 @@ describe('Hammer', () => {
       expected: string
     ): void => {
       const h = new Hammer(element, opts);
-      expect(h.computeTouchAction()).toBe(expected);
+      expect(h.manager.computeTouchAction()).toBe(expected);
       h.destroy();
     };
 
@@ -181,9 +146,7 @@ describe('Hammer', () => {
     expect(onPanStart).toHaveBeenCalledTimes(1);
     expect(onPan).toHaveBeenCalledTimes(1);
     expect(onPanEnd).toHaveBeenCalledTimes(1);
-    expect(onSwipe).toHaveBeenCalledWith(
-      expect.objectContaining({direction: 'left', axis: 'horizontal'})
-    );
+    expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'left'}));
     hammer.destroy();
   });
 
@@ -259,10 +222,6 @@ describe('Hammer', () => {
     expect(onScale).toHaveBeenCalledWith(expect.objectContaining({isQuickScale: true}));
     expect(onTap).not.toHaveBeenCalled();
     hammer.destroy();
-
-    const qsOnly = new Hammer(element, {onQuickScale: vi.fn()});
-    expect(qsOnly.computeTouchAction()).toBe('manipulation');
-    qsOnly.destroy();
   });
 
   it('wires LongPress lifecycle callbacks and respects touchAction: false', () => {
@@ -398,8 +357,8 @@ describe('Hammer', () => {
     hammer.destroy();
 
     const onTap = vi.fn();
-    const onQuickScale = vi.fn();
-    const disabledQs = new Hammer(element, {onTap, onQuickScale, quickScale: false});
+    const onScaleDisabledQs = vi.fn();
+    const disabledQs = new Hammer(element, {onTap, onScale: onScaleDisabledQs, quickScale: false});
     element.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 5, clientX: 10, clientY: 10, timeStamp: 1000})
     );
@@ -407,27 +366,8 @@ describe('Hammer', () => {
       pointerEvent('pointerup', {pointerId: 5, clientX: 10, clientY: 10, timeStamp: 1020})
     );
     expect(onTap).toHaveBeenCalledTimes(1);
-    expect(onQuickScale).not.toHaveBeenCalled();
+    expect(onScaleDisabledQs).not.toHaveBeenCalled();
     disabledQs.destroy();
-
-    const onTapDown = vi.fn();
-    const onDoubleTap = vi.fn();
-    const feedbackAndDouble = new Hammer(element, {onTapDown, onDoubleTap});
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 6, clientX: 10, clientY: 10, timeStamp: 1500})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 6, clientX: 10, clientY: 10, timeStamp: 1520})
-    );
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 7, clientX: 10, clientY: 10, timeStamp: 1600})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 7, clientX: 10, clientY: 10, timeStamp: 1620})
-    );
-    expect(onTapDown).toHaveBeenCalledTimes(2);
-    expect(onDoubleTap).toHaveBeenCalledTimes(1);
-    feedbackAndDouble.destroy();
   });
 
   it('supports SVGElement targets and setOptions reconfiguration', () => {
@@ -509,9 +449,9 @@ describe('Hammer', () => {
       touchAction: 'none',
       viewConfiguration: {touchSlop: 14},
     });
-    expect(hammer.computeTouchAction()).toBe('pan-y pinch-zoom');
+    expect(hammer.manager.computeTouchAction()).toBe('pan-y pinch-zoom');
     expect(svg.style.touchAction).toBe('none');
-    expect(hammer.config.touchSlop).toBe(14);
+    expect(hammer.manager.config.touchSlop).toBe(14);
 
     // Omitting `touchAction` and `viewConfiguration` in `Hammer.setOptions` restores defaults:
     hammer.setOptions({
@@ -520,7 +460,7 @@ describe('Hammer', () => {
       pan: {direction: 'vertical'},
     });
     expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
-    expect(hammer.config.touchSlop).toBe(8);
+    expect(hammer.manager.config.touchSlop).toBe(8);
     svg.dispatchEvent(pointerEvent('pointerdown', {pointerId: 9, clientX: 5, clientY: 5}));
     svg.dispatchEvent(pointerEvent('pointerup', {pointerId: 9, clientX: 5, clientY: 5}));
     expect(calls).toContain('tap3');

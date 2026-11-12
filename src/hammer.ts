@@ -1,4 +1,8 @@
-import {GestureManager, type GestureManagerOptions} from './gesture_manager.js';
+import {
+  DEFAULT_POINTER_TYPES,
+  GestureManager,
+  type GestureManagerOptions,
+} from './gesture_manager.js';
 import type {GestureRecognizer} from './gesture_recognizer.js';
 import {
   LongPressRecognizer,
@@ -26,7 +30,7 @@ import {
   type ScaleOptions,
 } from './recognizers/scale_recognizer.js';
 import {TapRecognizer, type TapEventData, type TapOptions} from './recognizers/tap_recognizer.js';
-import type {GestureTarget, TouchActionSetting, TouchActionValue} from './touch_behavior.js';
+import type {GestureTarget, TouchActionSetting} from './touch_behavior.js';
 import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 
 export interface HammerOptions {
@@ -35,17 +39,9 @@ export interface HammerOptions {
   viewConfiguration?: Partial<ViewConfiguration>;
 
   onTap?: (event: TapEventData) => void;
-  onTapDown?: (event: TapEventData) => void;
-  /** Fired if the pointer stays within tap slop past `ViewConfiguration.tapTimeout`. */
-  onShowPress?: (event: TapEventData) => void;
   onDoubleTap?: (event: TapEventData) => void;
   tap?: Partial<Omit<TapOptions, 'taps'>>;
   doubleTap?: Partial<Omit<TapOptions, 'taps'>>;
-  /**
-   * Wait for `onDoubleTap` and `QuickScale` to fail before firing `onTap` (`true` by default).
-   * Set to `false` to fire `onTap` immediately on first release.
-   */
-  requireDoubleTapFailure?: boolean;
 
   onLongPress?: (event: LongPressEventData) => void;
   onLongPressMove?: (event: LongPressEventData) => void;
@@ -65,14 +61,10 @@ export interface HammerOptions {
   onScale?: (event: ScaleEventData) => void;
   onScaleEnd?: (event: ScaleEventData) => void;
   onScaleCancel?: () => void;
-  onQuickScaleStart?: (event: ScaleEventData) => void;
-  onQuickScale?: (event: ScaleEventData) => void;
-  onQuickScaleEnd?: (event: ScaleEventData) => void;
-  onQuickScaleCancel?: () => void;
   scale?: Partial<ScaleOptions>;
   /**
-   * Enables 1-finger double-tap-and-drag scaling, forwarding to `onScale*` when dedicated
-   * `onQuickScale*` callbacks are not provided. Pass `false` to disable explicitly.
+   * Enables 1-finger double-tap-and-drag scaling, forwarding events to `onScale*`
+   * (with `event.isQuickScale === true`).
    */
   quickScale?: boolean | Partial<QuickScaleOptions>;
 
@@ -85,7 +77,6 @@ export interface HammerOptions {
 
 function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   const recognizers: GestureRecognizer[] = [];
-  const requireDoubleTapFailure = options.requireDoubleTapFailure ?? true;
 
   const hasPan = Boolean(
     options.onPanStart ||
@@ -96,66 +87,40 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   );
   const panPointers = options.pan?.numPointers ?? 1;
 
-  const hasSingleTap = Boolean(options.onTap || options.onTapDown || options.onShowPress);
-  const singleTap = hasSingleTap
-    ? new TapRecognizer(
-        {
-          onDown: options.onTapDown,
-          onShowPress: options.onShowPress,
-          onTap: options.onTap,
-        },
-        {...options.tap, taps: 1}
-      )
+  const singleTap = options.onTap
+    ? new TapRecognizer({onTap: options.onTap}, {...options.tap, taps: 1})
     : null;
 
   const doubleTap = options.onDoubleTap
     ? new TapRecognizer({onTap: options.onDoubleTap}, {...options.doubleTap, taps: 2})
     : null;
 
-  const qsDisabled = options.quickScale === false;
-  const qsForward = Boolean(options.quickScale);
-  const qsStart = qsDisabled
-    ? undefined
-    : (options.onQuickScaleStart ?? (qsForward ? options.onScaleStart : undefined));
-  const qsChange = qsDisabled
-    ? undefined
-    : (options.onQuickScale ?? (qsForward ? options.onScale : undefined));
-  const qsEnd = qsDisabled
-    ? undefined
-    : (options.onQuickScaleEnd ?? (qsForward ? options.onScaleEnd : undefined));
-  const qsCancel = qsDisabled
-    ? undefined
-    : (options.onQuickScaleCancel ?? (qsForward ? options.onScaleCancel : undefined));
-  const hasQuickScale = Boolean(qsStart || qsChange || qsEnd || qsCancel);
+  const hasScale = Boolean(
+    options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
+  );
+  const scaleCallbacks = {
+    onScaleStart: options.onScaleStart,
+    onScale: options.onScale,
+    onScaleEnd: options.onScaleEnd,
+    onScaleCancel: options.onScaleCancel,
+  };
 
-  const quickScaleOpts = typeof options.quickScale === 'object' ? options.quickScale : undefined;
-  const quickScale = hasQuickScale
-    ? new QuickScaleRecognizer(
-        {
-          onScaleStart: qsStart,
-          onScale: qsChange,
-          onScaleEnd: qsEnd,
-          onScaleCancel: qsCancel,
-        },
-        quickScaleOpts
-      )
-    : null;
+  const quickScale =
+    hasScale && options.quickScale
+      ? new QuickScaleRecognizer(
+          scaleCallbacks,
+          typeof options.quickScale === 'object' ? options.quickScale : undefined
+        )
+      : null;
 
   if (singleTap) {
     const tapPointers = options.tap?.numPointers ?? 1;
     const doubleTapPointers = options.doubleTap?.numPointers ?? 1;
-    const samePointersAsDoubleTap = Boolean(doubleTap && tapPointers === doubleTapPointers);
-
-    if (options.onTap && requireDoubleTapFailure) {
-      if (doubleTap && samePointersAsDoubleTap) {
-        singleTap.requireFailureOf(doubleTap);
-      }
-      if (quickScale && tapPointers === 1) {
-        singleTap.requireFailureOf(quickScale);
-      }
-    } else if (doubleTap && samePointersAsDoubleTap) {
-      // Allow tap #1 to succeed without denying doubleTap before tap #2 arrives.
-      singleTap.simultaneousWith(doubleTap);
+    if (doubleTap && tapPointers === doubleTapPointers) {
+      singleTap.requireFailureOf(doubleTap);
+    }
+    if (quickScale && tapPointers === 1) {
+      singleTap.requireFailureOf(quickScale);
     }
     recognizers.push(singleTap);
   }
@@ -202,20 +167,7 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
     recognizers.push(pan);
   }
 
-  const hasScale = Boolean(
-    options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
-  );
-  const scale = hasScale
-    ? new ScaleRecognizer(
-        {
-          onScaleStart: options.onScaleStart,
-          onScale: options.onScale,
-          onScaleEnd: options.onScaleEnd,
-          onScaleCancel: options.onScaleCancel,
-        },
-        options.scale
-      )
-    : null;
+  const scale = hasScale ? new ScaleRecognizer(scaleCallbacks, options.scale) : null;
 
   const hasRotate = Boolean(
     options.onRotateStart || options.onRotate || options.onRotateEnd || options.onRotateCancel
@@ -277,29 +229,16 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
     });
   }
 
-  get config(): ViewConfiguration {
-    return this.manager.config;
-  }
-
   setOptions(options: HammerOptions): this {
     this.manager.unregister(...this.recognizers);
     this.recognizers = buildRecognizers(options);
     this.manager.setOptions({
-      supportedPointerTypes:
-        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
-      touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
+      supportedPointerTypes: options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES,
+      touchAction: options.touchAction ?? 'compute',
       viewConfiguration: options.viewConfiguration ?? DEFAULT_VIEW_CONFIGURATION,
     });
     this.manager.register(...this.recognizers);
     return this;
-  }
-
-  computeTouchAction(): TouchActionValue {
-    return this.manager.computeTouchAction();
-  }
-
-  reset(): void {
-    this.manager.reset();
   }
 
   destroy(): void {

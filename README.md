@@ -4,8 +4,8 @@ Modern TypeScript gesture recognition engine built on W3C Pointer Events, combin
 
 ## Architecture Highlights
 
-- **`MotionEvent` & `MotionEventStream` (`src/motion_event.ts`)**: Adapts DOM `PointerEvent` streams (including high-frequency `getCoalescedEvents()` samples) into immutable multi-pointer snapshots with Android actions (`down`, `pointer_down`, `move`, `pointer_up`, `up`, `cancel`), jump-free focal point continuity across pointer lifts, element-local coordinates (`event.relativeTo(element)`), and multi-pointer mean-deviation span metrics.
-- **`VelocityTracker` (`src/velocity_tracker.ts`)**: Android AOSP's 2nd-order polynomial least-squares fit (`LSQ2`, with 2-sample linear fallback) over a single zero-allocation circular buffer per pointer (`px/s` by default). Includes dirty-flag frame caching, radial magnitude clamping (`speed <= maxVelocity`), a `100ms` horizon window, `40ms` stop/pause reset detection, capacitive peel-off filtering, multi-pointer centroid velocity, and opposing-vector pinch cancellation.
+- **`MotionEvent` & `MotionEventStream` (`src/motion_event.ts`)**: Adapts DOM `PointerEvent` streams (including high-frequency `getCoalescedEvents()` samples) into immutable multi-pointer snapshots with Android actions (`down`, `pointer_down`, `move`, `pointer_up`, `up`, `cancel`), jump-free focal point continuity across pointer lifts, and multi-pointer mean-deviation span metrics.
+- **`VelocityTracker` (`src/velocity_tracker.ts`)**: Android AOSP's 2nd-order polynomial least-squares fit (`LSQ2`, with 2-sample linear fallback) over a single zero-allocation circular buffer per pointer (`px/s`). Includes dirty-flag frame caching, radial magnitude clamping (`speed <= maxVelocity`), a `100ms` horizon window, `40ms` stop/pause reset detection, capacitive peel-off filtering, multi-pointer centroid velocity, and opposing-vector pinch cancellation.
 - **`GestureArena` & `GestureRecognizer` (`src/gesture_arena.ts`, `src/gesture_recognizer.ts`)**: Order-independent arena arbitration (`possible` -> `pending` -> `began` -> `changed` -> `ended` | `cancelled` | `failed`) with simultaneous cooperation (`.simultaneousWith(...)`) and causal failure dependencies (`.requireFailureOf(...)`).
 - **Zero-Scroll-Lock Web `touch-action` & iOS Safari Coexistence (`src/touch_behavior.ts`, `src/gesture_manager.ts`)**: Automatically computes the least-restrictive W3C CSS `touch-action` (`touchAction: 'compute'` by default) from the registered recognizers (`Tap` / `LongPress` / `QuickScale` -> `'manipulation'`, horizontal `Pan` -> `'pan-y pinch-zoom'`, `Scale` / `Rotate` -> `'pan-x pan-y'`, 2D `Pan` -> `'none'`) with `CSS.supports()` fallbacks for older WebKit parsers. Keeps `Tap`-only surfaces free of `{passive: false}` `touchmove` listeners so browser scrolling stays completely native.
 - **Lazy Pointer Capture & Scoped Ghost-Click Guard (`src/gesture_manager.ts`)**: Supports both `HTMLElement` and `SVGElement` targets, attaches only `pointerdown` and `lostpointercapture` while idle, acquires `setPointerCapture()` lazily when a continuous gesture enters `began` (ignoring bubbling descendant implicit-capture transfers, and tracking straddling multi-touch pointers landing outside the target), preserves native `click` events on child controls during taps, and suppresses accidental trailing `click`s (within `ViewConfiguration.ghostClickTimeout`) after continuous gestures.
@@ -26,7 +26,7 @@ const hammer = new Hammer(myElement, {
   onDoubleTap: ev => console.log('Double tap', ev.center),
   onLongPress: ev => console.log('LongPress', ev),
   onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
-  onSwipe: ev => console.log('Swipe', ev.direction, ev.speed),
+  onSwipe: ev => console.log('Swipe', ev.direction, ev.velocityX, ev.velocityY),
   pan: {direction: 'horizontal'},
   onScale: ev => console.log('Scale', ev.scale),
   onRotate: ev => console.log('Rotate', ev.rotation),

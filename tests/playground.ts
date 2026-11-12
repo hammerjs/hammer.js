@@ -31,7 +31,6 @@ interface PlaygroundConfig {
   enableSingleTap: boolean;
   enableDoubleTap: boolean;
   requireDoubleTapFailure: boolean;
-  enableTapFeedback: boolean;
   enableTwoFingerTap: boolean;
 
   enableLongPress: boolean;
@@ -106,21 +105,16 @@ const TOUCH_ACTION_DESCRIPTIONS: Record<string, string> = {
 
 const VIEW_CONFIG_KEYS: ReadonlyArray<keyof ViewConfiguration> = [
   'touchSlop',
-  'tapSlop',
   'doubleTapSlop',
   'spanSlop',
   'minScalingSpan',
   'rotationSlop',
-  'tapTimeout',
   'maxTapDuration',
   'doubleTapTimeout',
-  'doubleTapMinTime',
   'longPressTimeout',
   'minimumSwipeVelocity',
   'minimumSwipeDistance',
   'maximumSwipeVelocity',
-  'velocityHorizonMs',
-  'assumePointerStoppedMs',
   'ghostClickTimeout',
 ];
 
@@ -138,7 +132,6 @@ function createBaseConfig(): PlaygroundConfig {
     enableSingleTap: true,
     enableDoubleTap: true,
     requireDoubleTapFailure: true,
-    enableTapFeedback: false,
     enableTwoFingerTap: false,
 
     enableLongPress: true,
@@ -196,7 +189,6 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
       next.enableSingleTap = true;
       next.enableDoubleTap = true;
       next.requireDoubleTapFailure = true;
-      next.enableTapFeedback = true;
       next.enableLongPress = true;
       next.enablePan = false;
       next.enableSwipe = false;
@@ -334,6 +326,11 @@ const clearLogBtn = el<HTMLButtonElement>('clearLogBtn');
 const copyCodeBtn = el<HTMLButtonElement>('copyCodeBtn');
 const shareUrlBtn = el<HTMLButtonElement>('shareUrlBtn');
 
+function localPoint(point: {x: number; y: number}): {x: number; y: number} {
+  const rect = hitarea.getBoundingClientRect();
+  return {x: point.x - rect.left, y: point.y - rect.top};
+}
+
 function updateCardTransform(animate = false): void {
   transformCard.classList.toggle('spring-back', animate);
   transformCard.style.setProperty('--tx', `${round(activeTx, 1)}px`);
@@ -412,9 +409,9 @@ function renderPointerOverlay(): void {
 
   let sumX = 0;
   let sumY = 0;
-  for (let i = 0; i < pts.length; i++) {
-    sumX += pts[i].lx;
-    sumY += pts[i].ly;
+  for (const pt of pts) {
+    sumX += pt.lx;
+    sumY += pt.ly;
   }
   const cx = sumX / pts.length;
   const cy = sumY / pts.length;
@@ -422,14 +419,14 @@ function renderPointerOverlay(): void {
   if (pts.length >= 2) {
     let devX = 0;
     let devY = 0;
-    for (let i = 0; i < pts.length; i++) {
-      devX += Math.abs(pts[i].lx - cx);
-      devY += Math.abs(pts[i].ly - cy);
+    for (const pt of pts) {
+      devX += Math.abs(pt.lx - cx);
+      devY += Math.abs(pt.ly - cy);
       const line = document.createElementNS(svgNs, 'line');
       line.setAttribute('x1', `${cx}`);
       line.setAttribute('y1', `${cy}`);
-      line.setAttribute('x2', `${pts[i].lx}`);
-      line.setAttribute('y2', `${pts[i].ly}`);
+      line.setAttribute('x2', `${pt.lx}`);
+      line.setAttribute('y2', `${pt.ly}`);
       line.setAttribute('stroke', 'currentColor');
       line.setAttribute('stroke-opacity', '0.35');
       line.setAttribute('stroke-dasharray', '4 4');
@@ -455,8 +452,7 @@ function renderPointerOverlay(): void {
   cross.setAttribute('fill-opacity', '0.65');
   pointerOverlay.appendChild(cross);
 
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i];
+  for (const p of pts) {
     const color = POINTER_PALETTE[Math.abs(p.pointerId) % POINTER_PALETTE.length];
     const ring = document.createElementNS(svgNs, 'circle');
     ring.setAttribute('cx', `${p.lx}`);
@@ -486,8 +482,7 @@ function renderArenaStates(): void {
   }
 
   arenaStatesEl.innerHTML = '';
-  for (let i = 0; i < trackedRecognizers.length; i++) {
-    const {label, recognizer} = trackedRecognizers[i];
+  for (const {label, recognizer} of trackedRecognizers) {
     const pill = document.createElement('span');
     pill.className = `state-pill state-${recognizer.state}`;
     pill.textContent = `${label}: ${recognizer.state}`;
@@ -612,12 +607,9 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
         ? '.requireFailureOf(doubleTap)'
         : '.simultaneousWith(doubleTap)'
       : '';
-    const cbParts = ["onTap: ev => console.log('Tap', ev)"];
-    if (cfg.enableTapFeedback) {
-      cbParts.unshift("onDown: () => console.log('Down')");
-      cbParts.push("onShowPress: () => console.log('ShowPress')");
-    }
-    lines.push(`const singleTap = new TapRecognizer({${cbParts.join(', ')}})${chain};`);
+    lines.push(
+      `const singleTap = new TapRecognizer({onTap: ev => console.log('Tap', ev)})${chain};`
+    );
     recognizerVars.push('singleTap');
   }
   if (cfg.enableDoubleTap) {
@@ -663,7 +655,7 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
   if (cfg.enablePan) {
     const panCbs = ["onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY)"];
     if (cfg.enableSwipe) {
-      panCbs.push("onSwipe: ev => console.log('Swipe', ev.direction, ev.speed)");
+      panCbs.push("onSwipe: ev => console.log('Swipe', ev.direction, ev.velocityX, ev.velocityY)");
     }
     const panOptEntries: string[] = [];
     if (cfg.panDirection !== 'both') panOptEntries.push(`direction: '${cfg.panDirection}'`);
@@ -733,7 +725,7 @@ function rebuildHammer(): void {
         onTap: (ev: TapEventData) => {
           gestureCount++;
           flashStage();
-          const local = ev.motionEvent.relativeTo(hitarea);
+          const local = localPoint(ev.center);
           updateCommonTelemetry('DoubleTap', ev.motionEvent);
           telDelta.textContent = `at (${Math.round(local.x)}, ${Math.round(local.y)}) px`;
           if (persistTransform) {
@@ -756,33 +748,10 @@ function rebuildHammer(): void {
 
   if (config.enableSingleTap) {
     const singleTap = new TapRecognizer({
-      onDown: config.enableTapFeedback
-        ? (ev: TapEventData) => {
-            const local = ev.motionEvent.relativeTo(hitarea);
-            appendLog(
-              'lifecycle',
-              'TapDown',
-              `center=(${Math.round(local.x)}, ${Math.round(local.y)}) type=${ev.motionEvent.pointerType}`
-            );
-            scheduleArenaStateWatch();
-          }
-        : undefined,
-      onShowPress: config.enableTapFeedback
-        ? (ev: TapEventData) => {
-            const local = ev.motionEvent.relativeTo(hitarea);
-            updateCommonTelemetry('ShowPress', ev.motionEvent);
-            appendLog(
-              'lifecycle',
-              'ShowPress',
-              `held ${config.viewConfig.tapTimeout}ms at (${Math.round(local.x)}, ${Math.round(local.y)})`
-            );
-            scheduleArenaStateWatch();
-          }
-        : undefined,
       onTap: (ev: TapEventData) => {
         gestureCount++;
         flashStage();
-        const local = ev.motionEvent.relativeTo(hitarea);
+        const local = localPoint(ev.center);
         const label =
           doubleTapRec && config.requireDoubleTapFailure ? 'SingleTap (Conf)' : 'SingleTap';
         updateCommonTelemetry(label, ev.motionEvent);
@@ -816,7 +785,7 @@ function rebuildHammer(): void {
         onTap: (ev: TapEventData) => {
           gestureCount++;
           flashStage();
-          const local = ev.motionEvent.relativeTo(hitarea);
+          const local = localPoint(ev.center);
           updateCommonTelemetry('2-Finger Tap', ev.motionEvent);
           appendLog(
             'lifecycle',
@@ -839,7 +808,7 @@ function rebuildHammer(): void {
           flashStage();
           panOriginX = baseTx;
           panOriginY = baseTy;
-          const local = ev.motionEvent.relativeTo(hitarea);
+          const local = localPoint(ev.center);
           updateCommonTelemetry('LongPress', ev.motionEvent);
           telDelta.textContent = `held at (${Math.round(local.x)}, ${Math.round(local.y)}) px`;
           appendLog(
@@ -880,35 +849,38 @@ function rebuildHammer(): void {
   if (config.enableScale) {
     scaleRec = new ScaleRecognizer({
       onScaleStart: (ev: ScaleEventData) => {
+        const span = ev.motionEvent.getSpan();
         gestureCount++;
         scaleOrigin = baseScale;
         updateCommonTelemetry('ScaleStart', ev.motionEvent);
-        telScale.textContent = `${ev.scale.toFixed(2)}× · span ${Math.round(ev.currentSpan)}px`;
+        telScale.textContent = `${ev.scale.toFixed(2)}× · span ${Math.round(span)}px`;
         appendLog(
           'lifecycle',
           'ScaleStart',
-          `span=${round(ev.currentSpan)}px ptrs=${ev.motionEvent.activePointerCount}`
+          `span=${round(span)}px ptrs=${ev.motionEvent.activePointerCount}`
         );
         scheduleArenaStateWatch();
       },
       onScale: (ev: ScaleEventData) => {
+        const span = ev.motionEvent.getSpan();
         activeScale = scaleOrigin * ev.scale;
         updateCardTransform(false);
         updateCommonTelemetry('Scale', ev.motionEvent);
-        telScale.textContent = `${ev.scale.toFixed(2)}× · span ${Math.round(ev.currentSpan)}px`;
+        telScale.textContent = `${ev.scale.toFixed(2)}× · span ${Math.round(span)}px`;
         appendLog(
           'move',
           'Scale',
-          `scale=${ev.scale.toFixed(3)} factor=${ev.scaleFactor.toFixed(3)} span=${round(ev.currentSpan)}px`
+          `scale=${ev.scale.toFixed(3)} factor=${ev.scaleFactor.toFixed(3)} span=${round(span)}px`
         );
       },
       onScaleEnd: (ev: ScaleEventData) => {
+        const span = ev.motionEvent.getSpan();
         baseScale = activeScale;
         updateCommonTelemetry('ScaleEnd', ev.motionEvent);
         appendLog(
           'lifecycle',
           'ScaleEnd',
-          `finalScale=${ev.scale.toFixed(3)} span=${round(ev.currentSpan)}px`
+          `finalScale=${ev.scale.toFixed(3)} span=${round(span)}px`
         );
         settleOrPersistTransform();
         scheduleArenaStateWatch();
@@ -975,7 +947,7 @@ function rebuildHammer(): void {
         onScaleStart: (ev: ScaleEventData) => {
           gestureCount++;
           scaleOrigin = baseScale;
-          const local = ev.motionEvent.relativeTo(hitarea, ev.center);
+          const local = localPoint(ev.center);
           updateCommonTelemetry('QuickScaleStart', ev.motionEvent);
           telScale.textContent = `${ev.scale.toFixed(2)}× (quick)`;
           appendLog(
@@ -989,7 +961,7 @@ function rebuildHammer(): void {
           activeScale = scaleOrigin * ev.scale;
           updateCardTransform(false);
           updateCommonTelemetry('QuickScale', ev.motionEvent);
-          telScale.textContent = `${ev.scale.toFixed(2)}× (quick · span ${Math.round(ev.currentSpan)}px)`;
+          telScale.textContent = `${ev.scale.toFixed(2)}× (quick)`;
           appendLog(
             'move',
             'QuickScale',
@@ -1021,7 +993,7 @@ function rebuildHammer(): void {
         onPanStart: (ev: PanEventData) => {
           gestureCount++;
           swipedInStroke = false;
-          peakStrokeSpeed = ev.speed;
+          peakStrokeSpeed = Math.hypot(ev.velocityX, ev.velocityY);
           panOriginX = baseTx;
           panOriginY = baseTy;
           updateCommonTelemetry('PanStart', ev.motionEvent);
@@ -1029,38 +1001,40 @@ function rebuildHammer(): void {
           appendLog(
             'lifecycle',
             'PanStart',
-            `ptrs=${ev.pointerCount} type=${ev.motionEvent.pointerType}`
+            `ptrs=${ev.motionEvent.activePointerCount} type=${ev.motionEvent.pointerType}`
           );
           scheduleArenaStateWatch();
         },
         onPan: (ev: PanEventData) => {
+          const speed = Math.hypot(ev.velocityX, ev.velocityY);
           activeTx = panOriginX + ev.deltaX;
           activeTy = panOriginY + ev.deltaY;
-          if (ev.speed > peakStrokeSpeed) {
-            peakStrokeSpeed = ev.speed;
+          if (speed > peakStrokeSpeed) {
+            peakStrokeSpeed = speed;
           }
           updateCardTransform(false);
           updateCommonTelemetry('Pan', ev.motionEvent);
           telDelta.textContent = `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} (step ${round(ev.stepX)}, ${round(ev.stepY)})`;
-          telVelocity.textContent = `${Math.round(ev.speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)}) · peak ${Math.round(peakStrokeSpeed)}`;
+          telVelocity.textContent = `${Math.round(speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)}) · peak ${Math.round(peakStrokeSpeed)}`;
           appendLog(
             'move',
             'Pan',
-            `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} speed=${Math.round(ev.speed)}px/s ptrs=${ev.pointerCount}`
+            `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} speed=${Math.round(speed)}px/s ptrs=${ev.motionEvent.activePointerCount}`
           );
         },
         onPanEnd: (ev: PanEventData) => {
+          const speed = Math.hypot(ev.velocityX, ev.velocityY);
           baseTx = activeTx;
           baseTy = activeTy;
-          if (ev.speed > peakStrokeSpeed) {
-            peakStrokeSpeed = ev.speed;
+          if (speed > peakStrokeSpeed) {
+            peakStrokeSpeed = speed;
           }
           updateCommonTelemetry('PanEnd', ev.motionEvent);
-          telVelocity.textContent = `${Math.round(ev.speed)} px/s release · peak ${Math.round(peakStrokeSpeed)}`;
+          telVelocity.textContent = `${Math.round(speed)} px/s release · peak ${Math.round(peakStrokeSpeed)}`;
           appendLog(
             'lifecycle',
             'PanEnd',
-            `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} speed=${Math.round(ev.speed)}px/s`
+            `dx=${round(ev.deltaX)} dy=${round(ev.deltaY)} vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} speed=${Math.round(speed)}px/s`
           );
           if (!config.enableSwipe) {
             settleOrPersistTransform();
@@ -1076,15 +1050,16 @@ function rebuildHammer(): void {
         },
         onSwipe: config.enableSwipe
           ? (ev: SwipeEventData) => {
+              const speed = Math.hypot(ev.velocityX, ev.velocityY);
               swipedInStroke = true;
               gestureCount++;
               flashStage();
               updateCommonTelemetry(`Swipe (${ev.direction})`, ev.motionEvent);
-              telVelocity.textContent = `SWIPE ${ev.direction} · ${Math.round(ev.speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)})`;
+              telVelocity.textContent = `SWIPE ${ev.direction} · ${Math.round(speed)} px/s (${Math.round(ev.velocityX)}, ${Math.round(ev.velocityY)})`;
               appendLog(
                 'lifecycle',
                 `Swipe:${ev.direction}`,
-                `axis=${ev.axis} speed=${Math.round(ev.speed)}px/s vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} dx=${round(ev.deltaX)} dy=${round(ev.deltaY)}`
+                `speed=${Math.round(speed)}px/s vx=${Math.round(ev.velocityX)} vy=${Math.round(ev.velocityY)} dx=${round(ev.deltaX)} dy=${round(ev.deltaY)}`
               );
               settleOrPersistTransform(ev.velocityX, ev.velocityY);
               scheduleArenaStateWatch();
@@ -1155,7 +1130,6 @@ function syncFormFromConfig(cfg: PlaygroundConfig): void {
   el<HTMLInputElement>('requireDoubleTapFailure').checked = cfg.requireDoubleTapFailure;
   el<HTMLInputElement>('requireDoubleTapFailure').disabled =
     !cfg.enableSingleTap || !cfg.enableDoubleTap;
-  el<HTMLInputElement>('enableTapFeedback').checked = cfg.enableTapFeedback;
   el<HTMLInputElement>('enableTwoFingerTap').checked = cfg.enableTwoFingerTap;
 
   el<HTMLInputElement>('enableLongPress').checked = cfg.enableLongPress;
@@ -1204,7 +1178,6 @@ function readConfigFromForm(): PlaygroundConfig {
     enableSingleTap: el<HTMLInputElement>('enableSingleTap').checked,
     enableDoubleTap: el<HTMLInputElement>('enableDoubleTap').checked,
     requireDoubleTapFailure: el<HTMLInputElement>('requireDoubleTapFailure').checked,
-    enableTapFeedback: el<HTMLInputElement>('enableTapFeedback').checked,
     enableTwoFingerTap: el<HTMLInputElement>('enableTwoFingerTap').checked,
 
     enableLongPress: el<HTMLInputElement>('enableLongPress').checked,
@@ -1242,7 +1215,6 @@ function serializeConfigToQuery(cfg: PlaygroundConfig): string {
     params.set('dt', cfg.enableDoubleTap ? '1' : '0');
   if (cfg.requireDoubleTapFailure !== def.requireDoubleTapFailure)
     params.set('req', cfg.requireDoubleTapFailure ? '1' : '0');
-  if (cfg.enableTapFeedback) params.set('tf', '1');
   if (cfg.enableTwoFingerTap) params.set('tft', '1');
   if (cfg.enableLongPress !== def.enableLongPress)
     params.set('lp', cfg.enableLongPress ? '1' : '0');
@@ -1292,7 +1264,6 @@ function loadConfigFromUrl(): PlaygroundConfig {
   cfg.enableSingleTap = boolParam('st', cfg.enableSingleTap);
   cfg.enableDoubleTap = boolParam('dt', cfg.enableDoubleTap);
   cfg.requireDoubleTapFailure = boolParam('req', cfg.requireDoubleTapFailure);
-  cfg.enableTapFeedback = boolParam('tf', cfg.enableTapFeedback);
   cfg.enableTwoFingerTap = boolParam('tft', cfg.enableTwoFingerTap);
   cfg.enableLongPress = boolParam('lp', cfg.enableLongPress);
   if (params.has('lpp')) cfg.longPressPointers = Number(params.get('lpp')) || 1;

@@ -1,5 +1,5 @@
 export {Hammer, type HammerOptions} from './hammer.js';
-export {GestureManager, type GestureManagerOptions} from './gesture_manager.js';
+export {GestureManager, type GestureManagerOptions, type PointerType} from './gesture_manager.js';
 export {
   GestureRecognizer,
   RecognizerState,
@@ -14,11 +14,6 @@ export {
   type Point,
   type PointerSample,
 } from './motion_event.js';
-export {
-  VelocityTracker,
-  type VelocityTrackerOptions,
-  type VelocityVector,
-} from './velocity_tracker.js';
 export {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 export type {GestureTarget, TouchActionSetting, TouchActionValue} from './touch_behavior.js';
 
@@ -31,7 +26,6 @@ export {
 export {
   PanRecognizer,
   type CardinalDirection,
-  type GestureAxis,
   type PanCallbacks,
   type PanDirection,
   type PanEventData,

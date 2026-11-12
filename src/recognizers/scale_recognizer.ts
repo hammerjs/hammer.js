@@ -12,18 +12,8 @@ export interface ScaleOptions {
 export interface ScaleEventData extends GestureEventData {
   /** Cumulative post-slop scale ratio relative to gesture start (`1.0` = original size). */
   readonly scale: number;
-  /** Incremental frame-to-frame scale ratio (`currentSpan / previousSpan`). */
+  /** Incremental frame-to-frame scale ratio. */
   readonly scaleFactor: number;
-  /** Current multi-pointer (or Quick-Scale virtual) span in `px`. */
-  readonly currentSpan: number;
-  /** Previous frame's multi-pointer (or Quick-Scale virtual) span in `px`. */
-  readonly previousSpan: number;
-  /** Current horizontal span component in `px`. */
-  readonly currentSpanX: number;
-  /** Current vertical span component in `px`. */
-  readonly currentSpanY: number;
-  /** Elapsed time in `ms` since the previous scale frame. */
-  readonly timeDelta: number;
   /** `true` when scaling via single-pointer `QuickScaleRecognizer`. */
   readonly isQuickScale: boolean;
 }
@@ -36,15 +26,11 @@ export interface ScaleCallbacks {
 }
 
 export class ScaleRecognizer extends GestureRecognizer {
-  readonly type = 'scale';
-
   private readonly callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<ScaleOptions>;
 
   private initialSpan = 0;
   private prevSpan = 0;
-  private currSpan = 0;
-  private prevTime = 0;
   private cumulativeScale = 1;
 
   constructor(callbacks: ScaleCallbacks, options: Partial<ScaleOptions> = {}) {
@@ -78,7 +64,6 @@ export class ScaleRecognizer extends GestureRecognizer {
   onMotionEvent(event: MotionEvent): void {
     switch (event.action) {
       case MotionAction.DOWN: {
-        this.prevTime = event.eventTime;
         this.cumulativeScale = 1;
         if (event.activePointerCount >= 2) {
           this.configureMultiPointerSpan(event);
@@ -97,7 +82,6 @@ export class ScaleRecognizer extends GestureRecognizer {
         }
 
         const span = event.getSpan();
-        const timeDelta = Math.max(0, event.eventTime - this.prevTime);
 
         if (!this.active) {
           if (span < this.minSpan) {
@@ -116,24 +100,21 @@ export class ScaleRecognizer extends GestureRecognizer {
             baseSpan + Math.sign(spanDelta) * this.spanSlop
           );
           this.prevSpan = anchorSpan;
-          this.currSpan = anchorSpan;
           this.cumulativeScale = 1;
 
           const started = this.tryBegin(() => {
-            this.callbacks.onScaleStart?.(this.buildEvent(event, 1, 0));
+            this.callbacks.onScaleStart?.(this.buildEvent(event, 1));
           });
 
           if (started) {
-            this.currSpan = span;
             const postSlopFactor = span / anchorSpan;
             this.cumulativeScale = postSlopFactor;
             if (postSlopFactor !== 1) {
               this.emitChange(() => {
-                this.callbacks.onScale?.(this.buildEvent(event, postSlopFactor, timeDelta));
+                this.callbacks.onScale?.(this.buildEvent(event, postSlopFactor));
               });
             }
             this.prevSpan = span;
-            this.prevTime = event.eventTime;
           }
           return;
         }
@@ -141,16 +122,14 @@ export class ScaleRecognizer extends GestureRecognizer {
         // Clamp at `minSpan` while active (matching `RotateRecognizer` and `3->2` re-anchors)
         // so pinching close and spreading back out stays alive without zoom spikes.
         const effectiveSpan = Math.max(1, this.minSpan, span);
-        this.currSpan = effectiveSpan;
 
         const scaleFactor = effectiveSpan / this.prevSpan;
         if (scaleFactor !== 1) {
           this.cumulativeScale *= scaleFactor;
           this.emitChange(() => {
-            this.callbacks.onScale?.(this.buildEvent(event, scaleFactor, timeDelta));
+            this.callbacks.onScale?.(this.buildEvent(event, scaleFactor));
           });
           this.prevSpan = effectiveSpan;
-          this.prevTime = event.eventTime;
         }
         break;
       }
@@ -158,7 +137,9 @@ export class ScaleRecognizer extends GestureRecognizer {
       case MotionAction.POINTER_UP: {
         if (event.activePointerCount < 2) {
           if (this.active) {
-            this.finish(event);
+            this.completeActive(() => {
+              this.callbacks.onScaleEnd?.(this.buildEvent(event, 1));
+            });
           } else {
             this.fail();
           }
@@ -188,36 +169,20 @@ export class ScaleRecognizer extends GestureRecognizer {
   protected override onReset(): void {
     this.initialSpan = 0;
     this.prevSpan = 0;
-    this.currSpan = 0;
-    this.prevTime = 0;
     this.cumulativeScale = 1;
-  }
-
-  private finish(event: MotionEvent): void {
-    const timeDelta = Math.max(0, event.eventTime - this.prevTime);
-    this.completeActive(() => {
-      this.callbacks.onScaleEnd?.(this.buildEvent(event, 1, timeDelta));
-    });
   }
 
   private configureMultiPointerSpan(event: MotionEvent): void {
     const span = event.getSpan();
     this.initialSpan = span;
     this.prevSpan = this.active ? Math.max(1, this.minSpan, span) : span;
-    this.currSpan = span;
-    this.prevTime = event.eventTime;
   }
 
-  private buildEvent(event: MotionEvent, scaleFactor: number, timeDelta: number): ScaleEventData {
+  private buildEvent(event: MotionEvent, scaleFactor: number): ScaleEventData {
     return {
       ...this.createEventData(event),
       scale: this.cumulativeScale,
       scaleFactor,
-      currentSpan: this.currSpan,
-      previousSpan: this.prevSpan,
-      currentSpanX: event.getSpanX(),
-      currentSpanY: event.getSpanY(),
-      timeDelta,
       isQuickScale: false,
     };
   }

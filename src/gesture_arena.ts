@@ -96,8 +96,8 @@ export class GestureArena {
       return;
     }
     this.recognizers = [...this.recognizers, recognizer];
-    this.refreshCapabilities();
     recognizer.attach(this);
+    this.refreshCapabilities();
   }
 
   remove(recognizer: GestureRecognizer): void {

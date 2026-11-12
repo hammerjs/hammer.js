@@ -200,13 +200,12 @@ describe('LongPressRecognizer', () => {
     oneFingerLp.onMotionEvent(
       new MotionEvent({
         action: MotionAction.DOWN,
-        downTime: 0,
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 20, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 20, y: 0},
         ],
         originalEvent: pointerEvent('pointerdown'),
       })

@@ -39,27 +39,20 @@ function isRelatedClickTarget(event: Event, element: GestureTarget): boolean {
   if (typeof event.composedPath === 'function' && event.composedPath().includes(element)) {
     return true;
   }
-  const target = event.target;
-  if (!(target instanceof Node)) {
-    return true;
-  }
-  let current: Node | null = element;
-  while (current) {
-    if (target.contains(current)) {
-      return true;
-    }
-    const root = current.getRootNode();
-    current = root instanceof ShadowRoot ? root.host : null;
-  }
-  return false;
+  return !(event.target instanceof Node) || event.target.contains(element);
 }
+
+export type PointerType = 'touch' | 'pen' | 'mouse';
+
+/** @internal */
+export const DEFAULT_POINTER_TYPES: readonly PointerType[] = ['touch', 'pen', 'mouse'];
 
 export interface GestureManagerOptions {
   /**
    * Pointer device types to observe (`'touch'`, `'pen'`, `'mouse'`).
    * Default: `['touch', 'pen', 'mouse']`.
    */
-  supportedPointerTypes: readonly ('mouse' | 'touch' | 'pen' | (string & {}))[];
+  supportedPointerTypes: readonly PointerType[];
   /**
    * CSS `touch-action` & mobile coexistence policy:
    * - `'compute'` (default): automatically derives the least-restrictive W3C
@@ -85,11 +78,8 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   readonly element: T;
   private readonly stream = new MotionEventStream();
   private readonly arena: GestureArena;
-  private readonly options: {
-    supportedPointerTypes: GestureManagerOptions['supportedPointerTypes'];
-    touchAction: TouchActionSetting;
-    viewConfiguration?: Partial<ViewConfiguration>;
-  };
+  private supportedPointerTypes: readonly PointerType[];
+  private touchAction: TouchActionSetting;
   private readonly capturedPointers = new Set<number>();
   private readonly unbindEvents: Cleanup;
 
@@ -97,26 +87,16 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   private unbindActiveTracking: Cleanup | null = null;
   private disarmClickSuppression: Cleanup | null = null;
   private lastHandledDown: Event | null = null;
-  private appliedSurfaceKey = '';
   private preventsPinchZoom = false;
   private suppressesTouchContextMenu = false;
   private destroyed = false;
 
-  static readonly DEFAULTS: GestureManagerOptions = Object.freeze({
-    supportedPointerTypes: Object.freeze(['touch', 'pen', 'mouse']),
-    touchAction: 'compute' as const,
-  });
-
   constructor(element: T, options: Partial<GestureManagerOptions> = {}) {
     this.element = element;
-    this.options = {
-      supportedPointerTypes:
-        options.supportedPointerTypes ?? GestureManager.DEFAULTS.supportedPointerTypes,
-      touchAction: options.touchAction ?? GestureManager.DEFAULTS.touchAction,
-      viewConfiguration: options.viewConfiguration,
-    };
+    this.supportedPointerTypes = options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES;
+    this.touchAction = options.touchAction ?? 'compute';
 
-    this.arena = new GestureArena(this.options.viewConfiguration, {
+    this.arena = new GestureArena(options.viewConfiguration, {
       onActiveGestureStart: () => this.captureActivePointers(),
     });
 
@@ -165,13 +145,12 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
       return this;
     }
     if (options.supportedPointerTypes !== undefined) {
-      this.options.supportedPointerTypes = options.supportedPointerTypes;
+      this.supportedPointerTypes = options.supportedPointerTypes;
     }
     if (options.touchAction !== undefined) {
-      this.options.touchAction = options.touchAction;
+      this.touchAction = options.touchAction;
     }
     if (options.viewConfiguration !== undefined) {
-      this.options.viewConfiguration = options.viewConfiguration;
       this.arena.setConfig(options.viewConfiguration);
     }
     this.syncTouchAction();
@@ -334,46 +313,37 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   };
 
   private isValidPointer(e: PointerEvent): boolean {
-    return this.options.supportedPointerTypes.includes(e.pointerType || 'touch');
+    return (this.supportedPointerTypes as readonly string[]).includes(e.pointerType || 'touch');
   }
 
   private cleanupSurfaceBehavior(): void {
     this.unsetSurfaceBehavior?.();
     this.unsetSurfaceBehavior = null;
-    this.appliedSurfaceKey = '';
     this.preventsPinchZoom = false;
     this.suppressesTouchContextMenu = false;
   }
 
   private syncTouchAction(): void {
-    if (this.destroyed || this.options.touchAction === false) {
-      this.cleanupSurfaceBehavior();
+    this.cleanupSurfaceBehavior();
+    if (this.destroyed || this.touchAction === false) {
       return;
     }
 
     const recognizers = this.arena.getRecognizers();
-    if (recognizers.length === 0 && this.options.touchAction === 'compute') {
-      this.cleanupSurfaceBehavior();
+    if (recognizers.length === 0 && this.touchAction === 'compute') {
       return;
     }
 
     const resolvedAction =
-      this.options.touchAction === 'compute'
+      this.touchAction === 'compute'
         ? this.arena.computeTouchAction()
-        : resolveSupportedTouchAction(this.options.touchAction);
+        : resolveSupportedTouchAction(this.touchAction);
 
     const hasNonTapRecognizer = recognizers.some(r => r.suppressesClick);
     const preventsPinchZoom =
       !allowsPinchZoom(resolvedAction) ||
       recognizers.some(r => !allowsPinchZoom(r.getTouchAction()));
 
-    const nextKey = `${resolvedAction}|${hasNonTapRecognizer ? 1 : 0}|${preventsPinchZoom ? 1 : 0}`;
-    if (nextKey === this.appliedSurfaceKey) {
-      return;
-    }
-
-    this.cleanupSurfaceBehavior();
-    this.appliedSurfaceKey = nextKey;
     this.preventsPinchZoom = preventsPinchZoom;
     this.suppressesTouchContextMenu = hasNonTapRecognizer;
 

@@ -14,22 +14,20 @@ describe('MotionEvent & MotionEventStream', () => {
       pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 10})
     )!;
     expect(down1.action).toBe(MotionAction.DOWN);
-    expect(down1.pointerCount).toBe(1);
+    expect(down1.pointers.length).toBe(1);
     expect(down1.activePointerCount).toBe(1);
     expect(down1.focus).toEqual({x: 100, y: 100});
-    expect(down1.downTime).toBe(10);
     expect(stream.activePointerType).toBe('touch');
 
     const down2 = stream.onPointerDown(
       pointerEvent('pointerdown', {pointerId: 2, clientX: 200, clientY: 100, timeStamp: 20})
     )!;
     expect(down2.action).toBe(MotionAction.POINTER_DOWN);
-    expect(down2.pointerCount).toBe(2);
+    expect(down2.pointers.length).toBe(2);
     expect(down2.activePointerCount).toBe(2);
     expect(down2.actionPointerId).toBe(2);
     expect(down2.focus).toEqual({x: 150, y: 100});
     expect(down2.getSpan()).toBeCloseTo(100);
-    expect(down2.downTime).toBe(10);
 
     const move = stream.onPointerMove(
       pointerEvent('pointermove', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 30})
@@ -42,7 +40,7 @@ describe('MotionEvent & MotionEventStream', () => {
       pointerEvent('pointerup', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 40})
     )!;
     expect(up1.action).toBe(MotionAction.POINTER_UP);
-    expect(up1.pointerCount).toBe(2);
+    expect(up1.pointers.length).toBe(2);
     expect(up1.activePointerCount).toBe(1);
     expect(up1.actionPointerId).toBe(1);
     expect(up1.focus).toEqual({x: 300, y: 100});
@@ -111,21 +109,18 @@ describe('MotionEvent & MotionEventStream', () => {
       pointerId: 2,
       clientX: 110,
       clientY: 55,
-      pressure: 0.6,
       timeStamp: 4,
     });
     const c2 = pointerEvent('pointermove', {
       pointerId: 2,
       clientX: 120,
       clientY: 60,
-      pressure: 0.7,
       timeStamp: 8,
     });
     const c3 = pointerEvent('pointermove', {
       pointerId: 2,
       clientX: 130,
       clientY: 65,
-      pressure: 0.8,
       timeStamp: 12,
     });
 
@@ -134,7 +129,6 @@ describe('MotionEvent & MotionEventStream', () => {
         pointerId: 2,
         clientX: 130,
         clientY: 65,
-        pressure: 0.8,
         timeStamp: 12,
         coalescedEvents: [c1, c2, c3],
       })
@@ -142,33 +136,10 @@ describe('MotionEvent & MotionEventStream', () => {
 
     expect(move.actionIndex).toBe(1);
     expect(move.history).toHaveLength(2);
-    expect(move.history[0]).toEqual({eventTime: 4, x: 110, y: 55, pressure: 0.6});
-    expect(move.history[1]).toEqual({eventTime: 8, x: 120, y: 60, pressure: 0.7});
+    expect(move.history[0]).toEqual({eventTime: 4, x: 110, y: 55});
+    expect(move.history[1]).toEqual({eventTime: 8, x: 120, y: 60});
     expect(move.pointers[1].x).toBe(130);
     expect(move.pointers[0].x).toBe(0);
-  });
-
-  it('computes element-relative local coordinates', () => {
-    const el = document.createElement('div');
-    el.getBoundingClientRect = () =>
-      ({
-        left: 40,
-        top: 80,
-        right: 340,
-        bottom: 380,
-        width: 300,
-        height: 300,
-        x: 40,
-        y: 80,
-        toJSON: () => ({}),
-      }) as DOMRect;
-
-    const down = stream.onPointerDown(
-      pointerEvent('pointerdown', {pointerId: 1, clientX: 140, clientY: 200, timeStamp: 10})
-    )!;
-
-    expect(down.relativeTo(el)).toEqual({x: 100, y: 120});
-    expect(down.relativeTo(el, {x: 50, y: 90})).toEqual({x: 10, y: 10});
   });
 
   it('aborts all active pointers on CANCEL', () => {
@@ -189,7 +160,6 @@ describe('MotionEvent & MotionEventStream', () => {
     )!;
 
     expect(ev.focus).toEqual({x: 0, y: 0});
-    expect(ev.getSpanX()).toBeCloseTo(80);
     expect(ev.getSpan()).toBeCloseTo(80);
   });
 
@@ -199,27 +169,22 @@ describe('MotionEvent & MotionEventStream', () => {
         pointerId: 10,
         clientX: 0,
         clientY: 0,
-        pressure: 0.4,
         timeStamp: 5,
       })
     )!;
     expect(down1.findPointerIndex(10)).toBe(0);
     expect(down1.findPointerIndex(999)).toBe(-1);
-    expect(down1.pointers[0].pressure).toBeCloseTo(0.4);
     expect(down1.getSpan()).toBe(0);
-    expect(down1.getSpanX()).toBe(0);
-    expect(down1.getSpanY()).toBe(0);
 
     const down2 = stream.onPointerDown(
       pointerEvent('pointerdown', {
         pointerId: 20,
         clientX: 0,
         clientY: 100,
-        pressure: 0.8,
         timeStamp: 10,
       })
     )!;
-    expect(down2.getSpanY()).toBeCloseTo(100);
+    expect(down2.getSpan()).toBeCloseTo(100);
     expect([...stream.activePointerIds]).toContain(20);
 
     expect(stream.onPointerUp(pointerEvent('pointerup', {pointerId: 777}))).toBeNull();
@@ -227,64 +192,60 @@ describe('MotionEvent & MotionEventStream', () => {
 
     stream.reset();
     expect(stream.activePointerCount).toBe(0);
-    const rawEv = new Event('pointerdown') as PointerEvent;
-    Object.defineProperties(rawEv, {
-      pointerId: {value: 5},
-      clientX: {value: 15},
-      clientY: {value: 25},
-      pointerType: {value: ''},
-      timeStamp: {value: Number.NaN},
+    const rawEv = pointerEvent('pointerdown', {
+      pointerId: 5,
+      clientX: 15,
+      clientY: 25,
+      pointerType: '',
+      timeStamp: 5,
     });
     const fallbackDown = stream.onPointerDown(rawEv)!;
     expect(fallbackDown.pointerType).toBe('touch');
-    expect(fallbackDown.pointers[0].pressure).toBe(0.5);
-    expect(Number.isFinite(fallbackDown.eventTime)).toBe(true);
+    expect(fallbackDown.eventTime).toBe(5);
 
-    const rawCoalesced = new Event('pointermove') as PointerEvent;
-    Object.defineProperties(rawCoalesced, {
-      pointerId: {value: 5},
-      clientX: {value: 16},
-      clientY: {value: 26},
-      timeStamp: {value: fallbackDown.eventTime + 4},
+    const rawCoalesced = pointerEvent('pointermove', {
+      pointerId: 5,
+      clientX: 16,
+      clientY: 26,
+      pointerType: '',
+      timeStamp: 9,
     });
-    const rawMove = new Event('pointermove') as PointerEvent;
-    Object.defineProperties(rawMove, {
-      pointerId: {value: 5},
-      clientX: {value: 20},
-      clientY: {value: 30},
-      pointerType: {value: ''},
-      timeStamp: {value: fallbackDown.eventTime + 8},
-      getCoalescedEvents: {value: () => [rawCoalesced, rawMove]},
+    const rawMove = pointerEvent('pointermove', {
+      pointerId: 5,
+      clientX: 20,
+      clientY: 30,
+      pointerType: '',
+      timeStamp: 13,
+    });
+    Object.defineProperty(rawMove, 'getCoalescedEvents', {
+      value: () => [rawCoalesced, rawMove],
     });
     const fallbackMove = stream.onPointerMove(rawMove)!;
     expect(fallbackMove.pointerType).toBe('touch');
-    expect(fallbackMove.history[0].pressure).toBe(0.5);
+    expect(fallbackMove.history[0]).toEqual({eventTime: 9, x: 16, y: 26});
 
-    const rawUp = new Event('pointerup') as PointerEvent;
-    Object.defineProperties(rawUp, {
-      pointerId: {value: 5},
-      clientX: {value: 20},
-      clientY: {value: 30},
-      pointerType: {value: ''},
-      timeStamp: {value: fallbackDown.eventTime + 12},
+    const rawUp = pointerEvent('pointerup', {
+      pointerId: 5,
+      clientX: 20,
+      clientY: 30,
+      pointerType: '',
+      timeStamp: 17,
     });
     const fallbackUp = stream.onPointerUp(rawUp)!;
     expect(fallbackUp.getActivePointers()).toEqual([]);
 
     stream.onPointerDown(rawEv);
-    const rawCancel = new Event('pointercancel') as PointerEvent;
-    Object.defineProperties(rawCancel, {
-      pointerId: {value: 5},
-      clientX: {value: 15},
-      clientY: {value: 25},
-      pointerType: {value: ''},
-      timeStamp: {value: fallbackDown.eventTime + 16},
+    const rawCancel = pointerEvent('pointercancel', {
+      pointerId: 5,
+      clientX: 15,
+      clientY: 25,
+      pointerType: '',
+      timeStamp: 21,
     });
     expect(stream.onPointerCancel(rawCancel)!.pointerType).toBe('touch');
 
     const emptySnapshot = new MotionEvent({
       action: MotionAction.DOWN,
-      downTime: 0,
       eventTime: 0,
       actionIndex: 0,
       pointerType: 'touch',
@@ -296,11 +257,10 @@ describe('MotionEvent & MotionEventStream', () => {
 
     const degeneratePointerUp = new MotionEvent({
       action: MotionAction.POINTER_UP,
-      downTime: 0,
       eventTime: 10,
       actionIndex: 0,
       pointerType: 'touch',
-      pointers: [{pointerId: 1, x: 42, y: 84, pressure: 0.5}],
+      pointers: [{pointerId: 1, x: 42, y: 84}],
       originalEvent: rawEv,
     });
     expect(degeneratePointerUp.focus).toEqual({x: 42, y: 84});
@@ -349,8 +309,8 @@ describe('MotionEvent & MotionEventStream', () => {
       })
     )!;
     expect(recoveredDown.action).toBe(MotionAction.DOWN);
-    expect(recoveredDown.pointerCount).toBe(1);
-    expect(recoveredDown.downTime).toBe(500);
+    expect(recoveredDown.pointers.length).toBe(1);
+    expect(recoveredDown.eventTime).toBe(500);
 
     const penDown = stream.onPointerDown(
       pointerEvent('pointerdown', {
@@ -362,7 +322,7 @@ describe('MotionEvent & MotionEventStream', () => {
       })
     )!;
     expect(penDown.action).toBe(MotionAction.DOWN);
-    expect(penDown.downTime).toBe(550);
+    expect(penDown.eventTime).toBe(550);
 
     const dupDown = stream.onPointerDown(
       pointerEvent('pointerdown', {
@@ -374,7 +334,7 @@ describe('MotionEvent & MotionEventStream', () => {
       })
     )!;
     expect(dupDown.action).toBe(MotionAction.DOWN);
-    expect(dupDown.downTime).toBe(600);
+    expect(dupDown.eventTime).toBe(600);
   });
 
   it('filters bogus coalesced samples, skips history when disabled, and supports silent updates and cancelAll', () => {
@@ -436,6 +396,6 @@ describe('MotionEvent & MotionEventStream', () => {
       pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 12})
     )!;
     expect(freshPen.action).toBe(MotionAction.DOWN);
-    expect(freshPen.pointerCount).toBe(1);
+    expect(freshPen.pointers.length).toBe(1);
   });
 });

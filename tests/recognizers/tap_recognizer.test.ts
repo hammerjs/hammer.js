@@ -94,18 +94,14 @@ describe('TapRecognizer', () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
-  it('composes onDown, onShowPress, immediate tap, confirmed single-tap, and double-tap via GestureArena', () => {
-    const onDown = vi.fn();
-    const onShowPress = vi.fn();
+  it('composes immediate tap, confirmed single-tap, and double-tap via GestureArena', () => {
     const onSingleTapUp = vi.fn();
     const onSingleTapConfirmed = vi.fn();
     const onDoubleTap = vi.fn();
 
     const arenaWithTimeouts = new GestureArena({
-      tapTimeout: 180,
       maxTapDuration: 300,
       doubleTapTimeout: 300,
-      doubleTapMinTime: 40,
     });
 
     const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
@@ -113,8 +109,6 @@ describe('TapRecognizer', () => {
       onTap: onSingleTapConfirmed,
     }).requireFailureOf(doubleTap);
     const singleTapUp = new TapRecognizer({
-      onDown,
-      onShowPress,
       onTap: onSingleTapUp,
     }).simultaneousWith(singleTapConfirmed, doubleTap);
     singleTapConfirmed.simultaneousWith(singleTapUp);
@@ -129,18 +123,11 @@ describe('TapRecognizer', () => {
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
       )!
     );
-    expect(onDown).toHaveBeenCalledTimes(1);
-    expect(onShowPress).not.toHaveBeenCalled();
-
     arenaWithTimeouts.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 53, clientY: 52, timeStamp: 90})
       )!
     );
-
-    vi.advanceTimersByTime(185);
-    expect(onShowPress).toHaveBeenCalledWith(expect.objectContaining({center: {x: 53, y: 52}}));
-
     arenaWithTimeouts.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 1, clientX: 53, clientY: 52, timeStamp: 200})
@@ -180,7 +167,6 @@ describe('TapRecognizer', () => {
     vi.advanceTimersByTime(350);
 
     onSingleTapConfirmed.mockClear();
-    onShowPress.mockClear();
     arenaWithTimeouts.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 1100})
@@ -203,36 +189,9 @@ describe('TapRecognizer', () => {
     );
 
     vi.advanceTimersByTime(350);
-    expect(onShowPress).not.toHaveBeenCalled();
     expect(onDoubleTap).toHaveBeenCalledTimes(1);
     expect(onSingleTapConfirmed).not.toHaveBeenCalled();
 
-    const customDouble = vi.fn();
-    const fastArena = new GestureArena();
-    fastArena.add(new TapRecognizer({onTap: customDouble}, {taps: 2, minTapInterval: 10}));
-    fastArena.dispatch(
-      stream.onPointerDown(
-        pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 2000})
-      )!
-    );
-    fastArena.dispatch(
-      stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 2010})
-      )!
-    );
-    fastArena.dispatch(
-      stream.onPointerDown(
-        pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 2025})
-      )!
-    );
-    fastArena.dispatch(
-      stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 2035})
-      )!
-    );
-    expect(customDouble).toHaveBeenCalledTimes(1);
-
-    fastArena.destroy();
     arenaWithTimeouts.destroy();
   });
 
@@ -460,13 +419,12 @@ describe('TapRecognizer', () => {
     arena.dispatch(
       new MotionEvent({
         action: MotionAction.DOWN,
-        downTime: 1200,
         eventTime: 1200,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 10, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 10, y: 0},
         ],
         originalEvent: pointerEvent('pointerdown'),
       })

@@ -1,10 +1,9 @@
 import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
 import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-import {VelocityTracker, type VelocityVector, ZERO_VELOCITY} from '../velocity_tracker.js';
+import {VelocityTracker} from '../velocity_tracker.js';
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
-export type GestureAxis = 'horizontal' | 'vertical';
 export type PanDirection = 'horizontal' | 'vertical' | 'both';
 
 export interface PanOptions {
@@ -38,17 +37,11 @@ export interface PanEventData extends GestureEventData {
   readonly velocityX: number;
   /** Current focal-point vertical velocity in `px/s`. */
   readonly velocityY: number;
-  /** Scalar focal-point speed `hypot(velocityX, velocityY)` in `px/s`. */
-  readonly speed: number;
-  /** Number of active pointers remaining on the surface. */
-  readonly pointerCount: number;
 }
 
 export interface SwipeEventData extends PanEventData {
   /** Primary cardinal direction of the release velocity vector. */
   readonly direction: CardinalDirection;
-  /** Primary axis of the release velocity vector (`'horizontal'` | `'vertical'`). */
-  readonly axis: GestureAxis;
 }
 
 export interface PanCallbacks {
@@ -59,20 +52,11 @@ export interface PanCallbacks {
   onPanCancel?: () => void;
 }
 
-function computeCardinalDirection(
-  vx: number,
-  vy: number
-): {direction: CardinalDirection; axis: GestureAxis} {
+function computeCardinalDirection(vx: number, vy: number): CardinalDirection {
   if (Math.abs(vx) >= Math.abs(vy)) {
-    return {
-      axis: 'horizontal',
-      direction: vx >= 0 ? 'right' : 'left',
-    };
+    return vx >= 0 ? 'right' : 'left';
   }
-  return {
-    axis: 'vertical',
-    direction: vy >= 0 ? 'down' : 'up',
-  };
+  return vy >= 0 ? 'down' : 'up';
 }
 
 interface MutablePoint {
@@ -98,8 +82,6 @@ function computeAllPointersCentroid(event: MotionEvent): Point {
 }
 
 export class PanRecognizer extends GestureRecognizer {
-  readonly type = 'pan';
-
   private readonly callbacks: PanCallbacks;
   private readonly userOptions: Partial<PanOptions>;
 
@@ -111,7 +93,7 @@ export class PanRecognizer extends GestureRecognizer {
   private readonly totalDelta: MutablePoint = {x: 0, y: 0};
   private anchorReady = false;
 
-  private tracker: VelocityTracker | null = null;
+  private readonly tracker = new VelocityTracker();
 
   constructor(callbacks: PanCallbacks, options: Partial<PanOptions> = {}) {
     super();
@@ -165,8 +147,7 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   onMotionEvent(event: MotionEvent): void {
-    const tracker = this.ensureTracker();
-    tracker.addMovement(event);
+    this.tracker.addMovement(event);
 
     try {
       switch (event.action) {
@@ -270,7 +251,7 @@ export class PanRecognizer extends GestureRecognizer {
       }
     } finally {
       if (event.action === MotionAction.POINTER_UP) {
-        tracker.finalizePointerUp(event, this.maxSwipeVelocity);
+        this.tracker.finalizePointerUp(event, this.maxSwipeVelocity);
       }
     }
   }
@@ -287,7 +268,7 @@ export class PanRecognizer extends GestureRecognizer {
     setPoint(this.maxTravel, 0, 0);
     setPoint(this.totalDelta, 0, 0);
     this.anchorReady = false;
-    this.tracker?.clear();
+    this.tracker.clear();
   }
 
   private matchesPointerRequirement(activeCount: number): boolean {
@@ -351,7 +332,8 @@ export class PanRecognizer extends GestureRecognizer {
     if (!this.callbacks.onSwipe) {
       return null;
     }
-    const {velocityX: vx, velocityY: vy, speed} = endData;
+    const {velocityX: vx, velocityY: vy} = endData;
+    const speed = Math.hypot(vx, vy);
     if (speed < this.minSwipeVelocity || speed <= 0) {
       return null;
     }
@@ -368,41 +350,27 @@ export class PanRecognizer extends GestureRecognizer {
       return null;
     }
 
-    const {direction, axis} = computeCardinalDirection(vx, vy);
-    if (this.direction !== 'both' && axis !== this.direction) {
+    const direction = computeCardinalDirection(vx, vy);
+    if (
+      (this.direction === 'horizontal' && (direction === 'up' || direction === 'down')) ||
+      (this.direction === 'vertical' && (direction === 'left' || direction === 'right'))
+    ) {
       return null;
     }
 
     return {
       ...endData,
       direction,
-      axis,
     };
   }
 
-  private ensureTracker(): VelocityTracker {
-    const cfg = this.config;
-    if (
-      !this.tracker ||
-      this.tracker.horizonMs !== cfg.velocityHorizonMs ||
-      this.tracker.assumePointerStoppedMs !== cfg.assumePointerStoppedMs
-    ) {
-      this.tracker = new VelocityTracker({
-        horizonMs: cfg.velocityHorizonMs,
-        assumePointerStoppedMs: cfg.assumePointerStoppedMs,
-      });
-    }
-    return this.tracker;
-  }
-
-  private readActiveVelocity(event: MotionEvent): VelocityVector {
-    const tracker = this.ensureTracker();
-    tracker.computeCurrentVelocity(1000, this.maxSwipeVelocity);
+  private readActiveVelocity(event: MotionEvent): Point {
+    this.tracker.computeCurrentVelocity(this.maxSwipeVelocity);
     const active = event.getActivePointers();
     if (active.length <= 1) {
-      return tracker.getVelocity(active[0]?.pointerId ?? event.actionPointerId);
+      return this.tracker.getVelocity(active[0]?.pointerId ?? event.actionPointerId);
     }
-    return tracker.getCentroidVelocity(active);
+    return this.tracker.getCentroidVelocity(active);
   }
 
   private buildEventData(event: MotionEvent, stepX: number, stepY: number): PanEventData {
@@ -415,21 +383,18 @@ export class PanRecognizer extends GestureRecognizer {
       stepY,
       velocityX: vel.x,
       velocityY: vel.y,
-      speed: vel.speed,
-      pointerCount: event.activePointerCount,
     };
   }
 
   private buildEndEventData(event: MotionEvent, centerOverride?: Point): PanEventData {
     const hasEndConsumer = Boolean(this.callbacks.onPanEnd || this.callbacks.onSwipe);
-    let vel = ZERO_VELOCITY;
+    let vel = ZERO_POINT;
     if (hasEndConsumer) {
-      const tracker = this.ensureTracker();
-      tracker.computeCurrentVelocity(1000, this.maxSwipeVelocity);
+      this.tracker.computeCurrentVelocity(this.maxSwipeVelocity);
       vel =
-        event.pointerCount > 1
-          ? tracker.getCentroidVelocity(event.pointers)
-          : tracker.getVelocity(event.actionPointerId);
+        event.pointers.length > 1
+          ? this.tracker.getCentroidVelocity(event.pointers)
+          : this.tracker.getVelocity(event.actionPointerId);
     }
     return {
       ...this.createEventData(event, centerOverride),
@@ -439,8 +404,6 @@ export class PanRecognizer extends GestureRecognizer {
       stepY: 0,
       velocityX: vel.x,
       velocityY: vel.y,
-      speed: vel.speed,
-      pointerCount: event.activePointerCount,
     };
   }
 }

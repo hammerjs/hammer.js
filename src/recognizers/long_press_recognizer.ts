@@ -28,8 +28,6 @@ export interface LongPressCallbacks {
 const LONG_PRESS_TIMER = 'longPress';
 
 export class LongPressRecognizer extends GestureRecognizer {
-  readonly type = 'longPress';
-
   private readonly callbacks: LongPressCallbacks;
   private readonly userOptions: Partial<LongPressOptions>;
 
@@ -166,8 +164,8 @@ export class LongPressRecognizer extends GestureRecognizer {
   private buildEventData(event: MotionEvent): LongPressEventData {
     return {
       ...this.createEventData(event),
-      deltaX: event.focusX - this.anchorFocus.x,
-      deltaY: event.focusY - this.anchorFocus.y,
+      deltaX: event.focus.x - this.anchorFocus.x,
+      deltaY: event.focus.y - this.anchorFocus.y,
     };
   }
 }

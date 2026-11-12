@@ -691,10 +691,6 @@
                       />
                       <code>singleTap.requireFailureOf(doubleTap)</code>
                     </label>
-                    <label for="enableTapFeedback">
-                      <input type="checkbox" id="enableTapFeedback" name="enableTapFeedback" />
-                      Log <code>onDown</code> / <code>onShowPress</code>
-                    </label>
                   </div>
                 </div>
 
@@ -815,10 +811,6 @@
                     touchSlop (px)
                     <input type="number" id="vc_touchSlop" name="vc_touchSlop" min="0" step="1" />
                   </label>
-                  <label for="vc_tapSlop">
-                    tapSlop (px)
-                    <input type="number" id="vc_tapSlop" name="vc_tapSlop" min="0" step="1" />
-                  </label>
                   <label for="vc_doubleTapSlop">
                     doubleTapSlop (px)
                     <input
@@ -853,16 +845,6 @@
                       step="1"
                     />
                   </label>
-                  <label for="vc_tapTimeout">
-                    tapTimeout (ms)
-                    <input
-                      type="number"
-                      id="vc_tapTimeout"
-                      name="vc_tapTimeout"
-                      min="0"
-                      step="10"
-                    />
-                  </label>
                   <label for="vc_maxTapDuration">
                     maxTapDuration (ms)
                     <input
@@ -881,16 +863,6 @@
                       name="vc_doubleTapTimeout"
                       min="20"
                       step="10"
-                    />
-                  </label>
-                  <label for="vc_doubleTapMinTime">
-                    doubleTapMinTime (ms)
-                    <input
-                      type="number"
-                      id="vc_doubleTapMinTime"
-                      name="vc_doubleTapMinTime"
-                      min="0"
-                      step="5"
                     />
                   </label>
                   <label for="vc_longPressTimeout">
@@ -931,26 +903,6 @@
                       name="vc_maximumSwipeVelocity"
                       min="500"
                       step="250"
-                    />
-                  </label>
-                  <label for="vc_velocityHorizonMs">
-                    velocityHorizonMs (ms)
-                    <input
-                      type="number"
-                      id="vc_velocityHorizonMs"
-                      name="vc_velocityHorizonMs"
-                      min="16"
-                      step="10"
-                    />
-                  </label>
-                  <label for="vc_assumePointerStoppedMs">
-                    pointerStoppedMs (ms)
-                    <input
-                      type="number"
-                      id="vc_assumePointerStoppedMs"
-                      name="vc_assumePointerStoppedMs"
-                      min="10"
-                      step="5"
                     />
                   </label>
                   <label for="vc_ghostClickTimeout">

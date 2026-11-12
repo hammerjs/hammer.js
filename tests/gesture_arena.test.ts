@@ -386,7 +386,6 @@ describe('GestureArena conflict resolution', () => {
 
   it('defeats late claims when a required-failure dependency or incompatible winner has already won', () => {
     class LateClaimRecognizer extends GestureRecognizer {
-      readonly type = 'late';
       granted = false;
       onMotionEvent(event: MotionEvent): void {
         if (event.action === MotionAction.UP) {
@@ -433,7 +432,6 @@ describe('GestureArena conflict resolution', () => {
 
   describe('arena invariants with dynamic compatibility and re-entrant callbacks', () => {
     class ScriptedRecognizer extends GestureRecognizer {
-      readonly type = 'scripted';
       compatibleWithAll = false;
       granted = false;
       cancelled = false;
@@ -537,15 +535,11 @@ describe('GestureArena conflict resolution', () => {
     });
   });
 
-  it('supports standalone GestureRecognizer usage without GestureArena and validates base guards', () => {
+  it('requires GestureArena attachment to grant gestures and validates base guards', () => {
     const onPan = vi.fn();
-    const onSwipe = vi.fn();
     const onTap = vi.fn();
-    const standalonePan = new PanRecognizer(
-      {onPan, onSwipe},
-      {numPointers: 0, slop: 2, minSwipeVelocity: 200, minSwipeDistance: 20}
-    );
-    const standaloneTap = new TapRecognizer({onTap});
+    const detachedPan = new PanRecognizer({onPan}, {slop: 2});
+    const detachedTap = new TapRecognizer({onTap});
 
     const d1 = stream.onPointerDown(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -558,11 +552,9 @@ describe('GestureArena conflict resolution', () => {
     )!;
 
     for (const ev of [d1, m1, up1]) {
-      standalonePan.onMotionEvent(ev);
+      detachedPan.onMotionEvent(ev);
     }
-    expect(onPan).toHaveBeenCalled();
-    expect(onPan.mock.calls[0][0].velocityX).toBeGreaterThan(1000);
-    expect(onSwipe).toHaveBeenCalledTimes(1);
+    expect(onPan).not.toHaveBeenCalled();
 
     stream.reset();
     const td = stream.onPointerDown(
@@ -571,15 +563,16 @@ describe('GestureArena conflict resolution', () => {
     const tu = stream.onPointerUp(
       pointerEvent('pointerup', {pointerId: 1, clientX: 5, clientY: 5, timeStamp: 20})
     )!;
-    standaloneTap.onMotionEvent(td);
-    standaloneTap.onMotionEvent(tu);
-    expect(onTap).toHaveBeenCalledTimes(1);
+    detachedTap.onMotionEvent(td);
+    detachedTap.onMotionEvent(tu);
+    expect(onTap).not.toHaveBeenCalled();
 
     class GuardProbeRecognizer extends GestureRecognizer {
-      readonly type = 'probe';
       exerciseGuards(): void {
         expect(this.getTouchAction()).toBe('none');
         expect(this.suppressesClick).toBe(true);
+        expect(this.tryBegin(() => {})).toBe(false);
+        expect(this.tryRecognizeDiscrete(() => {})).toBe(false);
         this.emitChange(() => {});
         this.completeActive(() => {});
         this.fail();

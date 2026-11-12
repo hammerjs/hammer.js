@@ -50,9 +50,6 @@ export interface ArenaContext {
  * **Template Method** patterns in coordination with `GestureArena`.
  */
 export abstract class GestureRecognizer {
-  /** Human-readable label for logging and debugging (never used for arbitration). */
-  abstract readonly type: string;
-
   /** @internal */
   lastDispatchToken = 0;
   /** @internal */
@@ -207,13 +204,8 @@ export abstract class GestureRecognizer {
   protected onFail(): void {}
 
   protected tryBegin(onBegan: () => void): boolean {
-    if (this.currentState !== RecognizerState.POSSIBLE) {
+    if (this.currentState !== RecognizerState.POSSIBLE || !this.arena) {
       return false;
-    }
-    if (!this.arena) {
-      this.currentState = RecognizerState.BEGAN;
-      onBegan();
-      return true;
     }
     return this.arena.requestClaim(this, RecognizerState.BEGAN, onBegan);
   }
@@ -240,14 +232,8 @@ export abstract class GestureRecognizer {
   }
 
   protected tryRecognizeDiscrete(onRecognized: () => void): boolean {
-    if (this.currentState !== RecognizerState.POSSIBLE) {
+    if (this.currentState !== RecognizerState.POSSIBLE || !this.arena) {
       return false;
-    }
-    if (!this.arena) {
-      this.clearAllTimers();
-      this.currentState = RecognizerState.ENDED;
-      onRecognized();
-      return true;
     }
     return this.arena.requestClaim(this, RecognizerState.ENDED, onRecognized);
   }
@@ -299,7 +285,7 @@ export abstract class GestureRecognizer {
 
   protected createEventData(event: MotionEvent, centerOverride?: Point): GestureEventData {
     return {
-      center: centerOverride ? {x: centerOverride.x, y: centerOverride.y} : event.focus,
+      center: centerOverride ?? event.focus,
       motionEvent: event,
       originalEvent: event.originalEvent,
     };

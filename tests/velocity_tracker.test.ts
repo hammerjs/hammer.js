@@ -5,43 +5,76 @@ import {pointerEvent} from './test_helpers';
 
 describe('VelocityTracker', () => {
   describe('2nd-order Least Squares (LSQ2)', () => {
-    it('computes exact constant velocity in px/s and px/ms', () => {
+    it('computes exact constant velocity in px/s', () => {
+      const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
-      for (let i = 0; i <= 5; i++) {
-        tracker.addPoint(1, i * 10, i * 15, -i * 5);
+
+      tracker.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+        )!
+      );
+      for (const step of [1, 2, 3, 4, 5]) {
+        tracker.addMovement(
+          stream.onPointerMove(
+            pointerEvent('pointermove', {
+              pointerId: 1,
+              clientX: step * 15,
+              clientY: -step * 5,
+              timeStamp: step * 10,
+            })
+          )!
+        );
       }
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(1500, 1);
-      expect(tracker.getYVelocity(1)).toBeCloseTo(-500, 1);
-
-      tracker.computeCurrentVelocity(1);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(1.5, 3);
-      expect(tracker.getYVelocity(1)).toBeCloseTo(-0.5, 3);
+      tracker.computeCurrentVelocity();
+      const vel = tracker.getVelocity(1);
+      expect(vel.x).toBeCloseTo(1500, 1);
+      expect(vel.y).toBeCloseTo(-500, 1);
     });
 
     it('captures terminal velocity of an accelerating flick via quadratic fit and 2-sample linear fallback', () => {
       // x(t) = 100 + 2000*t + 5000*t^2 for t <= 0 relative to release at 40ms (dx/dt at t=0 is 2000 px/s).
+      const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
+
       for (const tMs of [0, 10, 20, 30, 40]) {
         const tRelSec = (tMs - 40) / 1000;
         const x = 100 + 2000 * tRelSec + 5000 * tRelSec * tRelSec;
-        tracker.addPoint(1, tMs, x, -x * 0.5);
+        const y = -x * 0.5;
+        const ev =
+          tMs === 0
+            ? stream.onPointerDown(
+                pointerEvent('pointerdown', {pointerId: 1, clientX: x, clientY: y, timeStamp: tMs})
+              )!
+            : stream.onPointerMove(
+                pointerEvent('pointermove', {pointerId: 1, clientX: x, clientY: y, timeStamp: tMs})
+              )!;
+        tracker.addMovement(ev);
       }
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(2000, 1);
-      expect(tracker.getYVelocity(1)).toBeCloseTo(-1000, 1);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(1).x).toBeCloseTo(2000, 1);
+      expect(tracker.getVelocity(1).y).toBeCloseTo(-1000, 1);
 
+      stream.reset();
       const twoSample = new VelocityTracker();
-      twoSample.addPoint(1, 0, 10, 20);
-      twoSample.computeCurrentVelocity(1000);
-      expect(twoSample.getVelocity(1)).toEqual({x: 0, y: 0, speed: 0});
+      twoSample.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 20, timeStamp: 0})
+        )!
+      );
+      twoSample.computeCurrentVelocity();
+      expect(twoSample.getVelocity(1)).toEqual({x: 0, y: 0});
 
-      twoSample.addPoint(1, 10, 35, 5);
-      twoSample.computeCurrentVelocity(1000);
-      expect(twoSample.getXVelocity(1)).toBeCloseTo(2500, 1);
-      expect(twoSample.getYVelocity(1)).toBeCloseTo(-1500, 1);
+      twoSample.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 35, clientY: 5, timeStamp: 10})
+        )!
+      );
+      twoSample.computeCurrentVelocity();
+      expect(twoSample.getVelocity(1).x).toBeCloseTo(2500, 1);
+      expect(twoSample.getVelocity(1).y).toBeCloseTo(-1500, 1);
     });
 
     it('resets velocity to 0 if pointer pauses longer than assumePointerStoppedMs (40ms)', () => {
@@ -65,9 +98,8 @@ describe('VelocityTracker', () => {
         stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 80, timeStamp: 92}))!
       );
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBe(0);
-      expect(tracker.getYVelocity(1)).toBe(0);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(1)).toEqual({x: 0, y: 0});
     });
 
     it('ignores capacitive finger peel-off shifts on pointerup when move samples exist, while recording single-frame flicks', () => {
@@ -96,8 +128,8 @@ describe('VelocityTracker', () => {
         stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 45, timeStamp: 26}))!
       );
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(2500, 1);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(1).x).toBeCloseTo(2500, 1);
 
       stream.reset();
       tracker.addMovement(
@@ -106,52 +138,76 @@ describe('VelocityTracker', () => {
       tracker.addMovement(
         stream.onPointerUp(pointerEvent('pointerup', {pointerId: 2, clientX: 30, timeStamp: 10}))!
       );
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(2)).toBeCloseTo(3000, 1);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(2).x).toBeCloseTo(3000, 1);
     });
 
-    it('ignores stale motion older than horizonMs (100ms) and caches repeated computeCurrentVelocity calls', () => {
-      const tracker = new VelocityTracker({horizonMs: 100});
+    it('ignores stale motion older than 100ms horizon and caches repeated computeCurrentVelocity calls', () => {
+      const stream = new MotionEventStream();
+      const tracker = new VelocityTracker();
 
-      tracker.addPoint(1, 0, 0, 0);
-      tracker.addPoint(1, 15, 150, 0);
-      tracker.addPoint(1, 30, 300, 0);
-      for (let t = 50; t <= 160; t += 15) {
-        tracker.addPoint(1, t, 300 + (t - 30) * 0.1, 0);
+      tracker.addMovement(
+        stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
+      );
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 150, timeStamp: 15})
+        )!
+      );
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 300, timeStamp: 30})
+        )!
+      );
+      for (const t of [50, 65, 80, 95, 110, 125, 140, 155]) {
+        tracker.addMovement(
+          stream.onPointerMove(
+            pointerEvent('pointermove', {
+              pointerId: 1,
+              clientX: 300 + (t - 30) * 0.1,
+              timeStamp: t,
+            })
+          )!
+        );
       }
 
-      tracker.computeCurrentVelocity(1000, 8000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(100, 1);
+      tracker.computeCurrentVelocity(8000);
+      expect(tracker.getVelocity(1).x).toBeCloseTo(100, 1);
 
-      tracker.computeCurrentVelocity(1000, 8000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(100, 1);
+      // Cached fast-path when dirty === false and maxVelocity matches:
+      tracker.computeCurrentVelocity(8000);
+      expect(tracker.getVelocity(1).x).toBeCloseTo(100, 1);
 
-      tracker.computeCurrentVelocity(1, 8);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(0.1, 3);
-
-      const shortHorizon = new VelocityTracker({horizonMs: 15, assumePointerStoppedMs: 50});
-      shortHorizon.addPoint(1, 0, 0, 0);
-      shortHorizon.addPoint(1, 30, 60, 0);
-      shortHorizon.computeCurrentVelocity(1000);
-      expect(shortHorizon.getXVelocity(1)).toBe(0);
+      // Changing maxVelocity invalidates cache and clamps:
+      tracker.computeCurrentVelocity(50);
+      expect(tracker.getVelocity(1).x).toBeCloseTo(50, 1);
     });
   });
 
   describe('Radial Clamping, Multi-Touch Independence & Centroid Velocity', () => {
     it('clamps velocity radially by magnitude so diagonal swipe angles are never warped', () => {
+      const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
-      tracker.addPoint(1, 0, 0, 0);
-      tracker.addPoint(1, 10, 120, 40);
+      tracker.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+        )!
+      );
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 120, clientY: 40, timeStamp: 10})
+        )!
+      );
 
       const expectedAngle = Math.atan2(40, 120);
-      tracker.computeCurrentVelocity(1000, 8000);
+      tracker.computeCurrentVelocity(8000);
 
       const vel = tracker.getVelocity(1);
-      expect(vel.speed).toBeCloseTo(8000, 3);
+      expect(Math.hypot(vel.x, vel.y)).toBeCloseTo(8000, 3);
       expect(Math.atan2(vel.y, vel.x)).toBeCloseTo(expectedAngle, 6);
     });
 
-    it('preserves each pointer velocity during asynchronous multi-touch coalesced streams', () => {
+    it('preserves each pointer velocity during asynchronous multi-touch coalesced streams and cancels opposing pinch vectors on pointerup', () => {
       const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
 
@@ -191,15 +247,17 @@ describe('VelocityTracker', () => {
         )!
       );
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(-1000, 1);
-      expect(tracker.getXVelocity(2)).toBeCloseTo(1000, 1);
-      expect(tracker.hasOpposingVelocity(1, [2], 8000)).toBe(true);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(1).x).toBeCloseTo(-1000, 1);
+      expect(tracker.getVelocity(2).x).toBeCloseTo(1000, 1);
 
-      tracker.recordStreamEvent(
-        stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 75, timeStamp: 28}))!
-      );
-      expect(tracker.getXVelocity(2)).toBe(0);
+      const pointerUp = stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 75, timeStamp: 28})
+      )!;
+      tracker.addMovement(pointerUp);
+      tracker.finalizePointerUp(pointerUp, 8000);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(2)).toEqual({x: 0, y: 0});
     });
 
     it('reports 0 velocity for a stationary second finger while first finger keeps moving >40ms', () => {
@@ -218,128 +276,157 @@ describe('VelocityTracker', () => {
         )!
       );
 
+      let lastMove!: MotionEvent;
       for (const t of [20, 40, 60, 80]) {
-        tracker.addMovement(
-          stream.onPointerMove(
-            pointerEvent('pointermove', {pointerId: 1, clientX: t * 2, timeStamp: t})
-          )!
-        );
+        lastMove = stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: t * 2, timeStamp: t})
+        )!;
+        tracker.addMovement(lastMove);
       }
 
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity(1)).toBeCloseTo(2000, 1);
-      expect(tracker.getXVelocity(2)).toBe(0);
-      expect(tracker.getCentroidVelocity([1, 2]).x).toBeCloseTo(1000, 1);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity(1).x).toBeCloseTo(2000, 1);
+      expect(tracker.getVelocity(2).x).toBe(0);
+      expect(tracker.getCentroidVelocity(lastMove.getActivePointers()).x).toBeCloseTo(1000, 1);
     });
 
-    it('detects parallel multi-pointer velocities without false pinch cancellation', () => {
+    it('preserves remaining pointer velocity on parallel multi-pointer pointerup without false pinch cancellation', () => {
+      const stream = new MotionEventStream();
       const tracker = new VelocityTracker();
-      tracker.addPoint(1, 0, 100, 0);
-      tracker.addPoint(2, 0, 200, 0);
-      tracker.addPoint(1, 16, 116, 0);
-      tracker.addPoint(2, 16, 216, 0);
 
-      expect(tracker.hasOpposingVelocity(1, [2], 8000)).toBe(false);
+      tracker.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 100, timeStamp: 0})
+        )!
+      );
+      tracker.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 2, clientX: 200, timeStamp: 0})
+        )!
+      );
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 116, timeStamp: 16})
+        )!
+      );
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 2, clientX: 216, timeStamp: 16})
+        )!
+      );
+
+      const pointerUp = stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 120, timeStamp: 20})
+      )!;
+      tracker.addMovement(pointerUp);
+      tracker.finalizePointerUp(pointerUp, 8000);
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity().x).toBeGreaterThan(0);
     });
 
     it('covers ring-buffer wrap-around, duplicate/out-of-order timestamps, pointer handoff, and degenerate events', () => {
       const tracker = new VelocityTracker();
-      expect(tracker.getXVelocity()).toBe(0);
-      expect(tracker.getYVelocity()).toBe(0);
-      expect(tracker.getVelocity()).toEqual({x: 0, y: 0, speed: 0});
-      expect(tracker.getCentroidVelocity()).toEqual({x: 0, y: 0, speed: 0});
-      expect(tracker.getCentroidVelocity([99])).toEqual({x: 0, y: 0, speed: 0});
-
-      tracker.addPoint(1, 50, 10, 0);
-      tracker.addPoint(1, 50, 20, 0);
-      tracker.addPoint(1, 40, 0, 0);
-      for (let i = 1; i <= 25; i++) {
-        tracker.addPoint(1, 40 + i * 4, i * 8, -i * 4);
-      }
-      tracker.computeCurrentVelocity(1000);
-      expect(tracker.getXVelocity()).toBeCloseTo(2000, 1);
-      expect(tracker.getYVelocity()).toBeCloseTo(-1000, 1);
-      expect(tracker.getXVelocity(999)).toBe(0);
-      expect(tracker.getYVelocity(999)).toBe(0);
-      expect(tracker.getCentroidVelocity().x).toBeCloseTo(2000, 1);
-
-      tracker.computeCurrentVelocity(1000, 0);
-      expect(tracker.getVelocity(1)).toEqual({x: 0, y: 0, speed: 0});
+      expect(tracker.getVelocity()).toEqual({x: 0, y: 0});
+      expect(tracker.getCentroidVelocity([])).toEqual({x: 0, y: 0});
+      expect(tracker.getCentroidVelocity([{pointerId: 99, x: 0, y: 0}])).toEqual({
+        x: 0,
+        y: 0,
+      });
 
       const stream = new MotionEventStream();
-      const streamTracker = new VelocityTracker();
-      streamTracker.recordStreamEvent(
-        stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
-      );
-      streamTracker.recordStreamEvent(
-        stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, timeStamp: 2}))!
-      );
-      streamTracker.recordStreamEvent(
-        stream.onPointerMove(
-          pointerEvent('pointermove', {pointerId: 1, clientX: 20, timeStamp: 12})
+      tracker.addMovement(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 0, timeStamp: 50})
         )!
       );
-      streamTracker.recordStreamEvent(
+      // Duplicate timestamp overwrites in-place; out-of-order timestamp is ignored:
+      tracker.addMovement(
         stream.onPointerMove(
-          pointerEvent('pointermove', {pointerId: 2, clientX: 20, timeStamp: 12})
+          pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 0, timeStamp: 50})
         )!
       );
-      streamTracker.recordStreamEvent(
-        stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 30, timeStamp: 20}))!
+      tracker.addMovement(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 40})
+        )!
       );
-      streamTracker.computeCurrentVelocity(1000);
-      expect(streamTracker.getXVelocity()).toBeGreaterThan(0);
 
-      streamTracker.clearPointer(2);
-      expect(streamTracker.getXVelocity()).toBe(0);
+      let lastMove!: MotionEvent;
+      for (const step of Array.from({length: 25}, (_, idx) => idx + 1)) {
+        lastMove = stream.onPointerMove(
+          pointerEvent('pointermove', {
+            pointerId: 1,
+            clientX: step * 8,
+            clientY: -step * 4,
+            timeStamp: 50 + step * 4,
+          })
+        )!;
+        tracker.addMovement(lastMove);
+      }
+      tracker.computeCurrentVelocity();
+      expect(tracker.getVelocity().x).toBeCloseTo(2000, 1);
+      expect(tracker.getVelocity().y).toBeCloseTo(-1000, 1);
+      expect(tracker.getVelocity(999)).toEqual({x: 0, y: 0});
+      expect(tracker.getCentroidVelocity(lastMove.pointers).x).toBeCloseTo(2000, 1);
 
-      streamTracker.addMovement(
+      tracker.computeCurrentVelocity(0);
+      expect(tracker.getVelocity(1)).toEqual({x: 0, y: 0});
+
+      // finalizePointerUp is a no-op for non-POINTER_UP actions:
+      tracker.finalizePointerUp(lastMove);
+
+      tracker.addMovement(
         new MotionEvent({
           action: MotionAction.POINTER_DOWN,
-          downTime: 0,
-          eventTime: 25,
+          eventTime: 160,
           actionIndex: 0,
           pointerType: 'touch',
-          pointers: [{pointerId: 3, x: 10, y: 10, pressure: 0.5}],
+          pointers: [{pointerId: 3, x: 10, y: 10}],
           originalEvent: pointerEvent('pointerdown', {pointerId: 3}),
         })
       );
-      expect(streamTracker.hasOpposingVelocity(3, [3])).toBe(false);
-
-      streamTracker.addMovement(
+      tracker.addMovement(
         new MotionEvent({
           action: MotionAction.MOVE,
-          downTime: 0,
-          eventTime: 30,
+          eventTime: 165,
           actionIndex: 0,
           pointerType: 'touch',
           pointers: [],
           originalEvent: pointerEvent('pointermove'),
         })
       );
-      streamTracker.addMovement(
+      const degeneratePointerUp = new MotionEvent({
+        action: MotionAction.POINTER_UP,
+        eventTime: 168,
+        actionIndex: 0,
+        pointerType: 'touch',
+        pointers: [],
+        originalEvent: pointerEvent('pointerup'),
+      });
+      tracker.addMovement(degeneratePointerUp);
+      tracker.finalizePointerUp(degeneratePointerUp);
+
+      tracker.addMovement(
         new MotionEvent({
           action: MotionAction.UP,
-          downTime: 0,
-          eventTime: 32,
+          eventTime: 170,
           actionIndex: 0,
           pointerType: 'touch',
-          pointers: [{pointerId: 999, x: 0, y: 0, pressure: 0.5}],
+          pointers: [{pointerId: 999, x: 0, y: 0}],
           originalEvent: pointerEvent('pointerup', {pointerId: 999}),
         })
       );
-      streamTracker.addMovement(
+      tracker.addMovement(
         new MotionEvent({
           action: MotionAction.CANCEL,
-          downTime: 0,
-          eventTime: 35,
+          eventTime: 175,
           actionIndex: 0,
           pointerType: 'touch',
           pointers: [],
           originalEvent: pointerEvent('pointercancel'),
         })
       );
-      expect(streamTracker.getXVelocity()).toBe(0);
+      expect(tracker.getVelocity()).toEqual({x: 0, y: 0});
     });
   });
 });

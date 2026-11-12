@@ -24,7 +24,6 @@ export interface PointerSample {
   readonly pointerId: number;
   readonly x: number;
   readonly y: number;
-  readonly pressure: number;
 }
 
 /**
@@ -35,16 +34,14 @@ export interface HistoricalSample {
   readonly eventTime: number;
   readonly x: number;
   readonly y: number;
-  readonly pressure: number;
 }
 
-const EMPTY_HISTORY: readonly HistoricalSample[] = Object.freeze([]);
-const EMPTY_POINTERS: readonly PointerSample[] = Object.freeze([]);
-export const ZERO_POINT: Point = Object.freeze({x: 0, y: 0});
+const EMPTY_HISTORY: readonly HistoricalSample[] = [];
+const EMPTY_POINTERS: readonly PointerSample[] = [];
+export const ZERO_POINT: Point = {x: 0, y: 0};
 
 export interface MotionEventInit {
   readonly action: MotionActionType;
-  readonly downTime: number;
   readonly eventTime: number;
   readonly actionIndex: number;
   readonly pointerType: string;
@@ -62,7 +59,6 @@ export interface MotionEventInit {
  */
 export class MotionEvent {
   readonly action: MotionActionType;
-  readonly downTime: number;
   readonly eventTime: number;
   readonly actionIndex: number;
   readonly pointerType: string;
@@ -75,12 +71,11 @@ export class MotionEvent {
   readonly originalEvent: Event;
   readonly focus: Point;
 
-  private cachedSpan: Point | null = null;
+  private cachedSpan: number | null = null;
   private cachedActivePointers: readonly PointerSample[] | null = null;
 
   constructor(init: MotionEventInit) {
     this.action = init.action;
-    this.downTime = init.downTime;
     this.eventTime = init.eventTime;
     this.actionIndex = init.actionIndex;
     this.pointerType = init.pointerType;
@@ -88,11 +83,6 @@ export class MotionEvent {
     this.history = init.history ?? EMPTY_HISTORY;
     this.originalEvent = init.originalEvent;
     this.focus = this.computeFocus();
-  }
-
-  /** Total pointers present in this snapshot (includes lifting pointer on `pointer_up`/`up`). */
-  get pointerCount(): number {
-    return this.pointers.length;
   }
 
   /** Number of pointers remaining on screen after this event. */
@@ -111,47 +101,16 @@ export class MotionEvent {
     return this.pointers[this.actionIndex]?.pointerId ?? -1;
   }
 
-  get focusX(): number {
-    return this.focus.x;
-  }
-
-  get focusY(): number {
-    return this.focus.y;
-  }
-
   findPointerIndex(pointerId: number): number {
     return this.pointers.findIndex(p => p.pointerId === pointerId);
   }
 
   /**
-   * Computes `point` (defaulting to `this.focus`) in `element`-local CSS coordinates
-   * on demand without forcing layout measurement on unqueried move frames.
+   * Euclidean mean-deviation span across active pointers (`0` when `< 2` active pointers),
+   * matching Android's `ScaleGestureDetector` (`hypot(|x1 - x0|, |y1 - y0|)` for 2 pointers, generalizing to 3+).
    */
-  relativeTo(element: Element, point: Point = this.focus): Point {
-    const rect = element.getBoundingClientRect();
-    return {
-      x: point.x - rect.left,
-      y: point.y - rect.top,
-    };
-  }
-
-  /**
-   * Average horizontal span across active pointers around `focusX` (`2 * mean(|x - focusX|)`),
-   * matching Android's `ScaleGestureDetector` (`|x1 - x0|` for 2 pointers, generalizing to 3+).
-   */
-  getSpanX(): number {
-    return (this.cachedSpan ??= this.computeSpans()).x;
-  }
-
-  /** Average vertical span across active pointers around `focusY` (`2 * mean(|y - focusY|)`). */
-  getSpanY(): number {
-    return (this.cachedSpan ??= this.computeSpans()).y;
-  }
-
-  /** Euclidean span `hypot(spanX, spanY)` across active pointers (`0` when `< 2` active pointers). */
   getSpan(): number {
-    const span = (this.cachedSpan ??= this.computeSpans());
-    return Math.hypot(span.x, span.y);
+    return (this.cachedSpan ??= this.computeSpan());
   }
 
   /** Active pointers remaining on the surface (excluding `actionIndex` during `POINTER_UP`). */
@@ -193,10 +152,10 @@ export class MotionEvent {
     return {x: sumX / count, y: sumY / count};
   }
 
-  private computeSpans(): Point {
+  private computeSpan(): number {
     const active = this.getActivePointers();
     if (active.length < 2) {
-      return ZERO_POINT;
+      return 0;
     }
 
     let devSumX = 0;
@@ -206,17 +165,8 @@ export class MotionEvent {
       devSumY += Math.abs(p.y - this.focus.y);
     }
 
-    return {
-      x: (devSumX / active.length) * 2,
-      y: (devSumY / active.length) * 2,
-    };
+    return Math.hypot((devSumX / active.length) * 2, (devSumY / active.length) * 2);
   }
-}
-
-function readTimestamp(e: PointerEvent): number {
-  return typeof e.timeStamp === 'number' && Number.isFinite(e.timeStamp)
-    ? e.timeStamp
-    : performance.now();
 }
 
 function toPointerSample(e: PointerEvent): PointerSample {
@@ -224,7 +174,6 @@ function toPointerSample(e: PointerEvent): PointerSample {
     pointerId: e.pointerId,
     x: e.clientX,
     y: e.clientY,
-    pressure: typeof e.pressure === 'number' ? e.pressure : 0.5,
   };
 }
 
@@ -234,7 +183,6 @@ function toPointerSample(e: PointerEvent): PointerSample {
  */
 export class MotionEventStream {
   private readonly pointers = new Map<number, PointerSample>();
-  private downTime = 0;
   private streamPointerType: string | null = null;
   private mouseButtonsTracked = false;
 
@@ -260,17 +208,13 @@ export class MotionEventStream {
       this.mouseButtonsTracked &&
       e.pointerType === 'mouse' &&
       this.pointers.has(e.pointerId) &&
-      typeof e.buttons === 'number' &&
       (e.buttons & 1) === 0
     );
   }
 
   onPointerDown(e: PointerEvent): MotionEvent | null {
     // Ignore non-primary button presses (right/middle/barrel buttons) and macOS Ctrl+Click.
-    if (
-      (typeof e.button === 'number' && e.button !== 0) ||
-      (e.pointerType === 'mouse' && e.ctrlKey)
-    ) {
+    if (e.button !== 0 || (e.pointerType === 'mouse' && e.ctrlKey)) {
       return null;
     }
 
@@ -281,7 +225,7 @@ export class MotionEventStream {
     // when a primary touch lifted cleanly and a secondary touch was orphaned):
     if (
       this.pointers.size > 0 &&
-      (e.isPrimary === true ||
+      (e.isPrimary ||
         pointerType === 'mouse' ||
         pointerType === 'pen' ||
         this.pointers.has(e.pointerId) ||
@@ -290,21 +234,17 @@ export class MotionEventStream {
       this.clearStreamState();
     }
 
-    const eventTime = readTimestamp(e);
     const wasEmpty = this.pointers.size === 0;
     if (wasEmpty) {
-      this.downTime = eventTime;
       this.streamPointerType = pointerType;
-      this.mouseButtonsTracked =
-        pointerType === 'mouse' && typeof e.buttons === 'number' && (e.buttons & 1) === 1;
+      this.mouseButtonsTracked = pointerType === 'mouse' && (e.buttons & 1) === 1;
     }
 
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     return new MotionEvent({
       action: wasEmpty ? MotionAction.DOWN : MotionAction.POINTER_DOWN,
-      downTime: this.downTime,
-      eventTime,
+      eventTime: e.timeStamp,
       actionIndex,
       pointerType,
       pointers: snapshot,
@@ -318,7 +258,7 @@ export class MotionEventStream {
       return null;
     }
 
-    const eventTime = readTimestamp(e);
+    const eventTime = e.timeStamp;
     let history: readonly HistoricalSample[] = EMPTY_HISTORY;
 
     if (typeof e.getCoalescedEvents === 'function') {
@@ -328,7 +268,7 @@ export class MotionEventStream {
         // Per W3C PointerEvents, the last coalesced entry corresponds to `e` itself.
         for (let i = 0; i < coalesced.length - 1; i++) {
           const sub = coalesced[i];
-          const subTime = readTimestamp(sub);
+          const subTime = sub.timeStamp;
           // Filter WebKit bug where coalesced events report `timeStamp === 0` when `eventTime > 0`.
           if (eventTime > 0 && (subTime <= 0 || subTime > eventTime)) {
             continue;
@@ -337,7 +277,6 @@ export class MotionEventStream {
             eventTime: subTime,
             x: sub.clientX,
             y: sub.clientY,
-            pressure: typeof sub.pressure === 'number' ? sub.pressure : 0.5,
           });
         }
         if (samples.length > 0) {
@@ -350,7 +289,6 @@ export class MotionEventStream {
 
     return new MotionEvent({
       action: MotionAction.MOVE,
-      downTime: this.downTime,
       eventTime,
       actionIndex,
       pointerType: e.pointerType || 'touch',
@@ -365,7 +303,6 @@ export class MotionEventStream {
       return null;
     }
 
-    const eventTime = readTimestamp(e);
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     this.pointers.delete(e.pointerId);
@@ -376,8 +313,7 @@ export class MotionEventStream {
 
     return new MotionEvent({
       action: this.pointers.size === 0 ? MotionAction.UP : MotionAction.POINTER_UP,
-      downTime: this.downTime,
-      eventTime,
+      eventTime: e.timeStamp,
       actionIndex,
       pointerType: e.pointerType || 'touch',
       pointers: snapshot,
@@ -390,14 +326,12 @@ export class MotionEventStream {
       return null;
     }
 
-    const eventTime = readTimestamp(e);
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
     this.clearStreamState();
 
     return new MotionEvent({
       action: MotionAction.CANCEL,
-      downTime: this.downTime,
-      eventTime,
+      eventTime: e.timeStamp,
       actionIndex,
       pointerType: e.pointerType || 'touch',
       pointers: snapshot,
@@ -412,18 +346,12 @@ export class MotionEventStream {
     }
     const snapshot = Array.from(this.pointers.values());
     const pointerType = this.streamPointerType ?? 'touch';
-    const eventTime =
-      typeof triggerEvent.timeStamp === 'number' &&
-      Number.isFinite(triggerEvent.timeStamp) &&
-      triggerEvent.timeStamp > 0
-        ? triggerEvent.timeStamp
-        : performance.now();
+    const eventTime = triggerEvent.timeStamp > 0 ? triggerEvent.timeStamp : performance.now();
 
     this.clearStreamState();
 
     return new MotionEvent({
       action: MotionAction.CANCEL,
-      downTime: this.downTime,
       eventTime,
       actionIndex: 0,
       pointerType,
@@ -434,7 +362,6 @@ export class MotionEventStream {
 
   reset(): void {
     this.clearStreamState();
-    this.downTime = 0;
   }
 
   private clearStreamState(): void {

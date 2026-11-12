@@ -1,9 +1,9 @@
 import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
 import {GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+import {DOUBLE_TAP_MIN_TIME_MS} from '../view_configuration.js';
 import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer.js';
 
-const QUICK_SCALE_BASE_SPAN = 100;
 const MAX_TAP_TIMER = 'maxTap';
 const MULTI_TAP_TIMER = 'multiTap';
 
@@ -20,8 +20,6 @@ export interface QuickScaleOptions {
  * Quick-Scale gesture).
  */
 export class QuickScaleRecognizer extends GestureRecognizer {
-  readonly type = 'quickScale';
-
   private readonly callbacks: ScaleCallbacks;
   private readonly userOptions: Partial<QuickScaleOptions>;
 
@@ -37,7 +35,6 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   private startY = 0;
   private prevScale = 1;
   private cumulativeScale = 1;
-  private prevTime = 0;
 
   constructor(callbacks: ScaleCallbacks, options: Partial<QuickScaleOptions> = {}) {
     super();
@@ -81,12 +78,12 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     }
 
     const dt = event.eventTime - this.lastTapUpTime;
-    const minDt = event.pointerType === 'touch' ? this.config.doubleTapMinTime : 0;
+    const minDt = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
     const pointerMismatch =
       this.lastTapPointerType !== '' && event.pointerType !== this.lastTapPointerType;
     const dist = Math.hypot(
-      event.focusX - this.firstTapDownFocus.x,
-      event.focusY - this.firstTapDownFocus.y
+      event.focus.x - this.firstTapDownFocus.x,
+      event.focus.y - this.firstTapDownFocus.y
     );
 
     this.clearMultiTapSequence();
@@ -119,7 +116,6 @@ export class QuickScaleRecognizer extends GestureRecognizer {
           this.fail();
           return;
         }
-        this.prevTime = event.eventTime;
         this.prevScale = 1;
         this.cumulativeScale = 1;
 
@@ -147,16 +143,15 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         if (!this.quickScaleCandidate) {
           if (
             Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) >
-            this.config.tapSlop
+            this.config.touchSlop
           ) {
             this.fail();
           }
           return;
         }
 
-        const dx = event.focusX - this.anchor.x;
-        const dy = event.focusY - this.anchor.y;
-        const timeDelta = Math.max(0, event.eventTime - this.prevTime);
+        const dx = event.focus.x - this.anchor.x;
+        const dy = event.focus.y - this.anchor.y;
         const slop = this.slop;
 
         if (!this.active) {
@@ -175,33 +170,31 @@ export class QuickScaleRecognizer extends GestureRecognizer {
           this.cumulativeScale = 1;
 
           const started = this.tryBegin(() => {
-            this.callbacks.onScaleStart?.(this.buildEvent(event, 1, 0));
+            this.callbacks.onScaleStart?.(this.buildEvent(event, 1));
           });
 
           if (started) {
-            const nextScale = Math.pow(2, (event.focusY - this.startY) / this.sensitivity);
+            const nextScale = Math.pow(2, (event.focus.y - this.startY) / this.sensitivity);
             const factor = nextScale / this.prevScale;
             this.cumulativeScale = nextScale;
             if (factor !== 1) {
               this.emitChange(() => {
-                this.callbacks.onScale?.(this.buildEvent(event, factor, timeDelta));
+                this.callbacks.onScale?.(this.buildEvent(event, factor));
               });
             }
             this.prevScale = nextScale;
-            this.prevTime = event.eventTime;
           }
           return;
         }
 
-        const nextScale = Math.pow(2, (event.focusY - this.startY) / this.sensitivity);
+        const nextScale = Math.pow(2, (event.focus.y - this.startY) / this.sensitivity);
         const scaleFactor = nextScale / this.prevScale;
         if (scaleFactor !== 1) {
           this.cumulativeScale = nextScale;
           this.emitChange(() => {
-            this.callbacks.onScale?.(this.buildEvent(event, scaleFactor, timeDelta));
+            this.callbacks.onScale?.(this.buildEvent(event, scaleFactor));
           });
           this.prevScale = nextScale;
-          this.prevTime = event.eventTime;
         }
         break;
       }
@@ -212,9 +205,8 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         if (this.quickScaleCandidate) {
           this.quickScaleCandidate = false;
           if (this.active) {
-            const timeDelta = Math.max(0, event.eventTime - this.prevTime);
             this.completeActive(() => {
-              this.callbacks.onScaleEnd?.(this.buildEvent(event, 1, timeDelta));
+              this.callbacks.onScaleEnd?.(this.buildEvent(event, 1));
             });
             return;
           }
@@ -225,7 +217,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         const duration = event.eventTime - this.tapDownTime;
         const withinSlop =
           Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) <=
-          this.config.tapSlop;
+          this.config.touchSlop;
         if (duration <= this.config.maxTapDuration && withinSlop) {
           this.firstTapDownFocus = this.tapDown;
           this.lastTapUpTime = event.eventTime;
@@ -262,7 +254,6 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     this.startY = 0;
     this.prevScale = 1;
     this.cumulativeScale = 1;
-    this.prevTime = 0;
   }
 
   protected override onFail(): void {
@@ -277,18 +268,11 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     this.lastTapPointerType = '';
   }
 
-  private buildEvent(event: MotionEvent, scaleFactor: number, timeDelta: number): ScaleEventData {
-    const currentSpan = QUICK_SCALE_BASE_SPAN * this.cumulativeScale;
-    const previousSpan = currentSpan / scaleFactor;
+  private buildEvent(event: MotionEvent, scaleFactor: number): ScaleEventData {
     return {
       ...this.createEventData(event, this.anchor),
       scale: this.cumulativeScale,
       scaleFactor,
-      currentSpan,
-      previousSpan,
-      currentSpanX: 0,
-      currentSpanY: currentSpan,
-      timeDelta,
       isQuickScale: true,
     };
   }

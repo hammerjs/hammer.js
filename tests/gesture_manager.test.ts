@@ -11,7 +11,6 @@ import {TapRecognizer} from '../src/recognizers/tap_recognizer';
 import {pointerEvent} from './test_helpers';
 
 class SpyRecognizer extends GestureRecognizer {
-  readonly type = 'spy';
   readonly events: MotionEvent[] = [];
   cancelled = false;
 
@@ -840,7 +839,7 @@ describe('GestureManager', () => {
     expect(recognizer.events.at(-1)?.action).toBe(MotionAction.UP);
   });
 
-  it('suppresses ghost clicks retargeted to a light-DOM ancestor of a shadow-DOM surface', () => {
+  it('suppresses ghost clicks inside a shadow-DOM surface and on a light-DOM ancestor', () => {
     vi.useFakeTimers();
     try {
       const outer = document.createElement('a');
@@ -857,11 +856,28 @@ describe('GestureManager', () => {
       surface.dispatchEvent(pointerEvent('pointermove', {pointerId: 3, clientX: 30, clientY: 0}));
       surface.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 30, clientY: 0}));
 
-      const ghost = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-      outer.dispatchEvent(ghost);
-      expect(ghost.defaultPrevented).toBe(true);
-
+      const shadowGhost = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: 1,
+      });
+      surface.dispatchEvent(shadowGhost);
+      expect(shadowGhost.defaultPrevented).toBe(true);
       gm.destroy();
+
+      const gmHost = new GestureManager(host, {
+        recognizers: [new PanRecognizer({}, {slop: 4})],
+      });
+      host.dispatchEvent(pointerEvent('pointerdown', {pointerId: 4, clientX: 0, clientY: 0}));
+      host.dispatchEvent(pointerEvent('pointermove', {pointerId: 4, clientX: 30, clientY: 0}));
+      host.dispatchEvent(pointerEvent('pointerup', {pointerId: 4, clientX: 30, clientY: 0}));
+
+      const ancestorGhost = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
+      outer.dispatchEvent(ancestorGhost);
+      expect(ancestorGhost.defaultPrevented).toBe(true);
+
+      gmHost.destroy();
       outer.remove();
     } finally {
       vi.useRealTimers();

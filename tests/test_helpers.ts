@@ -7,7 +7,6 @@ export interface MockPointerInit {
   button?: number;
   buttons?: number;
   ctrlKey?: boolean;
-  pressure?: number;
   isPrimary?: boolean;
   coalescedEvents?: PointerEvent[];
 }
@@ -21,7 +20,6 @@ export function pointerEvent(type: string, init: MockPointerInit = {}): PointerE
     pointerType: {value: init.pointerType ?? 'touch'},
     button: {value: init.button ?? 0},
     ctrlKey: {value: init.ctrlKey ?? false},
-    pressure: {value: init.pressure ?? 0.5},
     isPrimary: {value: init.isPrimary ?? false},
     ...(init.buttons !== undefined ? {buttons: {value: init.buttons}} : {}),
     ...(init.timeStamp !== undefined ? {timeStamp: {value: init.timeStamp}} : {}),

@@ -72,6 +72,7 @@ describe('Published package', () => {
     expect(publicApi.default).toBeUndefined();
     expect(publicApi.GestureArena).toBeUndefined();
     expect(publicApi.MotionEventStream).toBeUndefined();
+    expect(publicApi.VelocityTracker).toBeUndefined();
     expect(publicApi.applySurfaceBehavior).toBeUndefined();
     expect(typeof publicApi.Hammer).toBe('function');
     expect(typeof publicApi.GestureManager).toBe('function');

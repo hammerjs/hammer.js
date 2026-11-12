@@ -53,14 +53,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       )!
     );
     expect(onScaleStart).toHaveBeenCalledWith(
-      expect.objectContaining({scale: 1, scaleFactor: 1, currentSpan: 100, previousSpan: 100})
+      expect.objectContaining({scale: 1, scaleFactor: 1, isQuickScale: false})
     );
     expect(onScale).toHaveBeenLastCalledWith(
       expect.objectContaining({
         scale: 2.0,
         scaleFactor: 2.0,
-        currentSpan: 200,
-        previousSpan: 100,
         isQuickScale: false,
       })
     );
@@ -111,16 +109,14 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       )!
     );
     expect(onScale).toHaveBeenLastCalledWith(
-      expect.objectContaining({scale: 2.0, previousSpan: 30, currentSpan: 60})
+      expect.objectContaining({scale: 2.0, scaleFactor: 2.0, isQuickScale: false})
     );
   });
 
-  it('supports standalone QuickScaleRecognizer and preserves scaleFactor === currentSpan / previousSpan', () => {
+  it('supports standalone QuickScaleRecognizer and computes incremental scaleFactor', () => {
     const events: Array<{
       scale: number;
       scaleFactor: number;
-      currentSpan: number;
-      previousSpan: number;
       isQuickScale: boolean;
     }> = [];
     arena.add(
@@ -156,12 +152,11 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
 
     expect(events).toHaveLength(2);
     expect(events[0].scale).toBeCloseTo(2.0, 4);
+    expect(events[0].scaleFactor).toBeCloseTo(2.0, 4);
+    expect(events[0].isQuickScale).toBe(true);
     expect(events[1].scale).toBeCloseTo(4.0, 4);
-    for (const ev of events) {
-      expect(ev.isQuickScale).toBe(true);
-      expect(ev.currentSpan).toBeGreaterThan(0);
-      expect(ev.currentSpan / ev.previousSpan).toBeCloseTo(ev.scaleFactor, 6);
-    }
+    expect(events[1].scaleFactor).toBeCloseTo(2.0, 4);
+    expect(events[1].isQuickScale).toBe(true);
   });
 
   it('unwraps rotation smoothly across the +/-180 degree branch cut and ignores close-proximity angle drift', () => {
@@ -465,13 +460,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     scale3.onMotionEvent(
       new MotionEvent({
         action: MotionAction.DOWN,
-        downTime: 600,
         eventTime: 600,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 100, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 100, y: 0},
         ],
         originalEvent: pointerEvent('pointerdown'),
       })
@@ -479,13 +473,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     scale3.onMotionEvent(
       new MotionEvent({
         action: MotionAction.MOVE,
-        downTime: 600,
         eventTime: 605,
         actionIndex: 1,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 150, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 150, y: 0},
         ],
         originalEvent: pointerEvent('pointermove'),
       })
@@ -493,13 +486,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     scale3.onMotionEvent(
       new MotionEvent({
         action: MotionAction.POINTER_UP,
-        downTime: 600,
         eventTime: 610,
         actionIndex: 1,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 150, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 150, y: 0},
         ],
         originalEvent: pointerEvent('pointerup'),
       })
@@ -510,7 +502,6 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     scale3.onMotionEvent(
       new MotionEvent({
         action: MotionAction.CANCEL,
-        downTime: 600,
         eventTime: 615,
         actionIndex: 0,
         pointerType: 'touch',
@@ -521,7 +512,6 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     quickScaleRec.onMotionEvent(
       new MotionEvent({
         action: MotionAction.CANCEL,
-        downTime: 600,
         eventTime: 615,
         actionIndex: 0,
         pointerType: 'touch',
@@ -632,13 +622,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     rot.onMotionEvent(
       new MotionEvent({
         action: MotionAction.MOVE,
-        downTime: 900,
         eventTime: 900,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 10, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 20, x: 100, y: 0, pressure: 0.5},
+          {pointerId: 10, x: 0, y: 0},
+          {pointerId: 20, x: 100, y: 0},
         ],
         originalEvent: pointerEvent('pointermove'),
       })
@@ -646,13 +635,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     rot.onMotionEvent(
       new MotionEvent({
         action: MotionAction.MOVE,
-        downTime: 900,
         eventTime: 910,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 10, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 30, x: 0, y: 100, pressure: 0.5},
+          {pointerId: 10, x: 0, y: 0},
+          {pointerId: 30, x: 0, y: 100},
         ],
         originalEvent: pointerEvent('pointermove'),
       })
@@ -796,13 +784,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     qs.onMotionEvent(
       new MotionEvent({
         action: MotionAction.DOWN,
-        downTime: 0,
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',
         pointers: [
-          {pointerId: 1, x: 0, y: 0, pressure: 0.5},
-          {pointerId: 2, x: 20, y: 0, pressure: 0.5},
+          {pointerId: 1, x: 0, y: 0},
+          {pointerId: 2, x: 20, y: 0},
         ],
         originalEvent: pointerEvent('pointerdown'),
       })
