@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Hammer.js Gesture Playground</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      :root {
+        --stage-bg-light: #f8fafc;
+        --stage-bg-dark: #0f172a;
+        --stage-grid-light: rgba(15, 23, 42, 0.06);
+        --stage-grid-dark: rgba(248, 250, 252, 0.06);
+        --stage-card-light: rgba(255, 255, 255, 0.92);
+        --stage-card-dark: rgba(30, 41, 59, 0.92);
+        --stage-flash-light: rgba(14, 165, 233, 0.16);
+        --stage-flash-dark: rgba(56, 189, 248, 0.22);
+
+        --stage-bg: var(--stage-bg-light);
+        --stage-grid: var(--stage-grid-light);
+        --stage-card: var(--stage-card-light);
+        --stage-flash: var(--stage-flash-light);
+
+        color-scheme: light dark;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --stage-bg: var(--stage-bg-dark);
+          --stage-grid: var(--stage-grid-dark);
+          --stage-card: var(--stage-card-dark);
+          --stage-flash: var(--stage-flash-dark);
+        }
+      }
+
+      @supports (color: light-dark(white, black)) {
+        :root {
+          --stage-bg: light-dark(var(--stage-bg-light), var(--stage-bg-dark));
+          --stage-grid: light-dark(var(--stage-grid-light), var(--stage-grid-dark));
+          --stage-card: light-dark(var(--stage-card-light), var(--stage-card-dark));
+          --stage-flash: light-dark(var(--stage-flash-light), var(--stage-flash-dark));
+        }
+      }
+
+      :root[data-theme='light'] {
+        --stage-bg: var(--stage-bg-light);
+        --stage-grid: var(--stage-grid-light);
+        --stage-card: var(--stage-card-light);
+        --stage-flash: var(--stage-flash-light);
+      }
+
+      :root[data-theme='dark'] {
+        --stage-bg: var(--stage-bg-dark);
+        --stage-grid: var(--stage-grid-dark);
+        --stage-card: var(--stage-card-dark);
+        --stage-flash: var(--stage-flash-dark);
+      }
+
+      header.container {
+        padding-block: 0.75rem 0.25rem;
+      }
+
+      header nav {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      header nav > * {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+      }
+
+      header h1 {
+        font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
+        margin: 0;
+      }
+
+      .top-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Prevent iOS Safari auto-zoom on form control focus by keeping >= 1rem */
+      input,
+      select,
+      button {
+        font-size: 1rem;
+      }
+
+      .top-controls select,
+      .top-controls button {
+        margin: 0;
+        padding: 0.4rem 0.75rem;
+        width: auto;
+        max-inline-size: 100%;
+      }
+
+      .top-controls select {
+        text-overflow: ellipsis;
+      }
+
+      .playground-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .playground-grid > * {
+        min-inline-size: 0;
+      }
+
+      @media (min-width: 992px) {
+        .playground-grid {
+          grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        }
+      }
+
+      article {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+        margin-bottom: 1rem;
+        padding: 1rem;
+      }
+
+      article > header {
+        margin: -1rem -1rem 0.85rem;
+        padding: 0.7rem 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      article > header h2 {
+        font-size: 1.05rem;
+        margin: 0;
+      }
+
+      .inline-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .inline-toolbar label {
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.875rem;
+      }
+
+      .inline-toolbar button {
+        margin: 0;
+        padding: 0.28rem 0.65rem;
+        font-size: 0.875rem;
+        width: auto;
+      }
+
+      /* Gesture Stage — NOTE: no CSS touch-action here so GestureManager owns it cleanly */
+      .stage-host {
+        container-type: inline-size;
+      }
+
+      #hitarea {
+        position: relative;
+        width: 100%;
+        min-height: clamp(270px, 44dvh, 420px);
+        border: 2px dashed var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        background-color: var(--stage-bg);
+        background-image:
+          linear-gradient(to right, var(--stage-grid) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--stage-grid) 1px, transparent 1px);
+        background-size: 28px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: grab;
+        transition:
+          background-color 120ms ease,
+          border-color 120ms ease;
+      }
+
+      #hitarea.tall-stage {
+        min-height: clamp(420px, 68dvh, 680px);
+      }
+
+      #hitarea:active {
+        cursor: grabbing;
+        border-color: var(--pico-primary-border);
+      }
+
+      #hitarea[data-flash='true'] {
+        background-color: var(--stage-flash);
+        border-color: var(--pico-primary);
+      }
+
+      #pointerOverlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      #transformCard {
+        --tx: 0px;
+        --ty: 0px;
+        --scale: 1;
+        --rot: 0deg;
+        position: relative;
+        z-index: 1;
+        padding: 1rem 1.25rem;
+        border-radius: var(--pico-border-radius);
+        border: 1px solid var(--pico-muted-border-color);
+        background: var(--stage-card);
+        box-shadow: var(--pico-card-box-shadow);
+        text-align: center;
+        pointer-events: none;
+        transform: translate3d(var(--tx), var(--ty), 0) scale(var(--scale)) rotate(var(--rot));
+        will-change: transform;
+      }
+
+      #transformCard.spring-back {
+        transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      #stageGestureLabel {
+        display: block;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 0.15rem;
+      }
+
+      #stageTransformMeta {
+        display: block;
+        font-family: var(--pico-font-family-monospace);
+        font-size: 0.78rem;
+        color: var(--pico-muted-color);
+        margin-bottom: 0.65rem;
+      }
+
+      #childButton {
+        pointer-events: auto;
+        margin: 0;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+      }
+
+      .surface-meta {
+        margin-top: 0.65rem;
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        overflow-wrap: break-word;
+      }
+
+      .surface-meta p {
+        margin: 0.2rem 0;
+      }
+
+      #arenaStates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.65rem;
+      }
+
+      .state-pill {
+        font-family: var(--pico-font-family-monospace);
+        font-size: 0.75rem;
+        padding: 0.15rem 0.48rem;
+        border-radius: 999px;
+        border: 1px solid var(--pico-muted-border-color);
+        background: var(--pico-card-sectioning-background-color);
+      }
+
+      .state-pending {
+        border-color: #eab308;
+        color: #ca8a04;
+        font-weight: 600;
+      }
+
+      .state-began,
+      .state-changed {
+        border-color: #0ea5e9;
+        background: rgba(14, 165, 233, 0.15);
+        font-weight: 700;
+      }
+
+      .state-ended {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
+        font-weight: 600;
+      }
+
+      .state-cancelled {
+        border-color: #f97316;
+        background: rgba(249, 115, 22, 0.15);
+      }
+
+      .state-failed {
+        opacity: 0.55;
+      }
+
+      .telemetry-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem 0.75rem;
+        margin: 0.75rem 0 0;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--pico-muted-border-color);
+      }
+
+      @container (min-width: 520px) {
+        .telemetry-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      .telemetry-grid div {
+        min-width: 0;
+      }
+
+      .telemetry-grid dt {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--pico-muted-color);
+      }
+
+      .telemetry-grid dd {
+        margin: 0;
+        font-family: var(--pico-font-family-monospace);
+        font-size: 0.82rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #eventLog,
+      .code-preview-block {
+        inline-size: 100%;
+        max-inline-size: 100%;
+        overflow: auto;
+        overscroll-behavior: contain;
+      }
+
+      #eventLog {
+        margin: 0;
+        max-block-size: 36dvh;
+        scrollbar-gutter: stable;
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      #eventLog > code,
+      .code-preview-block > code {
+        display: block;
+        inline-size: max-content;
+        min-inline-size: 100%;
+        overflow: visible;
+      }
+
+      .config-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+        gap: 0.6rem 0.85rem;
+      }
+
+      .vc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+        gap: 0.5rem 0.75rem;
+      }
+
+      .vc-grid label {
+        font-size: 0.82rem;
+        margin-bottom: 0;
+      }
+
+      .vc-grid input {
+        margin-top: 0.2rem;
+        margin-bottom: 0;
+        padding: 0.35rem 0.55rem;
+      }
+
+      details {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+      }
+
+      details summary {
+        font-weight: 600;
+      }
+
+      .checkbox-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.6rem;
+      }
+
+      .checkbox-row label {
+        margin-bottom: 0;
+      }
+
+      .checkbox-row code {
+        overflow-wrap: anywhere;
+      }
+
+      .recognizer-group {
+        padding: 0.65rem 0.75rem;
+        margin-bottom: 0.65rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+      }
+
+      .recognizer-group h3 {
+        font-size: 0.92rem;
+        margin: 0 0 0.45rem;
+      }
+
+      .recognizer-group select,
+      .recognizer-group input[type='number'] {
+        margin-bottom: 0.35rem;
+        padding: 0.35rem 0.6rem;
+      }
+
+      .env-table {
+        inline-size: 100%;
+        max-inline-size: 100%;
+        font-size: 0.82rem;
+        margin-bottom: 0;
+      }
+
+      .env-table th {
+        white-space: nowrap;
+        width: 34%;
+      }
+
+      .env-table td {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .code-preview-block {
+        margin: 0;
+      }
+
+      #codePreview {
+        font-size: 0.76rem;
+      }
+
+      .compact-action-row {
+        margin-block: 0.5rem;
+      }
+
+      footer.container {
+        padding-bottom: 2.5rem;
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <nav aria-label="Playground toolbar">
+        <ul>
+          <li>
+            <h1>Hammer.js Playground <small>v3</small></h1>
+          </li>
+        </ul>
+        <div class="top-controls">
+          <select id="presetSelect" name="preset" aria-label="Configuration preset">
+            <option value="default">Preset: All Gestures (Default)</option>
+            <option value="carousel">Preset: Horizontal Carousel (Vertical Scroll)</option>
+            <option value="drawer">Preset: Vertical Pull Sheet</option>
+            <option value="feed-card">Preset: Tap &amp; LongPress Feed Card</option>
+            <option value="image-viewer">Preset: Pinch &amp; Rotate Viewer</option>
+            <option value="map-2d">Preset: 2D Map (Simultaneous Pan+Zoom+Rotate)</option>
+            <option value="multitouch">Preset: 2-Finger Multi-Touch Only</option>
+            <option value="custom">Preset: Custom</option>
+          </select>
+          <select id="themeSelect" name="theme" aria-label="Color scheme">
+            <option value="auto">Theme: System</option>
+            <option value="light">Theme: Light</option>
+            <option value="dark">Theme: Dark</option>
+          </select>
+          <button id="shareUrlBtn" type="button" class="secondary outline">Share URL</button>
+          <button id="resetAllBtn" type="button" class="secondary outline">Reset</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container">
+      <div class="playground-grid">
+        <!-- Left column: Interactive Stage + Telemetry + Event Log -->
+        <section aria-label="Gesture test surface and event logs">
+          <article class="stage-host">
+            <header>
+              <h2>Gesture Stage</h2>
+              <div class="inline-toolbar">
+                <label for="persistTransformToggle">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    id="persistTransformToggle"
+                    name="persistTransform"
+                  />
+                  Persist transform
+                </label>
+                <label for="tallStageToggle">
+                  <input type="checkbox" role="switch" id="tallStageToggle" name="tallStage" />
+                  Tall stage
+                </label>
+                <button id="resetTransformBtn" type="button" class="secondary outline">
+                  Center
+                </button>
+              </div>
+            </header>
+
+            <div id="hitarea">
+              <svg id="pointerOverlay" aria-hidden="true"></svg>
+              <div id="transformCard">
+                <span id="stageGestureLabel">Touch, Drag, Pinch, or Rotate</span>
+                <span id="stageTransformMeta">(0, 0)px · 1.00× · 0.0°</span>
+                <button id="childButton" type="button" class="contrast">
+                  Child Button (<span id="childClickCount">0</span> clicks)
+                </button>
+              </div>
+            </div>
+
+            <div class="surface-meta">
+              <p>
+                Computed: <code id="computedTouchAction">none</code> · Applied
+                <code>style.touchAction</code>: <code id="appliedTouchAction">none</code>
+              </p>
+              <p id="touchActionHint"></p>
+            </div>
+
+            <div id="arenaStates" aria-live="off"></div>
+
+            <dl class="telemetry-grid">
+              <div>
+                <dt>Last Gesture</dt>
+                <dd id="telGesture">—</dd>
+              </div>
+              <div>
+                <dt>Pointers &amp; Samples</dt>
+                <dd id="telPointers">0 active</dd>
+              </div>
+              <div>
+                <dt>Delta / Position</dt>
+                <dd id="telDelta">0, 0 px</dd>
+              </div>
+              <div>
+                <dt>Velocity (LSQ2)</dt>
+                <dd id="telVelocity">0 px/s</dd>
+              </div>
+              <div>
+                <dt>Scale &amp; Span</dt>
+                <dd id="telScale">1.00×</dd>
+              </div>
+              <div>
+                <dt>Rotation</dt>
+                <dd id="telRotation">0.0°</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article>
+            <header>
+              <h2>Event Log (<span id="logCountBadge">0</span>)</h2>
+              <div class="inline-toolbar">
+                <label for="filterLifecycle">
+                  <input type="checkbox" id="filterLifecycle" name="filterLifecycle" checked />
+                  Lifecycle
+                </label>
+                <label for="filterMove">
+                  <input type="checkbox" id="filterMove" name="filterMove" />
+                  Move frames
+                </label>
+                <label for="filterDom">
+                  <input type="checkbox" id="filterDom" name="filterDom" />
+                  Raw DOM
+                </label>
+                <button
+                  id="pauseLogBtn"
+                  type="button"
+                  class="secondary outline"
+                  aria-pressed="false"
+                >
+                  Pause
+                </button>
+                <button id="copyReportBtn" type="button" class="secondary outline">
+                  Copy Report
+                </button>
+                <button id="clearLogBtn" type="button" class="secondary outline">Clear</button>
+              </div>
+            </header>
+            <pre id="eventLog" tabindex="0"><code id="eventLogCode"></code></pre>
+          </article>
+        </section>
+
+        <!-- Right column: Hammer Configuration, Physics, Device Info, Code Preview -->
+        <section aria-label="Hammer.js configuration and device diagnostics">
+          <article>
+            <header>
+              <h2>Configuration &amp; Diagnostics</h2>
+            </header>
+
+            <form id="configForm" action="." method="get">
+              <details open>
+                <summary>Manager &amp; Touch-Action Coexistence</summary>
+                <fieldset>
+                  <legend>Supported Pointer Types</legend>
+                  <div class="checkbox-row">
+                    <label for="pointerTouch">
+                      <input type="checkbox" id="pointerTouch" name="pointerTouch" checked />
+                      Touch
+                    </label>
+                    <label for="pointerPen">
+                      <input type="checkbox" id="pointerPen" name="pointerPen" checked />
+                      Pen / Stylus
+                    </label>
+                    <label for="pointerMouse">
+                      <input type="checkbox" id="pointerMouse" name="pointerMouse" checked />
+                      Mouse
+                    </label>
+                  </div>
+                </fieldset>
+
+                <label for="touchActionSelect">
+                  <code>touchAction</code> Policy
+                  <select id="touchActionSelect" name="touchAction">
+                    <option value="compute">compute (Auto least-restrictive from arena)</option>
+                    <option value="manipulation">
+                      manipulation (Scroll + Pinch, no 300ms delay)
+                    </option>
+                    <option value="pan-y pinch-zoom">pan-y pinch-zoom (Horizontal carousel)</option>
+                    <option value="pan-x pinch-zoom">pan-x pinch-zoom (Vertical drawer)</option>
+                    <option value="pan-x pan-y">
+                      pan-x pan-y (1F scroll native, 2F pinch/rotate)
+                    </option>
+                    <option value="pan-y">pan-y (Vertical scroll only)</option>
+                    <option value="pan-x">pan-x (Horizontal scroll only)</option>
+                    <option value="pinch-zoom">pinch-zoom (2F native zoom only)</option>
+                    <option value="none">none (Disable all native scroll &amp; zoom)</option>
+                    <option value="auto">auto (Browser default)</option>
+                    <option value="false">false (Do not touch element styles/guards)</option>
+                  </select>
+                </label>
+              </details>
+
+              <details open>
+                <summary>Recognizers &amp; Arena Composition</summary>
+
+                <div class="recognizer-group">
+                  <h3>Tap &amp; Multi-Tap</h3>
+                  <div class="checkbox-row">
+                    <label for="enableSingleTap">
+                      <input type="checkbox" id="enableSingleTap" name="enableSingleTap" checked />
+                      Single Tap
+                    </label>
+                    <label for="enableDoubleTap">
+                      <input type="checkbox" id="enableDoubleTap" name="enableDoubleTap" checked />
+                      Double Tap
+                    </label>
+                    <label for="enableTwoFingerTap">
+                      <input type="checkbox" id="enableTwoFingerTap" name="enableTwoFingerTap" />
+                      2-Finger Tap
+                    </label>
+                  </div>
+                  <div class="checkbox-row">
+                    <label for="requireDoubleTapFailure">
+                      <input
+                        type="checkbox"
+                        id="requireDoubleTapFailure"
+                        name="requireDoubleTapFailure"
+                        checked
+                      />
+                      <code>singleTap.requireFailureOf(doubleTap)</code>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="recognizer-group">
+                  <h3>LongPress</h3>
+                  <div class="checkbox-row">
+                    <label for="enableLongPress">
+                      <input type="checkbox" id="enableLongPress" name="enableLongPress" checked />
+                      Enable LongPress
+                    </label>
+                    <label for="enableLongPressMove">
+                      <input type="checkbox" id="enableLongPressMove" name="enableLongPressMove" />
+                      Track <code>onLongPressMove</code>
+                    </label>
+                  </div>
+                  <label for="longPressPointers">
+                    Required Pointers
+                    <select id="longPressPointers" name="longPressPointers">
+                      <option value="1">1 pointer</option>
+                      <option value="2">2 pointers</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="recognizer-group">
+                  <h3>Pan &amp; Swipe</h3>
+                  <div class="checkbox-row">
+                    <label for="enablePan">
+                      <input type="checkbox" id="enablePan" name="enablePan" checked />
+                      Enable Pan
+                    </label>
+                    <label for="enableSwipe">
+                      <input type="checkbox" id="enableSwipe" name="enableSwipe" checked />
+                      Enable <code>onSwipe</code>
+                    </label>
+                    <label for="panSimultaneousScaleRotate">
+                      <input
+                        type="checkbox"
+                        id="panSimultaneousScaleRotate"
+                        name="panSimultaneousScaleRotate"
+                      />
+                      Simultaneous with Scale &amp; Rotate
+                    </label>
+                  </div>
+                  <div class="config-grid-2">
+                    <label for="panDirection">
+                      Direction Lock
+                      <select id="panDirection" name="panDirection">
+                        <option value="both">both (2D unrestricted)</option>
+                        <option value="horizontal">horizontal</option>
+                        <option value="vertical">vertical</option>
+                      </select>
+                    </label>
+                    <label for="panPointers">
+                      Pointers (<code>numPointers</code>)
+                      <select id="panPointers" name="panPointers">
+                        <option value="1">1 pointer</option>
+                        <option value="2">2 pointers</option>
+                        <option value="0">0 (Any count — jump-free centroid)</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="recognizer-group">
+                  <h3>Scale, QuickScale &amp; Rotate</h3>
+                  <div class="checkbox-row">
+                    <label for="enableScale">
+                      <input type="checkbox" id="enableScale" name="enableScale" checked />
+                      2F Scale (Pinch)
+                    </label>
+                    <label for="enableRotate">
+                      <input type="checkbox" id="enableRotate" name="enableRotate" checked />
+                      2F Rotate
+                    </label>
+                    <label for="enableQuickScale">
+                      <input
+                        type="checkbox"
+                        id="enableQuickScale"
+                        name="enableQuickScale"
+                        checked
+                      />
+                      1F QuickScale (Double-tap + drag)
+                    </label>
+                  </div>
+                  <div class="config-grid-2">
+                    <label for="scaleRotateSimultaneous">
+                      <input
+                        type="checkbox"
+                        id="scaleRotateSimultaneous"
+                        name="scaleRotateSimultaneous"
+                        checked
+                      />
+                      Scale + Rotate simultaneous
+                    </label>
+                    <label for="quickScaleSensitivity">
+                      QuickScale 2× drag distance (px)
+                      <input
+                        type="number"
+                        id="quickScaleSensitivity"
+                        name="quickScaleSensitivity"
+                        min="20"
+                        max="800"
+                        step="10"
+                        value="200"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  ViewConfiguration Physics (<code id="viewOverridesBadge">defaults</code>)
+                </summary>
+                <div class="vc-grid">
+                  <label for="vc_touchSlop">
+                    touchSlop (px)
+                    <input type="number" id="vc_touchSlop" name="vc_touchSlop" min="0" step="1" />
+                  </label>
+                  <label for="vc_doubleTapSlop">
+                    doubleTapSlop (px)
+                    <input
+                      type="number"
+                      id="vc_doubleTapSlop"
+                      name="vc_doubleTapSlop"
+                      min="0"
+                      step="5"
+                    />
+                  </label>
+                  <label for="vc_spanSlop">
+                    spanSlop (px)
+                    <input type="number" id="vc_spanSlop" name="vc_spanSlop" min="0" step="1" />
+                  </label>
+                  <label for="vc_minScalingSpan">
+                    minScalingSpan (px)
+                    <input
+                      type="number"
+                      id="vc_minScalingSpan"
+                      name="vc_minScalingSpan"
+                      min="0"
+                      step="1"
+                    />
+                  </label>
+                  <label for="vc_rotationSlop">
+                    rotationSlop (deg)
+                    <input
+                      type="number"
+                      id="vc_rotationSlop"
+                      name="vc_rotationSlop"
+                      min="0"
+                      step="1"
+                    />
+                  </label>
+                  <label for="vc_maxTapDuration">
+                    maxTapDuration (ms)
+                    <input
+                      type="number"
+                      id="vc_maxTapDuration"
+                      name="vc_maxTapDuration"
+                      min="10"
+                      step="10"
+                    />
+                  </label>
+                  <label for="vc_doubleTapTimeout">
+                    doubleTapTimeout (ms)
+                    <input
+                      type="number"
+                      id="vc_doubleTapTimeout"
+                      name="vc_doubleTapTimeout"
+                      min="20"
+                      step="10"
+                    />
+                  </label>
+                  <label for="vc_longPressTimeout">
+                    longPressTimeout (ms)
+                    <input
+                      type="number"
+                      id="vc_longPressTimeout"
+                      name="vc_longPressTimeout"
+                      min="50"
+                      step="25"
+                    />
+                  </label>
+                  <label for="vc_minimumSwipeVelocity">
+                    minSwipeVelocity (px/s)
+                    <input
+                      type="number"
+                      id="vc_minimumSwipeVelocity"
+                      name="vc_minimumSwipeVelocity"
+                      min="10"
+                      step="25"
+                    />
+                  </label>
+                  <label for="vc_minimumSwipeDistance">
+                    minSwipeDistance (px)
+                    <input
+                      type="number"
+                      id="vc_minimumSwipeDistance"
+                      name="vc_minimumSwipeDistance"
+                      min="0"
+                      step="5"
+                    />
+                  </label>
+                  <label for="vc_maximumSwipeVelocity">
+                    maxSwipeVelocity (px/s)
+                    <input
+                      type="number"
+                      id="vc_maximumSwipeVelocity"
+                      name="vc_maximumSwipeVelocity"
+                      min="500"
+                      step="250"
+                    />
+                  </label>
+                  <label for="vc_ghostClickTimeout">
+                    ghostClickTimeout (ms)
+                    <input
+                      type="number"
+                      id="vc_ghostClickTimeout"
+                      name="vc_ghostClickTimeout"
+                      min="0"
+                      step="50"
+                    />
+                  </label>
+                </div>
+                <p class="compact-action-row">
+                  <button id="resetViewConfigBtn" type="button" class="secondary outline">
+                    Restore Default Physics
+                  </button>
+                </p>
+              </details>
+            </form>
+
+            <details>
+              <summary>Device &amp; Browser Capabilities</summary>
+              <table class="env-table">
+                <tbody id="envTableBody"></tbody>
+              </table>
+            </details>
+
+            <details>
+              <summary>Equivalent Hammer.js Setup Code</summary>
+              <p class="compact-action-row">
+                <button id="copyCodeBtn" type="button" class="secondary outline">
+                  Copy Snippet
+                </button>
+              </p>
+              <pre class="code-preview-block" tabindex="0"><code id="codePreview"></code></pre>
+            </details>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <footer class="container">
+      <p>
+        <strong>Cross-device testing tips:</strong> Run <code>npx vite --host</code> to open this
+        playground on Android, iPhone, and iPad over local Wi-Fi. Switch to the
+        <em>Horizontal Carousel</em> or <em>Tap &amp; LongPress Feed Card</em> preset and try
+        scrolling the page vertically starting inside the stage to verify native scroll coexistence;
+        tap vs. drag starting on <strong>Child Button</strong> to verify native click preservation
+        and ghost-click suppression.
+      </p>
+    </footer>
+
+    <script type="module" src="./playground.ts"></script>
+  </body>
+</html>

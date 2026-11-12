@@ -1,120 +1,87 @@
-# [hammer.js][hammerjs-url]  [![NPM Version][npm-image]][npm-url]  [![NPM Downloads][downloads-image]][downloads-url]  [![Build Status][travis-image]][travis-url]
-> A JavaScript library for detecting touch gestures.
+# Hammer.js (Experimental v3)
 
+Modern TypeScript gesture recognition engine built on W3C Pointer Events, combining the best parts of Android's gesture physics (`MotionEvent`, `VelocityTracker`, `ViewConfiguration`, `ScaleGestureDetector`) with clean web-native coexistence across desktop, Android, and iOS Safari.
 
-## Installation
-### NPM
-```sh
-npm install --save hammerjs
-```
+## Architecture Highlights
 
-**or**
-
-### Yarn
-```sh
-yarn add hammerjs
-```
-
-**or**
-
-### CDN
-[https://cdnjs.com/libraries/hammer.js/](https://cdnjs.com/libraries/hammer.js/)
-
+- **`MotionEvent` & `MotionEventStream` (`src/motion_event.ts`)**: Adapts DOM `PointerEvent` streams (including high-frequency `getCoalescedEvents()` samples) into immutable multi-pointer snapshots with Android actions (`down`, `pointer_down`, `move`, `pointer_up`, `up`, `cancel`), jump-free focal point continuity across pointer lifts, and multi-pointer mean-deviation span metrics.
+- **`VelocityTracker` (`src/velocity_tracker.ts`)**: Android AOSP's 2nd-order polynomial least-squares fit (`LSQ2`, with 2-sample linear fallback) over a single zero-allocation circular buffer per pointer (`px/s`). Includes dirty-flag frame caching, radial magnitude clamping (`speed <= maxVelocity`), a `100ms` horizon window, `40ms` stop/pause reset detection, capacitive peel-off filtering, multi-pointer centroid velocity, and opposing-vector pinch cancellation.
+- **`GestureArena` & `GestureRecognizer` (`src/gesture_arena.ts`, `src/gesture_recognizer.ts`)**: Order-independent arena arbitration (`possible` -> `pending` -> `began` -> `changed` -> `ended` | `cancelled` | `failed`) with simultaneous cooperation (`.simultaneousWith(...)`) and causal failure dependencies (`.requireFailureOf(...)`).
+- **Zero-Scroll-Lock Web `touch-action` & iOS Safari Coexistence (`src/touch_behavior.ts`, `src/gesture_manager.ts`)**: Automatically computes the least-restrictive W3C CSS `touch-action` (`touchAction: 'compute'` by default) from the registered recognizers (`Tap` / `LongPress` / `QuickScale` -> `'manipulation'`, horizontal `Pan` -> `'pan-y pinch-zoom'`, `Scale` / `Rotate` -> `'pan-x pan-y'`, 2D `Pan` -> `'none'`) with `CSS.supports()` fallbacks for older WebKit parsers. Keeps `Tap`-only surfaces free of `{passive: false}` `touchmove` listeners so browser scrolling stays completely native.
+- **Lazy Pointer Capture & Scoped Ghost-Click Guard (`src/gesture_manager.ts`)**: Supports both `HTMLElement` and `SVGElement` targets, attaches only `pointerdown` and `lostpointercapture` while idle, acquires `setPointerCapture()` lazily when a continuous gesture enters `began` (ignoring bubbling descendant implicit-capture transfers, and tracking straddling multi-touch pointers landing outside the target), preserves native `click` events on child controls during taps, and suppresses accidental trailing `click`s (within `ViewConfiguration.ghostClickTimeout`) after continuous gestures.
+- **Tree-Shakeable Recognizers (`src/recognizers/*`)**: Focused, decoupled recognizers (`TapRecognizer`, `LongPressRecognizer`, `PanRecognizer` with integrated `onSwipe`, `ScaleRecognizer`, `QuickScaleRecognizer`, `RotateRecognizer`) with `"sideEffects": false` for dead-code elimination when composing `GestureManager` with named recognizer imports—bundles omitting `PanRecognizer` automatically tree-shake `VelocityTracker` as well.
+- **ESM-only package**: a single `dist/hammer.es.js` build (with embedded-source `dist/hammer.es.js.map`). CommonJS consumers on Node >= 20.19 load it through native `require(esm)`.
 
 ## Usage
-hammer.js has a quick start option for gestures it already recognizes.
-```js
-// Get a reference to an element.
-var square = document.querySelector('.square');
 
-// Create an instance of Hammer with the reference.
-var hammer = new Hammer(square);
+### Quick Start (`Hammer`)
 
-// Subscribe to a quick start event: press, tap, or doubletap.
-// For a full list of quick start events, read the documentation.
-hammer.on('press', function(e) {
-  e.target.classList.toggle('expand');
-  console.log("You're pressing me!");
-  console.log(e);
+`Hammer` is the batteries-included convenience wrapper: it instantiates only the recognizers needed for the callbacks you pass, pairs simultaneous gestures (`Scale` + `Rotate`, plus `Pan` when `numPointers: 0`), coordinates `onTap` with `onDoubleTap` / `QuickScale`, and computes CSS `touch-action`. _(Note: importing `Hammer` statically references all built-in recognizers; use `GestureManager` below for tree-shaken minimal bundles.)_
+
+```ts
+import {Hammer} from 'hammerjs';
+
+const hammer = new Hammer(myElement, {
+  onTap: ev => console.log('Confirmed single tap', ev.center),
+  onDoubleTap: ev => console.log('Double tap', ev.center),
+  onLongPress: ev => console.log('LongPress', ev),
+  onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
+  onSwipe: ev => console.log('Swipe', ev.direction, ev.velocityX, ev.velocityY),
+  pan: {direction: 'horizontal'},
+  onScale: ev => console.log('Scale', ev.scale),
+  onRotate: ev => console.log('Rotate', ev.rotation),
+  quickScale: true,
 });
 ```
 
-If you want to recognize your own gestures, such as `tripletap`, then you'll have to use these steps:
-```js
-// Get a reference to an element.
-var square = document.querySelector('.square');
+### Custom Arena Composition (`GestureManager`)
 
-// Create a manager to manage the element.
-var manager = new Hammer.Manager(square);
+For custom recognizer graphs or minimal tree-shaken bundles, wire `GestureManager` and individual recognizers directly:
 
-// Create a recognizer.
-var TripleTap = new Hammer.Tap({
-  event: 'tripletap',
-  taps: 3
-});
+```ts
+import {
+  GestureManager,
+  TapRecognizer,
+  LongPressRecognizer,
+  PanRecognizer,
+  ScaleRecognizer,
+  QuickScaleRecognizer,
+  RotateRecognizer,
+} from 'hammerjs';
 
-// Add the recognizer to the manager.
-manager.add(TripleTap);
+const doubleTap = new TapRecognizer({onTap: ev => console.log('Double tap', ev.center)}, {taps: 2});
+const quickScale = new QuickScaleRecognizer({onScale: ev => console.log('QuickScale', ev.scale)});
+const singleTap = new TapRecognizer({
+  onTap: ev => console.log('Confirmed single tap', ev.center),
+}).requireFailureOf(doubleTap, quickScale);
 
-// Subscribe to the event.
-manager.on('tripletap', function(e) {
-  e.target.classList.toggle('expand');
-  console.log("You're triple tapping me!");
-  console.log(e);
+// Recognizers are mutually exclusive unless paired; pairing is symmetric, so one call is enough.
+const rotate = new RotateRecognizer({onRotate: ev => console.log('Rotate', ev.rotation)});
+const scale = new ScaleRecognizer({
+  onScale: ev => console.log('Scale', ev.scale, 'factor', ev.scaleFactor),
+}).simultaneousWith(rotate);
+
+const manager = new GestureManager(myElement, {
+  touchAction: 'compute', // Keeps unclaimed scroll and zoom axes native
+  recognizers: [
+    singleTap,
+    doubleTap,
+    quickScale,
+    new LongPressRecognizer({onLongPress: ev => console.log('LongPress', ev)}),
+    new PanRecognizer({
+      onPanStart: ev => console.log('Pan start', ev),
+      onPan: ev => console.log('Pan delta', ev.deltaX, ev.deltaY, 'step', ev.stepX, ev.stepY),
+      onPanEnd: ev => console.log('Release velocity (px/s)', ev.velocityX, ev.velocityY),
+      onSwipe: ev => console.log('Swipe', ev.direction, ev.velocityX, ev.velocityY),
+    }),
+    scale,
+    rotate,
+  ],
 });
 ```
 
+## Development
 
-## Examples
-- [tap][tap]
-- [double tap][double-tap]
-- [press][press]
-- [swipe][swipe]
-
-
-## Documentation
-For further information regarding hammer.js, please read our [documentation][hammerjs-url].
-
-
-## Contributions  [![Github Issues][issues-image]][issues-url]  [![Github PRs][pulls-image]][pulls-url]  [![Slack][slack-image]][slack-url]
-Feel encouraged to report issues or submit pull requests. When you're ready to do either, read our [contribution guidelines][contribution-guidelines]. If you're looking for another form of contribution, we love help answering questions on our [slack channel][slack-url].
-
-
-## License
-[MIT][license]
-
-[hammerjs-url]: http://hammerjs.github.io
-
-[npm-image]: https://img.shields.io/npm/v/hammerjs.svg
-[npm-url]: https://npmjs.org/package/hammerjs
-
-[travis-image]: https://img.shields.io/travis/stream-utils/raw-body/master.svg
-[travis-url]: https://travis-ci.org/hammerjs/hammer.js
-
-[downloads-image]: https://img.shields.io/npm/dm/hammerjs.svg
-[downloads-url]: https://npmjs.org/package/hammerjs
-
-
-<!-- Examples -->
-[tap]: https://codepen.io/choskim/pen/WZggmg
-[double-tap]: https://codepen.io/choskim/pen/vezzwZ
-[press]: https://codepen.io/choskim/pen/RLYebL
-[pan]: ''
-[swipe]: https://codepen.io/choskim/pen/rGZqxa
-[pinch]: ''
-[rotate]: ''
-
-
-<!-- Contributions -->
-[issues-image]: https://img.shields.io/github/issues/hammerjs/hammer.js.svg
-[issues-url]: https://github.com/hammerjs/hammer.js/issues
-
-[pulls-image]: https://img.shields.io/github/issues-pr/hammerjs/hammer.js.svg
-[pulls-url]: https://github.com/hammerjs/hammer.js/pulls
-
-[slack-image]: https://hammerjs.herokuapp.com/badge.svg
-[slack-url]: https://hammerjs.herokuapp.com/
-
-[contribution-guidelines]: ./CONTRIBUTING.md
-
-[license]: ./LICENSE.md
+- `npm test`: builds, then runs unit tests (jsdom), package checks, and real-browser multi-touch tests
+  (Chromium via Playwright; run `npx playwright install chromium` once), followed by lint.
+- `npm run test:unit` / `npm run test:browser`: run either half on its own.

@@ -1,76 +1,69 @@
 {
   "name": "hammerjs",
-  "title": "Hammer.JS",
-  "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.8",
-  "homepage": "http://hammerjs.github.io/",
+  "version": "3.0.0-experimental",
+  "description": "Modern multi-touch and pointer gesture recognition library for the web",
   "license": "MIT",
-  "keywords": [
-    "touch",
-    "gestures"
-  ],
-  "author": {
-    "name": "Jorik Tangelder",
-    "email": "j.tangelder@gmail.com"
-  },
-  "contributors": [
-    {
-      "name": "Alexander Schmitz",
-      "email": "arschmitz@gmail.com"
-    },
-    {
-      "name": "Chris Thoburn",
-      "email": ""
-    }
-  ],
+  "author": "Jorik Tangelder",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hammerjs/hammer.js.git"
+    "url": "git+https://github.com/hammerjs/hammer.js.git"
   },
-  "bugs": {
-    "url": "https://github.com/hammerjs/hammer.js/issues"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.7.0",
-    "bannerize": "^1.0.2",
-    "blanket": "^1.2.3",
-    "changelogplease": "^1.2.0",
-    "ember-suave": "^4.0.0",
-    "git-tags": "^0.2.4",
-    "hammer-simulator": "git://github.com/hammerjs/simulator#master",
-    "jquery": "^3.1.0",
-    "jquery-hammerjs": "2.0.x",
-    "jscs": "^3.0.7",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
-    "lodash-compat": "^3.10.2",
-    "node-qunit-phantomjs": "^1.4.0",
-    "qunitjs": "^2.0.0",
-    "rollup": "^0.59.4",
-    "rollup-plugin-babel": "^3.0.4",
-    "run-when-changed": "^2.1.0",
-    "serve": "^1.4.0",
-    "uglify-js": "^3.4.0"
-  },
-  "main": "hammer.js",
+  "keywords": [
+    "gestures",
+    "touch",
+    "pointer-events",
+    "multitouch",
+    "pan",
+    "swipe",
+    "pinch",
+    "zoom",
+    "rotate",
+    "tap"
+  ],
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=20.19.0"
   },
+  "type": "module",
+  "sideEffects": false,
   "scripts": {
-    "bannerize": "bannerize hammer.js hammer.min.js",
-    "connect": "serve -p 8000 ./",
-    "rollup": "rollup -c",
-    "uglify": "uglifyjs hammer.js --source-map \"filename=hammer.min.js.map\" -o hammer.min.js --timings",
-    "string-replace": "node string-replace.js",
-    "jshint": "jshint src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config .jshintrc --verbose --reporter=node_modules/jshint-stylish",
-    "jscs": " jscs src/**/*.js tests/unit/*.js tests/unit/gestures/*.js --config=./.jscsrc",
-    "qunit": "phantomjs node_modules/qunit-phantomjs-runner/runner-list.js tests/unit/index.html 15",
-    "watch": "run-when-changed --watch 'src/**/*.js' --watch 'tests/unit/*.js' --watch 'tests/unit/gestures/*.js' --exec 'npm run watch-tasks'",
-    "watch-tasks": "npm run rollup && npm run string-replace && npm run uglify && npm run jshint && npm run jscs",
-    "build": "npm run rollup && npm run string-replace && npm run uglify && npm run bannerize",
-    "test": "npm run build && npm run jshint && npm run jscs && npm run qunit"
-  }
+    "dev": "vite dev",
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit --project package",
+    "test:browser": "vitest run --project browser",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --project unit --project package --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "gts lint",
+    "lint:fix": "gts fix",
+    "prepare": "npm run build",
+    "pretest": "npm run build",
+    "posttest": "npm run lint"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/user-event": "^14.6.9",
+    "@vitest/browser-playwright": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "gts": "^7.0.0",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.65.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/hammer.es.js"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ]
 }
