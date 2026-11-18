@@ -60,7 +60,7 @@ describe('Published package', () => {
       'utf8'
     );
     expect(recognizerDts).not.toContain('denyByArena');
-    expect(recognizerDts).not.toContain('lastDispatchToken');
+    expect(recognizerDts).not.toContain('TOUCH_SLOP');
 
     const esEntry = resolve(__dirname, '../dist/hammer.es.js').replace(/\\/g, '/');
     const esMap = JSON.parse(
@@ -73,6 +73,7 @@ describe('Published package', () => {
     expect(publicApi.GestureArena).toBeUndefined();
     expect(publicApi.MotionEventStream).toBeUndefined();
     expect(publicApi.VelocityTracker).toBeUndefined();
+    expect(publicApi.DEFAULT_VIEW_CONFIGURATION).toBeUndefined();
     expect(publicApi.applySurfaceBehavior).toBeUndefined();
     expect(typeof publicApi.Hammer).toBe('function');
     expect(typeof publicApi.GestureManager).toBe('function');
@@ -99,7 +100,7 @@ describe('Published package', () => {
       ],
       build: {
         write: false,
-        minify: false,
+        minify: true,
         rollupOptions: {
           input: 'virtual:tap-only',
           preserveEntrySignatures: 'strict',

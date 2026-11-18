@@ -2,19 +2,16 @@ export {Hammer, type HammerOptions} from './hammer.js';
 export {GestureManager, type GestureManagerOptions, type PointerType} from './gesture_manager.js';
 export {
   GestureRecognizer,
-  RecognizerState,
   type GestureEventData,
-  type RecognizerStateType,
+  type RecognizerState,
 } from './gesture_recognizer.js';
-export {
+export type {
+  HistoricalSample,
   MotionAction,
-  type HistoricalSample,
-  type MotionActionType,
-  type MotionEvent,
-  type Point,
-  type PointerSample,
+  MotionEvent,
+  Point,
+  PointerSample,
 } from './motion_event.js';
-export {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 export type {GestureTarget, TouchActionSetting, TouchActionValue} from './touch_behavior.js';
 
 export {
@@ -48,9 +45,4 @@ export {
   type ScaleEventData,
   type ScaleOptions,
 } from './recognizers/scale_recognizer.js';
-export {
-  TapRecognizer,
-  type TapCallbacks,
-  type TapEventData,
-  type TapOptions,
-} from './recognizers/tap_recognizer.js';
+export {TapRecognizer, type TapCallbacks, type TapOptions} from './recognizers/tap_recognizer.js';

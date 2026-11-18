@@ -1,10 +1,4 @@
-import {
-  MotionAction,
-  type MotionEvent,
-  type Point,
-  type PointerSample,
-  ZERO_POINT,
-} from './motion_event.js';
+import {type MotionEvent, type Point, type PointerSample, ZERO_POINT} from './motion_event.js';
 
 const HISTORY_CAPACITY = 20;
 const HORIZON_MS = 100;
@@ -158,21 +152,20 @@ class PointerVelocityBuffer {
   }
 }
 
-function clampVelocityRadially(vx: number, vy: number, maxVelocity: number): Point {
-  const x = Number.isFinite(vx) ? vx : 0;
-  const y = Number.isFinite(vy) ? vy : 0;
+function clampVelocityRadially(raw: Point, maxVelocity: number): Point {
+  const x = Number.isFinite(raw.x) ? raw.x : 0;
+  const y = Number.isFinite(raw.y) ? raw.y : 0;
   if (maxVelocity <= 0 || (x === 0 && y === 0)) {
     return ZERO_POINT;
   }
-  if (!Number.isFinite(maxVelocity)) {
-    return {x, y};
+  if (Number.isFinite(maxVelocity)) {
+    const speed = Math.hypot(x, y);
+    if (speed > maxVelocity) {
+      const ratio = maxVelocity / speed;
+      return {x: x * ratio, y: y * ratio};
+    }
   }
-  const speed = Math.hypot(x, y);
-  if (speed > maxVelocity) {
-    const ratio = maxVelocity / speed;
-    return {x: x * ratio, y: y * ratio};
-  }
-  return {x, y};
+  return x === raw.x && y === raw.y ? raw : {x, y};
 }
 
 /**
@@ -181,8 +174,6 @@ function clampVelocityRadially(vx: number, vy: number, maxVelocity: number): Poi
  */
 export class VelocityTracker {
   private readonly pointers = new Map<number, PointerVelocityBuffer>();
-
-  private activePointerId: number | null = null;
   private latestEventTime: number | undefined = undefined;
   private dirty = false;
   private cachedMaxVelocity = Number.POSITIVE_INFINITY;
@@ -192,32 +183,36 @@ export class VelocityTracker {
    * pointer) into per-pointer velocity buffers.
    */
   addMovement(event: MotionEvent): void {
+    if (event.action === 'down') {
+      this.clear();
+    } else if (event.action === 'cancel') {
+      this.clear();
+      return;
+    }
+
     this.recordTimestamp(event.eventTime);
 
     switch (event.action) {
-      case MotionAction.DOWN: {
-        this.clear();
-        this.recordTimestamp(event.eventTime);
+      case 'down': {
         const p = event.pointers[0];
         if (p) {
-          this.activePointerId = p.pointerId;
           this.addPoint(p.pointerId, event.eventTime, p.x, p.y);
         }
         break;
       }
 
-      case MotionAction.POINTER_DOWN: {
+      case 'pointer_down': {
         const added = event.pointers[event.actionIndex];
         for (const p of event.pointers) {
           if (p === added || !this.pointers.has(p.pointerId)) {
-            this.clearPointer(p.pointerId);
+            this.pointers.delete(p.pointerId);
             this.addPoint(p.pointerId, event.eventTime, p.x, p.y);
           }
         }
         break;
       }
 
-      case MotionAction.MOVE: {
+      case 'move': {
         const moved = event.pointers[event.actionIndex];
         if (!moved) {
           break;
@@ -229,23 +224,8 @@ export class VelocityTracker {
         break;
       }
 
-      case MotionAction.POINTER_UP: {
-        const lifted = event.pointers[event.actionIndex];
-        if (lifted) {
-          const buf = this.pointers.get(lifted.pointerId);
-          if (buf) {
-            buf.notifyPointerUp(event.eventTime, lifted.x, lifted.y);
-            this.dirty = true;
-          }
-          if (this.activePointerId === lifted.pointerId) {
-            const remaining = event.getActivePointers();
-            this.activePointerId = remaining.length > 0 ? remaining[0].pointerId : null;
-          }
-        }
-        break;
-      }
-
-      case MotionAction.UP: {
+      case 'pointer_up':
+      case 'up': {
         const lifted = event.pointers[event.actionIndex] ?? event.pointers[0];
         if (lifted) {
           const buf = this.pointers.get(lifted.pointerId);
@@ -253,32 +233,35 @@ export class VelocityTracker {
             buf.notifyPointerUp(event.eventTime, lifted.x, lifted.y);
             this.dirty = true;
           }
-          this.activePointerId = lifted.pointerId;
         }
-        break;
-      }
-
-      case MotionAction.CANCEL: {
-        this.clear();
         break;
       }
     }
   }
 
   /**
-   * Applies Android `GestureDetector`'s `POINTER_UP` opposing-vector cancellation
-   * after recognizers inspect `POINTER_UP` so lifting one finger from a pinch clears
+   * Applies Android `GestureDetector`'s `'pointer_up'` opposing-vector cancellation
+   * after recognizers inspect `'pointer_up'` so lifting one finger from a pinch clears
    * residual velocity without starving 2-pointer `onPanEnd` handlers.
    */
   finalizePointerUp(event: MotionEvent, maxVelocity = Number.POSITIVE_INFINITY): void {
-    if (event.action !== MotionAction.POINTER_UP) {
+    if (event.action !== 'pointer_up') {
       return;
     }
     const upId = event.actionPointerId;
-    if (this.hasOpposingVelocity(upId, event.getActivePointers(), maxVelocity)) {
-      this.clear();
-    } else {
-      this.clearPointer(upId);
+    this.computeCurrentVelocity(maxVelocity);
+    const v1 = this.getVelocity(upId);
+
+    for (const other of event.getActivePointers()) {
+      if (other.pointerId === upId) continue;
+      const v2 = this.getVelocity(other.pointerId);
+      if (v1.x * v2.x + v1.y * v2.y < 0) {
+        this.clear();
+        return;
+      }
+    }
+    if (this.pointers.delete(upId)) {
+      this.dirty = true;
     }
   }
 
@@ -292,17 +275,15 @@ export class VelocityTracker {
     }
 
     for (const buf of this.pointers.values()) {
-      const raw = buf.computeVelocity(this.latestEventTime);
-      buf.computed = clampVelocityRadially(raw.x, raw.y, maxVelocity);
+      buf.computed = clampVelocityRadially(buf.computeVelocity(this.latestEventTime), maxVelocity);
     }
 
     this.dirty = false;
     this.cachedMaxVelocity = maxVelocity;
   }
 
-  getVelocity(pointerId?: number): Point {
-    const id = pointerId ?? this.activePointerId;
-    return id === null ? ZERO_POINT : (this.pointers.get(id)?.computed ?? ZERO_POINT);
+  getVelocity(pointerId: number): Point {
+    return this.pointers.get(pointerId)?.computed ?? ZERO_POINT;
   }
 
   /** Computes focal-point (centroid) velocity in `px/s` averaged across `pointers`. */
@@ -328,7 +309,6 @@ export class VelocityTracker {
 
   clear(): void {
     this.pointers.clear();
-    this.activePointerId = null;
     this.latestEventTime = undefined;
     this.dirty = false;
   }
@@ -340,39 +320,8 @@ export class VelocityTracker {
       buf = new PointerVelocityBuffer();
       this.pointers.set(pointerId, buf);
     }
-    if (this.activePointerId === null) {
-      this.activePointerId = pointerId;
-    }
     buf.add(timeMs, x, y);
     this.dirty = true;
-  }
-
-  private hasOpposingVelocity(
-    upPointerId: number,
-    remaining: readonly PointerSample[],
-    maxVelocity: number
-  ): boolean {
-    this.computeCurrentVelocity(maxVelocity);
-    const v1 = this.getVelocity(upPointerId);
-
-    for (const other of remaining) {
-      if (other.pointerId === upPointerId) continue;
-      const v2 = this.getVelocity(other.pointerId);
-      if (v1.x * v2.x + v1.y * v2.y < 0) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private clearPointer(pointerId: number): void {
-    if (this.pointers.delete(pointerId)) {
-      this.dirty = true;
-    }
-    if (this.activePointerId === pointerId) {
-      const next = this.pointers.keys().next();
-      this.activePointerId = next.done ? null : next.value;
-    }
   }
 
   private recordTimestamp(timeMs: number): void {

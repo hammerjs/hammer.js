@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../../src/motion_event';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {QuickScaleRecognizer} from '../../src/recognizers/quick_scale_recognizer';
 import {RotateRecognizer} from '../../src/recognizers/rotate_recognizer';
@@ -459,7 +459,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
 
     scale3.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.DOWN,
+        action: 'down',
         eventTime: 600,
         actionIndex: 0,
         pointerType: 'touch',
@@ -472,7 +472,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     );
     scale3.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.MOVE,
+        action: 'move',
         eventTime: 605,
         actionIndex: 1,
         pointerType: 'touch',
@@ -485,7 +485,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     );
     scale3.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.POINTER_UP,
+        action: 'pointer_up',
         eventTime: 610,
         actionIndex: 1,
         pointerType: 'touch',
@@ -501,7 +501,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     scale3.reset();
     scale3.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.CANCEL,
+        action: 'cancel',
         eventTime: 615,
         actionIndex: 0,
         pointerType: 'touch',
@@ -511,7 +511,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     );
     quickScaleRec.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.CANCEL,
+        action: 'cancel',
         eventTime: 615,
         actionIndex: 0,
         pointerType: 'touch',
@@ -621,7 +621,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     rot.reset();
     rot.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.MOVE,
+        action: 'move',
         eventTime: 900,
         actionIndex: 0,
         pointerType: 'touch',
@@ -634,7 +634,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     );
     rot.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.MOVE,
+        action: 'move',
         eventTime: 910,
         actionIndex: 0,
         pointerType: 'touch',
@@ -662,7 +662,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       arena.dispatch(
         stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, timeStamp: 0}))!
       );
-      vi.advanceTimersByTime(arena.config.maxTapDuration + 1);
+      vi.advanceTimersByTime(251);
       expect(quickScale.state).toBe('failed');
       arena.dispatch(
         stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, timeStamp: 300}))!
@@ -783,7 +783,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     const qs = new QuickScaleRecognizer({});
     qs.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.DOWN,
+        action: 'down',
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',
@@ -795,5 +795,52 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       })
     );
     expect(qs.state).toBe('failed');
+  });
+
+  it('avoids false zoom-ins when span dips below minSpan and returns to initialSpan', () => {
+    const scales: number[] = [];
+    const pinchArena = new GestureArena();
+    pinchArena.add(
+      new ScaleRecognizer({onScale: ev => scales.push(ev.scale)}, {spanSlop: 16, minSpan: 27})
+    );
+
+    // Dipping `45 -> 20 (< minSpan 27) -> 45` must NOT overwrite `initialSpan` to `20` and fire a bogus zoom-in:
+    pinchArena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
+    );
+    pinchArena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 45, timeStamp: 2}))!
+    );
+    pinchArena.dispatch(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 2, clientX: 20, timeStamp: 16}))!
+    );
+    pinchArena.dispatch(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 2, clientX: 45, timeStamp: 32}))!
+    );
+    expect(scales).toEqual([]);
+    pinchArena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 2, clientX: 45, timeStamp: 40}))!
+    );
+    pinchArena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 0, timeStamp: 45}))!
+    );
+
+    // Subsequent pinch-in from `60 -> 30` (`>= minSpan 27`) recognizes zoom-out cleanly:
+    pinchArena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 100}))!
+    );
+    pinchArena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 60, timeStamp: 102})
+      )!
+    );
+    pinchArena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 30, timeStamp: 116})
+      )!
+    );
+    expect(scales).toHaveLength(1);
+    expect(scales[0]).toBeCloseTo(30 / 44, 3);
+    pinchArena.destroy();
   });
 });

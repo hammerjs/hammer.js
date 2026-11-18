@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest';
-import {MotionAction, MotionEvent, MotionEventStream} from '../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../src/motion_event';
 import {pointerEvent} from './test_helpers';
 
 describe('MotionEvent & MotionEventStream', () => {
@@ -13,7 +13,7 @@ describe('MotionEvent & MotionEventStream', () => {
     const down1 = stream.onPointerDown(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 10})
     )!;
-    expect(down1.action).toBe(MotionAction.DOWN);
+    expect(down1.action).toBe('down');
     expect(down1.pointers.length).toBe(1);
     expect(down1.activePointerCount).toBe(1);
     expect(down1.focus).toEqual({x: 100, y: 100});
@@ -22,7 +22,7 @@ describe('MotionEvent & MotionEventStream', () => {
     const down2 = stream.onPointerDown(
       pointerEvent('pointerdown', {pointerId: 2, clientX: 200, clientY: 100, timeStamp: 20})
     )!;
-    expect(down2.action).toBe(MotionAction.POINTER_DOWN);
+    expect(down2.action).toBe('pointer_down');
     expect(down2.pointers.length).toBe(2);
     expect(down2.activePointerCount).toBe(2);
     expect(down2.actionPointerId).toBe(2);
@@ -32,14 +32,14 @@ describe('MotionEvent & MotionEventStream', () => {
     const move = stream.onPointerMove(
       pointerEvent('pointermove', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 30})
     )!;
-    expect(move.action).toBe(MotionAction.MOVE);
+    expect(move.action).toBe('move');
     expect(move.focus).toEqual({x: 200, y: 100});
     expect(move.getSpan()).toBeCloseTo(200);
 
     const up1 = stream.onPointerUp(
       pointerEvent('pointerup', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 40})
     )!;
-    expect(up1.action).toBe(MotionAction.POINTER_UP);
+    expect(up1.action).toBe('pointer_up');
     expect(up1.pointers.length).toBe(2);
     expect(up1.activePointerCount).toBe(1);
     expect(up1.actionPointerId).toBe(1);
@@ -48,7 +48,7 @@ describe('MotionEvent & MotionEventStream', () => {
     const up2 = stream.onPointerUp(
       pointerEvent('pointerup', {pointerId: 2, clientX: 300, clientY: 100, timeStamp: 50})
     )!;
-    expect(up2.action).toBe(MotionAction.UP);
+    expect(up2.action).toBe('up');
     expect(up2.activePointerCount).toBe(0);
     expect(up2.focus).toEqual({x: 300, y: 100});
     expect(stream.activePointerType).toBeNull();
@@ -147,7 +147,7 @@ describe('MotionEvent & MotionEventStream', () => {
     stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 50}));
 
     const cancel = stream.onPointerCancel(pointerEvent('pointercancel', {pointerId: 1}))!;
-    expect(cancel.action).toBe(MotionAction.CANCEL);
+    expect(cancel.action).toBe('cancel');
     expect(cancel.activePointerCount).toBe(0);
     expect(stream.activePointerCount).toBe(0);
   });
@@ -245,7 +245,7 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(stream.onPointerCancel(rawCancel)!.pointerType).toBe('touch');
 
     const emptySnapshot = new MotionEvent({
-      action: MotionAction.DOWN,
+      action: 'down',
       eventTime: 0,
       actionIndex: 0,
       pointerType: 'touch',
@@ -256,7 +256,7 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(emptySnapshot.actionPointerId).toBe(-1);
 
     const degeneratePointerUp = new MotionEvent({
-      action: MotionAction.POINTER_UP,
+      action: 'pointer_up',
       eventTime: 10,
       actionIndex: 0,
       pointerType: 'touch',
@@ -308,7 +308,7 @@ describe('MotionEvent & MotionEventStream', () => {
         timeStamp: 500,
       })
     )!;
-    expect(recoveredDown.action).toBe(MotionAction.DOWN);
+    expect(recoveredDown.action).toBe('down');
     expect(recoveredDown.pointers.length).toBe(1);
     expect(recoveredDown.eventTime).toBe(500);
 
@@ -321,7 +321,7 @@ describe('MotionEvent & MotionEventStream', () => {
         timeStamp: 550,
       })
     )!;
-    expect(penDown.action).toBe(MotionAction.DOWN);
+    expect(penDown.action).toBe('down');
     expect(penDown.eventTime).toBe(550);
 
     const dupDown = stream.onPointerDown(
@@ -333,7 +333,7 @@ describe('MotionEvent & MotionEventStream', () => {
         timeStamp: 600,
       })
     )!;
-    expect(dupDown.action).toBe(MotionAction.DOWN);
+    expect(dupDown.action).toBe('down');
     expect(dupDown.eventTime).toBe(600);
   });
 
@@ -380,7 +380,7 @@ describe('MotionEvent & MotionEventStream', () => {
     const blurEv = new Event('blur');
     Object.defineProperty(blurEv, 'timeStamp', {value: 700});
     const cancelled = stream.cancelAll(blurEv)!;
-    expect(cancelled.action).toBe(MotionAction.CANCEL);
+    expect(cancelled.action).toBe('cancel');
     expect(cancelled.eventTime).toBe(700);
     expect(cancelled.focus).toEqual({x: 80, y: 90});
     expect(stream.cancelAll(blurEv)).toBeNull();
@@ -388,14 +388,23 @@ describe('MotionEvent & MotionEventStream', () => {
     stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 3, isPrimary: true}));
     const zeroBlur = new Event('blur');
     Object.defineProperty(zeroBlur, 'timeStamp', {value: 0});
-    expect(stream.cancelAll(zeroBlur)!.action).toBe(MotionAction.CANCEL);
+    expect(stream.cancelAll(zeroBlur)!.action).toBe('cancel');
 
     // Orphaned stylus (`pen`) pointer recovers cleanly on next pen press:
     stream.onPointerDown(pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 11}));
     const freshPen = stream.onPointerDown(
       pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 12})
     )!;
-    expect(freshPen.action).toBe(MotionAction.DOWN);
+    expect(freshPen.action).toBe('down');
     expect(freshPen.pointers.length).toBe(1);
+
+    // Empty `pointerType` on subsequent events inherits the active stream's modality (`'pen'`):
+    expect(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerType: '', pointerId: 12}))!
+        .pointerType
+    ).toBe('pen');
+    expect(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerType: '', pointerId: 12}))!.pointerType
+    ).toBe('pen');
   });
 });

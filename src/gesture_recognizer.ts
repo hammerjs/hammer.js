@@ -1,25 +1,21 @@
 import type {MotionEvent, Point} from './motion_event.js';
 import type {TouchActionValue} from './touch_behavior.js';
-import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 
-export const RecognizerState = {
-  /** Evaluating incoming events; has not yet claimed the gesture arena. */
-  POSSIBLE: 'possible',
-  /** Met recognition criteria, waiting on `requireFailureOf` dependencies to fail. */
-  PENDING: 'pending',
-  /** Continuous gesture claimed the arena and started. */
-  BEGAN: 'began',
-  /** Continuous gesture is actively updating. */
-  CHANGED: 'changed',
-  /** Gesture completed successfully. */
-  ENDED: 'ended',
-  /** Active continuous gesture was interrupted (system cancel or preemption). */
-  CANCELLED: 'cancelled',
-  /** Disqualified for the current gesture sequence. */
-  FAILED: 'failed',
-} as const;
+/** @internal */
+export const TOUCH_SLOP = 8;
+/** @internal */
+export const DOUBLE_TAP_SLOP = 100;
+/** @internal */
+export const MIN_SCALING_SPAN = 27;
+/** @internal */
+export const MAX_TAP_DURATION_MS = 250;
+/** @internal */
+export const DOUBLE_TAP_TIMEOUT_MS = 300;
+/** @internal */
+export const DOUBLE_TAP_MIN_TIME_MS = 40;
 
-export type RecognizerStateType = (typeof RecognizerState)[keyof typeof RecognizerState];
+export type RecognizerState =
+  'possible' | 'pending' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed';
 
 export interface GestureEventData {
   /** Focal point (`{x, y}`) in viewport (`clientX`/`clientY`) coordinates. */
@@ -32,15 +28,14 @@ export interface GestureEventData {
 
 /** @internal */
 export interface ArenaContext {
-  readonly config: ViewConfiguration;
   requestClaim(
     recognizer: GestureRecognizer,
-    targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
+    targetState: 'began' | 'ended',
     onGranted: () => void
   ): boolean;
   notifyStateChanged(
     recognizer: GestureRecognizer,
-    nextState: RecognizerStateType,
+    nextState: RecognizerState,
     yieldedForMultiTouch?: boolean
   ): void;
 }
@@ -51,25 +46,21 @@ export interface ArenaContext {
  */
 export abstract class GestureRecognizer {
   /** @internal */
-  lastDispatchToken = 0;
-  /** @internal */
   deniedByArena = false;
 
-  private currentState: RecognizerStateType = RecognizerState.POSSIBLE;
+  private currentState: RecognizerState = 'possible';
   private arena: ArenaContext | null = null;
+  private timerId: ReturnType<typeof setTimeout> | null = null;
 
   private readonly simultaneousPeers = new Set<GestureRecognizer>();
   private readonly failureDependencies = new Set<GestureRecognizer>();
-  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  get state(): RecognizerStateType {
+  get state(): RecognizerState {
     return this.currentState;
   }
 
   get active(): boolean {
-    return (
-      this.currentState === RecognizerState.BEGAN || this.currentState === RecognizerState.CHANGED
-    );
+    return this.currentState === 'began' || this.currentState === 'changed';
   }
 
   /** Allows this recognizer and `others` to win in `GestureArena` simultaneously. */
@@ -83,7 +74,7 @@ export abstract class GestureRecognizer {
   }
 
   /**
-   * Delays this recognizer's claim until all `others` transition to `FAILED`
+   * Delays this recognizer's claim until all `others` transition to `'failed'`
    * (e.g. `singleTap.requireFailureOf(doubleTap)`).
    */
   requireFailureOf(...others: GestureRecognizer[]): this {
@@ -119,10 +110,10 @@ export abstract class GestureRecognizer {
   /** Processes an incoming `MotionEvent` from `GestureArena`. */
   abstract onMotionEvent(event: MotionEvent): void;
 
-  /** Resets recognizer state and clears all scheduled timers. */
+  /** Resets recognizer state and clears any scheduled timer. */
   reset(): void {
-    this.clearAllTimers();
-    this.currentState = RecognizerState.POSSIBLE;
+    this.clearTimer();
+    this.currentState = 'possible';
     this.deniedByArena = false;
     this.onReset();
   }
@@ -160,7 +151,7 @@ export abstract class GestureRecognizer {
 
   /** @internal */
   shouldResetOnDown(_event: MotionEvent): boolean {
-    return this.currentState !== RecognizerState.PENDING;
+    return this.currentState !== 'pending';
   }
 
   /** @internal */
@@ -169,11 +160,13 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
+  canSustainPendingBegan(activePointerCount: number): boolean {
+    return activePointerCount >= 1;
+  }
+
+  /** @internal */
   denyByArena(): void {
-    if (
-      this.currentState === RecognizerState.POSSIBLE ||
-      this.currentState === RecognizerState.PENDING
-    ) {
+    if (this.currentState === 'possible' || this.currentState === 'pending') {
       this.failInternal(true);
     } else if (this.active) {
       this.cancel();
@@ -181,20 +174,11 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
-  markPending(): void {
-    this.currentState = RecognizerState.PENDING;
-  }
-
-  /** @internal */
-  setClaimState(targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED): void {
-    if (targetState === RecognizerState.ENDED) {
-      this.clearAllTimers();
+  setClaimState(targetState: 'pending' | 'began' | 'ended'): void {
+    if (targetState === 'ended') {
+      this.clearTimer();
     }
     this.currentState = targetState;
-  }
-
-  protected get config(): ViewConfiguration {
-    return this.arena?.config ?? DEFAULT_VIEW_CONFIGURATION;
   }
 
   protected onReset(): void {}
@@ -204,19 +188,19 @@ export abstract class GestureRecognizer {
   protected onFail(): void {}
 
   protected tryBegin(onBegan: () => void): boolean {
-    if (this.currentState !== RecognizerState.POSSIBLE || !this.arena) {
+    if (this.currentState !== 'possible' || !this.arena) {
       return false;
     }
-    return this.arena.requestClaim(this, RecognizerState.BEGAN, onBegan);
+    return this.arena.requestClaim(this, 'began', onBegan);
   }
 
   protected emitChange(onChange: () => void): void {
     if (!this.active) {
       return;
     }
-    if (this.currentState === RecognizerState.BEGAN) {
-      this.currentState = RecognizerState.CHANGED;
-      this.arena?.notifyStateChanged(this, RecognizerState.CHANGED);
+    if (this.currentState === 'began') {
+      this.currentState = 'changed';
+      this.arena?.notifyStateChanged(this, 'changed');
     }
     onChange();
   }
@@ -225,17 +209,17 @@ export abstract class GestureRecognizer {
     if (!this.active) {
       return;
     }
-    this.clearAllTimers();
-    this.currentState = RecognizerState.ENDED;
+    this.clearTimer();
+    this.currentState = 'ended';
     onEnded?.();
-    this.arena?.notifyStateChanged(this, RecognizerState.ENDED);
+    this.arena?.notifyStateChanged(this, 'ended');
   }
 
   protected tryRecognizeDiscrete(onRecognized: () => void): boolean {
-    if (this.currentState !== RecognizerState.POSSIBLE || !this.arena) {
+    if (this.currentState !== 'possible' || !this.arena) {
       return false;
     }
-    return this.arena.requestClaim(this, RecognizerState.ENDED, onRecognized);
+    return this.arena.requestClaim(this, 'ended', onRecognized);
   }
 
   protected fail(): void {
@@ -244,43 +228,34 @@ export abstract class GestureRecognizer {
 
   protected cancel(yieldedForMultiTouch = false): void {
     if (
-      this.currentState === RecognizerState.CANCELLED ||
-      this.currentState === RecognizerState.ENDED ||
-      this.currentState === RecognizerState.FAILED
+      this.currentState === 'cancelled' ||
+      this.currentState === 'ended' ||
+      this.currentState === 'failed'
     ) {
       return;
     }
     const wasActive = this.active;
-    this.clearAllTimers();
-    this.currentState = RecognizerState.CANCELLED;
+    this.clearTimer();
+    this.currentState = 'cancelled';
     if (wasActive) {
       this.onCancel();
     }
-    this.arena?.notifyStateChanged(this, RecognizerState.CANCELLED, yieldedForMultiTouch);
+    this.arena?.notifyStateChanged(this, 'cancelled', yieldedForMultiTouch);
   }
 
-  protected setTimer(key: string, delayMs: number, callback: () => void): void {
-    this.clearTimer(key);
-    const id = setTimeout(() => {
-      this.timers.delete(key);
+  protected setTimer(delayMs: number, callback: () => void): void {
+    this.clearTimer();
+    this.timerId = setTimeout(() => {
+      this.timerId = null;
       callback();
     }, delayMs);
-    this.timers.set(key, id);
   }
 
-  protected clearTimer(key: string): void {
-    const existing = this.timers.get(key);
-    if (existing !== undefined) {
-      clearTimeout(existing);
-      this.timers.delete(key);
+  protected clearTimer(): void {
+    if (this.timerId !== null) {
+      clearTimeout(this.timerId);
+      this.timerId = null;
     }
-  }
-
-  protected clearAllTimers(): void {
-    for (const id of this.timers.values()) {
-      clearTimeout(id);
-    }
-    this.timers.clear();
   }
 
   protected createEventData(event: MotionEvent, centerOverride?: Point): GestureEventData {
@@ -293,16 +268,16 @@ export abstract class GestureRecognizer {
 
   private failInternal(byArena: boolean): void {
     if (
-      this.currentState === RecognizerState.FAILED ||
-      this.currentState === RecognizerState.ENDED ||
-      this.currentState === RecognizerState.CANCELLED
+      this.currentState === 'failed' ||
+      this.currentState === 'ended' ||
+      this.currentState === 'cancelled'
     ) {
       return;
     }
     this.deniedByArena = byArena;
-    this.clearAllTimers();
-    this.currentState = RecognizerState.FAILED;
+    this.clearTimer();
+    this.currentState = 'failed';
     this.onFail();
-    this.arena?.notifyStateChanged(this, RecognizerState.FAILED);
+    this.arena?.notifyStateChanged(this, 'failed');
   }
 }

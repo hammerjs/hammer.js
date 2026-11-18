@@ -3,22 +3,7 @@ export interface Point {
   readonly y: number;
 }
 
-export const MotionAction = {
-  /** First pointer touched the surface; starts a new gesture stream. */
-  DOWN: 'down',
-  /** An additional pointer touched the surface while at least one is already active. */
-  POINTER_DOWN: 'pointer_down',
-  /** Active pointer `actionIndex` moved. */
-  MOVE: 'move',
-  /** A non-final pointer lifted; at least one pointer remains active. */
-  POINTER_UP: 'pointer_up',
-  /** The final active pointer lifted; concludes the gesture stream. */
-  UP: 'up',
-  /** The gesture stream was aborted by the browser/OS or pointer capture loss. */
-  CANCEL: 'cancel',
-} as const;
-
-export type MotionActionType = (typeof MotionAction)[keyof typeof MotionAction];
+export type MotionAction = 'down' | 'pointer_down' | 'move' | 'pointer_up' | 'up' | 'cancel';
 
 export interface PointerSample {
   readonly pointerId: number;
@@ -28,7 +13,7 @@ export interface PointerSample {
 
 /**
  * Coalesced intermediate hardware sample for the moving pointer (`actionIndex`)
- * during a `MotionAction.MOVE` event.
+ * during a `'move'` event.
  */
 export interface HistoricalSample {
   readonly eventTime: number;
@@ -40,8 +25,12 @@ const EMPTY_HISTORY: readonly HistoricalSample[] = [];
 const EMPTY_POINTERS: readonly PointerSample[] = [];
 export const ZERO_POINT: Point = {x: 0, y: 0};
 
+export function distance(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 export interface MotionEventInit {
-  readonly action: MotionActionType;
+  readonly action: MotionAction;
   readonly eventTime: number;
   readonly actionIndex: number;
   readonly pointerType: string;
@@ -58,7 +47,7 @@ export interface MotionEventInit {
  * continuity across pointer lifts, and multi-pointer span metrics.
  */
 export class MotionEvent {
-  readonly action: MotionActionType;
+  readonly action: MotionAction;
   readonly eventTime: number;
   readonly actionIndex: number;
   readonly pointerType: string;
@@ -87,10 +76,10 @@ export class MotionEvent {
 
   /** Number of pointers remaining on screen after this event. */
   get activePointerCount(): number {
-    if (this.action === MotionAction.UP || this.action === MotionAction.CANCEL) {
+    if (this.action === 'up' || this.action === 'cancel') {
       return 0;
     }
-    if (this.action === MotionAction.POINTER_UP) {
+    if (this.action === 'pointer_up') {
       return Math.max(0, this.pointers.length - 1);
     }
     return this.pointers.length;
@@ -113,43 +102,37 @@ export class MotionEvent {
     return (this.cachedSpan ??= this.computeSpan());
   }
 
-  /** Active pointers remaining on the surface (excluding `actionIndex` during `POINTER_UP`). */
+  /** Active pointers remaining on the surface (excluding `actionIndex` during `'pointer_up'`). */
   getActivePointers(): readonly PointerSample[] {
-    if (this.action === MotionAction.UP || this.action === MotionAction.CANCEL) {
+    if (this.action === 'up' || this.action === 'cancel') {
       return EMPTY_POINTERS;
     }
-    if (this.action === MotionAction.POINTER_UP) {
-      if (this.cachedActivePointers === null) {
-        this.cachedActivePointers = this.pointers.filter((_, idx) => idx !== this.actionIndex);
-      }
-      return this.cachedActivePointers;
+    if (this.action === 'pointer_up') {
+      return (this.cachedActivePointers ??= this.pointers.filter(
+        (_, idx) => idx !== this.actionIndex
+      ));
     }
     return this.pointers;
   }
 
   private computeFocus(): Point {
-    const n = this.pointers.length;
-    if (n === 0) {
+    const pts =
+      this.action === 'pointer_up' && this.pointers.length > 1
+        ? this.getActivePointers()
+        : this.pointers;
+    if (pts.length === 0) {
       return ZERO_POINT;
     }
-    if (n === 1) {
-      return {x: this.pointers[0].x, y: this.pointers[0].y};
+    if (pts.length === 1) {
+      return {x: pts[0].x, y: pts[0].y};
     }
-
-    // Exclude lifting pointer during `POINTER_UP` so remaining pointers become the new focus cleanly.
-    const skip = this.action === MotionAction.POINTER_UP ? this.pointers[this.actionIndex] : null;
     let sumX = 0;
     let sumY = 0;
-    let count = 0;
-
-    for (const p of this.pointers) {
-      if (p === skip) continue;
+    for (const p of pts) {
       sumX += p.x;
       sumY += p.y;
-      count++;
     }
-
-    return {x: sumX / count, y: sumY / count};
+    return {x: sumX / pts.length, y: sumY / pts.length};
   }
 
   private computeSpan(): number {
@@ -157,24 +140,14 @@ export class MotionEvent {
     if (active.length < 2) {
       return 0;
     }
-
     let devSumX = 0;
     let devSumY = 0;
     for (const p of active) {
       devSumX += Math.abs(p.x - this.focus.x);
       devSumY += Math.abs(p.y - this.focus.y);
     }
-
     return Math.hypot((devSumX / active.length) * 2, (devSumY / active.length) * 2);
   }
-}
-
-function toPointerSample(e: PointerEvent): PointerSample {
-  return {
-    pointerId: e.pointerId,
-    x: e.clientX,
-    y: e.clientY,
-  };
 }
 
 /**
@@ -231,7 +204,7 @@ export class MotionEventStream {
         this.pointers.has(e.pointerId) ||
         (this.streamPointerType !== null && this.streamPointerType !== pointerType))
     ) {
-      this.clearStreamState();
+      this.reset();
     }
 
     const wasEmpty = this.pointers.size === 0;
@@ -243,7 +216,7 @@ export class MotionEventStream {
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     return new MotionEvent({
-      action: wasEmpty ? MotionAction.DOWN : MotionAction.POINTER_DOWN,
+      action: wasEmpty ? 'down' : 'pointer_down',
       eventTime: e.timeStamp,
       actionIndex,
       pointerType,
@@ -288,10 +261,10 @@ export class MotionEventStream {
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     return new MotionEvent({
-      action: MotionAction.MOVE,
+      action: 'move',
       eventTime,
       actionIndex,
-      pointerType: e.pointerType || 'touch',
+      pointerType: e.pointerType || this.streamPointerType || 'touch',
       pointers: snapshot,
       history,
       originalEvent: e,
@@ -303,19 +276,20 @@ export class MotionEventStream {
       return null;
     }
 
+    const pointerType = e.pointerType || this.streamPointerType || 'touch';
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
 
     this.pointers.delete(e.pointerId);
-    if (this.pointers.size === 0) {
-      this.streamPointerType = null;
-      this.mouseButtonsTracked = false;
+    const isFinalUp = this.pointers.size === 0;
+    if (isFinalUp) {
+      this.reset();
     }
 
     return new MotionEvent({
-      action: this.pointers.size === 0 ? MotionAction.UP : MotionAction.POINTER_UP,
+      action: isFinalUp ? 'up' : 'pointer_up',
       eventTime: e.timeStamp,
       actionIndex,
-      pointerType: e.pointerType || 'touch',
+      pointerType,
       pointers: snapshot,
       originalEvent: e,
     });
@@ -326,14 +300,15 @@ export class MotionEventStream {
       return null;
     }
 
+    const pointerType = e.pointerType || this.streamPointerType || 'touch';
     const {snapshot, actionIndex} = this.recordAndSnapshot(e);
-    this.clearStreamState();
+    this.reset();
 
     return new MotionEvent({
-      action: MotionAction.CANCEL,
+      action: 'cancel',
       eventTime: e.timeStamp,
       actionIndex,
-      pointerType: e.pointerType || 'touch',
+      pointerType,
       pointers: snapshot,
       originalEvent: e,
     });
@@ -348,10 +323,10 @@ export class MotionEventStream {
     const pointerType = this.streamPointerType ?? 'touch';
     const eventTime = triggerEvent.timeStamp > 0 ? triggerEvent.timeStamp : performance.now();
 
-    this.clearStreamState();
+    this.reset();
 
     return new MotionEvent({
-      action: MotionAction.CANCEL,
+      action: 'cancel',
       eventTime,
       actionIndex: 0,
       pointerType,
@@ -361,10 +336,6 @@ export class MotionEventStream {
   }
 
   reset(): void {
-    this.clearStreamState();
-  }
-
-  private clearStreamState(): void {
     this.pointers.clear();
     this.streamPointerType = null;
     this.mouseButtonsTracked = false;
@@ -374,7 +345,7 @@ export class MotionEventStream {
     snapshot: readonly PointerSample[];
     actionIndex: number;
   } {
-    const sample = toPointerSample(e);
+    const sample: PointerSample = {pointerId: e.pointerId, x: e.clientX, y: e.clientY};
     this.pointers.set(e.pointerId, sample);
     if (this.pointers.size === 1) {
       return {snapshot: [sample], actionIndex: 0};

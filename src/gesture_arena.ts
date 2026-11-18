@@ -1,14 +1,9 @@
-import {MotionAction, type MotionEvent} from './motion_event.js';
-import {
-  type GestureRecognizer,
-  RecognizerState,
-  type RecognizerStateType,
-} from './gesture_recognizer.js';
+import type {MotionEvent} from './motion_event.js';
+import type {GestureRecognizer, RecognizerState} from './gesture_recognizer.js';
 import {mergeTouchActions, type TouchActionValue} from './touch_behavior.js';
-import {resolveViewConfiguration, type ViewConfiguration} from './view_configuration.js';
 
 interface PendingClaim {
-  readonly targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED;
+  readonly targetState: 'began' | 'ended';
   readonly onGranted: () => void;
 }
 
@@ -18,9 +13,9 @@ export interface GestureArenaOptions {
 
 function isDispatchEligible(recognizer: GestureRecognizer): boolean {
   return (
-    recognizer.state === RecognizerState.POSSIBLE ||
-    recognizer.state === RecognizerState.BEGAN ||
-    recognizer.state === RecognizerState.CHANGED
+    recognizer.state === 'possible' ||
+    recognizer.state === 'began' ||
+    recognizer.state === 'changed'
   );
 }
 
@@ -30,8 +25,6 @@ function isDispatchEligible(recognizer: GestureRecognizer): boolean {
  * - Resolves `.requireFailureOf(...)` dependencies with registration-order-independent batching.
  */
 export class GestureArena {
-  private currentConfig: ViewConfiguration;
-
   private readonly onActiveGestureStart?: () => void;
   private recognizers: readonly GestureRecognizer[] = [];
   private readonly winners = new Set<GestureRecognizer>();
@@ -39,23 +32,13 @@ export class GestureArena {
 
   private dispatchDepth = 0;
   private evaluatingPending = false;
-  private nextDispatchToken = 0;
   private multiTouchAccepted = false;
   private totalWinnersInStream = 0;
   private yieldedWinnersInStream = 0;
   private suppressingWinnerInStream = false;
 
-  constructor(configOverrides?: Partial<ViewConfiguration>, options: GestureArenaOptions = {}) {
-    this.currentConfig = resolveViewConfiguration(configOverrides);
+  constructor(options: GestureArenaOptions = {}) {
     this.onActiveGestureStart = options.onActiveGestureStart;
-  }
-
-  get config(): ViewConfiguration {
-    return this.currentConfig;
-  }
-
-  setConfig(configOverrides?: Partial<ViewConfiguration>): void {
-    this.currentConfig = resolveViewConfiguration(configOverrides);
   }
 
   get hasActiveGesture(): boolean {
@@ -80,7 +63,7 @@ export class GestureArena {
       return true;
     }
     for (const r of this.recognizers) {
-      if (r.state === RecognizerState.POSSIBLE && r.isPrioritized) {
+      if (r.state === 'possible' && r.isPrioritized) {
         return true;
       }
     }
@@ -114,6 +97,27 @@ export class GestureArena {
     }
   }
 
+  setRecognizers(recognizers: readonly GestureRecognizer[]): void {
+    const previous = this.recognizers;
+    this.recognizers = [];
+    this.clearStreamTracking(true);
+    for (const r of previous) {
+      if (r.active) {
+        r.denyByArena();
+      }
+      r.attach(null);
+    }
+    const next: GestureRecognizer[] = [];
+    for (const r of recognizers) {
+      if (!next.includes(r)) {
+        next.push(r);
+        r.attach(this);
+      }
+    }
+    this.recognizers = next;
+    this.refreshCapabilities();
+  }
+
   getRecognizers(): readonly GestureRecognizer[] {
     return this.recognizers;
   }
@@ -123,8 +127,10 @@ export class GestureArena {
     try {
       const recognizers = this.recognizers;
 
-      if (event.action === MotionAction.DOWN) {
-        // If a prior stream was orphaned without `UP`/`CANCEL`, cancel active winners cleanly first.
+      if (event.action === 'down') {
+        // If a prior stream was orphaned without `'up'`/`'cancel'`, cancel active winners and
+        // stale continuous `'began'` claims cleanly first.
+        this.prunePendingBeganClaims(0);
         for (const r of recognizers) {
           if (r.isAttachedTo(this) && r.active) {
             r.denyByArena();
@@ -147,11 +153,10 @@ export class GestureArena {
         }
       }
 
-      if (event.action === MotionAction.POINTER_DOWN) {
-        const token = ++this.nextDispatchToken;
+      if (event.action === 'pointer_down') {
+        this.prunePendingBeganClaims(event.activePointerCount);
         for (const r of recognizers) {
           if (r.isAttachedTo(this) && r.active) {
-            r.lastDispatchToken = token;
             r.onMotionEvent(event);
           }
         }
@@ -164,7 +169,7 @@ export class GestureArena {
           for (const r of recognizers) {
             if (
               r.isAttachedTo(this) &&
-              r.state === RecognizerState.FAILED &&
+              r.state === 'failed' &&
               r.deniedByArena &&
               r.canRearmOnPointerDown(event) &&
               this.hasCompatibleWinners(r)
@@ -175,29 +180,29 @@ export class GestureArena {
         }
 
         for (const r of recognizers) {
-          if (r.isAttachedTo(this) && r.lastDispatchToken !== token && isDispatchEligible(r)) {
-            r.lastDispatchToken = token;
+          if (r.isAttachedTo(this) && r.state === 'possible') {
             r.onMotionEvent(event);
           }
         }
         return;
       }
 
-      const token = ++this.nextDispatchToken;
+      if (event.action === 'pointer_up' || event.action === 'up') {
+        this.prunePendingBeganClaims(event.activePointerCount);
+      }
+
       for (const r of recognizers) {
         if (r.isAttachedTo(this) && isDispatchEligible(r) && r.isPrioritized) {
-          r.lastDispatchToken = token;
           r.onMotionEvent(event);
         }
       }
       for (const r of recognizers) {
-        if (r.isAttachedTo(this) && r.lastDispatchToken !== token && isDispatchEligible(r)) {
-          r.lastDispatchToken = token;
+        if (r.isAttachedTo(this) && isDispatchEligible(r) && !r.isPrioritized) {
           r.onMotionEvent(event);
         }
       }
 
-      if (event.action === MotionAction.CANCEL) {
+      if (event.action === 'cancel') {
         for (const r of recognizers) {
           if (r.isAttachedTo(this)) {
             r.denyByArena();
@@ -218,7 +223,7 @@ export class GestureArena {
   /** @internal */
   requestClaim(
     recognizer: GestureRecognizer,
-    targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
+    targetState: 'began' | 'ended',
     onGranted: () => void
   ): boolean {
     if (!this.hasCompatibleWinners(recognizer)) {
@@ -234,7 +239,7 @@ export class GestureArena {
 
     if (dependencyStatus === 'waiting') {
       this.pendingClaims.set(recognizer, {targetState, onGranted});
-      recognizer.markPending();
+      recognizer.setClaimState('pending');
       return false;
     }
 
@@ -244,12 +249,12 @@ export class GestureArena {
   /** @internal */
   notifyStateChanged(
     recognizer: GestureRecognizer,
-    nextState: RecognizerStateType,
+    nextState: RecognizerState,
     yieldedForMultiTouch = false
   ): void {
-    if (nextState === RecognizerState.FAILED || nextState === RecognizerState.CANCELLED) {
+    if (nextState === 'failed' || nextState === 'cancelled') {
       const wasWinner = this.winners.delete(recognizer);
-      if (wasWinner && nextState === RecognizerState.CANCELLED && yieldedForMultiTouch) {
+      if (wasWinner && nextState === 'cancelled' && yieldedForMultiTouch) {
         this.yieldedWinnersInStream++;
       }
       this.pendingClaims.delete(recognizer);
@@ -274,6 +279,15 @@ export class GestureArena {
     this.multiTouchAccepted = false;
     for (const r of recognizers) {
       r.attach(null);
+    }
+  }
+
+  private prunePendingBeganClaims(activePointerCount: number): void {
+    for (const [recognizer, claim] of this.pendingClaims) {
+      if (claim.targetState === 'began' && !recognizer.canSustainPendingBegan(activePointerCount)) {
+        this.pendingClaims.delete(recognizer);
+        recognizer.denyByArena();
+      }
     }
   }
 
@@ -311,14 +325,10 @@ export class GestureArena {
       if (!dep.isAttachedTo(this)) {
         continue;
       }
-      if (
-        dep.state === RecognizerState.BEGAN ||
-        dep.state === RecognizerState.CHANGED ||
-        dep.state === RecognizerState.ENDED
-      ) {
+      if (dep.state === 'began' || dep.state === 'changed' || dep.state === 'ended') {
         return 'defeated';
       }
-      if (dep.state === RecognizerState.POSSIBLE || dep.state === RecognizerState.PENDING) {
+      if (dep.state === 'possible' || dep.state === 'pending') {
         return 'waiting';
       }
     }
@@ -328,7 +338,7 @@ export class GestureArena {
   /** Returns `false` if a re-entrant callback detached `winner` while defeating its competitors. */
   private grantClaim(
     winner: GestureRecognizer,
-    targetState: typeof RecognizerState.BEGAN | typeof RecognizerState.ENDED,
+    targetState: 'began' | 'ended',
     onGranted: () => void
   ): boolean {
     this.pendingClaims.delete(winner);
@@ -352,7 +362,7 @@ export class GestureArena {
       return false;
     }
 
-    if (targetState === RecognizerState.BEGAN) {
+    if (targetState === 'began') {
       this.onActiveGestureStart?.();
     }
 

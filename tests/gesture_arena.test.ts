@@ -1,7 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../src/gesture_arena';
-import {GestureRecognizer, RecognizerState} from '../src/gesture_recognizer';
-import {MotionAction, type MotionEvent, MotionEventStream} from '../src/motion_event';
+import {GestureRecognizer} from '../src/gesture_recognizer';
+import {type MotionEvent, MotionEventStream} from '../src/motion_event';
 import {LongPressRecognizer} from '../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../src/recognizers/pan_recognizer';
 import {QuickScaleRecognizer} from '../src/recognizers/quick_scale_recognizer';
@@ -371,24 +371,24 @@ describe('GestureArena conflict resolution', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 30})
       )!
     );
-    expect(pendingA.state).toBe(RecognizerState.PENDING);
-    expect(pendingB.state).toBe(RecognizerState.PENDING);
+    expect(pendingA.state).toBe('pending');
+    expect(pendingB.state).toBe('pending');
 
     arena.remove(unattachedDep);
     arena.remove(blocker);
     expect(onFirstPending).toHaveBeenCalledTimes(1);
     expect(onSecondPending).not.toHaveBeenCalled();
-    expect(pendingB.state).toBe(RecognizerState.FAILED);
+    expect(pendingB.state).toBe('failed');
 
     arena.reset();
-    expect(pendingA.state).toBe(RecognizerState.POSSIBLE);
+    expect(pendingA.state).toBe('possible');
   });
 
   it('defeats late claims when a required-failure dependency or incompatible winner has already won', () => {
     class LateClaimRecognizer extends GestureRecognizer {
       granted = false;
       onMotionEvent(event: MotionEvent): void {
-        if (event.action === MotionAction.UP) {
+        if (event.action === 'up') {
           this.tryRecognizeDiscrete(() => {
             this.granted = true;
           });
@@ -425,9 +425,9 @@ describe('GestureArena conflict resolution', () => {
       )!
     );
     expect(incompatibleDynamic.granted).toBe(false);
-    expect(incompatibleDynamic.state).toBe(RecognizerState.FAILED);
+    expect(incompatibleDynamic.state).toBe('failed');
     expect(defeatedDepDynamic.granted).toBe(false);
-    expect(defeatedDepDynamic.state).toBe(RecognizerState.FAILED);
+    expect(defeatedDepDynamic.state).toBe('failed');
   });
 
   describe('arena invariants with dynamic compatibility and re-entrant callbacks', () => {
@@ -484,13 +484,13 @@ describe('GestureArena conflict resolution', () => {
 
       expect(winner.begin()).toBe(true);
       expect(pending.recognize()).toBe(false);
-      expect(pending.state).toBe(RecognizerState.PENDING);
+      expect(pending.state).toBe('pending');
 
       winner.compatibleWithAll = false;
       dep.failNow();
 
       expect(pending.granted).toBe(false);
-      expect(pending.state).toBe(RecognizerState.FAILED);
+      expect(pending.state).toBe('failed');
     });
 
     it('does not grant a winner that a defeated competitor detaches from its cancel callback', () => {
@@ -525,13 +525,13 @@ describe('GestureArena conflict resolution', () => {
 
       expect(a.recognize()).toBe(false);
       expect(b.recognize()).toBe(false);
-      expect(a.state).toBe(RecognizerState.PENDING);
-      expect(b.state).toBe(RecognizerState.PENDING);
+      expect(a.state).toBe('pending');
+      expect(b.state).toBe('pending');
 
       c.failNow();
       expect(b.granted).toBe(true);
       expect(a.granted).toBe(false);
-      expect(a.state).toBe(RecognizerState.FAILED);
+      expect(a.state).toBe('failed');
     });
   });
 
@@ -741,7 +741,119 @@ describe('GestureArena conflict resolution', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 30})
       )!
     );
-    expect(competitorStateInCallback).toBe(RecognizerState.FAILED);
+    expect(competitorStateInCallback).toBe('failed');
     expect(peerTapSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('never phantom-starts pending continuous claims after liftoff or incompatible pointer-count shifts', () => {
+    const onPanStart = vi.fn();
+    const onPan = vi.fn();
+    const onPanEnd = vi.fn();
+    const onScaleStart = vi.fn();
+
+    const longPress = new LongPressRecognizer({onLongPress: vi.fn()}, {slop: 25, duration: 500});
+    const pan = new PanRecognizer({onPanStart, onPan, onPanEnd}, {slop: 5}).requireFailureOf(
+      longPress
+    );
+    const twoFingerTap = new TapRecognizer({onTap: vi.fn()}, {numPointers: 2, slop: 8});
+    const scale = new ScaleRecognizer({onScaleStart}, {spanSlop: 5, minSpan: 10}).requireFailureOf(
+      twoFingerTap
+    );
+
+    arena.add(longPress);
+    arena.add(pan);
+    arena.add(twoFingerTap);
+    arena.add(scale);
+
+    // 1. Move past pan.slop (12 > 5) while longPress (< 25) keeps pan in `'pending'`, then lift:
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
+    );
+    arena.dispatch(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 1, clientX: 12, timeStamp: 16}))!
+    );
+    expect(pan.state).toBe('pending');
+
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 12, timeStamp: 32}))!
+    );
+    expect(pan.state).toBe('failed');
+    expect(pan.active).toBe(false);
+    expect(onPanStart).not.toHaveBeenCalled();
+
+    // 2. Move past pan.slop -> `'pending'`, then a 2nd finger lands -> 1-finger pan is denied:
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 100}))!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 12, timeStamp: 116})
+      )!
+    );
+    expect(pan.state).toBe('pending');
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 50, timeStamp: 124})
+      )!
+    );
+    expect(pan.state).toBe('failed');
+    expect(onPanStart).not.toHaveBeenCalled();
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 2, clientX: 50, timeStamp: 130}))!
+    );
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 12, timeStamp: 135}))!
+    );
+
+    // 3. 2-finger scale enters `'pending'` (within twoFingerTap slop), then 2nd finger lifts past slop:
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 200}))!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 20, timeStamp: 202})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 27, timeStamp: 216})
+      )!
+    );
+    expect(scale.state).toBe('pending');
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 2, clientX: 60, timeStamp: 230}))!
+    );
+    expect(scale.state).toBe('failed');
+    expect(onScaleStart).not.toHaveBeenCalled();
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 0, timeStamp: 240}))!
+    );
+
+    // 4. When dependency fails while pointer remains down, pending pan starts and finishes cleanly:
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 300}))!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 12, timeStamp: 316})
+      )!
+    );
+    expect(pan.state).toBe('pending');
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 30, timeStamp: 332})
+      )!
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 40, timeStamp: 348})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 40, timeStamp: 364}))!
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onPanEnd).toHaveBeenCalledTimes(1);
   });
 });

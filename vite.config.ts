@@ -34,11 +34,15 @@ export default defineConfig({
   plugins: [playgroundDevPlugin()],
   build: {
     sourcemap: true,
-    minify: false,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: () => 'hammer.es.js',
+    },
+    rolldownOptions: {
+      output: {
+        minify: true,
+      },
     },
   },
   test: {

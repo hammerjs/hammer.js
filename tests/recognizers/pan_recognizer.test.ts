@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../../src/motion_event';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
 
@@ -254,7 +254,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     const singleFingerPan = new PanRecognizer({}, {numPointers: 1});
     singleFingerPan.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.DOWN,
+        action: 'down',
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',
@@ -599,5 +599,27 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     );
     expect(onSwipe).toHaveBeenCalledTimes(1);
     expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'left'}));
+
+    // Negative `slop` is clamped to `0` so a 0-delta move never produces `NaN`:
+    const deltas: number[] = [];
+    const zeroSlopArena = new GestureArena();
+    zeroSlopArena.add(new PanRecognizer({onPan: ev => deltas.push(ev.deltaX)}, {slop: -5}));
+    zeroSlopArena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 10, timeStamp: 300})
+      )!
+    );
+    zeroSlopArena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 10, timeStamp: 310})
+      )!
+    );
+    zeroSlopArena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 15, timeStamp: 320})
+      )!
+    );
+    expect(deltas).toEqual([5]);
+    zeroSlopArena.destroy();
   });
 });

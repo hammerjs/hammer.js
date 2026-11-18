@@ -20,52 +20,32 @@ const ALLOW_PINCH_ZOOM = 1 << 2;
 const ALLOW_DOUBLE_TAP_ZOOM = 1 << 3;
 const ALLOW_ALL = ALLOW_PAN_X | ALLOW_PAN_Y | ALLOW_PINCH_ZOOM | ALLOW_DOUBLE_TAP_ZOOM;
 
-function touchActionToMask(action: TouchActionValue): number {
-  switch (action) {
-    case 'auto':
-      return ALLOW_ALL;
-    case 'manipulation':
-      return ALLOW_PAN_X | ALLOW_PAN_Y | ALLOW_PINCH_ZOOM;
-    case 'pan-x pan-y':
-      return ALLOW_PAN_X | ALLOW_PAN_Y;
-    case 'pan-x pinch-zoom':
-      return ALLOW_PAN_X | ALLOW_PINCH_ZOOM;
-    case 'pan-y pinch-zoom':
-      return ALLOW_PAN_Y | ALLOW_PINCH_ZOOM;
-    case 'pan-x':
-      return ALLOW_PAN_X;
-    case 'pan-y':
-      return ALLOW_PAN_Y;
-    case 'pinch-zoom':
-      return ALLOW_PINCH_ZOOM;
-    case 'none':
-      return 0;
-  }
-}
+const TOUCH_ACTION_MASKS: Record<TouchActionValue, number> = {
+  none: 0,
+  'pan-x': ALLOW_PAN_X,
+  'pan-y': ALLOW_PAN_Y,
+  'pan-x pan-y': ALLOW_PAN_X | ALLOW_PAN_Y,
+  'pinch-zoom': ALLOW_PINCH_ZOOM,
+  'pan-x pinch-zoom': ALLOW_PAN_X | ALLOW_PINCH_ZOOM,
+  'pan-y pinch-zoom': ALLOW_PAN_Y | ALLOW_PINCH_ZOOM,
+  manipulation: ALLOW_PAN_X | ALLOW_PAN_Y | ALLOW_PINCH_ZOOM,
+  auto: ALLOW_ALL,
+};
 
-function maskToTouchAction(mask: number): TouchActionValue {
-  if ((mask & ALLOW_ALL) === ALLOW_ALL) {
-    return 'auto';
-  }
-  const x = (mask & ALLOW_PAN_X) !== 0;
-  const y = (mask & ALLOW_PAN_Y) !== 0;
-  const z = (mask & ALLOW_PINCH_ZOOM) !== 0;
-
-  if (x && y) {
-    return z ? 'manipulation' : 'pan-x pan-y';
-  }
-  if (x) {
-    return z ? 'pan-x pinch-zoom' : 'pan-x';
-  }
-  if (y) {
-    return z ? 'pan-y pinch-zoom' : 'pan-y';
-  }
-  return z ? 'pinch-zoom' : 'none';
-}
+const MASK_TO_TOUCH_ACTION: readonly TouchActionValue[] = [
+  'none',
+  'pan-x',
+  'pan-y',
+  'pan-x pan-y',
+  'pinch-zoom',
+  'pan-x pinch-zoom',
+  'pan-y pinch-zoom',
+  'manipulation',
+];
 
 /** Returns `true` when `action` permits native 2-finger browser pinch-zoom. */
 export function allowsPinchZoom(action: TouchActionValue): boolean {
-  return (touchActionToMask(action) & ALLOW_PINCH_ZOOM) !== 0;
+  return (TOUCH_ACTION_MASKS[action] & ALLOW_PINCH_ZOOM) !== 0;
 }
 
 /**
@@ -96,9 +76,10 @@ export function resolveSupportedTouchAction(value: TouchActionValue): TouchActio
 export function mergeTouchActions(actions: readonly TouchActionValue[]): TouchActionValue {
   let mask = ALLOW_ALL;
   for (const action of actions) {
-    mask &= touchActionToMask(action);
+    mask &= TOUCH_ACTION_MASKS[action];
   }
-  return resolveSupportedTouchAction(maskToTouchAction(mask));
+  const merged = mask === ALLOW_ALL ? 'auto' : MASK_TO_TOUCH_ACTION[mask & 7];
+  return resolveSupportedTouchAction(merged);
 }
 
 type WebkitStyle = CSSStyleDeclaration & {
@@ -113,16 +94,20 @@ type WebkitStyle = CSSStyleDeclaration & {
  */
 export function applySurfaceBehavior(
   element: GestureTarget,
-  touchAction: TouchActionValue,
+  touchAction: TouchActionValue | null,
   preventSelectionAndDrag: boolean
 ): () => void {
   const style = element.style as WebkitStyle;
   const prevTouchAction = style.touchAction ?? '';
-  style.touchAction = resolveSupportedTouchAction(touchAction);
+  if (touchAction !== null) {
+    style.touchAction = resolveSupportedTouchAction(touchAction);
+  }
 
   if (!preventSelectionAndDrag) {
     return () => {
-      style.touchAction = prevTouchAction;
+      if (touchAction !== null) {
+        style.touchAction = prevTouchAction;
+      }
     };
   }
 
@@ -144,6 +129,8 @@ export function applySurfaceBehavior(
     style.webkitTouchCallout = prevTouchCallout;
     style.userSelect = prevUserSelect;
     style.webkitUserSelect = prevWebkitUserSelect;
-    style.touchAction = prevTouchAction;
+    if (touchAction !== null) {
+      style.touchAction = prevTouchAction;
+    }
   };
 }

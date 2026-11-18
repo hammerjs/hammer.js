@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../../src/motion_event';
 import {TapRecognizer} from '../../src/recognizers/tap_recognizer';
 import {pointerEvent} from '../test_helpers';
 
@@ -19,7 +19,7 @@ describe('TapRecognizer', () => {
     vi.useRealTimers();
   });
 
-  it('detects a valid single tap and emits center + tapCount', () => {
+  it('detects a valid single tap and emits center', () => {
     const onTap = vi.fn();
     arena.add(new TapRecognizer({onTap}));
 
@@ -42,7 +42,6 @@ describe('TapRecognizer', () => {
     expect(onTap).toHaveBeenCalledWith(
       expect.objectContaining({
         center: {x: 42, y: 62},
-        tapCount: 1,
       })
     );
   });
@@ -99,18 +98,20 @@ describe('TapRecognizer', () => {
     const onSingleTapConfirmed = vi.fn();
     const onDoubleTap = vi.fn();
 
-    const arenaWithTimeouts = new GestureArena({
-      maxTapDuration: 300,
-      doubleTapTimeout: 300,
-    });
+    const arenaWithTimeouts = new GestureArena();
 
-    const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
-    const singleTapConfirmed = new TapRecognizer({
-      onTap: onSingleTapConfirmed,
-    }).requireFailureOf(doubleTap);
-    const singleTapUp = new TapRecognizer({
-      onTap: onSingleTapUp,
-    }).simultaneousWith(singleTapConfirmed, doubleTap);
+    const doubleTap = new TapRecognizer(
+      {onTap: onDoubleTap},
+      {taps: 2, maxTime: 300, multiTapInterval: 300}
+    );
+    const singleTapConfirmed = new TapRecognizer(
+      {onTap: onSingleTapConfirmed},
+      {maxTime: 300}
+    ).requireFailureOf(doubleTap);
+    const singleTapUp = new TapRecognizer({onTap: onSingleTapUp}, {maxTime: 300}).simultaneousWith(
+      singleTapConfirmed,
+      doubleTap
+    );
     singleTapConfirmed.simultaneousWith(singleTapUp);
     doubleTap.simultaneousWith(singleTapUp);
 
@@ -418,7 +419,7 @@ describe('TapRecognizer', () => {
 
     arena.dispatch(
       new MotionEvent({
-        action: MotionAction.DOWN,
+        action: 'down',
         eventTime: 1200,
         actionIndex: 0,
         pointerType: 'touch',

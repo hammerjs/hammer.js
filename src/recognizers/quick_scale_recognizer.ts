@@ -1,14 +1,19 @@
-import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {GestureRecognizer} from '../gesture_recognizer.js';
+import {distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {
+  DOUBLE_TAP_MIN_TIME_MS,
+  DOUBLE_TAP_SLOP,
+  DOUBLE_TAP_TIMEOUT_MS,
+  GestureRecognizer,
+  MAX_TAP_DURATION_MS,
+  TOUCH_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-import {DOUBLE_TAP_MIN_TIME_MS} from '../view_configuration.js';
 import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer.js';
 
-const MAX_TAP_TIMER = 'maxTap';
-const MULTI_TAP_TIMER = 'multiTap';
+const DEFAULT_QUICK_SCALE_SENSITIVITY = 200;
 
 export interface QuickScaleOptions {
-  /** Movement distance in `px` on the second press required before Quick-Scale begins. */
+  /** Movement distance in `px` required before Quick-Scale begins (and max tap wander on stroke #1). Default: `8`. */
   slop: number;
   /** Vertical drag distance in `px` that doubles (`2x`) or halves (`0.5x`) scale. Default: `200`. */
   sensitivity: number;
@@ -18,28 +23,34 @@ export interface QuickScaleOptions {
  * Single-pointer Anchored / Quick-Scale recognizer (double-tap and drag vertically
  * to zoom in/out around the tap anchor, matching Android's `ScaleGestureDetector`
  * Quick-Scale gesture).
+ *
+ * Phases:
+ * - `0`: Evaluating initial tap press (`down` -> `up`).
+ * - `1`: First tap completed, waiting within `DOUBLE_TAP_TIMEOUT_MS` for second `down`.
+ * - `2`: Armed on second press; vertical drag past `slop` scales around `anchor`.
  */
 export class QuickScaleRecognizer extends GestureRecognizer {
   private readonly callbacks: ScaleCallbacks;
-  private readonly userOptions: Partial<QuickScaleOptions>;
+  private readonly slop: number;
+  private readonly sensitivity: number;
 
+  private phase: 0 | 1 | 2 = 0;
   private tapDown: Point = ZERO_POINT;
-  private tapDownTime = 0;
+  private tapTime = 0;
+  private tapPointerType = '';
 
-  private firstTapDownFocus: Point | null = null;
-  private lastTapUpTime = 0;
-  private lastTapPointerType = '';
-
-  private quickScaleCandidate = false;
   private anchor: Point = ZERO_POINT;
   private startY = 0;
-  private prevScale = 1;
-  private cumulativeScale = 1;
+  private scale = 1;
 
   constructor(callbacks: ScaleCallbacks, options: Partial<QuickScaleOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.userOptions = options;
+    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.sensitivity =
+      options.sensitivity !== undefined && options.sensitivity > 0
+        ? options.sensitivity
+        : DEFAULT_QUICK_SCALE_SENSITIVITY;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -52,85 +63,70 @@ export class QuickScaleRecognizer extends GestureRecognizer {
    * Once armed on stroke #2 it follows normal mutual exclusion.
    */
   override canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
-    if (!this.quickScaleCandidate && !this.active) {
-      return true;
-    }
-    return super.canRecognizeSimultaneouslyWith(other);
+    return this.phase < 2 && !this.active ? true : super.canRecognizeSimultaneouslyWith(other);
   }
 
   /** @internal */
   override get isPrioritized(): boolean {
-    return this.quickScaleCandidate;
+    return this.phase === 2;
   }
 
-  private get slop(): number {
-    return this.userOptions.slop ?? this.config.touchSlop;
-  }
-
-  private get sensitivity(): number {
-    return this.userOptions.sensitivity ?? 200;
+  /** @internal */
+  override canSustainPendingBegan(activePointerCount: number): boolean {
+    return activePointerCount === 1;
   }
 
   /** @internal */
   override prepareForDown(event: MotionEvent): void {
-    if (!this.firstTapDownFocus) {
+    if (this.phase !== 1) {
       return;
     }
 
-    const dt = event.eventTime - this.lastTapUpTime;
+    const dt = event.eventTime - this.tapTime;
     const minDt = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
-    const pointerMismatch =
-      this.lastTapPointerType !== '' && event.pointerType !== this.lastTapPointerType;
-    const dist = Math.hypot(
-      event.focus.x - this.firstTapDownFocus.x,
-      event.focus.y - this.firstTapDownFocus.y
-    );
+    const pointerMismatch = this.tapPointerType !== '' && event.pointerType !== this.tapPointerType;
 
-    this.clearMultiTapSequence();
+    this.clearTimer();
     if (
       event.activePointerCount === 1 &&
       !pointerMismatch &&
       dt >= minDt &&
-      dt <= this.config.doubleTapTimeout &&
-      dist <= this.config.doubleTapSlop
+      dt <= DOUBLE_TAP_TIMEOUT_MS &&
+      distance(event.focus, this.tapDown) <= DOUBLE_TAP_SLOP
     ) {
-      this.quickScaleCandidate = true;
+      this.phase = 2;
       this.anchor = event.focus;
     } else {
+      this.phase = 0;
       this.fail();
     }
   }
 
   /** @internal */
   override shouldResetOnDown(event: MotionEvent): boolean {
-    if (this.quickScaleCandidate) {
-      return false;
-    }
-    return super.shouldResetOnDown(event);
+    return this.phase === 2 ? false : super.shouldResetOnDown(event);
   }
 
   onMotionEvent(event: MotionEvent): void {
     switch (event.action) {
-      case MotionAction.DOWN: {
+      case 'down': {
         if (event.activePointerCount > 1) {
           this.fail();
           return;
         }
-        this.prevScale = 1;
-        this.cumulativeScale = 1;
+        this.scale = 1;
 
-        if (!this.quickScaleCandidate) {
+        if (this.phase !== 2) {
           this.tapDown = event.focus;
-          this.tapDownTime = event.eventTime;
+          this.tapTime = event.eventTime;
           // A first stroke held longer than a tap can never arm Quick-Scale.
-          this.setTimer(MAX_TAP_TIMER, this.config.maxTapDuration, () => this.fail());
+          this.setTimer(MAX_TAP_DURATION_MS, () => this.fail());
         }
         break;
       }
 
-      case MotionAction.POINTER_DOWN: {
-        this.clearMultiTapSequence();
-        this.quickScaleCandidate = false;
+      case 'pointer_down': {
+        this.phase = 0;
         if (this.active) {
           this.cancel();
         } else {
@@ -139,23 +135,18 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.MOVE: {
-        if (!this.quickScaleCandidate) {
-          if (
-            Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) >
-            this.config.touchSlop
-          ) {
+      case 'move': {
+        if (this.phase !== 2) {
+          if (distance(event.focus, this.tapDown) > this.slop) {
             this.fail();
           }
           return;
         }
 
-        const dx = event.focus.x - this.anchor.x;
-        const dy = event.focus.y - this.anchor.y;
-        const slop = this.slop;
-
         if (!this.active) {
-          if (Math.hypot(dx, dy) <= slop) {
+          const dx = event.focus.x - this.anchor.x;
+          const dy = event.focus.y - this.anchor.y;
+          if (Math.hypot(dx, dy) <= this.slop) {
             return;
           }
 
@@ -165,65 +156,58 @@ export class QuickScaleRecognizer extends GestureRecognizer {
           }
 
           // Start scaling from the slop boundary on the vertical axis (never past the finger).
-          this.startY = this.anchor.y + Math.sign(dy) * Math.min(slop, Math.abs(dy));
-          this.prevScale = 1;
-          this.cumulativeScale = 1;
+          this.startY = this.anchor.y + Math.sign(dy) * Math.min(this.slop, Math.abs(dy));
+          this.scale = 1;
 
           const started = this.tryBegin(() => {
-            this.callbacks.onScaleStart?.(this.buildEvent(event, 1));
-          });
-
-          if (started) {
-            const nextScale = Math.pow(2, (event.focus.y - this.startY) / this.sensitivity);
-            const factor = nextScale / this.prevScale;
-            this.cumulativeScale = nextScale;
-            if (factor !== 1) {
-              this.emitChange(() => {
-                this.callbacks.onScale?.(this.buildEvent(event, factor));
-              });
+            if (this.callbacks.onScaleStart) {
+              this.callbacks.onScaleStart(this.buildEvent(event, 1));
             }
-            this.prevScale = nextScale;
+          });
+          if (!started) {
+            return;
           }
-          return;
         }
 
         const nextScale = Math.pow(2, (event.focus.y - this.startY) / this.sensitivity);
-        const scaleFactor = nextScale / this.prevScale;
+        const scaleFactor = nextScale / this.scale;
         if (scaleFactor !== 1) {
-          this.cumulativeScale = nextScale;
+          this.scale = nextScale;
           this.emitChange(() => {
-            this.callbacks.onScale?.(this.buildEvent(event, scaleFactor));
+            if (this.callbacks.onScale) {
+              this.callbacks.onScale(this.buildEvent(event, scaleFactor));
+            }
           });
-          this.prevScale = nextScale;
         }
         break;
       }
 
-      case MotionAction.UP: {
-        this.clearTimer(MAX_TAP_TIMER);
+      case 'up': {
+        this.clearTimer();
 
-        if (this.quickScaleCandidate) {
-          this.quickScaleCandidate = false;
+        if (this.phase === 2) {
+          this.phase = 0;
           if (this.active) {
             this.completeActive(() => {
-              this.callbacks.onScaleEnd?.(this.buildEvent(event, 1));
+              if (this.callbacks.onScaleEnd) {
+                this.callbacks.onScaleEnd(this.buildEvent(event, 1));
+              }
             });
-            return;
+          } else {
+            this.fail();
           }
-          this.fail();
           return;
         }
 
-        const duration = event.eventTime - this.tapDownTime;
-        const withinSlop =
-          Math.hypot(event.focus.x - this.tapDown.x, event.focus.y - this.tapDown.y) <=
-          this.config.touchSlop;
-        if (duration <= this.config.maxTapDuration && withinSlop) {
-          this.firstTapDownFocus = this.tapDown;
-          this.lastTapUpTime = event.eventTime;
-          this.lastTapPointerType = event.pointerType;
-          this.setTimer(MULTI_TAP_TIMER, this.config.doubleTapTimeout, () => {
-            this.clearMultiTapSequence();
+        if (
+          event.eventTime - this.tapTime <= MAX_TAP_DURATION_MS &&
+          distance(event.focus, this.tapDown) <= this.slop
+        ) {
+          this.phase = 1;
+          this.tapTime = event.eventTime;
+          this.tapPointerType = event.pointerType;
+          this.setTimer(DOUBLE_TAP_TIMEOUT_MS, () => {
+            this.phase = 0;
             this.fail();
           });
         } else {
@@ -232,9 +216,8 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.CANCEL: {
-        this.clearMultiTapSequence();
-        this.quickScaleCandidate = false;
+      case 'cancel': {
+        this.phase = 0;
         this.cancel();
         break;
       }
@@ -246,32 +229,23 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   }
 
   protected override onReset(): void {
-    this.clearMultiTapSequence();
-    this.quickScaleCandidate = false;
+    this.phase = 0;
     this.tapDown = ZERO_POINT;
-    this.tapDownTime = 0;
+    this.tapTime = 0;
+    this.tapPointerType = '';
     this.anchor = ZERO_POINT;
     this.startY = 0;
-    this.prevScale = 1;
-    this.cumulativeScale = 1;
+    this.scale = 1;
   }
 
   protected override onFail(): void {
-    this.clearMultiTapSequence();
-    this.quickScaleCandidate = false;
-  }
-
-  private clearMultiTapSequence(): void {
-    this.clearTimer(MULTI_TAP_TIMER);
-    this.firstTapDownFocus = null;
-    this.lastTapUpTime = 0;
-    this.lastTapPointerType = '';
+    this.phase = 0;
   }
 
   private buildEvent(event: MotionEvent, scaleFactor: number): ScaleEventData {
     return {
       ...this.createEventData(event, this.anchor),
-      scale: this.cumulativeScale,
+      scale: this.scale,
       scaleFactor,
       isQuickScale: true,
     };

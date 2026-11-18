@@ -1,91 +1,51 @@
+import {DEFAULT_POINTER_TYPES, GestureManager, type PointerType} from './gesture_manager.js';
+import type {GestureEventData, GestureRecognizer} from './gesture_recognizer.js';
 import {
-  DEFAULT_POINTER_TYPES,
-  GestureManager,
-  type GestureManagerOptions,
-} from './gesture_manager.js';
-import type {GestureRecognizer} from './gesture_recognizer.js';
-import {
+  type LongPressCallbacks,
   LongPressRecognizer,
-  type LongPressEventData,
   type LongPressOptions,
 } from './recognizers/long_press_recognizer.js';
-import {
-  PanRecognizer,
-  type PanEventData,
-  type PanOptions,
-  type SwipeEventData,
-} from './recognizers/pan_recognizer.js';
+import {type PanCallbacks, PanRecognizer, type PanOptions} from './recognizers/pan_recognizer.js';
 import {
   QuickScaleRecognizer,
   type QuickScaleOptions,
 } from './recognizers/quick_scale_recognizer.js';
 import {
+  type RotateCallbacks,
   RotateRecognizer,
-  type RotateEventData,
   type RotateOptions,
 } from './recognizers/rotate_recognizer.js';
 import {
+  type ScaleCallbacks,
   ScaleRecognizer,
-  type ScaleEventData,
   type ScaleOptions,
 } from './recognizers/scale_recognizer.js';
-import {TapRecognizer, type TapEventData, type TapOptions} from './recognizers/tap_recognizer.js';
+import {TapRecognizer, type TapOptions} from './recognizers/tap_recognizer.js';
 import type {GestureTarget, TouchActionSetting} from './touch_behavior.js';
-import {DEFAULT_VIEW_CONFIGURATION, type ViewConfiguration} from './view_configuration.js';
 
-export interface HammerOptions {
-  supportedPointerTypes?: GestureManagerOptions['supportedPointerTypes'];
+export interface HammerOptions
+  extends LongPressCallbacks, PanCallbacks, ScaleCallbacks, RotateCallbacks {
+  supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
-  viewConfiguration?: Partial<ViewConfiguration>;
 
-  onTap?: (event: TapEventData) => void;
-  onDoubleTap?: (event: TapEventData) => void;
+  onTap?: (event: GestureEventData) => void;
+  onDoubleTap?: (event: GestureEventData) => void;
   tap?: Partial<Omit<TapOptions, 'taps'>>;
   doubleTap?: Partial<Omit<TapOptions, 'taps'>>;
-
-  onLongPress?: (event: LongPressEventData) => void;
-  onLongPressMove?: (event: LongPressEventData) => void;
-  onLongPressUp?: (event: LongPressEventData) => void;
-  onLongPressCancel?: () => void;
   longPress?: Partial<LongPressOptions>;
-
-  onPanStart?: (event: PanEventData) => void;
-  onPan?: (event: PanEventData) => void;
-  onPanEnd?: (event: PanEventData) => void;
-  onPanCancel?: () => void;
-  onSwipe?: (event: SwipeEventData) => void;
   /** Pan options. Pass `{numPointers: 0}` to pan simultaneously alongside `scale` / `rotate`. */
   pan?: Partial<PanOptions>;
-
-  onScaleStart?: (event: ScaleEventData) => void;
-  onScale?: (event: ScaleEventData) => void;
-  onScaleEnd?: (event: ScaleEventData) => void;
-  onScaleCancel?: () => void;
   scale?: Partial<ScaleOptions>;
   /**
    * Enables 1-finger double-tap-and-drag scaling, forwarding events to `onScale*`
    * (with `event.isQuickScale === true`).
    */
   quickScale?: boolean | Partial<QuickScaleOptions>;
-
-  onRotateStart?: (event: RotateEventData) => void;
-  onRotate?: (event: RotateEventData) => void;
-  onRotateEnd?: (event: RotateEventData) => void;
-  onRotateCancel?: () => void;
   rotate?: Partial<RotateOptions>;
 }
 
 function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   const recognizers: GestureRecognizer[] = [];
-
-  const hasPan = Boolean(
-    options.onPanStart ||
-    options.onPan ||
-    options.onPanEnd ||
-    options.onPanCancel ||
-    options.onSwipe
-  );
-  const panPointers = options.pan?.numPointers ?? 1;
 
   const singleTap = options.onTap
     ? new TapRecognizer({onTap: options.onTap}, {...options.tap, taps: 1})
@@ -98,17 +58,11 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   const hasScale = Boolean(
     options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
   );
-  const scaleCallbacks = {
-    onScaleStart: options.onScaleStart,
-    onScale: options.onScale,
-    onScaleEnd: options.onScaleEnd,
-    onScaleCancel: options.onScaleCancel,
-  };
 
   const quickScale =
     hasScale && options.quickScale
       ? new QuickScaleRecognizer(
-          scaleCallbacks,
+          options,
           typeof options.quickScale === 'object' ? options.quickScale : undefined
         )
       : null;
@@ -131,63 +85,37 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
     recognizers.push(quickScale);
   }
 
-  const hasLongPress = Boolean(
+  if (
     options.onLongPress ||
     options.onLongPressMove ||
     options.onLongPressUp ||
     options.onLongPressCancel
-  );
-  if (hasLongPress) {
-    recognizers.push(
-      new LongPressRecognizer(
-        {
-          onLongPress: options.onLongPress,
-          onLongPressMove: options.onLongPressMove,
-          onLongPressUp: options.onLongPressUp,
-          onLongPressCancel: options.onLongPressCancel,
-        },
-        options.longPress
-      )
-    );
+  ) {
+    recognizers.push(new LongPressRecognizer(options, options.longPress));
   }
 
-  const pan = hasPan
-    ? new PanRecognizer(
-        {
-          onPanStart: options.onPanStart,
-          onPan: options.onPan,
-          onPanEnd: options.onPanEnd,
-          onPanCancel: options.onPanCancel,
-          onSwipe: options.onSwipe,
-        },
-        options.pan
-      )
-    : null;
+  const hasPan = Boolean(
+    options.onPanStart ||
+    options.onPan ||
+    options.onPanEnd ||
+    options.onPanCancel ||
+    options.onSwipe
+  );
+  const pan = hasPan ? new PanRecognizer(options, options.pan) : null;
   if (pan) {
     recognizers.push(pan);
   }
 
-  const scale = hasScale ? new ScaleRecognizer(scaleCallbacks, options.scale) : null;
-
+  const scale = hasScale ? new ScaleRecognizer(options, options.scale) : null;
   const hasRotate = Boolean(
     options.onRotateStart || options.onRotate || options.onRotateEnd || options.onRotateCancel
   );
-  const rotate = hasRotate
-    ? new RotateRecognizer(
-        {
-          onRotateStart: options.onRotateStart,
-          onRotate: options.onRotate,
-          onRotateEnd: options.onRotateEnd,
-          onRotateCancel: options.onRotateCancel,
-        },
-        options.rotate
-      )
-    : null;
+  const rotate = hasRotate ? new RotateRecognizer(options, options.rotate) : null;
 
   if (scale && rotate) {
     scale.simultaneousWith(rotate);
   }
-  if (pan && panPointers !== 1) {
+  if (pan && (options.pan?.numPointers ?? 1) !== 1) {
     if (scale) {
       pan.simultaneousWith(scale);
     }
@@ -216,28 +144,22 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
 export class Hammer<T extends GestureTarget = GestureTarget> {
   readonly element: T;
   readonly manager: GestureManager<T>;
-  private recognizers: GestureRecognizer[];
 
   constructor(element: T, options: HammerOptions = {}) {
     this.element = element;
-    this.recognizers = buildRecognizers(options);
     this.manager = new GestureManager(element, {
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
-      viewConfiguration: options.viewConfiguration,
-      recognizers: this.recognizers,
+      recognizers: buildRecognizers(options),
     });
   }
 
   setOptions(options: HammerOptions): this {
-    this.manager.unregister(...this.recognizers);
-    this.recognizers = buildRecognizers(options);
     this.manager.setOptions({
       supportedPointerTypes: options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES,
       touchAction: options.touchAction ?? 'compute',
-      viewConfiguration: options.viewConfiguration ?? DEFAULT_VIEW_CONFIGURATION,
+      recognizers: buildRecognizers(options),
     });
-    this.manager.register(...this.recognizers);
     return this;
   }
 

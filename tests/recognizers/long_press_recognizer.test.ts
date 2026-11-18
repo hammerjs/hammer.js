@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionAction, MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../../src/motion_event';
 import {LongPressRecognizer} from '../../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
@@ -199,7 +199,7 @@ describe('LongPressRecognizer', () => {
     const oneFingerLp = new LongPressRecognizer({onLongPress: vi.fn()}, {numPointers: 1});
     oneFingerLp.onMotionEvent(
       new MotionEvent({
-        action: MotionAction.DOWN,
+        action: 'down',
         eventTime: 0,
         actionIndex: 0,
         pointerType: 'touch',

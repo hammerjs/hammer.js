@@ -19,7 +19,6 @@ describe('Hammer', () => {
     expect(empty.element).toBe(element);
     expect(empty.manager.computeTouchAction()).toBe('auto');
     expect(element.style.touchAction || '').toBe('');
-    expect(empty.manager.config.touchSlop).toBe(8);
     empty.manager.reset();
     empty.destroy();
 
@@ -27,9 +26,8 @@ describe('Hammer', () => {
     const tapOnly = new Hammer(element, {
       onTap,
       supportedPointerTypes: ['touch'],
-      viewConfiguration: {touchSlop: 14},
+      tap: {slop: 14},
     });
-    expect(tapOnly.manager.config.touchSlop).toBe(14);
     expect(tapOnly.manager.computeTouchAction()).toBe('manipulation');
     expect(element.style.touchAction).toBe('manipulation');
     expect(element.style.userSelect || '').toBe('');
@@ -83,7 +81,7 @@ describe('Hammer', () => {
         pointerEvent('pointerup', {pointerId: 3, clientX: 20, clientY: 20, timeStamp: 630})
       );
       expect(onTap).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(hammer.manager.config.doubleTapTimeout + 5);
+      vi.advanceTimersByTime(305);
       expect(onTap).toHaveBeenCalledTimes(1);
       hammer.destroy();
     } finally {
@@ -447,20 +445,17 @@ describe('Hammer', () => {
       onPan: () => {},
       pan: {direction: 'horizontal'},
       touchAction: 'none',
-      viewConfiguration: {touchSlop: 14},
     });
     expect(hammer.manager.computeTouchAction()).toBe('pan-y pinch-zoom');
     expect(svg.style.touchAction).toBe('none');
-    expect(hammer.manager.config.touchSlop).toBe(14);
 
-    // Omitting `touchAction` and `viewConfiguration` in `Hammer.setOptions` restores defaults:
+    // Omitting `touchAction` in `Hammer.setOptions` restores `'compute'`:
     hammer.setOptions({
       onTap: () => calls.push('tap3'),
       onPan: () => {},
       pan: {direction: 'vertical'},
     });
     expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
-    expect(hammer.manager.config.touchSlop).toBe(8);
     svg.dispatchEvent(pointerEvent('pointerdown', {pointerId: 9, clientX: 5, clientY: 5}));
     svg.dispatchEvent(pointerEvent('pointerup', {pointerId: 9, clientX: 5, clientY: 5}));
     expect(calls).toContain('tap3');

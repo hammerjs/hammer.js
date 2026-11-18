@@ -1,7 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureManager} from '../src/gesture_manager';
 import {GestureRecognizer} from '../src/gesture_recognizer';
-import {MotionAction, type MotionEvent} from '../src/motion_event';
+import type {MotionEvent} from '../src/motion_event';
 import {LongPressRecognizer} from '../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../src/recognizers/pan_recognizer';
 import {QuickScaleRecognizer} from '../src/recognizers/quick_scale_recognizer';
@@ -21,7 +21,7 @@ class SpyRecognizer extends GestureRecognizer {
 
   onMotionEvent(event: MotionEvent): void {
     this.events.push(event);
-    if (event.action === MotionAction.DOWN) {
+    if (event.action === 'down') {
       this.tryBegin(() => {});
     }
   }
@@ -57,7 +57,7 @@ describe('GestureManager', () => {
 
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.events).toHaveLength(1);
-    expect(recognizer.events[0].action).toBe(MotionAction.DOWN);
+    expect(recognizer.events[0].action).toBe('down');
   });
 
   it('ignores unsupported pointer types', () => {
@@ -412,15 +412,13 @@ describe('GestureManager', () => {
     expect(recognizer.events).toHaveLength(0);
   });
 
-  it('covers config, unregister, reset, document pointerup/cancel, and touchAction: false', () => {
+  it('covers unregister, reset, document pointerup/cancel, and touchAction: false', () => {
     const unstyledEl = document.createElement('div');
     document.body.appendChild(unstyledEl);
     const customManager = new GestureManager(unstyledEl, {
       supportedPointerTypes: ['touch', 'mouse'],
       touchAction: false,
-      viewConfiguration: {touchSlop: 12},
     });
-    expect(customManager.config.touchSlop).toBe(12);
     expect(unstyledEl.style.touchAction || '').toBe('');
 
     const spy = new SpyRecognizer();
@@ -836,7 +834,7 @@ describe('GestureManager', () => {
     expect(recognizer.cancelled).toBe(false);
 
     document.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 1}));
-    expect(recognizer.events.at(-1)?.action).toBe(MotionAction.UP);
+    expect(recognizer.events.at(-1)?.action).toBe('up');
   });
 
   it('suppresses ghost clicks inside a shadow-DOM surface and on a light-DOM ancestor', () => {
@@ -872,6 +870,13 @@ describe('GestureManager', () => {
       host.dispatchEvent(pointerEvent('pointerdown', {pointerId: 4, clientX: 0, clientY: 0}));
       host.dispatchEvent(pointerEvent('pointermove', {pointerId: 4, clientX: 30, clientY: 0}));
       host.dispatchEvent(pointerEvent('pointerup', {pointerId: 4, clientX: 30, clientY: 0}));
+
+      const unrelated = document.createElement('button');
+      document.body.appendChild(unrelated);
+      const unrelatedClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
+      unrelated.dispatchEvent(unrelatedClick);
+      expect(unrelatedClick.defaultPrevented).toBe(false);
+      unrelated.remove();
 
       const ancestorGhost = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
       outer.dispatchEvent(ancestorGhost);
@@ -921,14 +926,12 @@ describe('GestureManager', () => {
     expect(addSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
 
     // Switching to `touchAction: 'none'` detaches the redundant element `touchmove` guard:
-    gm.setOptions({touchAction: 'none', viewConfiguration: {touchSlop: 16}});
-    expect(gm.config.touchSlop).toBe(16);
+    gm.setOptions({touchAction: 'none'});
     expect(svg.style.touchAction).toBe('none');
     expect(removeSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
 
     // Partial `setOptions` updates only specified properties without wiping existing config:
     gm.setOptions({supportedPointerTypes: ['touch', 'pen']});
-    expect(gm.config.touchSlop).toBe(16);
     expect(svg.style.touchAction).toBe('none');
 
     // Orphaned stylus (`pen`) drag aborts cleanly if a new pen press starts outside the target:
@@ -943,8 +946,69 @@ describe('GestureManager', () => {
     );
     expect(onPanCancel).toHaveBeenCalledTimes(1);
 
+    gm.setOptions({touchAction: 'compute', recognizers: [pan, pan]});
+    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
+
     gm.destroy();
     gm.setOptions({touchAction: 'manipulation'});
     svg.remove();
+  });
+
+  it('handles mid-stream setOptions modality/recognizer swaps and leaves touch-action native on mouse-only managers', () => {
+    const mouseEl = document.createElement('div');
+    document.body.appendChild(mouseEl);
+    const mouseOnly = new GestureManager(mouseEl, {
+      supportedPointerTypes: ['mouse'],
+      recognizers: [new PanRecognizer({})],
+    });
+    // Mouse-only surface keeps native mobile touch scrolling unlocked while preventing text selection:
+    expect(mouseEl.style.touchAction || '').toBe('');
+    expect(mouseEl.style.userSelect).toBe('none');
+    const touchMenu = new Event('contextmenu', {bubbles: true, cancelable: true});
+    Object.defineProperty(touchMenu, 'pointerType', {value: 'touch'});
+    mouseEl.dispatchEvent(touchMenu);
+    expect(touchMenu.defaultPrevented).toBe(false);
+    mouseOnly.destroy();
+    mouseEl.remove();
+
+    // Disabling `'touch'` mid-drag cancels the active touch stream instead of wedging:
+    const onPanCancel = vi.fn();
+    const released: number[] = [];
+    const target = document.createElement('div');
+    target.setPointerCapture = vi.fn();
+    target.hasPointerCapture = () => true;
+    target.releasePointerCapture = (id: number) => released.push(id);
+    document.body.appendChild(target);
+
+    const gm = new GestureManager(target, {
+      recognizers: [new PanRecognizer({onPanCancel}, {slop: 4})],
+    });
+    target.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 1, pointerType: 'touch', clientX: 0})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 1, pointerType: 'touch', clientX: 20})
+    );
+    gm.setOptions({supportedPointerTypes: ['mouse']});
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+    expect(released).toEqual([1]);
+
+    // Replacing `recognizers` mid-drag cancels the active gesture and releases pointer capture:
+    gm.setOptions({
+      supportedPointerTypes: ['touch', 'mouse'],
+      recognizers: [new PanRecognizer({onPanCancel}, {slop: 4})],
+    });
+    target.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 2, pointerType: 'mouse', clientX: 0})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 2, pointerType: 'mouse', clientX: 20})
+    );
+    gm.setOptions({recognizers: [new TapRecognizer({})]});
+    expect(onPanCancel).toHaveBeenCalledTimes(2);
+    expect(released).toEqual([1, 2]);
+
+    gm.destroy();
+    target.remove();
   });
 });

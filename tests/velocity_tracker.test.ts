@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {MotionAction, MotionEvent, MotionEventStream} from '../src/motion_event';
+import {MotionEvent, MotionEventStream} from '../src/motion_event';
 import {VelocityTracker} from '../src/velocity_tracker';
 import {pointerEvent} from './test_helpers';
 
@@ -321,12 +321,12 @@ describe('VelocityTracker', () => {
       tracker.addMovement(pointerUp);
       tracker.finalizePointerUp(pointerUp, 8000);
       tracker.computeCurrentVelocity();
-      expect(tracker.getVelocity().x).toBeGreaterThan(0);
+      expect(tracker.getVelocity(2).x).toBeGreaterThan(0);
     });
 
     it('covers ring-buffer wrap-around, duplicate/out-of-order timestamps, pointer handoff, and degenerate events', () => {
       const tracker = new VelocityTracker();
-      expect(tracker.getVelocity()).toEqual({x: 0, y: 0});
+      expect(tracker.getVelocity(1)).toEqual({x: 0, y: 0});
       expect(tracker.getCentroidVelocity([])).toEqual({x: 0, y: 0});
       expect(tracker.getCentroidVelocity([{pointerId: 99, x: 0, y: 0}])).toEqual({
         x: 0,
@@ -364,8 +364,8 @@ describe('VelocityTracker', () => {
         tracker.addMovement(lastMove);
       }
       tracker.computeCurrentVelocity();
-      expect(tracker.getVelocity().x).toBeCloseTo(2000, 1);
-      expect(tracker.getVelocity().y).toBeCloseTo(-1000, 1);
+      expect(tracker.getVelocity(1).x).toBeCloseTo(2000, 1);
+      expect(tracker.getVelocity(1).y).toBeCloseTo(-1000, 1);
       expect(tracker.getVelocity(999)).toEqual({x: 0, y: 0});
       expect(tracker.getCentroidVelocity(lastMove.pointers).x).toBeCloseTo(2000, 1);
 
@@ -377,7 +377,7 @@ describe('VelocityTracker', () => {
 
       tracker.addMovement(
         new MotionEvent({
-          action: MotionAction.POINTER_DOWN,
+          action: 'pointer_down',
           eventTime: 160,
           actionIndex: 0,
           pointerType: 'touch',
@@ -387,7 +387,7 @@ describe('VelocityTracker', () => {
       );
       tracker.addMovement(
         new MotionEvent({
-          action: MotionAction.MOVE,
+          action: 'move',
           eventTime: 165,
           actionIndex: 0,
           pointerType: 'touch',
@@ -396,7 +396,7 @@ describe('VelocityTracker', () => {
         })
       );
       const degeneratePointerUp = new MotionEvent({
-        action: MotionAction.POINTER_UP,
+        action: 'pointer_up',
         eventTime: 168,
         actionIndex: 0,
         pointerType: 'touch',
@@ -408,7 +408,7 @@ describe('VelocityTracker', () => {
 
       tracker.addMovement(
         new MotionEvent({
-          action: MotionAction.UP,
+          action: 'up',
           eventTime: 170,
           actionIndex: 0,
           pointerType: 'touch',
@@ -418,7 +418,7 @@ describe('VelocityTracker', () => {
       );
       tracker.addMovement(
         new MotionEvent({
-          action: MotionAction.CANCEL,
+          action: 'cancel',
           eventTime: 175,
           actionIndex: 0,
           pointerType: 'touch',
@@ -426,7 +426,7 @@ describe('VelocityTracker', () => {
           originalEvent: pointerEvent('pointercancel'),
         })
       );
-      expect(tracker.getVelocity()).toEqual({x: 0, y: 0});
+      expect(tracker.getVelocity(1)).toEqual({x: 0, y: 0});
     });
   });
 });

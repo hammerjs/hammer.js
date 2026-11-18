@@ -1,35 +1,34 @@
-import {MotionAction, type MotionEvent, type Point} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import {distance, type MotionEvent, type Point} from '../motion_event.js';
+import {
+  DOUBLE_TAP_MIN_TIME_MS,
+  DOUBLE_TAP_SLOP,
+  DOUBLE_TAP_TIMEOUT_MS,
+  type GestureEventData,
+  GestureRecognizer,
+  MAX_TAP_DURATION_MS,
+  TOUCH_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-import {DOUBLE_TAP_MIN_TIME_MS} from '../view_configuration.js';
 
 export interface TapOptions {
   /** Required number of consecutive taps (`1` for single-tap, `2` for double-tap, etc.). Default: `1`. */
   taps: number;
   /** Required number of simultaneous pointers per tap. Default: `1`. */
   numPointers: number;
-  /** Maximum radial movement in `px` allowed per pointer during a tap. */
+  /** Maximum radial movement in `px` allowed per pointer during a tap. Default: `8`. */
   slop: number;
-  /** Maximum press duration in `ms` (`down` to `up`) per tap. */
+  /** Maximum press duration in `ms` (`down` to `up`) per tap. Default: `250`. */
   maxTime: number;
-  /** Maximum interval in `ms` allowed between consecutive taps in a multi-tap sequence. */
+  /** Maximum interval in `ms` allowed between consecutive taps in a multi-tap sequence. Default: `300`. */
   multiTapInterval: number;
-  /** Maximum distance in `px` between consecutive tap-down locations. */
+  /** Maximum distance in `px` between consecutive tap-down locations. Default: `100`. */
   multiTapSlop: number;
-}
-
-export interface TapEventData extends GestureEventData {
-  /** Number of taps completed in this sequence (`1`, `2`, ...). */
-  readonly tapCount: number;
 }
 
 export interface TapCallbacks {
   /** Fired when the configured `taps` count completes. */
-  onTap?: (event: TapEventData) => void;
+  onTap?: (event: GestureEventData) => void;
 }
-
-const MAX_DURATION_TIMER = 'maxDuration';
-const MULTI_TAP_TIMER = 'multiTap';
 
 /**
  * Atomic single- or multi-tap recognizer (`taps: 1`, `taps: 2`, ...).
@@ -42,7 +41,12 @@ const MULTI_TAP_TIMER = 'multiTap';
  */
 export class TapRecognizer extends GestureRecognizer {
   private readonly callbacks: TapCallbacks;
-  private readonly userOptions: Partial<TapOptions>;
+  private readonly targetTaps: number;
+  private readonly numPointers: number;
+  private readonly slop: number;
+  private readonly maxTime: number;
+  private readonly multiTapInterval: number;
+  private readonly multiTapSlop: number;
 
   private readonly downPositions = new Map<number, Point>();
   private strokeDownTime = 0;
@@ -51,14 +55,19 @@ export class TapRecognizer extends GestureRecognizer {
   private strokeCenter: Point | null = null;
 
   private completedTaps = 0;
-  private firstTapDownFocus: Point | null = null;
+  private lastTapDownFocus: Point | null = null;
   private lastTapUpTime = 0;
   private lastTapPointerType = '';
 
   constructor(callbacks: TapCallbacks, options: Partial<TapOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.userOptions = options;
+    this.targetTaps = options.taps ?? 1;
+    this.numPointers = options.numPointers ?? 1;
+    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.maxTime = options.maxTime ?? MAX_TAP_DURATION_MS;
+    this.multiTapInterval = options.multiTapInterval ?? DOUBLE_TAP_TIMEOUT_MS;
+    this.multiTapSlop = Math.max(0, options.multiTapSlop ?? DOUBLE_TAP_SLOP);
   }
 
   override getTouchAction(): TouchActionValue {
@@ -74,33 +83,9 @@ export class TapRecognizer extends GestureRecognizer {
     return this.numPointers >= 2;
   }
 
-  private get targetTaps(): number {
-    return this.userOptions.taps ?? 1;
-  }
-
-  private get numPointers(): number {
-    return this.userOptions.numPointers ?? 1;
-  }
-
-  private get slop(): number {
-    return this.userOptions.slop ?? this.config.touchSlop;
-  }
-
-  private get maxTime(): number {
-    return this.userOptions.maxTime ?? this.config.maxTapDuration;
-  }
-
-  private get multiTapInterval(): number {
-    return this.userOptions.multiTapInterval ?? this.config.doubleTapTimeout;
-  }
-
-  private get multiTapSlop(): number {
-    return this.userOptions.multiTapSlop ?? this.config.doubleTapSlop;
-  }
-
   /** @internal */
   override prepareForDown(event: MotionEvent): void {
-    if (this.completedTaps === 0 || !this.firstTapDownFocus) {
+    if (this.completedTaps === 0 || !this.lastTapDownFocus) {
       return;
     }
 
@@ -110,32 +95,26 @@ export class TapRecognizer extends GestureRecognizer {
       this.lastTapPointerType !== '' && event.pointerType !== this.lastTapPointerType;
     const outOfSlop =
       event.activePointerCount >= this.numPointers &&
-      Math.hypot(
-        event.focus.x - this.firstTapDownFocus.x,
-        event.focus.y - this.firstTapDownFocus.y
-      ) > this.multiTapSlop;
+      distance(event.focus, this.lastTapDownFocus) > this.multiTapSlop;
 
     if (pointerMismatch || dt < minInterval || dt > this.multiTapInterval || outOfSlop) {
       this.fail();
     } else {
-      this.clearTimer(MULTI_TAP_TIMER);
+      this.clearTimer();
     }
   }
 
   /** @internal */
   override shouldResetOnDown(event: MotionEvent): boolean {
-    if (this.completedTaps > 0) {
-      return false;
-    }
-    return super.shouldResetOnDown(event);
+    return this.completedTaps > 0 ? false : super.shouldResetOnDown(event);
   }
 
   onMotionEvent(event: MotionEvent): void {
     switch (event.action) {
-      case MotionAction.DOWN: {
+      case 'down': {
         this.downPositions.clear();
         for (const p of event.pointers) {
-          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+          this.downPositions.set(p.pointerId, p);
         }
         this.strokeDownTime = event.eventTime;
         this.totalPointersInStroke = event.pointers.length;
@@ -147,31 +126,28 @@ export class TapRecognizer extends GestureRecognizer {
           return;
         }
 
-        this.setTimer(MAX_DURATION_TIMER, this.maxTime, () => this.fail());
+        this.setTimer(this.maxTime, () => this.fail());
         break;
       }
 
-      case MotionAction.POINTER_DOWN: {
+      case 'pointer_down': {
         this.totalPointersInStroke = Math.max(
           this.totalPointersInStroke + 1,
           event.pointers.length
         );
-        if (this.totalPointersInStroke > this.numPointers) {
+        const p = event.pointers[event.actionIndex];
+        if (!p || this.totalPointersInStroke > this.numPointers) {
           this.fail();
           return;
         }
-        const p = event.pointers[event.actionIndex];
-        this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+        this.downPositions.set(p.pointerId, p);
         if (event.activePointerCount === this.numPointers) {
           this.strokeDownCenter = event.focus;
           this.strokeCenter = event.focus;
           if (
             this.completedTaps > 0 &&
-            this.firstTapDownFocus &&
-            Math.hypot(
-              event.focus.x - this.firstTapDownFocus.x,
-              event.focus.y - this.firstTapDownFocus.y
-            ) > this.multiTapSlop
+            this.lastTapDownFocus &&
+            distance(event.focus, this.lastTapDownFocus) > this.multiTapSlop
           ) {
             this.fail();
             return;
@@ -180,7 +156,7 @@ export class TapRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.MOVE: {
+      case 'move': {
         if (this.exceedsSlop(event)) {
           this.fail();
           return;
@@ -191,15 +167,15 @@ export class TapRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.POINTER_UP: {
+      case 'pointer_up': {
         if (this.exceedsSlop(event)) {
           this.fail();
         }
         break;
       }
 
-      case MotionAction.UP: {
-        this.clearTimer(MAX_DURATION_TIMER);
+      case 'up': {
+        this.clearTimer();
 
         // `strokeDownCenter` is only set once all `numPointers` were down simultaneously.
         const duration = event.eventTime - this.strokeDownTime;
@@ -213,32 +189,28 @@ export class TapRecognizer extends GestureRecognizer {
           return;
         }
 
-        if (this.completedTaps === 0) {
-          this.firstTapDownFocus = this.strokeDownCenter;
-        }
+        this.lastTapDownFocus = this.strokeDownCenter;
         this.completedTaps++;
         this.lastTapUpTime = event.eventTime;
         this.lastTapPointerType = event.pointerType;
 
-        const currentTapCount = this.completedTaps;
-        if (currentTapCount < this.targetTaps) {
-          this.setTimer(MULTI_TAP_TIMER, this.multiTapInterval, () => {
-            this.fail();
-          });
+        if (this.completedTaps < this.targetTaps) {
+          this.setTimer(this.multiTapInterval, () => this.fail());
           return;
         }
 
         const centerOverride =
           this.numPointers > 1 && this.strokeCenter ? this.strokeCenter : undefined;
-        const tapEvent = this.buildTapEvent(event, currentTapCount, centerOverride);
         this.clearMultiTapSequence();
         this.tryRecognizeDiscrete(() => {
-          this.callbacks.onTap?.(tapEvent);
+          if (this.callbacks.onTap) {
+            this.callbacks.onTap(this.createEventData(event, centerOverride));
+          }
         });
         break;
       }
 
-      case MotionAction.CANCEL: {
+      case 'cancel': {
         this.clearMultiTapSequence();
         this.cancel();
         break;
@@ -262,26 +234,15 @@ export class TapRecognizer extends GestureRecognizer {
   /** Whether the pointer that triggered `event` wandered beyond `slop` from where it went down. */
   private exceedsSlop(event: MotionEvent): boolean {
     const p = event.pointers[event.actionIndex];
-    const start = this.downPositions.get(p.pointerId);
-    return !!start && Math.hypot(p.x - start.x, p.y - start.y) > this.slop;
+    const start = p ? this.downPositions.get(p.pointerId) : undefined;
+    return !!p && !!start && distance(p, start) > this.slop;
   }
 
   private clearMultiTapSequence(): void {
-    this.clearTimer(MULTI_TAP_TIMER);
+    this.clearTimer();
     this.completedTaps = 0;
-    this.firstTapDownFocus = null;
+    this.lastTapDownFocus = null;
     this.lastTapUpTime = 0;
     this.lastTapPointerType = '';
-  }
-
-  private buildTapEvent(
-    event: MotionEvent,
-    tapCount: number,
-    centerOverride?: Point
-  ): TapEventData {
-    return {
-      ...this.createEventData(event, centerOverride),
-      tapCount,
-    };
   }
 }

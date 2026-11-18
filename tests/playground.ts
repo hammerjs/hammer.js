@@ -1,5 +1,5 @@
 import {
-  DEFAULT_VIEW_CONFIGURATION,
+  type GestureEventData,
   GestureManager,
   type GestureRecognizer,
   type LongPressEventData,
@@ -14,11 +14,9 @@ import {
   type ScaleEventData,
   ScaleRecognizer,
   type SwipeEventData,
-  type TapEventData,
   TapRecognizer,
   type TouchActionSetting,
   type TouchActionValue,
-  type ViewConfiguration,
 } from '../src/index';
 
 interface PlaygroundConfig {
@@ -48,8 +46,6 @@ interface PlaygroundConfig {
   quickScaleSensitivity: number;
   enableRotate: boolean;
   scaleRotateSimultaneous: boolean;
-
-  viewConfig: ViewConfiguration;
 }
 
 interface TrackedRecognizer {
@@ -103,21 +99,6 @@ const TOUCH_ACTION_DESCRIPTIONS: Record<string, string> = {
   false: 'Hammer leaves element inline touch-action and selection styles completely untouched.',
 };
 
-const VIEW_CONFIG_KEYS: ReadonlyArray<keyof ViewConfiguration> = [
-  'touchSlop',
-  'doubleTapSlop',
-  'spanSlop',
-  'minScalingSpan',
-  'rotationSlop',
-  'maxTapDuration',
-  'doubleTapTimeout',
-  'longPressTimeout',
-  'minimumSwipeVelocity',
-  'minimumSwipeDistance',
-  'maximumSwipeVelocity',
-  'ghostClickTimeout',
-];
-
 const POINTER_PALETTE = ['#0ea5e9', '#f97316', '#10b981', '#a855f7', '#ec4899'];
 const MAX_LOG_ENTRIES = 250;
 
@@ -149,8 +130,6 @@ function createBaseConfig(): PlaygroundConfig {
     quickScaleSensitivity: 200,
     enableRotate: true,
     scaleRotateSimultaneous: true,
-
-    viewConfig: {...DEFAULT_VIEW_CONFIGURATION},
   };
 }
 
@@ -160,7 +139,6 @@ function applyPresetOverrides(preset: string, base: PlaygroundConfig): Playgroun
     pointerTouch: base.pointerTouch,
     pointerPen: base.pointerPen,
     pointerMouse: base.pointerMouse,
-    viewConfig: {...base.viewConfig},
     preset,
   };
 
@@ -315,7 +293,6 @@ const telRotation = el<HTMLElement>('telRotation');
 const eventLogCode = el<HTMLElement>('eventLogCode');
 const logCountBadge = el<HTMLElement>('logCountBadge');
 const codePreviewEl = el<HTMLElement>('codePreview');
-const viewOverridesBadge = el<HTMLElement>('viewOverridesBadge');
 
 const filterLifecycle = el<HTMLInputElement>('filterLifecycle');
 const filterMove = el<HTMLInputElement>('filterMove');
@@ -572,16 +549,6 @@ function flashStage(): void {
   }, 160);
 }
 
-function buildViewConfigOverrides(vc: ViewConfiguration): Partial<ViewConfiguration> {
-  const overrides: Partial<Record<keyof ViewConfiguration, number>> = {};
-  for (const key of VIEW_CONFIG_KEYS) {
-    if (vc[key] !== DEFAULT_VIEW_CONFIGURATION[key]) {
-      overrides[key] = vc[key];
-    }
-  }
-  return overrides as Partial<ViewConfiguration>;
-}
-
 function generateCodePreview(cfg: PlaygroundConfig): string {
   const imports: string[] = ['GestureManager'];
   if (cfg.enableSingleTap || cfg.enableDoubleTap || cfg.enableTwoFingerTap) {
@@ -680,22 +647,12 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
   if (cfg.pointerPen) pointerTypes.push("'pen'");
   if (cfg.pointerMouse) pointerTypes.push("'mouse'");
 
-  const vcOverrides = buildViewConfigOverrides(cfg.viewConfig);
-  const vcKeys = Object.keys(vcOverrides) as Array<keyof ViewConfiguration>;
-
   lines.push('');
   lines.push('const manager = new GestureManager(element, {');
   if (pointerTypes.length !== 3) {
     lines.push(`  supportedPointerTypes: [${pointerTypes.join(', ')}],`);
   }
   lines.push(`  touchAction: ${cfg.touchAction === false ? 'false' : `'${cfg.touchAction}'`},`);
-  if (vcKeys.length > 0) {
-    lines.push('  viewConfiguration: {');
-    for (const k of vcKeys) {
-      lines.push(`    ${k}: ${vcOverrides[k]},`);
-    }
-    lines.push('  },');
-  }
   lines.push(`  recognizers: [${recognizerVars.join(', ')}],`);
   lines.push('});');
 
@@ -714,15 +671,11 @@ function rebuildHammer(): void {
   if (config.pointerPen) supportedPointerTypes.push('pen');
   if (config.pointerMouse) supportedPointerTypes.push('mouse');
 
-  const vcOverrides = buildViewConfigOverrides(config.viewConfig);
-  const overrideCount = Object.keys(vcOverrides).length;
-  viewOverridesBadge.textContent = overrideCount > 0 ? `${overrideCount} custom` : 'defaults';
-
   let doubleTapRec: GestureRecognizer | null = null;
   if (config.enableDoubleTap) {
     doubleTapRec = new TapRecognizer(
       {
-        onTap: (ev: TapEventData) => {
+        onTap: (ev: GestureEventData) => {
           gestureCount++;
           flashStage();
           const local = localPoint(ev.center);
@@ -736,8 +689,8 @@ function rebuildHammer(): void {
           appendLog(
             'lifecycle',
             'DoubleTap',
-            `taps=${ev.tapCount} center=(${Math.round(local.x)}, ${Math.round(local.y)}) type=${ev.motionEvent.pointerType}`,
-            {tapCount: ev.tapCount, center: local}
+            `center=(${Math.round(local.x)}, ${Math.round(local.y)}) type=${ev.motionEvent.pointerType}`,
+            {center: local}
           );
           scheduleArenaStateWatch();
         },
@@ -748,7 +701,7 @@ function rebuildHammer(): void {
 
   if (config.enableSingleTap) {
     const singleTap = new TapRecognizer({
-      onTap: (ev: TapEventData) => {
+      onTap: (ev: GestureEventData) => {
         gestureCount++;
         flashStage();
         const local = localPoint(ev.center);
@@ -782,7 +735,7 @@ function rebuildHammer(): void {
   if (config.enableTwoFingerTap) {
     const twoFingerTap = new TapRecognizer(
       {
-        onTap: (ev: TapEventData) => {
+        onTap: (ev: GestureEventData) => {
           gestureCount++;
           flashStage();
           const local = localPoint(ev.center);
@@ -1093,7 +1046,6 @@ function rebuildHammer(): void {
   hammer = new GestureManager(hitarea, {
     supportedPointerTypes,
     touchAction: config.touchAction,
-    viewConfiguration: vcOverrides,
     recognizers: trackedRecognizers.map(item => item.recognizer),
   });
 
@@ -1148,23 +1100,12 @@ function syncFormFromConfig(cfg: PlaygroundConfig): void {
   el<HTMLInputElement>('quickScaleSensitivity').value = String(cfg.quickScaleSensitivity);
   el<HTMLInputElement>('enableRotate').checked = cfg.enableRotate;
   el<HTMLInputElement>('scaleRotateSimultaneous').checked = cfg.scaleRotateSimultaneous;
-
-  for (const key of VIEW_CONFIG_KEYS) {
-    const input = el<HTMLInputElement>(`vc_${key}`);
-    input.value = String(cfg.viewConfig[key]);
-  }
 }
 
 function readConfigFromForm(): PlaygroundConfig {
   const rawTouchAction = el<HTMLSelectElement>('touchActionSelect').value;
   const touchAction: TouchActionSetting =
     rawTouchAction === 'false' ? false : (rawTouchAction as TouchActionSetting);
-
-  const nextVc: Record<string, number> = {};
-  for (const key of VIEW_CONFIG_KEYS) {
-    const raw = Number(el<HTMLInputElement>(`vc_${key}`).value);
-    nextVc[key] = Number.isFinite(raw) && raw >= 0 ? raw : DEFAULT_VIEW_CONFIGURATION[key];
-  }
 
   const sensitivityRaw = Number(el<HTMLInputElement>('quickScaleSensitivity').value);
 
@@ -1196,8 +1137,6 @@ function readConfigFromForm(): PlaygroundConfig {
       Number.isFinite(sensitivityRaw) && sensitivityRaw >= 10 ? sensitivityRaw : 200,
     enableRotate: el<HTMLInputElement>('enableRotate').checked,
     scaleRotateSimultaneous: el<HTMLInputElement>('scaleRotateSimultaneous').checked,
-
-    viewConfig: nextVc as unknown as ViewConfiguration,
   };
 }
 
@@ -1231,12 +1170,6 @@ function serializeConfigToQuery(cfg: PlaygroundConfig): string {
   if (cfg.quickScaleSensitivity !== 200) params.set('qss', String(cfg.quickScaleSensitivity));
   if (cfg.enableRotate !== def.enableRotate) params.set('rot', cfg.enableRotate ? '1' : '0');
   if (!cfg.scaleRotateSimultaneous) params.set('srsim', '0');
-
-  for (const key of VIEW_CONFIG_KEYS) {
-    if (cfg.viewConfig[key] !== DEFAULT_VIEW_CONFIGURATION[key]) {
-      params.set(`vc.${key}`, String(cfg.viewConfig[key]));
-    }
-  }
   return params.toString();
 }
 
@@ -1278,15 +1211,6 @@ function loadConfigFromUrl(): PlaygroundConfig {
   if (params.has('qss')) cfg.quickScaleSensitivity = Number(params.get('qss')) || 200;
   cfg.enableRotate = boolParam('rot', cfg.enableRotate);
   cfg.scaleRotateSimultaneous = boolParam('srsim', cfg.scaleRotateSimultaneous);
-
-  const vcCopy = {...cfg.viewConfig};
-  for (const key of VIEW_CONFIG_KEYS) {
-    const raw = params.get(`vc.${key}`);
-    if (raw !== null && Number.isFinite(Number(raw))) {
-      (vcCopy as Record<string, number>)[key] = Number(raw);
-    }
-  }
-  cfg.viewConfig = vcCopy;
   return cfg;
 }
 
@@ -1501,16 +1425,10 @@ function init(): void {
   configForm.addEventListener('change', e => {
     const target = e.target as HTMLElement | null;
     if (!target || target.id === 'presetSelect') return;
-    if (!target.id.startsWith('vc_') && !target.id.startsWith('pointer')) {
+    if (!target.id.startsWith('pointer')) {
       el<HTMLSelectElement>('presetSelect').value = 'custom';
     }
     config = readConfigFromForm();
-    syncFormFromConfig(config);
-    rebuildHammer();
-  });
-
-  el<HTMLButtonElement>('resetViewConfigBtn').addEventListener('click', () => {
-    config.viewConfig = {...DEFAULT_VIEW_CONFIGURATION};
     syncFormFromConfig(config);
     rebuildHammer();
   });

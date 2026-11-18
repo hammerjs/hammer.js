@@ -1,13 +1,15 @@
-import {MotionAction, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
+import {distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer, TOUCH_SLOP} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+
+const DEFAULT_LONG_PRESS_DURATION_MS = 500;
 
 export interface LongPressOptions {
   /** Number of simultaneous pointers required. Default: `1`. */
   numPointers: number;
-  /** Maximum radial movement in `px` allowed before `duration` elapses. */
+  /** Maximum radial movement in `px` allowed before `duration` elapses. Default: `8`. */
   slop: number;
-  /** Hold duration in `ms` required to trigger long press. */
+  /** Hold duration in `ms` required to trigger long press. Default: `500`. */
   duration: number;
 }
 
@@ -25,11 +27,11 @@ export interface LongPressCallbacks {
   onLongPressCancel?: () => void;
 }
 
-const LONG_PRESS_TIMER = 'longPress';
-
 export class LongPressRecognizer extends GestureRecognizer {
   private readonly callbacks: LongPressCallbacks;
-  private readonly userOptions: Partial<LongPressOptions>;
+  private readonly numPointers: number;
+  private readonly slop: number;
+  private readonly duration: number;
 
   private readonly downPositions = new Map<number, Point>();
   private anchorFocus: Point = ZERO_POINT;
@@ -38,7 +40,9 @@ export class LongPressRecognizer extends GestureRecognizer {
   constructor(callbacks: LongPressCallbacks, options: Partial<LongPressOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.userOptions = options;
+    this.numPointers = options.numPointers ?? 1;
+    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.duration = options.duration ?? DEFAULT_LONG_PRESS_DURATION_MS;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -55,26 +59,19 @@ export class LongPressRecognizer extends GestureRecognizer {
     return this.numPointers >= 2 && event.activePointerCount >= this.numPointers;
   }
 
-  private get numPointers(): number {
-    return this.userOptions.numPointers ?? 1;
-  }
-
-  private get slop(): number {
-    return this.userOptions.slop ?? this.config.touchSlop;
-  }
-
-  private get duration(): number {
-    return this.userOptions.duration ?? this.config.longPressTimeout;
+  /** @internal */
+  override canSustainPendingBegan(activePointerCount: number): boolean {
+    return activePointerCount === this.numPointers;
   }
 
   onMotionEvent(event: MotionEvent): void {
     this.lastEvent = event;
 
     switch (event.action) {
-      case MotionAction.DOWN: {
+      case 'down': {
         this.downPositions.clear();
         for (const p of event.pointers) {
-          this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+          this.downPositions.set(p.pointerId, p);
         }
         if (event.activePointerCount > this.numPointers) {
           this.fail();
@@ -86,46 +83,50 @@ export class LongPressRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.POINTER_DOWN: {
+      case 'pointer_down': {
         // An active long press already holds exactly `numPointers`; any extra finger ends it.
         if (this.active) {
           this.cancel();
           return;
         }
-        if (event.activePointerCount > this.numPointers) {
+        const p = event.pointers[event.actionIndex];
+        if (!p || event.activePointerCount > this.numPointers) {
           this.fail();
           return;
         }
-        const p = event.pointers[event.actionIndex];
-        this.downPositions.set(p.pointerId, {x: p.x, y: p.y});
+        this.downPositions.set(p.pointerId, p);
         if (event.activePointerCount === this.numPointers) {
           this.armLongPress(event);
         }
         break;
       }
 
-      case MotionAction.MOVE: {
+      case 'move': {
         if (this.active) {
           this.emitChange(() => {
-            this.callbacks.onLongPressMove?.(this.buildEventData(event));
+            if (this.callbacks.onLongPressMove) {
+              this.callbacks.onLongPressMove(this.buildEventData(event));
+            }
           });
           return;
         }
 
         const moved = event.pointers[event.actionIndex];
-        const start = this.downPositions.get(moved.pointerId);
-        if (start && Math.hypot(moved.x - start.x, moved.y - start.y) > this.slop) {
+        const start = moved ? this.downPositions.get(moved.pointerId) : undefined;
+        if (moved && start && distance(moved, start) > this.slop) {
           this.fail();
         }
         break;
       }
 
       // Lifting any finger ends the press (an active press holds exactly `numPointers`).
-      case MotionAction.POINTER_UP:
-      case MotionAction.UP: {
+      case 'pointer_up':
+      case 'up': {
         if (this.active) {
           this.completeActive(() => {
-            this.callbacks.onLongPressUp?.(this.buildEventData(event));
+            if (this.callbacks.onLongPressUp) {
+              this.callbacks.onLongPressUp(this.buildEventData(event));
+            }
           });
         } else {
           this.fail();
@@ -133,7 +134,7 @@ export class LongPressRecognizer extends GestureRecognizer {
         break;
       }
 
-      case MotionAction.CANCEL: {
+      case 'cancel': {
         this.cancel();
         break;
       }
@@ -152,11 +153,13 @@ export class LongPressRecognizer extends GestureRecognizer {
 
   private armLongPress(armEvent: MotionEvent): void {
     this.anchorFocus = armEvent.focus;
-    this.setTimer(LONG_PRESS_TIMER, this.duration, () => {
-      const triggerEvent = this.lastEvent ?? armEvent;
+    this.setTimer(this.duration, () => {
       this.tryBegin(() => {
+        const triggerEvent = this.lastEvent ?? armEvent;
         this.anchorFocus = triggerEvent.focus;
-        this.callbacks.onLongPress?.(this.buildEventData(triggerEvent));
+        if (this.callbacks.onLongPress) {
+          this.callbacks.onLongPress(this.buildEventData(triggerEvent));
+        }
       });
     });
   }
