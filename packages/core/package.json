@@ -32,6 +32,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --emitDeclarationOnly",
+    "build:playground": "vite build --config vite.playground.config.ts",
     "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",

@@ -8,5 +8,5 @@
     "emitDeclarationOnly": false,
     "experimentalDecorators": true
   },
-  "include": ["packages/*/src/**/*", "packages/*/tests/**/*", "packages/*/vite.config.ts"]
+  "include": ["packages/*/src/**/*", "packages/*/tests/**/*", "packages/*/vite*.config.ts"]
 }

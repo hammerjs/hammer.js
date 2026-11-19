@@ -1,0 +1,36 @@
+name: Deploy Playground
+
+on:
+  push:
+    branches: ['3.x']
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-playground
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build:playground
+
+      - name: Deploy playground to gh-pages (/3.x/)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./packages/core/dist-playground
+          destination_dir: 3.x
