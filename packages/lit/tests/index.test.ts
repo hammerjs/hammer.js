@@ -118,7 +118,7 @@ describe('@hammerjs/lit HammerController', () => {
     ]);
   });
 
-  it('supports enabled toggling, structural config updates, and shadow-DOM child targets', async () => {
+  it('supports structural config updates and shadow-DOM child targets', async () => {
     const onTap = vi.fn();
 
     class ShadowSurfaceEl extends LitElement {
@@ -149,9 +149,5 @@ describe('@hammerjs/lit HammerController', () => {
 
     el.hammer.setOptions({onTap, onPan: () => {}, pan: {direction: 'vertical'}});
     expect(surface.style.touchAction).toBe('pan-x pinch-zoom');
-
-    el.hammer.setOptions({enabled: false, onTap});
-    expect(el.hammer.instance).toBeNull();
-    expect(surface.style.touchAction || '').toBe('');
   });
 });

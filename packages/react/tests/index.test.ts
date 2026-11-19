@@ -1,7 +1,7 @@
 import {act, cleanup, render} from '@testing-library/react';
 import {StrictMode, createElement, useState, type RefCallback} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {useHammer, type UseHammerOptions} from '../src/index.js';
+import {useHammer, type HammerOptions} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -131,38 +131,8 @@ describe('@hammerjs/react useHammer', () => {
     expect(queryByTestId('cond')).toBeNull();
   });
 
-  it('supports toggling enabled without breaking the Rules of Hooks', () => {
-    const onTap = vi.fn();
-
-    function Toggleable({enabled}: {enabled: boolean}) {
-      const ref = useHammer<HTMLDivElement>({enabled, onTap});
-      return createElement('div', {ref, 'data-testid': 'toggle'});
-    }
-
-    const {getByTestId, rerender} = render(createElement(Toggleable, {enabled: false}));
-    const el = getByTestId('toggle');
-    expect(el.style.touchAction || '').toBe('');
-
-    act(() => {
-      el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-      el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
-    });
-    expect(onTap).not.toHaveBeenCalled();
-
-    rerender(createElement(Toggleable, {enabled: true}));
-    expect(el.style.touchAction).toBe('manipulation');
-    act(() => {
-      el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 100}));
-      el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 120}));
-    });
-    expect(onTap).toHaveBeenCalledTimes(1);
-
-    rerender(createElement(Toggleable, {enabled: false}));
-    expect(el.style.touchAction || '').toBe('');
-  });
-
   it('updates Hammer options when structural config or enabled callbacks change', () => {
-    function Configurable({options}: {options: UseHammerOptions}) {
+    function Configurable({options}: {options: HammerOptions}) {
       const ref = useHammer<HTMLDivElement>(options);
       return createElement('div', {ref, 'data-testid': 'cfg'});
     }

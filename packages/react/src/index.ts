@@ -3,14 +3,6 @@ import {useEffect, useLayoutEffect, useRef, useState, type RefCallback} from 're
 
 export type {GestureTarget, HammerOptions};
 
-export interface UseHammerOptions extends HammerOptions {
-  /**
-   * Enables or disables gesture recognition without violating the Rules of Hooks.
-   * @default true
-   */
-  enabled?: boolean;
-}
-
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 function serializeConfig(options: HammerOptions): string {
@@ -46,25 +38,24 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
  * changes never tear down active gestures while always invoking the latest closure.
  */
 export function useHammer<T extends GestureTarget = HTMLElement>(
-  options: UseHammerOptions = {}
+  options: HammerOptions = {}
 ): RefCallback<T> {
   const [element, setElement] = useState<T | null>(null);
-  const {enabled = true, ...hammerOptions} = options;
 
-  const optionsRef = useRef(hammerOptions);
+  const optionsRef = useRef(options);
   useIsomorphicLayoutEffect(() => {
-    optionsRef.current = hammerOptions;
+    optionsRef.current = options;
   });
 
-  const configKey = serializeConfig(hammerOptions);
+  const configKey = serializeConfig(options);
 
   useEffect(() => {
-    if (!element || !enabled) {
+    if (!element) {
       return;
     }
     const hammer = new Hammer(element, wrapCallbacks(optionsRef));
     return () => hammer.destroy();
-  }, [element, enabled, configKey]);
+  }, [element, configKey]);
 
   return setElement;
 }

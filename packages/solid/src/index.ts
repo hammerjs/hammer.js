@@ -3,14 +3,6 @@ import {createEffect, createMemo, onCleanup, type Accessor} from 'solid-js';
 
 export type {GestureTarget, HammerOptions};
 
-export interface UseHammerOptions extends HammerOptions {
-  /**
-   * Enables or disables gesture recognition reactively.
-   * @default true
-   */
-  enabled?: boolean;
-}
-
 function serializeConfig(options: HammerOptions): string {
   return JSON.stringify(
     Object.entries(options)
@@ -50,20 +42,20 @@ function resolveValue<V>(value: Accessor<V> | V): V {
  */
 export function createHammer<T extends GestureTarget = HTMLElement>(
   target: Accessor<T | null | undefined> | T | null | undefined,
-  options: Accessor<UseHammerOptions> | UseHammerOptions = {}
+  options: Accessor<HammerOptions> | HammerOptions = {}
 ): void {
   const optionsRef: {current: HammerOptions} = {current: {}};
 
   const structuralKey = createMemo(() => {
-    const {enabled = true, ...hammerOptions} = resolveValue(options);
-    optionsRef.current = hammerOptions;
-    return enabled ? serializeConfig(hammerOptions) : null;
+    const resolved = resolveValue(options);
+    optionsRef.current = resolved;
+    return serializeConfig(resolved);
   });
 
   createEffect(() => {
     const element = resolveValue(target);
-    const key = structuralKey();
-    if (!element || key === null || typeof window === 'undefined') {
+    structuralKey();
+    if (!element || typeof window === 'undefined') {
       return;
     }
     const instance = new Hammer(element, wrapCallbacks(optionsRef));
@@ -76,7 +68,7 @@ export function createHammer<T extends GestureTarget = HTMLElement>(
  */
 export function hammer<T extends GestureTarget = HTMLElement>(
   element: T,
-  accessor: Accessor<UseHammerOptions>
+  accessor: Accessor<HammerOptions>
 ): void {
   createHammer(element, accessor);
 }
@@ -85,7 +77,7 @@ declare module 'solid-js' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface Directives {
-      hammer: UseHammerOptions;
+      hammer: HammerOptions;
     }
   }
 }

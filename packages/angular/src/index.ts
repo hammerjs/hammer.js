@@ -100,7 +100,7 @@ function serializeConfig(config: HammerDirectiveOptions): string {
  *   a gesture event actually fires.
  * - Only registers recognizers for outputs that have active listeners, preserving least-restrictive
  *   CSS `touch-action`.
- * - Automatically cleans up listeners and inline styles on destroy or when `[hammerEnabled]` is `false`.
+ * - Automatically cleans up listeners and inline styles on destroy.
  */
 @Directive({
   selector: '[hammer]',
@@ -113,9 +113,6 @@ export class HammerDirective<T extends GestureTarget = HTMLElement> {
 
   /** Recognizer & pointer configuration. Accepts `''` for bare `<div hammer>` usage. */
   readonly hammer = input<HammerDirectiveOptions | ''>('');
-
-  /** Enables or disables gesture recognition reactively. */
-  readonly hammerEnabled = input(true);
 
   @Output() readonly hammerTap: OutputRef<GestureEventData> = new TrackedOutput();
   @Output() readonly hammerDoubleTap: OutputRef<GestureEventData> = new TrackedOutput();
@@ -137,20 +134,18 @@ export class HammerDirective<T extends GestureTarget = HTMLElement> {
   @Output() readonly hammerRotateEnd: OutputRef<RotateEventData> = new TrackedOutput();
   @Output() readonly hammerRotateCancel: OutputRef<void> = new TrackedOutput();
 
-  /** Active {@link Hammer} instance, or `null` when disabled / on the server. */
+  /** Active {@link Hammer} instance, or `null` on the server / after destroy. */
   instance: Hammer<T> | null = null;
 
   private readonly configKey = computed(() => {
-    if (!this.hammerEnabled()) {
-      return null;
-    }
     const raw = this.hammer();
     return serializeConfig(raw === '' ? {} : raw);
   });
 
   constructor() {
     effect(onCleanup => {
-      if (this.configKey() === null || typeof window === 'undefined') {
+      this.configKey();
+      if (typeof window === 'undefined') {
         return;
       }
 

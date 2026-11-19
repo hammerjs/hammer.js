@@ -98,21 +98,17 @@ describe('@hammerjs/solid', () => {
     dispose();
   });
 
-  it('supports hammer directive, enabled toggling, reactive options, and SVGElement targets', () => {
+  it('supports hammer directive, reactive options, and SVGElement targets', () => {
     const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
     const onTap = vi.fn();
 
-    let setEnabled!: (v: boolean) => void;
     let setDirection!: (d: 'horizontal' | 'vertical') => void;
 
     const dispose = createRoot(d => {
-      const [enabled, _setEnabled] = createSignal(false);
       const [direction, _setDirection] = createSignal<'horizontal' | 'vertical'>('horizontal');
-      setEnabled = _setEnabled;
       setDirection = _setDirection;
 
       hammer(svg, () => ({
-        enabled: enabled(),
         onTap,
         onPan: () => {},
         pan: {direction: direction()},
@@ -120,9 +116,6 @@ describe('@hammerjs/solid', () => {
       return d;
     });
 
-    expect(svg.style.touchAction || '').toBe('');
-
-    setEnabled(true);
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
 
     setDirection('vertical');
@@ -132,8 +125,7 @@ describe('@hammerjs/solid', () => {
     svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    setEnabled(false);
-    expect(svg.style.touchAction || '').toBe('');
     dispose();
+    expect(svg.style.touchAction || '').toBe('');
   });
 });

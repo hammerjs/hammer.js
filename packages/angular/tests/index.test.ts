@@ -46,7 +46,6 @@ describe('@hammerjs/angular HammerDirective', () => {
     element: T,
     opts?: {
       initialOptions?: HammerDirectiveOptions | '';
-      initialEnabled?: boolean;
       subscribe?: (directive: HammerDirective<T>) => void;
     }
   ) {
@@ -58,12 +57,10 @@ describe('@hammerjs/angular HammerDirective', () => {
     });
 
     const hammerSig = signal<HammerDirectiveOptions | ''>(opts?.initialOptions ?? '');
-    const enabledSig = signal(opts?.initialEnabled ?? true);
 
     const directive = TestBed.runInInjectionContext(() => {
       const dir = new HammerDirective<T>();
       Object.defineProperty(dir, 'hammer', {value: hammerSig});
-      Object.defineProperty(dir, 'hammerEnabled', {value: enabledSig});
       return dir;
     });
 
@@ -75,10 +72,6 @@ describe('@hammerjs/angular HammerDirective', () => {
       element,
       setOptions: (value: HammerDirectiveOptions | '') => {
         hammerSig.set(value);
-        TestBed.tick();
-      },
-      setEnabled: (value: boolean) => {
-        enabledSig.set(value);
         TestBed.tick();
       },
     };
@@ -200,36 +193,6 @@ describe('@hammerjs/angular HammerDirective', () => {
     expect(onPanCancel).not.toHaveBeenCalled();
     expect(onPanEnd).toHaveBeenCalledTimes(1);
     expect(deltas).toEqual([20, 40]);
-  });
-
-  it('destroys and re-attaches Hammer when [hammerEnabled] toggles', () => {
-    const onTap = vi.fn();
-    const el = document.createElement('div');
-    const {directive, setEnabled} = setup(el, {
-      initialEnabled: false,
-      subscribe: dir => {
-        dir.hammerTap.subscribe(onTap);
-      },
-    });
-
-    expect(directive.instance).toBeNull();
-    expect(el.style.touchAction || '').toBe('');
-
-    el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-    el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
-    expect(onTap).not.toHaveBeenCalled();
-
-    setEnabled(true);
-    expect(directive.instance).not.toBeNull();
-    expect(el.style.touchAction).toBe('manipulation');
-
-    el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 100}));
-    el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 120}));
-    expect(onTap).toHaveBeenCalledTimes(1);
-
-    setEnabled(false);
-    expect(directive.instance).toBeNull();
-    expect(el.style.touchAction || '').toBe('');
   });
 
   it('supports SVGElement host targets', () => {

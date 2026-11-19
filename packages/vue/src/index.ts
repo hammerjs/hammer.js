@@ -3,14 +3,6 @@ import {ref, toValue, watch, type MaybeRefOrGetter, type ObjectDirective} from '
 
 export type {GestureTarget, HammerOptions};
 
-export interface UseHammerOptions extends HammerOptions {
-  /**
-   * Enables or disables gesture recognition reactively.
-   * @default true
-   */
-  enabled?: boolean;
-}
-
 function serializeConfig(options: HammerOptions): string {
   return JSON.stringify(
     Object.entries(options)
@@ -46,25 +38,24 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
  */
 export function useHammer<T extends GestureTarget = HTMLElement>(
   target: MaybeRefOrGetter<T | null | undefined>,
-  options: MaybeRefOrGetter<UseHammerOptions> = {}
+  options: MaybeRefOrGetter<HammerOptions> = {}
 ): void {
   const optionsRef: {current: HammerOptions} = {current: {}};
-  const structuralKey = ref<string | null>(null);
+  const structuralKey = ref('');
 
   watch(
     () => toValue(options),
     next => {
-      const {enabled = true, ...hammerOptions} = next;
-      optionsRef.current = hammerOptions;
-      structuralKey.value = enabled ? serializeConfig(hammerOptions) : null;
+      optionsRef.current = next;
+      structuralKey.value = serializeConfig(next);
     },
     {immediate: true, flush: 'sync'}
   );
 
   watch(
     [() => toValue(target), structuralKey],
-    ([element, key], _prev, onCleanup) => {
-      if (!element || key === null || typeof window === 'undefined') {
+    ([element], _prev, onCleanup) => {
+      if (!element || typeof window === 'undefined') {
         return;
       }
       const hammer = new Hammer(element, wrapCallbacks(optionsRef));
@@ -82,26 +73,25 @@ interface DirectiveState {
 
 const directiveStates = new WeakMap<GestureTarget, DirectiveState>();
 
-function syncDirective(el: GestureTarget, value: UseHammerOptions = {}): void {
+function syncDirective(el: GestureTarget, value: HammerOptions = {}): void {
   if (typeof window === 'undefined') {
     return;
   }
-  const {enabled = true, ...hammerOptions} = value;
-  const nextKey = enabled ? serializeConfig(hammerOptions) : null;
+  const nextKey = serializeConfig(value);
 
   let state = directiveStates.get(el);
   if (!state) {
-    state = {hammer: null, optionsRef: {current: hammerOptions}, configKey: null};
+    state = {hammer: null, optionsRef: {current: value}, configKey: null};
     directiveStates.set(el, state);
   }
-  state.optionsRef.current = hammerOptions;
+  state.optionsRef.current = value;
 
   if (state.configKey === nextKey) {
     return;
   }
 
   state.hammer?.destroy();
-  state.hammer = nextKey !== null ? new Hammer(el, wrapCallbacks(state.optionsRef)) : null;
+  state.hammer = new Hammer(el, wrapCallbacks(state.optionsRef));
   state.configKey = nextKey;
 }
 
@@ -109,7 +99,7 @@ function syncDirective(el: GestureTarget, value: UseHammerOptions = {}): void {
  * Vue 3 directive (`v-hammer`) that attaches {@link Hammer} directly in templates:
  * `<div v-hammer="{ onTap, onPan }" />`.
  */
-export const vHammer: ObjectDirective<GestureTarget, UseHammerOptions | undefined> = {
+export const vHammer: ObjectDirective<GestureTarget, HammerOptions | undefined> = {
   mounted(el, binding) {
     syncDirective(el, binding.value);
   },

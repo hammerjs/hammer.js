@@ -1,7 +1,7 @@
 import {cleanup, render} from '@testing-library/vue';
 import {defineComponent, h, nextTick, ref, withDirectives} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {useHammer, vHammer, type UseHammerOptions} from '../src/index.js';
+import {useHammer, vHammer, type HammerOptions} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -102,16 +102,14 @@ describe('@hammerjs/vue', () => {
     expect(drag.dataset.step).toBe('2');
   });
 
-  it('useHammer supports enabled toggling, reactive option updates, and SVGElement targets', async () => {
+  it('useHammer supports reactive option updates and SVGElement targets', async () => {
     const onTap = vi.fn();
-    const enabled = ref(false);
     const direction = ref<'horizontal' | 'vertical'>('horizontal');
 
     const Demo = defineComponent({
       setup() {
         const svg = ref<SVGSVGElement | null>(null);
         useHammer(svg, () => ({
-          enabled: enabled.value,
           onTap,
           onPan: () => {},
           pan: {direction: direction.value},
@@ -122,10 +120,6 @@ describe('@hammerjs/vue', () => {
 
     const {getByTestId} = render(Demo);
     const svg = getByTestId('svg');
-    expect(svg.style.touchAction || '').toBe('');
-
-    enabled.value = true;
-    await nextTick();
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
 
     direction.value = 'vertical';
@@ -135,10 +129,6 @@ describe('@hammerjs/vue', () => {
     svg.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
     svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     expect(onTap).toHaveBeenCalledTimes(1);
-
-    enabled.value = false;
-    await nextTick();
-    expect(svg.style.touchAction || '').toBe('');
   });
 
   it('vHammer directive attaches, updates without cancelling active pans, and cleans up', async () => {
@@ -149,7 +139,7 @@ describe('@hammerjs/vue', () => {
     const DirectiveDemo = defineComponent({
       setup() {
         const count = ref(0);
-        const options = (): UseHammerOptions => ({
+        const options = (): HammerOptions => ({
           pan: {slop: 4},
           onPan: ev => {
             deltas.push(ev.deltaX);

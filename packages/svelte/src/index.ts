@@ -3,14 +3,6 @@ import type {ActionReturn} from 'svelte/action';
 
 export type {GestureTarget, HammerOptions};
 
-export interface HammerActionOptions extends HammerOptions {
-  /**
-   * Enables or disables gesture recognition reactively.
-   * @default true
-   */
-  enabled?: boolean;
-}
-
 function serializeConfig(options: HammerOptions): string {
   return JSON.stringify(
     Object.entries(options)
@@ -45,26 +37,25 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
  */
 export function hammer<T extends GestureTarget = HTMLElement>(
   node: T,
-  options: HammerActionOptions = {}
-): ActionReturn<HammerActionOptions | undefined> {
+  options: HammerOptions = {}
+): ActionReturn<HammerOptions | undefined> {
   const optionsRef: {current: HammerOptions} = {current: {}};
   let instance: Hammer<T> | null = null;
   let activeKey: string | null = null;
 
-  const sync = (next: HammerActionOptions = {}) => {
+  const sync = (next: HammerOptions = {}) => {
     if (typeof window === 'undefined') {
       return;
     }
-    const {enabled = true, ...hammerOptions} = next;
-    optionsRef.current = hammerOptions;
-    const nextKey = enabled ? serializeConfig(hammerOptions) : null;
+    optionsRef.current = next;
+    const nextKey = serializeConfig(next);
 
     if (activeKey === nextKey) {
       return;
     }
 
     instance?.destroy();
-    instance = nextKey !== null ? new Hammer(node, wrapCallbacks(optionsRef)) : null;
+    instance = new Hammer(node, wrapCallbacks(optionsRef));
     activeKey = nextKey;
   };
 

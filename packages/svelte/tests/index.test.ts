@@ -94,25 +94,21 @@ describe('@hammerjs/svelte hammer action', () => {
     action.destroy?.();
   });
 
-  it('supports enabled toggling, structural option updates, and SVGElement targets', () => {
+  it('supports structural option updates and SVGElement targets', () => {
     const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
     const onTap = vi.fn();
 
-    const action = hammer(svg, {enabled: false, onTap});
-    expect(svg.style.touchAction || '').toBe('');
-
-    action.update?.({enabled: true, onTap, onPan: () => {}, pan: {direction: 'horizontal'}});
+    const action = hammer(svg, {onTap, onPan: () => {}, pan: {direction: 'horizontal'}});
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
 
-    action.update?.({enabled: true, onTap, onPan: () => {}, pan: {direction: 'vertical'}});
+    action.update?.({onTap, onPan: () => {}, pan: {direction: 'vertical'}});
     expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
 
     svg.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
     svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    action.update?.({enabled: false, onTap});
-    expect(svg.style.touchAction || '').toBe('');
     action.destroy?.();
+    expect(svg.style.touchAction || '').toBe('');
   });
 });

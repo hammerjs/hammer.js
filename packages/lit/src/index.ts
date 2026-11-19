@@ -3,14 +3,6 @@ import type {ReactiveController, ReactiveControllerHost} from 'lit';
 
 export type {GestureTarget, HammerOptions};
 
-export interface HammerControllerOptions extends HammerOptions {
-  /**
-   * Enables or disables gesture recognition.
-   * @default true
-   */
-  enabled?: boolean;
-}
-
 function serializeConfig(options: HammerOptions): string {
   return JSON.stringify(
     Object.entries(options)
@@ -48,16 +40,15 @@ export class HammerController<
   private readonly host: H;
   private readonly resolveTarget: () => T | null;
   private readonly optionsRef: {current: HammerOptions} = {current: {}};
-  private enabled = true;
   private configKey = '';
   private attachedTarget: T | null = null;
   private attachedKey: string | null = null;
   private connected = false;
 
-  /** Active {@link Hammer} instance, or `null` when disconnected / disabled. */
+  /** Active {@link Hammer} instance, or `null` when disconnected. */
   instance: Hammer<T> | null = null;
 
-  constructor(host: H, options: HammerControllerOptions = {}, target?: () => T | null) {
+  constructor(host: H, options: HammerOptions = {}, target?: () => T | null) {
     this.host = host;
     this.resolveTarget = target ?? (() => this.host as unknown as T);
     this.applyOptions(options);
@@ -65,7 +56,7 @@ export class HammerController<
   }
 
   /** Updates options without cancelling active gestures when only callbacks change. */
-  setOptions(options: HammerControllerOptions): void {
+  setOptions(options: HammerOptions): void {
     this.applyOptions(options);
     if (this.connected) {
       this.sync();
@@ -88,15 +79,13 @@ export class HammerController<
     this.teardown();
   }
 
-  private applyOptions(options: HammerControllerOptions): void {
-    const {enabled = true, ...hammerOptions} = options;
-    this.enabled = enabled;
-    this.optionsRef.current = hammerOptions;
-    this.configKey = serializeConfig(hammerOptions);
+  private applyOptions(options: HammerOptions): void {
+    this.optionsRef.current = options;
+    this.configKey = serializeConfig(options);
   }
 
   private sync(): void {
-    if (typeof window === 'undefined' || !this.enabled) {
+    if (typeof window === 'undefined') {
       this.teardown();
       return;
     }
