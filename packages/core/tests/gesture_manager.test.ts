@@ -1090,4 +1090,70 @@ describe('GestureManager', () => {
     gm.destroy();
     card.remove();
   });
+
+  it('cancels ancestor GestureManagers when a nested child gesture begins, including across Shadow DOM, unless cancelAncestors is false', () => {
+    const outer = document.createElement('div');
+    const host = document.createElement('div');
+    outer.appendChild(host);
+    document.body.appendChild(outer);
+
+    const shadow = host.attachShadow({mode: 'open'});
+    const inner = document.createElement('div');
+    shadow.appendChild(inner);
+
+    const onParentPan = vi.fn();
+    const onParentCancel = vi.fn();
+    const onChildPan = vi.fn();
+
+    const parentGm = new GestureManager(outer, {
+      recognizers: [
+        new PanRecognizer(
+          {onPan: onParentPan, onPanCancel: onParentCancel},
+          {direction: 'horizontal', slop: 8}
+        ),
+      ],
+    });
+    const childGm = new GestureManager(inner, {
+      recognizers: [new PanRecognizer({onPan: onChildPan}, {direction: 'vertical', slop: 4})],
+    });
+
+    // Vertical drag on child: child wins and cancels parent's tracking stream across Shadow DOM:
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 0, clientY: 20}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20}));
+    expect(onChildPan).toHaveBeenCalledTimes(1);
+    expect(onParentPan).not.toHaveBeenCalled();
+
+    // Horizontal drag on child: child fails vertical lock, so parent's horizontal pan wins:
+    onChildPan.mockClear();
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 2, clientX: 25, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 25, clientY: 0}));
+    expect(onChildPan).not.toHaveBeenCalled();
+    expect(onParentPan).toHaveBeenCalledTimes(1);
+
+    // Same-axis child pan with `cancelAncestors: true` cancels parent even if parent was also tracking:
+    onParentPan.mockClear();
+    childGm.setOptions({
+      recognizers: [new PanRecognizer({onPan: onChildPan}, {direction: 'horizontal', slop: 4})],
+    });
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 3, clientX: 25, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 25, clientY: 0}));
+    expect(onChildPan).toHaveBeenCalledTimes(1);
+    expect(onParentPan).not.toHaveBeenCalled();
+
+    // `cancelAncestors: false` allows both parent and child to recognize simultaneously:
+    onChildPan.mockClear();
+    childGm.setOptions({cancelAncestors: false});
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 4, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 4, clientX: 25, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 4, clientX: 25, clientY: 0}));
+    expect(onChildPan).toHaveBeenCalledTimes(1);
+    expect(onParentPan).toHaveBeenCalledTimes(1);
+
+    childGm.destroy();
+    parentGm.destroy();
+    outer.remove();
+  });
 });

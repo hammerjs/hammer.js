@@ -28,6 +28,7 @@ export interface HammerOptions
   supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
   ignoreTarget?: boolean | ((target: EventTarget) => boolean);
+  cancelAncestors?: boolean;
 
   onTap?: (event: GestureEventData) => void;
   onDoubleTap?: (event: GestureEventData) => void;
@@ -152,6 +153,7 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
       ignoreTarget: options.ignoreTarget,
+      cancelAncestors: options.cancelAncestors,
       recognizers: buildRecognizers(options),
     });
   }
@@ -161,6 +163,7 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
       supportedPointerTypes: options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES,
       touchAction: options.touchAction ?? 'compute',
       ignoreTarget: options.ignoreTarget ?? true,
+      cancelAncestors: options.cancelAncestors ?? true,
       recognizers: buildRecognizers(options),
     });
     return this;

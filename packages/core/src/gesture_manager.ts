@@ -12,6 +12,7 @@ import {
 
 const GHOST_CLICK_TIMEOUT_MS = 400;
 const NON_PASSIVE: AddEventListenerOptions = {passive: false};
+const activeManagersByElement = new WeakMap<GestureTarget, Set<GestureManager>>();
 
 function supportsGestureEvents(win: Window | null): boolean {
   return !!win && 'GestureEvent' in win;
@@ -46,29 +47,14 @@ function isRelatedClickTarget(event: Event, element: GestureTarget): boolean {
   );
 }
 
-const IGNORED_FORM_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'OPTION']);
+const IGNORED_TARGET_SELECTOR =
+  'input,textarea,select,option,[contenteditable]:not([contenteditable="false"])';
 
 function isEditableOrFormControl(target: EventTarget, boundary: GestureTarget): boolean {
-  let node: Node | null = target instanceof Node ? target : null;
-  while (node) {
-    if (node instanceof Element) {
-      if (IGNORED_FORM_TAGS.has(node.tagName)) {
-        return true;
-      }
-      const editable = node.getAttribute('contenteditable');
-      if (
-        (node instanceof HTMLElement && node.isContentEditable) ||
-        (editable !== null && editable.toLowerCase() !== 'false')
-      ) {
-        return true;
-      }
-    }
-    if (node === boundary) {
-      break;
-    }
-    node = node.parentNode;
-  }
-  return false;
+  const el =
+    target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
+  const match = el?.closest(IGNORED_TARGET_SELECTOR);
+  return !!match && boundary.contains(match);
 }
 
 export type PointerType = 'touch' | 'pen' | 'mouse';
@@ -103,6 +89,11 @@ export interface GestureManagerOptions {
    * - `(target: EventTarget) => boolean`: custom predicate returning `true` to ignore.
    */
   ignoreTarget?: boolean | ((target: EventTarget) => boolean);
+  /**
+   * When `true` (default), starting a continuous gesture (`began`) cancels any active stream on
+   * ancestor `GestureManager` instances so nested gesture surfaces do not fight each other.
+   */
+  cancelAncestors?: boolean;
 }
 
 /**
@@ -117,6 +108,7 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   private supportedPointerTypes: readonly PointerType[];
   private touchAction: TouchActionSetting;
   private ignoreTarget: boolean | ((target: EventTarget) => boolean);
+  private cancelAncestors: boolean;
   private readonly capturedPointers = new Set<number>();
 
   private unsetSurfaceBehavior: (() => void) | null = null;
@@ -134,14 +126,26 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     this.supportedPointerTypes = options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES;
     this.touchAction = options.touchAction ?? 'compute';
     this.ignoreTarget = options.ignoreTarget ?? true;
+    this.cancelAncestors = options.cancelAncestors ?? true;
 
     this.arena = new GestureArena({
-      onActiveGestureStart: () => this.captureActivePointers(),
+      onActiveGestureStart: () => {
+        this.captureActivePointers();
+        if (this.cancelAncestors) {
+          this.cancelAncestorManagers();
+        }
+      },
     });
 
     if (options.recognizers) {
       this.arena.setRecognizers(options.recognizers);
     }
+    let managers = activeManagersByElement.get(this.element);
+    if (!managers) {
+      managers = new Set();
+      activeManagersByElement.set(this.element, managers);
+    }
+    managers.add(this);
     toggleListener(this.element, 'pointerdown', this.onElementPointerDown, true);
     toggleListener(this.element, 'lostpointercapture', this.onLostPointerCapture, true);
     this.syncTouchAction();
@@ -192,6 +196,9 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     if (options.ignoreTarget !== undefined) {
       this.ignoreTarget = options.ignoreTarget;
     }
+    if (options.cancelAncestors !== undefined) {
+      this.cancelAncestors = options.cancelAncestors;
+    }
     if (options.recognizers !== undefined) {
       this.arena.setRecognizers(options.recognizers);
       if (!this.arena.hasActiveGesture && this.capturedPointers.size > 0) {
@@ -215,6 +222,13 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
       return;
     }
     this.destroyed = true;
+    const managers = activeManagersByElement.get(this.element);
+    if (managers) {
+      managers.delete(this);
+      if (managers.size === 0) {
+        activeManagersByElement.delete(this.element);
+      }
+    }
     this.clearClickSuppression();
     this.releaseAllCapturedPointers();
     this.setActiveTracking(false);
@@ -370,6 +384,22 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
       this.abortActiveStream(e);
     }
   };
+
+  private cancelAncestorManagers(): void {
+    const cancelEvent = new Event('cancel');
+    let node: Node | null = this.element.parentNode;
+    while (node) {
+      const managers = activeManagersByElement.get(node as GestureTarget);
+      if (managers) {
+        for (const manager of managers) {
+          if (manager !== this && manager.stream.activePointerCount > 0) {
+            manager.abortActiveStream(cancelEvent);
+          }
+        }
+      }
+      node = node instanceof ShadowRoot ? node.host : node.parentNode;
+    }
+  }
 
   private shouldIgnoreTarget(e: Event): boolean {
     if (this.ignoreTarget === false) {
