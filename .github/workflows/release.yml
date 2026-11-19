@@ -1,8 +1,10 @@
 name: Release
 
+# Disabled for now — only runnable manually via workflow_dispatch.
 on:
-  push:
-    branches: ['3.x']
+  workflow_dispatch:
+  # push:
+  #   branches: ['3.x']
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
