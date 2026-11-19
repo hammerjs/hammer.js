@@ -24,5 +24,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
+    server: {
+      deps: {
+        inline: [/@angular\//],
+      },
+    },
   },
 });

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declarationDir": "dist/types",
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

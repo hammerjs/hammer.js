@@ -33,6 +33,12 @@
     "@angular/core": ">=17.0.0",
     "@hammerjs/core": "^3.0.0-experimental"
   },
+  "devDependencies": {
+    "@angular/compiler": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/platform-browser": "^21.0.0",
+    "rxjs": "^7.8.0"
+  },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",

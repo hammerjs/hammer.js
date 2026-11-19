@@ -5,7 +5,8 @@
     "moduleResolution": "bundler",
     "rootDir": ".",
     "noEmit": true,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "experimentalDecorators": true
   },
   "include": ["packages/*/src/**/*", "packages/*/tests/**/*", "packages/*/vite.config.ts"]
 }
