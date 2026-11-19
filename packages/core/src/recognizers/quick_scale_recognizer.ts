@@ -5,12 +5,11 @@ import {
   DOUBLE_TAP_TIMEOUT_MS,
   GestureRecognizer,
   MAX_TAP_DURATION_MS,
+  QUICK_SCALE_SENSITIVITY,
   TOUCH_SLOP,
 } from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
 import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer.js';
-
-const DEFAULT_QUICK_SCALE_SENSITIVITY = 200;
 
 export interface QuickScaleOptions {
   /** Movement distance in `px` required before Quick-Scale begins (and max tap wander on stroke #1). Default: `8`. */
@@ -50,7 +49,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     this.sensitivity =
       options.sensitivity !== undefined && options.sensitivity > 0
         ? options.sensitivity
-        : DEFAULT_QUICK_SCALE_SENSITIVITY;
+        : QUICK_SCALE_SENSITIVITY;
   }
 
   override getTouchAction(): TouchActionValue {

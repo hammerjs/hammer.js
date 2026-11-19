@@ -1,8 +1,11 @@
 import {distance, type MotionEvent} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer, MIN_SCALING_SPAN} from '../gesture_recognizer.js';
+import {
+  type GestureEventData,
+  GestureRecognizer,
+  MIN_SCALING_SPAN,
+  ROTATION_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-
-const DEFAULT_ROTATION_SLOP = 5;
 
 export interface RotateOptions {
   /** Angular change in degrees required before rotation begins. Default: `5`. */
@@ -49,7 +52,7 @@ export class RotateRecognizer extends GestureRecognizer {
   constructor(callbacks: RotateCallbacks, options: Partial<RotateOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.rotationSlop = Math.max(0, options.rotationSlop ?? DEFAULT_ROTATION_SLOP);
+    this.rotationSlop = Math.max(0, options.rotationSlop ?? ROTATION_SLOP);
     this.minSpan = Math.max(0, options.minSpan ?? MIN_SCALING_SPAN);
   }
 

@@ -1,8 +1,11 @@
 import type {MotionEvent} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer, MIN_SCALING_SPAN} from '../gesture_recognizer.js';
+import {
+  type GestureEventData,
+  GestureRecognizer,
+  MIN_SCALING_SPAN,
+  SPAN_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-
-const DEFAULT_SPAN_SLOP = 16;
 
 export interface ScaleOptions {
   /** Span change in `px` required before multi-pointer scaling begins. Default: `16`. */
@@ -39,7 +42,7 @@ export class ScaleRecognizer extends GestureRecognizer {
   constructor(callbacks: ScaleCallbacks, options: Partial<ScaleOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.spanSlop = Math.max(0, options.spanSlop ?? DEFAULT_SPAN_SLOP);
+    this.spanSlop = Math.max(0, options.spanSlop ?? SPAN_SLOP);
     this.minSpan = Math.max(0, options.minSpan ?? MIN_SCALING_SPAN);
   }
 

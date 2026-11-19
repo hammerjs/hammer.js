@@ -8,11 +8,25 @@ export const DOUBLE_TAP_SLOP = 100;
 /** @internal */
 export const MIN_SCALING_SPAN = 27;
 /** @internal */
+export const SPAN_SLOP = 16;
+/** @internal */
+export const ROTATION_SLOP = 5;
+/** @internal */
 export const MAX_TAP_DURATION_MS = 250;
 /** @internal */
 export const DOUBLE_TAP_TIMEOUT_MS = 300;
 /** @internal */
 export const DOUBLE_TAP_MIN_TIME_MS = 40;
+/** @internal */
+export const LONG_PRESS_DURATION_MS = 500;
+/** @internal */
+export const QUICK_SCALE_SENSITIVITY = 200;
+/** @internal */
+export const MIN_SWIPE_VELOCITY = 300;
+/** @internal */
+export const MAX_SWIPE_VELOCITY = 8000;
+/** @internal */
+export const MIN_SWIPE_DISTANCE = 30;
 
 export type RecognizerState =
   'possible' | 'pending' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed';

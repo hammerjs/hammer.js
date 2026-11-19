@@ -1,8 +1,11 @@
 import {distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer, TOUCH_SLOP} from '../gesture_recognizer.js';
+import {
+  type GestureEventData,
+  GestureRecognizer,
+  LONG_PRESS_DURATION_MS,
+  TOUCH_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
-
-const DEFAULT_LONG_PRESS_DURATION_MS = 500;
 
 export interface LongPressOptions {
   /** Number of simultaneous pointers required. Default: `1`. */
@@ -42,7 +45,7 @@ export class LongPressRecognizer extends GestureRecognizer {
     this.callbacks = callbacks;
     this.numPointers = options.numPointers ?? 1;
     this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
-    this.duration = options.duration ?? DEFAULT_LONG_PRESS_DURATION_MS;
+    this.duration = options.duration ?? LONG_PRESS_DURATION_MS;
   }
 
   override getTouchAction(): TouchActionValue {

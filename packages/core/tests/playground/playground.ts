@@ -231,9 +231,9 @@ function round(val: number, digits = 1): number {
   return Math.round(val * factor) / factor;
 }
 
-function el<T extends HTMLElement>(id: string): T {
+function el<T extends Element = HTMLElement>(id: string, ctor?: new () => T): T {
   const found = document.getElementById(id);
-  if (!found) {
+  if (!found || (ctor && !(found instanceof ctor))) {
     throw new Error(`Missing playground element #${id}`);
   }
   return found as T;
@@ -270,38 +270,38 @@ const logEntries: LogEntry[] = [];
 const activePointers = new Map<number, VisualPointer>();
 
 // Cached DOM nodes
-const hitarea = el<HTMLElement>('hitarea');
-const transformCard = el<HTMLElement>('transformCard');
-const stageGestureLabel = el<HTMLElement>('stageGestureLabel');
-const stageTransformMeta = el<HTMLElement>('stageTransformMeta');
-const pointerOverlay = el<HTMLElement>('pointerOverlay') as unknown as SVGSVGElement;
-const childButton = el<HTMLButtonElement>('childButton');
-const childClickCountEl = el<HTMLElement>('childClickCount');
+const hitarea = el('hitarea');
+const transformCard = el('transformCard');
+const stageGestureLabel = el('stageGestureLabel');
+const stageTransformMeta = el('stageTransformMeta');
+const pointerOverlay = el('pointerOverlay', SVGSVGElement);
+const childButton = el('childButton', HTMLButtonElement);
+const childClickCountEl = el('childClickCount');
 
-const computedTouchActionEl = el<HTMLElement>('computedTouchAction');
-const appliedTouchActionEl = el<HTMLElement>('appliedTouchAction');
-const touchActionHintEl = el<HTMLElement>('touchActionHint');
-const arenaStatesEl = el<HTMLElement>('arenaStates');
+const computedTouchActionEl = el('computedTouchAction');
+const appliedTouchActionEl = el('appliedTouchAction');
+const touchActionHintEl = el('touchActionHint');
+const arenaStatesEl = el('arenaStates');
 
-const telGesture = el<HTMLElement>('telGesture');
-const telPointers = el<HTMLElement>('telPointers');
-const telDelta = el<HTMLElement>('telDelta');
-const telVelocity = el<HTMLElement>('telVelocity');
-const telScale = el<HTMLElement>('telScale');
-const telRotation = el<HTMLElement>('telRotation');
+const telGesture = el('telGesture');
+const telPointers = el('telPointers');
+const telDelta = el('telDelta');
+const telVelocity = el('telVelocity');
+const telScale = el('telScale');
+const telRotation = el('telRotation');
 
-const eventLogCode = el<HTMLElement>('eventLogCode');
-const logCountBadge = el<HTMLElement>('logCountBadge');
-const codePreviewEl = el<HTMLElement>('codePreview');
+const eventLogCode = el('eventLogCode');
+const logCountBadge = el('logCountBadge');
+const codePreviewEl = el('codePreview');
 
-const filterLifecycle = el<HTMLInputElement>('filterLifecycle');
-const filterMove = el<HTMLInputElement>('filterMove');
-const filterDom = el<HTMLInputElement>('filterDom');
-const pauseLogBtn = el<HTMLButtonElement>('pauseLogBtn');
-const copyReportBtn = el<HTMLButtonElement>('copyReportBtn');
-const clearLogBtn = el<HTMLButtonElement>('clearLogBtn');
-const copyCodeBtn = el<HTMLButtonElement>('copyCodeBtn');
-const shareUrlBtn = el<HTMLButtonElement>('shareUrlBtn');
+const filterLifecycle = el('filterLifecycle', HTMLInputElement);
+const filterMove = el('filterMove', HTMLInputElement);
+const filterDom = el('filterDom', HTMLInputElement);
+const pauseLogBtn = el('pauseLogBtn', HTMLButtonElement);
+const copyReportBtn = el('copyReportBtn', HTMLButtonElement);
+const clearLogBtn = el('clearLogBtn', HTMLButtonElement);
+const copyCodeBtn = el('copyCodeBtn', HTMLButtonElement);
+const shareUrlBtn = el('shareUrlBtn', HTMLButtonElement);
 
 function localPoint(point: {x: number; y: number}): {x: number; y: number} {
   const rect = hitarea.getBoundingClientRect();
@@ -1069,75 +1069,66 @@ function rebuildHammer(): void {
   );
 }
 
+type BooleanConfigKey = {
+  [K in keyof PlaygroundConfig]: PlaygroundConfig[K] extends boolean ? K : never;
+}[keyof PlaygroundConfig];
+
+const BOOLEAN_CONFIG_KEYS: readonly BooleanConfigKey[] = [
+  'pointerTouch',
+  'pointerPen',
+  'pointerMouse',
+  'enableSingleTap',
+  'enableDoubleTap',
+  'requireDoubleTapFailure',
+  'enableTwoFingerTap',
+  'enableLongPress',
+  'enableLongPressMove',
+  'enablePan',
+  'enableSwipe',
+  'panSimultaneousScaleRotate',
+  'enableScale',
+  'enableQuickScale',
+  'enableRotate',
+  'scaleRotateSimultaneous',
+];
+
 function syncFormFromConfig(cfg: PlaygroundConfig): void {
-  el<HTMLSelectElement>('presetSelect').value = cfg.preset;
-  el<HTMLInputElement>('pointerTouch').checked = cfg.pointerTouch;
-  el<HTMLInputElement>('pointerPen').checked = cfg.pointerPen;
-  el<HTMLInputElement>('pointerMouse').checked = cfg.pointerMouse;
-  el<HTMLSelectElement>('touchActionSelect').value =
-    cfg.touchAction === false ? 'false' : cfg.touchAction;
-
-  el<HTMLInputElement>('enableSingleTap').checked = cfg.enableSingleTap;
-  el<HTMLInputElement>('enableDoubleTap').checked = cfg.enableDoubleTap;
-  el<HTMLInputElement>('requireDoubleTapFailure').checked = cfg.requireDoubleTapFailure;
-  el<HTMLInputElement>('requireDoubleTapFailure').disabled =
+  for (const key of BOOLEAN_CONFIG_KEYS) {
+    el(key, HTMLInputElement).checked = cfg[key];
+  }
+  el('requireDoubleTapFailure', HTMLInputElement).disabled =
     !cfg.enableSingleTap || !cfg.enableDoubleTap;
-  el<HTMLInputElement>('enableTwoFingerTap').checked = cfg.enableTwoFingerTap;
+  el('enableSwipe', HTMLInputElement).disabled = !cfg.enablePan;
 
-  el<HTMLInputElement>('enableLongPress').checked = cfg.enableLongPress;
-  el<HTMLSelectElement>('longPressPointers').value = String(cfg.longPressPointers);
-  el<HTMLInputElement>('enableLongPressMove').checked = cfg.enableLongPressMove;
-
-  el<HTMLInputElement>('enablePan').checked = cfg.enablePan;
-  el<HTMLInputElement>('enableSwipe').checked = cfg.enableSwipe;
-  el<HTMLInputElement>('enableSwipe').disabled = !cfg.enablePan;
-  el<HTMLSelectElement>('panDirection').value = cfg.panDirection;
-  el<HTMLSelectElement>('panPointers').value = String(cfg.panPointers);
-  el<HTMLInputElement>('panSimultaneousScaleRotate').checked = cfg.panSimultaneousScaleRotate;
-
-  el<HTMLInputElement>('enableScale').checked = cfg.enableScale;
-  el<HTMLInputElement>('enableQuickScale').checked = cfg.enableQuickScale;
-  el<HTMLInputElement>('quickScaleSensitivity').value = String(cfg.quickScaleSensitivity);
-  el<HTMLInputElement>('enableRotate').checked = cfg.enableRotate;
-  el<HTMLInputElement>('scaleRotateSimultaneous').checked = cfg.scaleRotateSimultaneous;
+  el('presetSelect', HTMLSelectElement).value = cfg.preset;
+  el('touchActionSelect', HTMLSelectElement).value =
+    cfg.touchAction === false ? 'false' : cfg.touchAction;
+  el('longPressPointers', HTMLSelectElement).value = String(cfg.longPressPointers);
+  el('panDirection', HTMLSelectElement).value = cfg.panDirection;
+  el('panPointers', HTMLSelectElement).value = String(cfg.panPointers);
+  el('quickScaleSensitivity', HTMLInputElement).value = String(cfg.quickScaleSensitivity);
 }
 
 function readConfigFromForm(): PlaygroundConfig {
-  const rawTouchAction = el<HTMLSelectElement>('touchActionSelect').value;
+  const rawTouchAction = el('touchActionSelect', HTMLSelectElement).value;
   const touchAction: TouchActionSetting =
     rawTouchAction === 'false' ? false : (rawTouchAction as TouchActionSetting);
+  const sensitivityRaw = Number(el('quickScaleSensitivity', HTMLInputElement).value);
 
-  const sensitivityRaw = Number(el<HTMLInputElement>('quickScaleSensitivity').value);
-
-  return {
-    preset: el<HTMLSelectElement>('presetSelect').value,
-    pointerTouch: el<HTMLInputElement>('pointerTouch').checked,
-    pointerPen: el<HTMLInputElement>('pointerPen').checked,
-    pointerMouse: el<HTMLInputElement>('pointerMouse').checked,
+  const cfg: PlaygroundConfig = {
+    ...createBaseConfig(),
+    preset: el('presetSelect', HTMLSelectElement).value,
     touchAction,
-
-    enableSingleTap: el<HTMLInputElement>('enableSingleTap').checked,
-    enableDoubleTap: el<HTMLInputElement>('enableDoubleTap').checked,
-    requireDoubleTapFailure: el<HTMLInputElement>('requireDoubleTapFailure').checked,
-    enableTwoFingerTap: el<HTMLInputElement>('enableTwoFingerTap').checked,
-
-    enableLongPress: el<HTMLInputElement>('enableLongPress').checked,
-    longPressPointers: Number(el<HTMLSelectElement>('longPressPointers').value),
-    enableLongPressMove: el<HTMLInputElement>('enableLongPressMove').checked,
-
-    enablePan: el<HTMLInputElement>('enablePan').checked,
-    enableSwipe: el<HTMLInputElement>('enableSwipe').checked,
-    panDirection: el<HTMLSelectElement>('panDirection').value as PanDirection,
-    panPointers: Number(el<HTMLSelectElement>('panPointers').value),
-    panSimultaneousScaleRotate: el<HTMLInputElement>('panSimultaneousScaleRotate').checked,
-
-    enableScale: el<HTMLInputElement>('enableScale').checked,
-    enableQuickScale: el<HTMLInputElement>('enableQuickScale').checked,
+    longPressPointers: Number(el('longPressPointers', HTMLSelectElement).value),
+    panDirection: el('panDirection', HTMLSelectElement).value as PanDirection,
+    panPointers: Number(el('panPointers', HTMLSelectElement).value),
     quickScaleSensitivity:
       Number.isFinite(sensitivityRaw) && sensitivityRaw >= 10 ? sensitivityRaw : 200,
-    enableRotate: el<HTMLInputElement>('enableRotate').checked,
-    scaleRotateSimultaneous: el<HTMLInputElement>('scaleRotateSimultaneous').checked,
   };
+  for (const key of BOOLEAN_CONFIG_KEYS) {
+    cfg[key] = el(key, HTMLInputElement).checked;
+  }
+  return cfg;
 }
 
 function serializeConfigToQuery(cfg: PlaygroundConfig): string {
@@ -1248,7 +1239,7 @@ function collectEnvironmentInfo(): Record<string, unknown> {
 
 function renderEnvironmentTable(): void {
   const info = collectEnvironmentInfo();
-  const tbody = el<HTMLElement>('envTableBody');
+  const tbody = el('envTableBody');
   const cssSupport = info.cssTouchActionSupport as Record<string, boolean>;
   const unsupportedTokens = TOUCH_ACTION_TOKENS.filter(t => !cssSupport[t]);
 
@@ -1400,7 +1391,7 @@ function init(): void {
 
   window.addEventListener('resize', renderEnvironmentTable);
 
-  const themeSelect = el<HTMLSelectElement>('themeSelect');
+  const themeSelect = el('themeSelect', HTMLSelectElement);
   themeSelect.addEventListener('change', () => {
     const val = themeSelect.value;
     if (val === 'auto') {
@@ -1412,7 +1403,7 @@ function init(): void {
     }
   });
 
-  const presetSelect = el<HTMLSelectElement>('presetSelect');
+  const presetSelect = el('presetSelect', HTMLSelectElement);
   presetSelect.addEventListener('change', () => {
     config = applyPresetOverrides(presetSelect.value, config);
     syncFormFromConfig(config);
@@ -1420,20 +1411,20 @@ function init(): void {
     rebuildHammer();
   });
 
-  const configForm = el<HTMLFormElement>('configForm');
+  const configForm = el('configForm', HTMLFormElement);
   configForm.addEventListener('submit', e => e.preventDefault());
   configForm.addEventListener('change', e => {
     const target = e.target as HTMLElement | null;
     if (!target || target.id === 'presetSelect') return;
     if (!target.id.startsWith('pointer')) {
-      el<HTMLSelectElement>('presetSelect').value = 'custom';
+      presetSelect.value = 'custom';
     }
     config = readConfigFromForm();
     syncFormFromConfig(config);
     rebuildHammer();
   });
 
-  el<HTMLButtonElement>('resetAllBtn').addEventListener('click', () => {
+  el('resetAllBtn').addEventListener('click', () => {
     config = createBaseConfig();
     childClickCount = 0;
     childClickCountEl.textContent = '0';
@@ -1445,7 +1436,7 @@ function init(): void {
     rebuildHammer();
   });
 
-  const persistToggle = el<HTMLInputElement>('persistTransformToggle');
+  const persistToggle = el('persistTransformToggle', HTMLInputElement);
   persistToggle.addEventListener('change', () => {
     persistTransform = persistToggle.checked;
     if (!persistTransform) {
@@ -1453,11 +1444,11 @@ function init(): void {
     }
   });
 
-  el<HTMLButtonElement>('resetTransformBtn').addEventListener('click', () => {
+  el('resetTransformBtn').addEventListener('click', () => {
     resetStageTransform(true);
   });
 
-  const tallStageToggle = el<HTMLInputElement>('tallStageToggle');
+  const tallStageToggle = el('tallStageToggle', HTMLInputElement);
   tallStageToggle.addEventListener('change', () => {
     hitarea.classList.toggle('tall-stage', tallStageToggle.checked);
   });

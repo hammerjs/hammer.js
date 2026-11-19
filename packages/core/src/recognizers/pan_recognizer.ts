@@ -1,11 +1,14 @@
 import {type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer, TOUCH_SLOP} from '../gesture_recognizer.js';
+import {
+  type GestureEventData,
+  GestureRecognizer,
+  MAX_SWIPE_VELOCITY,
+  MIN_SWIPE_DISTANCE,
+  MIN_SWIPE_VELOCITY,
+  TOUCH_SLOP,
+} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
 import {VelocityTracker} from '../velocity_tracker.js';
-
-const DEFAULT_MIN_SWIPE_VELOCITY = 300;
-const DEFAULT_MAX_SWIPE_VELOCITY = 8000;
-const DEFAULT_MIN_SWIPE_DISTANCE = 30;
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
 export type PanDirection = 'horizontal' | 'vertical' | 'both';
@@ -110,9 +113,9 @@ export class PanRecognizer extends GestureRecognizer {
     this.numPointers = options.numPointers ?? 1;
     this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
     this.direction = options.direction ?? 'both';
-    this.minSwipeVelocity = options.minSwipeVelocity ?? DEFAULT_MIN_SWIPE_VELOCITY;
-    this.maxSwipeVelocity = options.maxSwipeVelocity ?? DEFAULT_MAX_SWIPE_VELOCITY;
-    this.minSwipeDistance = options.minSwipeDistance ?? DEFAULT_MIN_SWIPE_DISTANCE;
+    this.minSwipeVelocity = options.minSwipeVelocity ?? MIN_SWIPE_VELOCITY;
+    this.maxSwipeVelocity = options.maxSwipeVelocity ?? MAX_SWIPE_VELOCITY;
+    this.minSwipeDistance = options.minSwipeDistance ?? MIN_SWIPE_DISTANCE;
   }
 
   override getTouchAction(): TouchActionValue {
