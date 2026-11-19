@@ -1,0 +1,50 @@
+{
+  "name": "@hammerjs/react",
+  "version": "0.1.0",
+  "description": "React adapter for @hammerjs/core gesture recognition",
+  "license": "MIT",
+  "author": "Jorik Tangelder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hammerjs/hammer.js.git",
+    "directory": "packages/react"
+  },
+  "keywords": [
+    "hammerjs",
+    "react",
+    "gestures",
+    "touch",
+    "pointer-events"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "peerDependencies": {
+    "@hammerjs/core": "^3.0.0-experimental",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.es.js"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}
