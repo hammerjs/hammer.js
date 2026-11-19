@@ -27,6 +27,7 @@ export interface HammerOptions
   extends LongPressCallbacks, PanCallbacks, ScaleCallbacks, RotateCallbacks {
   supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
+  ignoreTarget?: boolean | ((target: EventTarget) => boolean);
 
   onTap?: (event: GestureEventData) => void;
   onDoubleTap?: (event: GestureEventData) => void;
@@ -150,6 +151,7 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
     this.manager = new GestureManager(element, {
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
+      ignoreTarget: options.ignoreTarget,
       recognizers: buildRecognizers(options),
     });
   }
@@ -158,6 +160,7 @@ export class Hammer<T extends GestureTarget = GestureTarget> {
     this.manager.setOptions({
       supportedPointerTypes: options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES,
       touchAction: options.touchAction ?? 'compute',
+      ignoreTarget: options.ignoreTarget ?? true,
       recognizers: buildRecognizers(options),
     });
     return this;

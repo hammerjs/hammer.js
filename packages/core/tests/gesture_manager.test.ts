@@ -1027,4 +1027,67 @@ describe('GestureManager', () => {
     gm.destroy();
     target.remove();
   });
+
+  it('ignores interactive form controls and contenteditable by default, and supports ignoreTarget: false or custom predicates', () => {
+    const card = document.createElement('div');
+    const range = document.createElement('input');
+    range.type = 'range';
+    const textarea = document.createElement('textarea');
+    const select = document.createElement('select');
+    const editable = document.createElement('div');
+    editable.setAttribute('contenteditable', 'true');
+    const editableChild = document.createElement('span');
+    editable.appendChild(editableChild);
+    const nonEditable = document.createElement('div');
+    nonEditable.setAttribute('contenteditable', 'false');
+    const customIgnored = document.createElement('div');
+    customIgnored.dataset.noGesture = 'true';
+    card.append(range, textarea, select, editable, nonEditable, customIgnored);
+    document.body.appendChild(card);
+
+    const onPan = vi.fn();
+    const gm = new GestureManager(card, {
+      recognizers: [new PanRecognizer({onPan}, {slop: 4})],
+    });
+
+    const dragFrom = (el: HTMLElement, id: number) => {
+      el.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: id, clientX: 0, timeStamp: id * 50})
+      );
+      document.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: id, clientX: 30, timeStamp: id * 50 + 16})
+      );
+      document.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: id, clientX: 30, timeStamp: id * 50 + 32})
+      );
+    };
+
+    dragFrom(range, 1);
+    dragFrom(textarea, 2);
+    dragFrom(select, 3);
+    dragFrom(editableChild, 4);
+    expect(onPan).not.toHaveBeenCalled();
+
+    // `contenteditable="false"` is NOT ignored:
+    dragFrom(nonEditable, 5);
+    expect(onPan).toHaveBeenCalledTimes(1);
+
+    // Custom predicate ignores matching elements while allowing form controls:
+    gm.setOptions({
+      ignoreTarget: target =>
+        target instanceof Element && Boolean(target.closest('[data-no-gesture]')),
+    });
+    dragFrom(customIgnored, 6);
+    expect(onPan).toHaveBeenCalledTimes(1);
+    dragFrom(range, 7);
+    expect(onPan).toHaveBeenCalledTimes(2);
+
+    // `ignoreTarget: false` disables target filtering completely:
+    gm.setOptions({ignoreTarget: false});
+    dragFrom(customIgnored, 8);
+    expect(onPan).toHaveBeenCalledTimes(3);
+
+    gm.destroy();
+    card.remove();
+  });
 });

@@ -46,6 +46,31 @@ function isRelatedClickTarget(event: Event, element: GestureTarget): boolean {
   );
 }
 
+const IGNORED_FORM_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'OPTION']);
+
+function isEditableOrFormControl(target: EventTarget, boundary: GestureTarget): boolean {
+  let node: Node | null = target instanceof Node ? target : null;
+  while (node) {
+    if (node instanceof Element) {
+      if (IGNORED_FORM_TAGS.has(node.tagName)) {
+        return true;
+      }
+      const editable = node.getAttribute('contenteditable');
+      if (
+        (node instanceof HTMLElement && node.isContentEditable) ||
+        (editable !== null && editable.toLowerCase() !== 'false')
+      ) {
+        return true;
+      }
+    }
+    if (node === boundary) {
+      break;
+    }
+    node = node.parentNode;
+  }
+  return false;
+}
+
 export type PointerType = 'touch' | 'pen' | 'mouse';
 
 /** @internal */
@@ -69,6 +94,15 @@ export interface GestureManagerOptions {
   touchAction?: TouchActionSetting;
   /** Recognizers to register in the gesture arena. */
   recognizers?: readonly GestureRecognizer[];
+  /**
+   * Controls whether pointer presses originating on interactive form controls
+   * (`<input>`, `<textarea>`, `<select>`, `<option>`, `[contenteditable]`) are ignored
+   * so native typing, text selection, and range-slider drags remain unobstructed.
+   * - `true` (default): ignores native form/editable controls inside `element`.
+   * - `false`: observes all targets including form controls.
+   * - `(target: EventTarget) => boolean`: custom predicate returning `true` to ignore.
+   */
+  ignoreTarget?: boolean | ((target: EventTarget) => boolean);
 }
 
 /**
@@ -82,6 +116,7 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   private readonly arena: GestureArena;
   private supportedPointerTypes: readonly PointerType[];
   private touchAction: TouchActionSetting;
+  private ignoreTarget: boolean | ((target: EventTarget) => boolean);
   private readonly capturedPointers = new Set<number>();
 
   private unsetSurfaceBehavior: (() => void) | null = null;
@@ -98,6 +133,7 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     this.element = element;
     this.supportedPointerTypes = options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES;
     this.touchAction = options.touchAction ?? 'compute';
+    this.ignoreTarget = options.ignoreTarget ?? true;
 
     this.arena = new GestureArena({
       onActiveGestureStart: () => this.captureActivePointers(),
@@ -152,6 +188,9 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
     }
     if (options.touchAction !== undefined) {
       this.touchAction = options.touchAction;
+    }
+    if (options.ignoreTarget !== undefined) {
+      this.ignoreTarget = options.ignoreTarget;
     }
     if (options.recognizers !== undefined) {
       this.arena.setRecognizers(options.recognizers);
@@ -239,6 +278,9 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
   private readonly onElementPointerDown: EventListener = (ev: Event): void => {
     const e = ev as PointerEvent;
     this.lastHandledDown = e;
+    if (this.shouldIgnoreTarget(e)) {
+      return;
+    }
     if (this.isValidPointer(e)) {
       this.processPointerDown(e);
     }
@@ -328,6 +370,21 @@ export class GestureManager<T extends GestureTarget = GestureTarget> {
       this.abortActiveStream(e);
     }
   };
+
+  private shouldIgnoreTarget(e: Event): boolean {
+    if (this.ignoreTarget === false) {
+      return false;
+    }
+    const target =
+      (typeof e.composedPath === 'function' ? e.composedPath()[0] : undefined) ?? e.target;
+    if (!target) {
+      return false;
+    }
+    if (typeof this.ignoreTarget === 'function') {
+      return this.ignoreTarget(target);
+    }
+    return isEditableOrFormControl(target, this.element);
+  }
 
   private isValidPointer(e: PointerEvent): boolean {
     return (this.supportedPointerTypes as readonly string[]).includes(e.pointerType || 'touch');
