@@ -58,6 +58,7 @@ describe('@hammerjs/vue', () => {
   it('useHammer never cancels an active pan when reactive state updates mid-drag', async () => {
     const onPanCancel = vi.fn();
     const onPanEnd = vi.fn();
+    const getterCalls = vi.fn();
     const seenSteps: Array<{step: number; deltaX: number}> = [];
 
     const Draggable = defineComponent({
@@ -65,6 +66,7 @@ describe('@hammerjs/vue', () => {
         const el = ref<HTMLDivElement | null>(null);
         const step = ref(0);
         useHammer(el, () => {
+          getterCalls();
           const current = step.value;
           return {
             pan: {slop: 4},
@@ -82,6 +84,7 @@ describe('@hammerjs/vue', () => {
 
     const {getByTestId} = render(Draggable);
     const drag = getByTestId('drag');
+    expect(getterCalls).toHaveBeenCalledTimes(1);
 
     drag.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
     document.dispatchEvent(pointerEvent('pointermove', {clientX: 24, clientY: 0, timeStamp: 16}));

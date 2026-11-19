@@ -1,5 +1,5 @@
 import {Hammer, type GestureTarget, type HammerOptions} from '@hammerjs/core';
-import {computed, toValue, watch, type MaybeRefOrGetter, type ObjectDirective} from 'vue';
+import {ref, toValue, watch, type MaybeRefOrGetter, type ObjectDirective} from 'vue';
 
 export type {GestureTarget, HammerOptions};
 
@@ -49,18 +49,22 @@ export function useHammer<T extends GestureTarget = HTMLElement>(
   options: MaybeRefOrGetter<UseHammerOptions> = {}
 ): void {
   const optionsRef: {current: HammerOptions} = {current: {}};
-
-  const structural = computed(() => {
-    const {enabled = true, ...hammerOptions} = toValue(options);
-    optionsRef.current = hammerOptions;
-    return `${enabled}|${serializeConfig(hammerOptions)}`;
-  });
+  const structuralKey = ref<string | null>(null);
 
   watch(
-    [() => toValue(target), structural],
-    ([element], _prev, onCleanup) => {
-      const enabled = toValue(options).enabled ?? true;
-      if (!element || !enabled || typeof window === 'undefined') {
+    () => toValue(options),
+    next => {
+      const {enabled = true, ...hammerOptions} = next;
+      optionsRef.current = hammerOptions;
+      structuralKey.value = enabled ? serializeConfig(hammerOptions) : null;
+    },
+    {immediate: true, flush: 'sync'}
+  );
+
+  watch(
+    [() => toValue(target), structuralKey],
+    ([element, key], _prev, onCleanup) => {
+      if (!element || key === null || typeof window === 'undefined') {
         return;
       }
       const hammer = new Hammer(element, wrapCallbacks(optionsRef));

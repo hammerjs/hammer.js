@@ -80,3 +80,12 @@ export function hammer<T extends GestureTarget = HTMLElement>(
 ): void {
   createHammer(element, accessor);
 }
+
+declare module 'solid-js' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface Directives {
+      hammer: UseHammerOptions;
+    }
+  }
+}

@@ -175,6 +175,33 @@ describe('@hammerjs/angular HammerDirective', () => {
     expect(el.style.touchAction).toBe('pan-x pinch-zoom');
   });
 
+  it('never cancels an active pan when [hammer] receives a new equal object literal mid-drag', () => {
+    const onPanCancel = vi.fn();
+    const onPanEnd = vi.fn();
+    const deltas: number[] = [];
+    const el = document.createElement('div');
+    const {setOptions} = setup(el, {
+      initialOptions: {pan: {slop: 4}},
+      subscribe: dir => {
+        dir.hammerPan.subscribe(ev => {
+          deltas.push(ev.deltaX);
+          setOptions({pan: {slop: 4}});
+        });
+        dir.hammerPanEnd.subscribe(onPanEnd);
+        dir.hammerPanCancel.subscribe(onPanCancel);
+      },
+    });
+
+    el.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {clientX: 24, clientY: 0, timeStamp: 16}));
+    document.dispatchEvent(pointerEvent('pointermove', {clientX: 44, clientY: 0, timeStamp: 32}));
+    document.dispatchEvent(pointerEvent('pointerup', {clientX: 44, clientY: 0, timeStamp: 48}));
+
+    expect(onPanCancel).not.toHaveBeenCalled();
+    expect(onPanEnd).toHaveBeenCalledTimes(1);
+    expect(deltas).toEqual([20, 40]);
+  });
+
   it('destroys and re-attaches Hammer when [hammerEnabled] toggles', () => {
     const onTap = vi.fn();
     const el = document.createElement('div');

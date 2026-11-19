@@ -2,11 +2,14 @@ import {
   Directive,
   ElementRef,
   NgZone,
+  Output,
+  computed,
   effect,
   inject,
   input,
-  output,
-  type OutputEmitterRef,
+  untracked,
+  type OutputRef,
+  type OutputRefSubscription,
 } from '@angular/core';
 import {
   Hammer,
@@ -35,6 +38,29 @@ export type HammerDirectiveOptions = Pick<
   | 'rotate'
 >;
 
+class TrackedOutput<T> implements OutputRef<T> {
+  private readonly listeners = new Set<(value: T) => void>();
+
+  get observed(): boolean {
+    return this.listeners.size > 0;
+  }
+
+  subscribe(callback: (value: T) => void): OutputRefSubscription {
+    this.listeners.add(callback);
+    return {
+      unsubscribe: () => {
+        this.listeners.delete(callback);
+      },
+    };
+  }
+
+  emit(value: T): void {
+    for (const listener of this.listeners) {
+      listener(value);
+    }
+  }
+}
+
 type OutputMapping = readonly [keyof HammerDirective, keyof HammerOptions];
 
 const OUTPUT_MAP: readonly OutputMapping[] = [
@@ -59,9 +85,12 @@ const OUTPUT_MAP: readonly OutputMapping[] = [
   ['hammerRotateCancel', 'onRotateCancel'],
 ];
 
-function hasListeners(ref: OutputEmitterRef<unknown>): boolean {
-  const internal = ref as unknown as {listeners?: unknown[] | null};
-  return (internal.listeners?.length ?? 0) > 0;
+function serializeConfig(config: HammerDirectiveOptions): string {
+  return JSON.stringify(
+    Object.entries(config)
+      .filter(([, value]) => value !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  );
 }
 
 /**
@@ -88,37 +117,44 @@ export class HammerDirective<T extends GestureTarget = HTMLElement> {
   /** Enables or disables gesture recognition reactively. */
   readonly hammerEnabled = input(true);
 
-  readonly hammerTap = output<GestureEventData>();
-  readonly hammerDoubleTap = output<GestureEventData>();
-  readonly hammerLongPress = output<LongPressEventData>();
-  readonly hammerLongPressMove = output<LongPressEventData>();
-  readonly hammerLongPressUp = output<LongPressEventData>();
-  readonly hammerLongPressCancel = output<void>();
-  readonly hammerPanStart = output<PanEventData>();
-  readonly hammerPan = output<PanEventData>();
-  readonly hammerPanEnd = output<PanEventData>();
-  readonly hammerPanCancel = output<void>();
-  readonly hammerSwipe = output<SwipeEventData>();
-  readonly hammerScaleStart = output<ScaleEventData>();
-  readonly hammerScale = output<ScaleEventData>();
-  readonly hammerScaleEnd = output<ScaleEventData>();
-  readonly hammerScaleCancel = output<void>();
-  readonly hammerRotateStart = output<RotateEventData>();
-  readonly hammerRotate = output<RotateEventData>();
-  readonly hammerRotateEnd = output<RotateEventData>();
-  readonly hammerRotateCancel = output<void>();
+  @Output() readonly hammerTap: OutputRef<GestureEventData> = new TrackedOutput();
+  @Output() readonly hammerDoubleTap: OutputRef<GestureEventData> = new TrackedOutput();
+  @Output() readonly hammerLongPress: OutputRef<LongPressEventData> = new TrackedOutput();
+  @Output() readonly hammerLongPressMove: OutputRef<LongPressEventData> = new TrackedOutput();
+  @Output() readonly hammerLongPressUp: OutputRef<LongPressEventData> = new TrackedOutput();
+  @Output() readonly hammerLongPressCancel: OutputRef<void> = new TrackedOutput();
+  @Output() readonly hammerPanStart: OutputRef<PanEventData> = new TrackedOutput();
+  @Output() readonly hammerPan: OutputRef<PanEventData> = new TrackedOutput();
+  @Output() readonly hammerPanEnd: OutputRef<PanEventData> = new TrackedOutput();
+  @Output() readonly hammerPanCancel: OutputRef<void> = new TrackedOutput();
+  @Output() readonly hammerSwipe: OutputRef<SwipeEventData> = new TrackedOutput();
+  @Output() readonly hammerScaleStart: OutputRef<ScaleEventData> = new TrackedOutput();
+  @Output() readonly hammerScale: OutputRef<ScaleEventData> = new TrackedOutput();
+  @Output() readonly hammerScaleEnd: OutputRef<ScaleEventData> = new TrackedOutput();
+  @Output() readonly hammerScaleCancel: OutputRef<void> = new TrackedOutput();
+  @Output() readonly hammerRotateStart: OutputRef<RotateEventData> = new TrackedOutput();
+  @Output() readonly hammerRotate: OutputRef<RotateEventData> = new TrackedOutput();
+  @Output() readonly hammerRotateEnd: OutputRef<RotateEventData> = new TrackedOutput();
+  @Output() readonly hammerRotateCancel: OutputRef<void> = new TrackedOutput();
 
   /** Active {@link Hammer} instance, or `null` when disabled / on the server. */
   instance: Hammer<T> | null = null;
 
+  private readonly configKey = computed(() => {
+    if (!this.hammerEnabled()) {
+      return null;
+    }
+    const raw = this.hammer();
+    return serializeConfig(raw === '' ? {} : raw);
+  });
+
   constructor() {
     effect(onCleanup => {
-      const enabled = this.hammerEnabled();
-      const rawOptions = this.hammer();
-      if (!enabled || typeof window === 'undefined') {
+      if (this.configKey() === null || typeof window === 'undefined') {
         return;
       }
 
+      const rawOptions = untracked(() => this.hammer());
       const options = this.buildOptions(rawOptions === '' ? {} : rawOptions);
       const create = () => new Hammer(this.elementRef.nativeElement, options);
       const instance = this.ngZone ? this.ngZone.runOutsideAngular(create) : create();
@@ -136,8 +172,8 @@ export class HammerDirective<T extends GestureTarget = HTMLElement> {
   private buildOptions(config: HammerDirectiveOptions): HammerOptions {
     const options: Record<string, unknown> = {...config};
     for (const [outputKey, callbackKey] of OUTPUT_MAP) {
-      const emitter = this[outputKey] as OutputEmitterRef<unknown>;
-      if (hasListeners(emitter)) {
+      const emitter = this[outputKey] as TrackedOutput<unknown>;
+      if (emitter.observed) {
         options[callbackKey] = (event?: unknown) => {
           if (this.ngZone) {
             this.ngZone.run(() => emitter.emit(event));
