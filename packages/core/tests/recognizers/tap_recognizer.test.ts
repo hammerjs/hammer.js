@@ -112,8 +112,6 @@ describe('TapRecognizer', () => {
       singleTapConfirmed,
       doubleTap
     );
-    singleTapConfirmed.simultaneousWith(singleTapUp);
-    doubleTap.simultaneousWith(singleTapUp);
 
     arenaWithTimeouts.add(singleTapUp);
     arenaWithTimeouts.add(singleTapConfirmed);
@@ -430,6 +428,8 @@ describe('TapRecognizer', () => {
         originalEvent: pointerEvent('pointerdown'),
       })
     );
+    expect(singleTap.state).toBe('failed');
+    expect(doubleTap.state).toBe('failed');
 
     onDouble.mockClear();
     arena.dispatch(

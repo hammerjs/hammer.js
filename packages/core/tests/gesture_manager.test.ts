@@ -550,7 +550,7 @@ describe('GestureManager', () => {
     card.remove();
   });
 
-  it('coexists cleanly with iOS Safari scrolling, 2-finger GestureEvent zoom, QuickScaleRecognizer, and directional Pan/Swipe', () => {
+  it('coexists cleanly with iOS Safari scrolling for directional Pan and Swipe', () => {
     const dispatchTouchMove = (
       target: HTMLElement,
       touchCount: number,
@@ -644,6 +644,21 @@ describe('GestureManager', () => {
     );
     gmVertSwipe.destroy();
     swipeCard.remove();
+  });
+
+  it('prevents Safari GestureEvent zoom, QuickScale touchmove, and touch/pen contextmenu while keeping mouse right-click', () => {
+    const dispatchTouchMove = (
+      target: HTMLElement,
+      touchCount: number,
+      cancelable = true
+    ): {event: Event; prevented: boolean} => {
+      const ev = new Event('touchmove', {bubbles: true, cancelable});
+      Object.defineProperty(ev, 'touches', {
+        value: Array.from({length: touchCount}, (_, i) => ({identifier: i + 1})),
+      });
+      target.dispatchEvent(ev);
+      return {event: ev, prevented: ev.defaultPrevented};
+    };
 
     (window as unknown as Record<string, unknown>).GestureEvent = class MockGestureEvent extends (
       Event
@@ -709,7 +724,7 @@ describe('GestureManager', () => {
     }
   });
 
-  it('aborts stuck pointers on window blur and hidden visibilitychange, suppresses ancestor ghost clicks without eating fast clicks elsewhere, and short-circuits dead streams', () => {
+  it('aborts stuck pointers on window blur and hidden visibilitychange, and suppresses ancestor ghost clicks without eating fast clicks elsewhere', () => {
     vi.useFakeTimers();
     try {
       const outerLink = document.createElement('a');
@@ -951,6 +966,7 @@ describe('GestureManager', () => {
 
     gm.destroy();
     gm.setOptions({touchAction: 'manipulation'});
+    expect(svg.style.touchAction || '').toBe('');
     svg.remove();
   });
 

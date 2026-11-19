@@ -60,16 +60,7 @@ export default defineConfig({
           // Reuses one jsdom per worker (environment setup dominated the run time).
           pool: 'vmThreads',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/browser/**', 'tests/package.test.ts'],
-        },
-      },
-      {
-        extends: true,
-        test: {
-          // Bundles `dist/` with Vite/Rolldown, whose native bindings need a real Node realm.
-          name: 'package',
-          environment: 'node',
-          include: ['tests/package.test.ts'],
+          exclude: ['tests/browser/**'],
         },
       },
       {

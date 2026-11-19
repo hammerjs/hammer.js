@@ -111,8 +111,8 @@ describe('PanRecognizer (with integrated Swipe)', () => {
   });
 
   it('respects horizontal and vertical axis constraints', () => {
-    const onPan = vi.fn();
-    arena.add(new PanRecognizer({onPan}, {direction: 'horizontal', slop: 5}));
+    const onHorizPan = vi.fn();
+    arena.add(new PanRecognizer({onPan: onHorizPan}, {direction: 'horizontal', slop: 5}));
 
     arena.dispatch(
       stream.onPointerDown(
@@ -129,8 +129,22 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointermove', {pointerId: 1, clientX: 30, clientY: 20, timeStamp: 32})
       )!
     );
+    expect(onHorizPan).not.toHaveBeenCalled();
 
-    expect(onPan).not.toHaveBeenCalled();
+    const onVertPan = vi.fn();
+    arena.setRecognizers([new PanRecognizer({onPan: onVertPan}, {direction: 'vertical', slop: 5})]);
+    stream.reset();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 50})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 2, timeStamp: 66})
+      )!
+    );
+    expect(onVertPan).not.toHaveBeenCalled();
   });
 
   it('supports vertical axis lock, exact 2-pointer pans, pointer_up completion, and cancel', () => {
@@ -139,12 +153,11 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     const onPanEnd = vi.fn();
     const onPanCancel = vi.fn();
 
-    arena.add(
-      new PanRecognizer(
-        {onPanStart, onPan, onPanEnd, onPanCancel},
-        {numPointers: 2, direction: 'vertical', slop: 4}
-      )
+    const pan2 = new PanRecognizer(
+      {onPanStart, onPan, onPanEnd, onPanCancel},
+      {numPointers: 2, direction: 'vertical', slop: 4}
     );
+    arena.add(pan2);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -210,6 +223,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 115})
       )!
     );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -226,6 +240,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         pointerEvent('pointerdown', {pointerId: 3, clientX: 80, clientY: 0, timeStamp: 210})
       )!
     );
+    expect(pan2.state).toBe('failed');
     stream.reset();
     arena.reset();
 
@@ -265,9 +280,10 @@ describe('PanRecognizer (with integrated Swipe)', () => {
         originalEvent: pointerEvent('pointerdown'),
       })
     );
+    expect(singleFingerPan.state).toBe('failed');
   });
 
-  it('detects fast horizontal, vertical, 2-pointer, and single-frame swipes while rejecting >40ms pauses or short flicks', () => {
+  it('detects fast horizontal, vertical, and 2-pointer swipes while rejecting >40ms pauses or short flicks', () => {
     const onSwipe = vi.fn();
     arena.add(new PanRecognizer({onSwipe}, {minSwipeVelocity: 500, minSwipeDistance: 40}));
 

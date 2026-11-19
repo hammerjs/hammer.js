@@ -99,12 +99,11 @@ describe('LongPressRecognizer', () => {
     const onLongPressUp = vi.fn();
     const onLongPressCancel = vi.fn();
 
-    arena.add(
-      new LongPressRecognizer(
-        {onLongPress, onLongPressUp, onLongPressCancel},
-        {numPointers: 2, duration: 400, slop: 10}
-      )
+    const lp = new LongPressRecognizer(
+      {onLongPress, onLongPressUp, onLongPressCancel},
+      {numPointers: 2, duration: 400, slop: 10}
     );
+    arena.add(lp);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -175,6 +174,9 @@ describe('LongPressRecognizer', () => {
         pointerEvent('pointerdown', {pointerId: 3, clientX: 100, clientY: 0, timeStamp: 1120})
       )!
     );
+    expect(lp.state).toBe('failed');
+    vi.advanceTimersByTime(500);
+    expect(onLongPress).toHaveBeenCalledTimes(1);
     stream.reset();
     arena.reset();
 
@@ -210,6 +212,7 @@ describe('LongPressRecognizer', () => {
         originalEvent: pointerEvent('pointerdown'),
       })
     );
+    expect(oneFingerLp.state).toBe('failed');
   });
 
   it('re-arms a 2-finger long press when a 1-finger Pan yields to a second finger', () => {

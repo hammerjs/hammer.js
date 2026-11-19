@@ -223,31 +223,20 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     expect(rotations[1]).toBeCloseTo(28, 2);
   });
 
-  it('covers QuickScale horizontal yield to Pan, pointer_down cancel, sub-minSpan pinch recovery, 3->2 re-anchor, and negative angle wrap', () => {
+  it('handles QuickScale distant second tap, horizontal yield to Pan, pointer_down cancel, and mouse double-click', () => {
     const onPan = vi.fn();
     const onScaleStart = vi.fn();
     const onScaleEnd = vi.fn();
     const onScaleCancel = vi.fn();
-    const onRotateEnd = vi.fn();
-    const onRotateCancel = vi.fn();
 
     const quickScaleRec = new QuickScaleRecognizer(
       {onScaleStart, onScaleEnd, onScaleCancel},
       {slop: 8}
     );
-    const scaleRec = new ScaleRecognizer(
-      {onScaleStart, onScaleEnd, onScaleCancel},
-      {spanSlop: 8, minSpan: 30}
-    );
-    const rotateRec = new RotateRecognizer(
-      {onRotateEnd, onRotateCancel},
-      {rotationSlop: 5, minSpan: 20}
-    );
     arena.add(new PanRecognizer({onPan}, {slop: 6}));
     arena.add(quickScaleRec);
-    arena.add(scaleRec);
-    arena.add(rotateRec);
 
+    // Distant second tap fails QuickScale instead of arming:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
@@ -263,6 +252,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         pointerEvent('pointerdown', {pointerId: 1, clientX: 300, clientY: 300, timeStamp: 80})
       )!
     );
+    expect(quickScaleRec.isPrioritized).toBe(false);
     arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 300, clientY: 302, timeStamp: 90})
@@ -273,8 +263,10 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         pointerEvent('pointerup', {pointerId: 1, clientX: 300, clientY: 302, timeStamp: 100})
       )!
     );
+    expect(onScaleStart).not.toHaveBeenCalled();
     arena.reset();
 
+    // Horizontal drag on the second tap yields to PanRecognizer:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 200})
@@ -301,7 +293,9 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       )!
     );
     expect(onPan).toHaveBeenCalled();
+    expect(onScaleStart).not.toHaveBeenCalled();
 
+    // Adding a second finger mid-QuickScale cancels it:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 350})
@@ -332,6 +326,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     stream.reset();
     arena.reset();
 
+    // Fast mouse double-click (< 40ms) is not rejected by touch bounce filtering:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {
@@ -365,9 +360,32 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         })
       )!
     );
-    stream.reset();
-    arena.reset();
+    expect(quickScaleRec.state).toBe('possible');
 
+    quickScaleRec.onMotionEvent(
+      new MotionEvent({
+        action: 'cancel',
+        eventTime: 450,
+        actionIndex: 0,
+        pointerType: 'mouse',
+        pointers: [],
+        originalEvent: pointerEvent('pointercancel'),
+      })
+    );
+    expect(quickScaleRec.state).toBe('cancelled');
+  });
+
+  it('handles ScaleRecognizer sub-minSpan clamping/recovery, 3->2 re-anchor, and cancel', () => {
+    const onScaleEnd = vi.fn();
+    const onScaleCancel = vi.fn();
+    const scale3Values: number[] = [];
+    const scale3 = new ScaleRecognizer(
+      {onScale: ev => scale3Values.push(ev.scale), onScaleEnd, onScaleCancel},
+      {spanSlop: 5, minSpan: 40}
+    );
+    arena.add(scale3);
+
+    // Pinching below minSpan before exceeding spanSlop and lifting does not start scaling:
     arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 450})
@@ -393,48 +411,42 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         pointerEvent('pointerup', {pointerId: 2, clientX: 5, clientY: 0, timeStamp: 465})
       )!
     );
+    expect(scale3Values).toHaveLength(0);
     stream.reset();
     arena.reset();
 
-    const scale3Values: number[] = [];
-    const arenaScale = new GestureArena();
-    const scale3 = new ScaleRecognizer(
-      {onScale: ev => scale3Values.push(ev.scale), onScaleEnd, onScaleCancel},
-      {spanSlop: 5, minSpan: 40}
-    );
-    arenaScale.add(scale3);
-    arenaScale.dispatch(
+    // 3->2 finger lift re-anchors, and pinching below minSpan (40px) clamps without ending:
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 500})
       )!
     );
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 0, timeStamp: 502})
       )!
     );
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 3, clientX: 200, clientY: 0, timeStamp: 504})
       )!
     );
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 3, clientX: 200, clientY: 0, timeStamp: 510})
       )!
     );
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 150, clientY: 0, timeStamp: 520})
       )!
     );
-    // Pinching below minSpan (40px) clamps at minSpan without killing the active gesture:
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 20, clientY: 0, timeStamp: 530})
       )!
     );
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 10, clientY: 0, timeStamp: 535})
       )!
@@ -442,21 +454,22 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     expect(onScaleEnd).not.toHaveBeenCalled();
     expect(scale3.active).toBe(true);
     // Spreading back out past minSpan resumes scaling seamlessly without lifting fingers:
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 105, clientY: 0, timeStamp: 540})
       )!
     );
     expect(scale3Values.at(-1)).toBeCloseTo(1.0, 5);
-    arenaScale.dispatch(
+    arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 2, clientX: 105, clientY: 0, timeStamp: 545})
       )!
     );
     expect(onScaleEnd).toHaveBeenCalledTimes(1);
     stream.reset();
-    arenaScale.reset();
+    arena.reset();
 
+    // Synthetic multi-pointer down -> move -> pointer_up completes cleanly:
     scale3.onMotionEvent(
       new MotionEvent({
         action: 'down',
@@ -509,20 +522,13 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         originalEvent: pointerEvent('pointercancel'),
       })
     );
-    quickScaleRec.onMotionEvent(
-      new MotionEvent({
-        action: 'cancel',
-        eventTime: 615,
-        actionIndex: 0,
-        pointerType: 'touch',
-        pointers: [],
-        originalEvent: pointerEvent('pointercancel'),
-      })
-    );
-    arenaScale.destroy();
+    expect(scale3.state).toBe('cancelled');
+  });
 
+  it('handles RotateRecognizer negative angle wrap, 3->2 re-anchor, cancel, and pointer-id swap', () => {
+    const onRotateEnd = vi.fn();
+    const onRotateCancel = vi.fn();
     const negRotations: number[] = [];
-    const arenaRot = new GestureArena();
     const rot = new RotateRecognizer(
       {
         onRotate: ev => negRotations.push(ev.rotation),
@@ -531,16 +537,16 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       },
       {rotationSlop: 2, minSpan: 10}
     );
-    arenaRot.add(rot);
+    arena.add(rot);
 
     const radNeg170 = (-170 * Math.PI) / 180;
     const radPos175 = (175 * Math.PI) / 180;
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 700})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {
           pointerId: 2,
@@ -550,17 +556,17 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         })
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 3, clientX: 50, clientY: 50, timeStamp: 702})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 3, clientX: 50, clientY: 50, timeStamp: 704})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {
           pointerId: 2,
@@ -570,7 +576,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         })
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {
           pointerId: 2,
@@ -582,7 +588,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     );
     expect(negRotations[0]).toBeCloseTo(-13, 2);
 
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {
           pointerId: 2,
@@ -595,29 +601,31 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     expect(onRotateEnd).toHaveBeenCalledTimes(1);
 
     stream.reset();
-    arenaRot.reset();
-    arenaRot.dispatch(
+    arena.reset();
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 800})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 0, timeStamp: 800})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 2, clientX: 0, clientY: 100, timeStamp: 810})
       )!
     );
-    arenaRot.dispatch(
+    arena.dispatch(
       stream.onPointerCancel(
         pointerEvent('pointercancel', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 820})
       )!
     );
     expect(onRotateCancel).toHaveBeenCalledTimes(1);
 
+    // Swapping pointer IDs mid-move re-anchors the baseline angle instead of emitting a 90deg snap:
+    const countBeforeSwap = negRotations.length;
     rot.reset();
     rot.onMotionEvent(
       new MotionEvent({
@@ -645,7 +653,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         originalEvent: pointerEvent('pointermove'),
       })
     );
-    arenaRot.destroy();
+    expect(negRotations.length).toBe(countBeforeSwap);
   });
 
   it('fails QuickScale when the first stroke is held longer than a tap, and never scales against the drag direction', () => {

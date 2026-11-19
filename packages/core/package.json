@@ -35,10 +35,10 @@
     "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:unit": "vitest run --project unit --project package",
+    "test:unit": "vitest run --project unit",
     "test:browser": "vitest run --project browser",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --project unit --project package --coverage"
+    "test:coverage": "vitest run --project unit --coverage"
   },
   "exports": {
     ".": {

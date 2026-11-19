@@ -78,6 +78,6 @@ const manager = new GestureManager(element, {
 ```bash
 npm install
 npm run dev        # Open the interactive gesture playground
-npm run test:unit  # Build and run unit + package tests
+npm run test:unit  # Run unit tests across all packages
 npm test           # Full suite (including Playwright browser tests and lint)
 ```

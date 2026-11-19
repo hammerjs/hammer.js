@@ -337,7 +337,7 @@ describe('MotionEvent & MotionEventStream', () => {
     expect(dupDown.eventTime).toBe(600);
   });
 
-  it('filters bogus coalesced samples, skips history when disabled, and supports silent updates and cancelAll', () => {
+  it('filters bogus coalesced samples, supports cancelAll, recovers orphaned pen pointers, and inherits empty pointerType', () => {
     stream.onPointerDown(
       pointerEvent('pointerdown', {
         pointerId: 9,
