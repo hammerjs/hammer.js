@@ -2,9 +2,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {cdp} from 'vitest/browser';
 import {
   GestureManager,
+  Hammer,
   PanRecognizer,
   ScaleRecognizer,
   TapRecognizer,
+  type RotateEventData,
   type ScaleEventData,
 } from '../../src/index';
 
@@ -30,6 +32,10 @@ function nextFrames(): Promise<void> {
   return new Promise(resolve =>
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
   );
+}
+
+function waitMs(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -77,9 +83,27 @@ async function pinchOut(a: TouchPoint, b: TouchPoint, distance: number): Promise
   await touch('touchEnd', []);
 }
 
+/** Moves a single finger smoothly from `from` to `to` and lifts it. */
+async function touchDrag(
+  id: number,
+  from: {x: number; y: number},
+  to: {x: number; y: number},
+  steps = 8
+): Promise<void> {
+  await touch('touchStart', [{id, ...from}]);
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    await touch('touchMove', [
+      {id, x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t},
+    ]);
+  }
+  await touch('touchEnd', []);
+}
+
 describe('GestureManager in a real browser (Chromium)', () => {
   let surface: HTMLElement;
   let manager: GestureManager | null = null;
+  let hammer: Hammer | null = null;
 
   beforeEach(() => {
     document.body.style.margin = '0';
@@ -94,6 +118,8 @@ describe('GestureManager in a real browser (Chromium)', () => {
   afterEach(() => {
     manager?.destroy();
     manager = null;
+    hammer?.destroy();
+    hammer = null;
     document.body.innerHTML = '';
   });
 
@@ -168,5 +194,145 @@ describe('GestureManager in a real browser (Chromium)', () => {
       recognizers: [new PanRecognizer({}, {direction: 'horizontal'})],
     });
     expect(getComputedStyle(surface).touchAction).toBe('pan-y pinch-zoom');
+  });
+
+  it('allows native vertical scrolling while recognizing horizontal pans on a carousel', async () => {
+    document.body.innerHTML = `
+      <div id="scroller" style="position: absolute; left: 0; top: 0; width: 300px; height: 200px; overflow-y: auto;">
+        <div id="carousel" style="width: 300px; height: 800px;"></div>
+      </div>`;
+    const scroller = document.getElementById('scroller')!;
+    const carousel = document.getElementById('carousel')!;
+    const onPan = vi.fn();
+
+    manager = new GestureManager(carousel, {
+      recognizers: [new PanRecognizer({onPan}, {direction: 'horizontal'})],
+    });
+    expect(getComputedStyle(carousel).touchAction).toBe('pan-y pinch-zoom');
+
+    // Vertical touch drag should scroll the container natively without triggering horizontal pan:
+    await touchDrag(1, {x: 150, y: 160}, {x: 150, y: 40});
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    expect(onPan).not.toHaveBeenCalled();
+
+    // Horizontal touch drag should trigger onPan without changing scrollTop:
+    const scrollAfterVert = scroller.scrollTop;
+    await touchDrag(2, {x: 60, y: 100}, {x: 220, y: 100});
+    expect(onPan).toHaveBeenCalled();
+    expect(scroller.scrollTop).toBe(scrollAfterVert);
+  });
+
+  it('suppresses ghost clicks on child buttons after a touch pan', async () => {
+    const onPanEnd = vi.fn();
+    const onButtonClick = vi.fn();
+    document.getElementById('child-b')!.addEventListener('click', onButtonClick);
+    manager = new GestureManager(surface, {
+      recognizers: [new PanRecognizer({onPanEnd})],
+    });
+
+    await touchDrag(1, {x: 240, y: 150}, {x: 120, y: 150});
+
+    expect(onPanEnd).toHaveBeenCalledTimes(1);
+    expect(onButtonClick).not.toHaveBeenCalled();
+  });
+
+  it('preserves clicks on shadow-DOM taps and suppresses ancestor clicks after shadow-DOM pans', async () => {
+    document.body.innerHTML = `
+      <div id="outer" style="position: absolute; left: 0; top: 0; width: 300px; height: 300px;">
+        <div id="host" style="width: 300px; height: 300px;"></div>
+      </div>`;
+    const outer = document.getElementById('outer')!;
+    const host = document.getElementById('host')!;
+    const shadow = host.attachShadow({mode: 'open'});
+    const inner = document.createElement('div');
+    inner.style.cssText = 'width: 300px; height: 300px;';
+    shadow.appendChild(inner);
+
+    const onOuterClick = vi.fn();
+    const onTap = vi.fn();
+    const onPanEnd = vi.fn();
+    outer.addEventListener('click', onOuterClick);
+
+    manager = new GestureManager(inner, {
+      recognizers: [new TapRecognizer({onTap}), new PanRecognizer({onPanEnd})],
+    });
+
+    await touch('touchStart', [{id: 1, x: 150, y: 150}]);
+    await touch('touchEnd', []);
+    expect(onTap).toHaveBeenCalledTimes(1);
+    expect(onOuterClick).toHaveBeenCalledTimes(1);
+
+    onOuterClick.mockClear();
+    await touchDrag(2, {x: 100, y: 150}, {x: 220, y: 150});
+    expect(onPanEnd).toHaveBeenCalledTimes(1);
+    expect(onOuterClick).not.toHaveBeenCalled();
+  });
+
+  it('recognizes simultaneous 2-finger Scale, Rotate, and Pan via Hammer', async () => {
+    const scales: ScaleEventData[] = [];
+    const rotations: RotateEventData[] = [];
+    const onPan = vi.fn();
+
+    hammer = new Hammer(surface, {
+      onScale: ev => scales.push(ev),
+      onRotate: ev => rotations.push(ev),
+      onPan,
+      pan: {numPointers: 0},
+    });
+
+    const steps = 8;
+    const cx = 150;
+    const cy = 150;
+    const startRadius = 50;
+    const endRadius = 100;
+    const endAngle = Math.PI / 3; // 60 degrees
+
+    const pairAt = (t: number): [TouchPoint, TouchPoint] => {
+      const r = startRadius + (endRadius - startRadius) * t;
+      const a = endAngle * t;
+      const shiftX = 40 * t;
+      return [
+        {id: 1, x: cx + shiftX - Math.cos(a) * r, y: cy - Math.sin(a) * r},
+        {id: 2, x: cx + shiftX + Math.cos(a) * r, y: cy + Math.sin(a) * r},
+      ];
+    };
+
+    const [p1, p2] = pairAt(0);
+    await touch('touchStart', [p1]);
+    await touch('touchStart', [p1, p2]);
+    for (let i = 1; i <= steps; i++) {
+      await touch('touchMove', pairAt(i / steps));
+    }
+    await touch('touchEnd', []);
+
+    expect(scales.length).toBeGreaterThan(0);
+    expect(scales.at(-1)!.scale).toBeGreaterThan(1.4);
+    expect(rotations.length).toBeGreaterThan(0);
+    expect(rotations.at(-1)!.rotation).toBeGreaterThan(30);
+    expect(onPan).toHaveBeenCalled();
+  });
+
+  it('recognizes one-finger QuickScale (double-tap and drag) while suppressing tap', async () => {
+    const scales: ScaleEventData[] = [];
+    const onTap = vi.fn();
+
+    hammer = new Hammer(surface, {
+      onTap,
+      onScale: ev => scales.push(ev),
+      quickScale: {sensitivity: 100},
+    });
+
+    // Tap #1:
+    await touch('touchStart', [{id: 1, x: 150, y: 80}]);
+    await touch('touchEnd', []);
+    await waitMs(60);
+
+    // Tap #2 + drag down:
+    await touchDrag(2, {x: 150, y: 80}, {x: 150, y: 200});
+
+    expect(scales.length).toBeGreaterThan(0);
+    expect(scales.every(ev => ev.isQuickScale)).toBe(true);
+    expect(scales.at(-1)!.scale).toBeGreaterThan(1.5);
+    expect(onTap).not.toHaveBeenCalled();
   });
 });
