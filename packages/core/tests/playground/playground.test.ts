@@ -28,7 +28,7 @@ describe('Playground UI & Diagnostics', () => {
 
     expect(hitarea.style.touchAction).toBe('none');
     expect(arenaStates.textContent).toContain('SingleTap: possible');
-    expect(codePreview.textContent).toContain("from 'hammerjs';");
+    expect(codePreview.textContent).toContain("from '@hammerjs/core';");
 
     presetSelect.value = 'carousel';
     presetSelect.dispatchEvent(new Event('change', {bubbles: true}));

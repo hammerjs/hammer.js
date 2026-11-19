@@ -1,0 +1,53 @@
+{
+  "name": "@hammerjs/core",
+  "version": "3.0.0-experimental",
+  "description": "Modern multi-touch and pointer gesture recognition library for the web",
+  "license": "MIT",
+  "author": "Jorik Tangelder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hammerjs/hammer.js.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "gestures",
+    "touch",
+    "pointer-events",
+    "multitouch",
+    "pan",
+    "swipe",
+    "pinch",
+    "zoom",
+    "rotate",
+    "tap"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit --project package",
+    "test:browser": "vitest run --project browser",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --project unit --project package --coverage"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/hammer.es.js"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

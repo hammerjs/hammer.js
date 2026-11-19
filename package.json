@@ -1,49 +1,33 @@
 {
-  "name": "hammerjs",
-  "version": "3.0.0-experimental",
-  "description": "Modern multi-touch and pointer gesture recognition library for the web",
-  "license": "MIT",
-  "author": "Jorik Tangelder",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hammerjs/hammer.js.git"
-  },
-  "keywords": [
-    "gestures",
-    "touch",
-    "pointer-events",
-    "multitouch",
-    "pan",
-    "swipe",
-    "pinch",
-    "zoom",
-    "rotate",
-    "tap"
+  "name": "hammerjs-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
   ],
   "engines": {
     "node": ">=20.19.0"
   },
-  "type": "module",
-  "sideEffects": false,
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build && tsc --emitDeclarationOnly",
-    "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:unit": "vitest run --project unit --project package",
-    "test:browser": "vitest run --project browser",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --project unit --project package --coverage",
+    "dev": "npm -w @hammerjs/core run dev",
+    "build": "npm -w @hammerjs/core run build && npm --workspaces --if-present run build",
+    "test": "npm --workspaces --if-present run test",
+    "test:unit": "npm --workspaces --if-present run test:unit",
+    "test:browser": "npm -w @hammerjs/core run test:browser",
+    "test:coverage": "npm -w @hammerjs/core run test:coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "gts lint",
     "lint:fix": "gts fix",
-    "prepare": "npm run build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish",
     "pretest": "npm run build",
     "posttest": "npm run lint"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/user-event": "^14.6.9",
     "@vitest/browser-playwright": "^5.1.0",
@@ -55,15 +39,5 @@
     "typescript": "~6.0.3",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/hammer.es.js"
-    }
-  },
-  "types": "./dist/types/index.d.ts",
-  "files": [
-    "dist"
-  ]
+  }
 }

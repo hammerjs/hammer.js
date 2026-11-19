@@ -23,13 +23,13 @@ describe('Published package', () => {
 
     const tmpConsumerDir = mkdtempSync(join(tmpdir(), 'hammerjs-nodenext-'));
     try {
-      mkdirSync(join(tmpConsumerDir, 'node_modules'), {recursive: true});
-      symlinkSync(rootDir, join(tmpConsumerDir, 'node_modules/hammerjs'), 'dir');
+      mkdirSync(join(tmpConsumerDir, 'node_modules/@hammerjs'), {recursive: true});
+      symlinkSync(rootDir, join(tmpConsumerDir, 'node_modules/@hammerjs/core'), 'dir');
       const entryPath = join(tmpConsumerDir, 'consumer.mts');
       writeFileSync(
         entryPath,
         [
-          "import {Hammer, GestureManager, PanRecognizer} from 'hammerjs';",
+          "import {Hammer, GestureManager, PanRecognizer} from '@hammerjs/core';",
           "const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');",
           'export const h = new Hammer(svg, {onTap: ev => ev.center.x});',
           'export const gm = new GestureManager(svg, {',

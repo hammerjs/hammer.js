@@ -17,7 +17,7 @@ import {
   TapRecognizer,
   type TouchActionSetting,
   type TouchActionValue,
-} from '../src/index';
+} from '../../src/index';
 
 interface PlaygroundConfig {
   preset: string;
@@ -560,7 +560,7 @@ function generateCodePreview(cfg: PlaygroundConfig): string {
   if (cfg.enableQuickScale) imports.push('QuickScaleRecognizer');
   if (cfg.enableRotate) imports.push('RotateRecognizer');
 
-  const lines: string[] = [`import {${imports.join(', ')}} from 'hammerjs';`, ''];
+  const lines: string[] = [`import {${imports.join(', ')}} from '@hammerjs/core';`, ''];
   const recognizerVars: string[] = [];
 
   if (cfg.enableDoubleTap) {
