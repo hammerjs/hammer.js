@@ -1,6 +1,8 @@
 # Hammer.js v3 (Experimental)
 
 > **Note:** This branch is an active experiment exploring what a modern Hammer.js could look like today. APIs are evolving and not yet ready for production use.
+>
+> **Try the live playground:** https://hammerjs.github.io/hammer.js/3.x/
 
 Hammer.js 2.x was built for a different era of the web. This experiment rethinks it from scratch around:
 
