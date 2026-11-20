@@ -4,6 +4,7 @@ import {
   applySurfaceBehavior,
   mergeTouchActions,
   resolveSupportedTouchAction,
+  SurfaceGuard,
 } from '../src/touch_behavior';
 
 describe('TouchBehavior', () => {
@@ -92,5 +93,73 @@ describe('TouchBehavior', () => {
     const postSpy = vi.spyOn(postCleanupDrag, 'preventDefault');
     element.dispatchEvent(postCleanupDrag);
     expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('SurfaceGuard coordinates element/document coexistence guards and cleans up on destroy', () => {
+    document.body.appendChild(element);
+    try {
+      let preventScroll = false;
+      let activePointerType: string | null = null;
+      const onAbort = vi.fn();
+
+      const guard = new SurfaceGuard({
+        element,
+        touchAction: 'compute',
+        supportedPointerTypes: ['touch', 'mouse'],
+        shouldIgnoreEvent: () => false,
+        shouldPreventTouchMove: () => preventScroll,
+        getActivePointerType: () => activePointerType,
+        onAbortActiveStream: onAbort,
+      });
+
+      guard.sync(['pan-x pan-y'], true);
+      expect(element.style.touchAction).toBe('pan-x pan-y');
+      expect(element.style.userSelect).toBe('none');
+
+      // 1-finger touchmove is allowed while not owning scroll, prevented once owning scroll:
+      const singleMove = new Event('touchmove', {bubbles: true, cancelable: true});
+      Object.defineProperty(singleMove, 'touches', {value: [{identifier: 1}]});
+      element.dispatchEvent(singleMove);
+      expect(singleMove.defaultPrevented).toBe(false);
+
+      preventScroll = true;
+      const ownedMove = new Event('touchmove', {bubbles: true, cancelable: true});
+      Object.defineProperty(ownedMove, 'touches', {value: [{identifier: 1}]});
+      element.dispatchEvent(ownedMove);
+      expect(ownedMove.defaultPrevented).toBe(true);
+
+      // Active tracking mirrors pinch guard onto document and aborts mouse drag on contextmenu:
+      guard.setActive(true);
+      const docPinchMove = new Event('touchmove', {bubbles: true, cancelable: true});
+      Object.defineProperty(docPinchMove, 'touches', {value: [{identifier: 1}, {identifier: 2}]});
+      document.body.dispatchEvent(docPinchMove);
+      expect(docPinchMove.defaultPrevented).toBe(true);
+
+      activePointerType = 'mouse';
+      const mouseMenu = new Event('contextmenu', {bubbles: true, cancelable: true});
+      Object.defineProperty(mouseMenu, 'pointerType', {value: 'mouse'});
+      document.body.dispatchEvent(mouseMenu);
+      expect(mouseMenu.defaultPrevented).toBe(false);
+      expect(onAbort).toHaveBeenCalledTimes(1);
+
+      activePointerType = 'touch';
+      const touchMenu = new Event('contextmenu', {bubbles: true, cancelable: true});
+      Object.defineProperty(touchMenu, 'pointerType', {value: 'touch'});
+      element.dispatchEvent(touchMenu);
+      expect(touchMenu.defaultPrevented).toBe(true);
+
+      guard.destroy();
+      expect(element.style.touchAction || '').toBe('');
+      expect(element.style.userSelect || '').toBe('');
+
+      const afterDestroyPinch = new Event('touchmove', {bubbles: true, cancelable: true});
+      Object.defineProperty(afterDestroyPinch, 'touches', {
+        value: [{identifier: 1}, {identifier: 2}],
+      });
+      document.body.dispatchEvent(afterDestroyPinch);
+      expect(afterDestroyPinch.defaultPrevented).toBe(false);
+    } finally {
+      element.remove();
+    }
   });
 });

@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent} from '../../src/motion_event';
+import {MotionEventStream} from '../../src/motion_event_stream';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
 
@@ -132,7 +133,8 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     expect(onHorizPan).not.toHaveBeenCalled();
 
     const onVertPan = vi.fn();
-    arena.setRecognizers([new PanRecognizer({onPan: onVertPan}, {direction: 'vertical', slop: 5})]);
+    arena.destroy();
+    arena.add(new PanRecognizer({onPan: onVertPan}, {direction: 'vertical', slop: 5}));
     stream.reset();
     arena.dispatch(
       stream.onPointerDown(
@@ -637,5 +639,28 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     );
     expect(deltas).toEqual([5]);
     zeroSlopArena.destroy();
+  });
+
+  it('does not fire onSwipe if onPanEnd tears down the arena or recognizer', () => {
+    const onSwipe = vi.fn();
+    const onPanEnd = vi.fn(() => {
+      arena.destroy();
+    });
+    arena.add(
+      new PanRecognizer({onPanEnd, onSwipe}, {slop: 4, minSwipeVelocity: 200, minSwipeDistance: 20})
+    );
+
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!
+    );
+    arena.dispatch(
+      stream.onPointerMove(pointerEvent('pointermove', {pointerId: 1, clientX: 50, timeStamp: 16}))!
+    );
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 100, timeStamp: 32}))!
+    );
+
+    expect(onPanEnd).toHaveBeenCalledTimes(1);
+    expect(onSwipe).not.toHaveBeenCalled();
   });
 });

@@ -128,4 +128,48 @@ describe('@hammerjs/solid', () => {
     dispose();
     expect(svg.style.touchAction || '').toBe('');
   });
+
+  it('preserves ignoreTarget predicate return values and handles true <-> fn transitions', () => {
+    const el = mount(document.createElement('div'));
+    const inp = document.createElement('input');
+    const blocked = document.createElement('span');
+    blocked.dataset.ignore = '1';
+    el.append(inp, blocked);
+
+    const onTap = vi.fn();
+    let setIgnore!: (value: boolean | ((target: EventTarget) => boolean)) => void;
+
+    const dispose = createRoot(d => {
+      const [ignoreTarget, _setIgnore] = createSignal<boolean | ((target: EventTarget) => boolean)>(
+        true
+      );
+      setIgnore = _setIgnore;
+      createHammer(el, () => ({onTap, ignoreTarget: ignoreTarget()}));
+      return d;
+    });
+
+    const tap = (target: HTMLElement, t: number) => {
+      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+    };
+
+    tap(inp, 0);
+    tap(blocked, 50);
+    expect(onTap).toHaveBeenCalledTimes(1);
+
+    setIgnore(
+      () => (target: EventTarget) =>
+        target instanceof Element && Boolean(target.closest('[data-ignore]'))
+    );
+    tap(blocked, 100);
+    tap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    setIgnore(true);
+    tap(inp, 200);
+    tap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
+
+    dispose();
+  });
 });

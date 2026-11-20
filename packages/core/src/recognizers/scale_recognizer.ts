@@ -1,11 +1,9 @@
-import type {MotionEvent} from '../motion_event.js';
-import {
-  type GestureEventData,
-  GestureRecognizer,
-  MIN_SCALING_SPAN,
-  SPAN_SLOP,
-} from '../gesture_recognizer.js';
+import {centroid, type MotionEvent, type Point} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+
+const DEFAULT_SPAN_SLOP = 16;
+const DEFAULT_MIN_SPAN = 27;
 
 export interface ScaleOptions {
   /** Span change in `px` required before multi-pointer scaling begins. Default: `16`. */
@@ -38,12 +36,13 @@ export class ScaleRecognizer extends GestureRecognizer {
   private initialSpan = 0;
   private prevSpan = 0;
   private cumulativeScale = 1;
+  private anchored = false;
 
   constructor(callbacks: ScaleCallbacks, options: Partial<ScaleOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.spanSlop = Math.max(0, options.spanSlop ?? SPAN_SLOP);
-    this.minSpan = Math.max(0, options.minSpan ?? MIN_SCALING_SPAN);
+    this.spanSlop = Math.max(0, options.spanSlop ?? DEFAULT_SPAN_SLOP);
+    this.minSpan = Math.max(1, options.minSpan ?? DEFAULT_MIN_SPAN);
   }
 
   override getTouchAction(): TouchActionValue {
@@ -81,7 +80,7 @@ export class ScaleRecognizer extends GestureRecognizer {
       }
 
       case 'move': {
-        if (event.activePointerCount < 2) {
+        if (event.activePointerCount < 2 || !this.anchored) {
           return;
         }
 
@@ -91,17 +90,13 @@ export class ScaleRecognizer extends GestureRecognizer {
           if (span < this.minSpan) {
             return;
           }
-          const baseSpan = Math.max(1, this.minSpan, this.initialSpan);
+          const baseSpan = Math.max(this.minSpan, this.initialSpan);
           const spanDelta = span - baseSpan;
           if (Math.abs(spanDelta) <= this.spanSlop) {
             return;
           }
 
-          this.prevSpan = Math.max(
-            1,
-            this.minSpan,
-            baseSpan + Math.sign(spanDelta) * this.spanSlop
-          );
+          this.prevSpan = Math.max(this.minSpan, baseSpan + Math.sign(spanDelta) * this.spanSlop);
           this.cumulativeScale = 1;
 
           const started = this.tryBegin(() => {
@@ -116,15 +111,13 @@ export class ScaleRecognizer extends GestureRecognizer {
 
         // Clamp at `minSpan` while active (matching `RotateRecognizer` and `3->2` re-anchors)
         // so pinching close and spreading back out stays alive without zoom spikes.
-        const effectiveSpan = Math.max(1, this.minSpan, span);
+        const effectiveSpan = Math.max(this.minSpan, span);
         const scaleFactor = effectiveSpan / this.prevSpan;
         if (scaleFactor !== 1) {
           this.cumulativeScale *= scaleFactor;
-          this.emitChange(() => {
-            if (this.callbacks.onScale) {
-              this.callbacks.onScale(this.buildEvent(event, scaleFactor));
-            }
-          });
+          if (this.emitChange() && this.callbacks.onScale) {
+            this.callbacks.onScale(this.buildEvent(event, scaleFactor));
+          }
           this.prevSpan = effectiveSpan;
         }
         break;
@@ -132,12 +125,10 @@ export class ScaleRecognizer extends GestureRecognizer {
 
       case 'pointer_up': {
         if (event.activePointerCount < 2) {
-          if (this.active) {
-            this.completeActive(() => {
-              if (this.callbacks.onScaleEnd) {
-                this.callbacks.onScaleEnd(this.buildEvent(event, 1));
-              }
-            });
+          if (this.completeActive()) {
+            if (this.callbacks.onScaleEnd) {
+              this.callbacks.onScaleEnd(this.buildEvent(event, 1, centroid(event.pointers)));
+            }
           } else {
             this.fail();
           }
@@ -168,17 +159,25 @@ export class ScaleRecognizer extends GestureRecognizer {
     this.initialSpan = 0;
     this.prevSpan = 0;
     this.cumulativeScale = 1;
+    this.anchored = false;
   }
 
   private configureMultiPointerSpan(event: MotionEvent): void {
     const span = event.getSpan();
     this.initialSpan = span;
-    this.prevSpan = this.active ? Math.max(1, this.minSpan, span) : span;
+    this.prevSpan = this.active ? Math.max(this.minSpan, span) : span;
+    this.anchored = true;
   }
 
-  private buildEvent(event: MotionEvent, scaleFactor: number): ScaleEventData {
+  private buildEvent(
+    event: MotionEvent,
+    scaleFactor: number,
+    centerOverride?: Point
+  ): ScaleEventData {
     return {
-      ...this.createEventData(event),
+      center: centerOverride ?? event.focus,
+      motionEvent: event,
+      originalEvent: event.originalEvent,
       scale: this.cumulativeScale,
       scaleFactor,
       isQuickScale: false,

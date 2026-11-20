@@ -1,11 +1,9 @@
-import {distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {
-  type GestureEventData,
-  GestureRecognizer,
-  LONG_PRESS_DURATION_MS,
-  TOUCH_SLOP,
-} from '../gesture_recognizer.js';
+import {centroid, distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+
+const DEFAULT_SLOP = 8;
+const DEFAULT_DURATION_MS = 500;
 
 export interface LongPressOptions {
   /** Number of simultaneous pointers required. Default: `1`. */
@@ -44,8 +42,8 @@ export class LongPressRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.numPointers = options.numPointers ?? 1;
-    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
-    this.duration = options.duration ?? LONG_PRESS_DURATION_MS;
+    this.slop = Math.max(0, options.slop ?? DEFAULT_SLOP);
+    this.duration = options.duration ?? DEFAULT_DURATION_MS;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -92,12 +90,16 @@ export class LongPressRecognizer extends GestureRecognizer {
           this.cancel();
           return;
         }
-        const p = event.pointers[event.actionIndex];
-        if (!p || event.activePointerCount > this.numPointers) {
+        if (event.activePointerCount > this.numPointers) {
           this.fail();
           return;
         }
-        this.downPositions.set(p.pointerId, p);
+        // Seed any untracked pointers (e.g. after multi-touch handoff rearmed this recognizer).
+        for (const ptr of event.pointers) {
+          if (!this.downPositions.has(ptr.pointerId)) {
+            this.downPositions.set(ptr.pointerId, ptr);
+          }
+        }
         if (event.activePointerCount === this.numPointers) {
           this.armLongPress(event);
         }
@@ -105,12 +107,10 @@ export class LongPressRecognizer extends GestureRecognizer {
       }
 
       case 'move': {
-        if (this.active) {
-          this.emitChange(() => {
-            if (this.callbacks.onLongPressMove) {
-              this.callbacks.onLongPressMove(this.buildEventData(event));
-            }
-          });
+        if (this.emitChange()) {
+          if (this.callbacks.onLongPressMove) {
+            this.callbacks.onLongPressMove(this.buildEventData(event));
+          }
           return;
         }
 
@@ -125,12 +125,11 @@ export class LongPressRecognizer extends GestureRecognizer {
       // Lifting any finger ends the press (an active press holds exactly `numPointers`).
       case 'pointer_up':
       case 'up': {
-        if (this.active) {
-          this.completeActive(() => {
-            if (this.callbacks.onLongPressUp) {
-              this.callbacks.onLongPressUp(this.buildEventData(event));
-            }
-          });
+        if (this.completeActive()) {
+          if (this.callbacks.onLongPressUp) {
+            const endCenter = event.action === 'pointer_up' ? centroid(event.pointers) : undefined;
+            this.callbacks.onLongPressUp(this.buildEventData(event, endCenter));
+          }
         } else {
           this.fail();
         }
@@ -167,11 +166,14 @@ export class LongPressRecognizer extends GestureRecognizer {
     });
   }
 
-  private buildEventData(event: MotionEvent): LongPressEventData {
+  private buildEventData(event: MotionEvent, centerOverride?: Point): LongPressEventData {
+    const center = centerOverride ?? event.focus;
     return {
-      ...this.createEventData(event),
-      deltaX: event.focus.x - this.anchorFocus.x,
-      deltaY: event.focus.y - this.anchorFocus.y,
+      center,
+      motionEvent: event,
+      originalEvent: event.originalEvent,
+      deltaX: center.x - this.anchorFocus.x,
+      deltaY: center.y - this.anchorFocus.y,
     };
   }
 }

@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent} from '../../src/motion_event';
+import {MotionEventStream} from '../../src/motion_event_stream';
 import {TapRecognizer} from '../../src/recognizers/tap_recognizer';
 import {pointerEvent} from '../test_helpers';
 

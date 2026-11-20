@@ -394,10 +394,22 @@ describe('GestureManager', () => {
     box.remove();
   });
 
-  it('cancels active gestures cleanly on lostpointercapture mid-gesture', () => {
+  it('cancels active gestures cleanly on lostpointercapture for captured pointers and ignores stale/uncaptured ones', () => {
+    element.setPointerCapture = vi.fn();
+    element.hasPointerCapture = () => true;
+    element.releasePointerCapture = vi.fn();
+
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.active).toBe(true);
 
+    // Uncaptured pointerId does not cancel the active stream:
+    element.dispatchEvent(
+      pointerEvent('lostpointercapture', {pointerType: 'touch', pointerId: 99})
+    );
+    expect(recognizer.cancelled).toBe(false);
+    expect(recognizer.active).toBe(true);
+
+    // Captured pointerId cancels cleanly:
     element.dispatchEvent(pointerEvent('lostpointercapture', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.cancelled).toBe(true);
     expect(recognizer.active).toBe(false);
@@ -412,7 +424,7 @@ describe('GestureManager', () => {
     expect(recognizer.events).toHaveLength(0);
   });
 
-  it('covers unregister, reset, document pointerup/cancel, and touchAction: false', () => {
+  it('covers unregister, cancel, document pointerup/cancel, and touchAction: false', () => {
     const unstyledEl = document.createElement('div');
     document.body.appendChild(unstyledEl);
     const customManager = new GestureManager(unstyledEl, {
@@ -429,7 +441,7 @@ describe('GestureManager', () => {
     unstyledEl.dispatchEvent(pointerEvent('pointermove', {pointerType: 'touch', pointerId: 1}));
     unstyledEl.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 1}));
     expect(spy.events).toHaveLength(3);
-    customManager.reset();
+    customManager.cancel();
 
     customManager.unregister(spy);
     unstyledEl.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 5}));
@@ -923,31 +935,32 @@ describe('GestureManager', () => {
     expect(released).toEqual([1]);
   });
 
-  it('supports SVGElement targets, partial setOptions updates, and orphaned pen recovery', () => {
+  it('supports SVGElement targets, explicit touchAction: none, orphaned pen recovery, and mouse-only surfaces', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     document.body.appendChild(svg);
 
     const addSpy = vi.spyOn(svg, 'addEventListener');
-    const removeSpy = vi.spyOn(svg, 'removeEventListener');
     const onPan = vi.fn();
     const onPanCancel = vi.fn();
 
     const pan = new PanRecognizer({onPan, onPanCancel}, {direction: 'horizontal', slop: 6});
     const gm = new GestureManager(svg, {
-      recognizers: [pan],
+      recognizers: [pan, pan],
     });
     expect(gm.element).toBe(svg);
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
     expect(addSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
+    gm.destroy();
 
-    // Switching to `touchAction: 'none'` detaches the redundant element `touchmove` guard:
-    gm.setOptions({touchAction: 'none'});
+    // Explicit `touchAction: 'none'` skips attaching a redundant element `touchmove` guard:
+    addSpy.mockClear();
+    const gmLocked = new GestureManager(svg, {
+      touchAction: 'none',
+      supportedPointerTypes: ['touch', 'pen'],
+      recognizers: [pan],
+    });
     expect(svg.style.touchAction).toBe('none');
-    expect(removeSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
-
-    // Partial `setOptions` updates only specified properties without wiping existing config:
-    gm.setOptions({supportedPointerTypes: ['touch', 'pen']});
-    expect(svg.style.touchAction).toBe('none');
+    expect(addSpy.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(0);
 
     // Orphaned stylus (`pen`) drag aborts cleanly if a new pen press starts outside the target:
     svg.dispatchEvent(
@@ -961,23 +974,17 @@ describe('GestureManager', () => {
     );
     expect(onPanCancel).toHaveBeenCalledTimes(1);
 
-    gm.setOptions({touchAction: 'compute', recognizers: [pan, pan]});
-    expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
-
-    gm.destroy();
-    gm.setOptions({touchAction: 'manipulation'});
+    gmLocked.destroy();
     expect(svg.style.touchAction || '').toBe('');
     svg.remove();
-  });
 
-  it('handles mid-stream setOptions modality/recognizer swaps and leaves touch-action native on mouse-only managers', () => {
+    // Mouse-only surface keeps native mobile touch scrolling unlocked while preventing text selection:
     const mouseEl = document.createElement('div');
     document.body.appendChild(mouseEl);
     const mouseOnly = new GestureManager(mouseEl, {
       supportedPointerTypes: ['mouse'],
       recognizers: [new PanRecognizer({})],
     });
-    // Mouse-only surface keeps native mobile touch scrolling unlocked while preventing text selection:
     expect(mouseEl.style.touchAction || '').toBe('');
     expect(mouseEl.style.userSelect).toBe('none');
     const touchMenu = new Event('contextmenu', {bubbles: true, cancelable: true});
@@ -986,46 +993,6 @@ describe('GestureManager', () => {
     expect(touchMenu.defaultPrevented).toBe(false);
     mouseOnly.destroy();
     mouseEl.remove();
-
-    // Disabling `'touch'` mid-drag cancels the active touch stream instead of wedging:
-    const onPanCancel = vi.fn();
-    const released: number[] = [];
-    const target = document.createElement('div');
-    target.setPointerCapture = vi.fn();
-    target.hasPointerCapture = () => true;
-    target.releasePointerCapture = (id: number) => released.push(id);
-    document.body.appendChild(target);
-
-    const gm = new GestureManager(target, {
-      recognizers: [new PanRecognizer({onPanCancel}, {slop: 4})],
-    });
-    target.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 1, pointerType: 'touch', clientX: 0})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointermove', {pointerId: 1, pointerType: 'touch', clientX: 20})
-    );
-    gm.setOptions({supportedPointerTypes: ['mouse']});
-    expect(onPanCancel).toHaveBeenCalledTimes(1);
-    expect(released).toEqual([1]);
-
-    // Replacing `recognizers` mid-drag cancels the active gesture and releases pointer capture:
-    gm.setOptions({
-      supportedPointerTypes: ['touch', 'mouse'],
-      recognizers: [new PanRecognizer({onPanCancel}, {slop: 4})],
-    });
-    target.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 2, pointerType: 'mouse', clientX: 0})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointermove', {pointerId: 2, pointerType: 'mouse', clientX: 20})
-    );
-    gm.setOptions({recognizers: [new TapRecognizer({})]});
-    expect(onPanCancel).toHaveBeenCalledTimes(2);
-    expect(released).toEqual([1, 2]);
-
-    gm.destroy();
-    target.remove();
   });
 
   it('ignores interactive form controls and contenteditable by default, and supports ignoreTarget: false or custom predicates', () => {
@@ -1046,7 +1013,7 @@ describe('GestureManager', () => {
     document.body.appendChild(card);
 
     const onPan = vi.fn();
-    const gm = new GestureManager(card, {
+    let gm = new GestureManager(card, {
       recognizers: [new PanRecognizer({onPan}, {slop: 4})],
     });
 
@@ -1073,7 +1040,9 @@ describe('GestureManager', () => {
     expect(onPan).toHaveBeenCalledTimes(1);
 
     // Custom predicate ignores matching elements while allowing form controls:
-    gm.setOptions({
+    gm.destroy();
+    gm = new GestureManager(card, {
+      recognizers: [new PanRecognizer({onPan}, {slop: 4})],
       ignoreTarget: target =>
         target instanceof Element && Boolean(target.closest('[data-no-gesture]')),
     });
@@ -1083,7 +1052,11 @@ describe('GestureManager', () => {
     expect(onPan).toHaveBeenCalledTimes(2);
 
     // `ignoreTarget: false` disables target filtering completely:
-    gm.setOptions({ignoreTarget: false});
+    gm.destroy();
+    gm = new GestureManager(card, {
+      recognizers: [new PanRecognizer({onPan}, {slop: 4})],
+      ignoreTarget: false,
+    });
     dragFrom(customIgnored, 8);
     expect(onPan).toHaveBeenCalledTimes(3);
 
@@ -1091,69 +1064,360 @@ describe('GestureManager', () => {
     card.remove();
   });
 
-  it('cancels ancestor GestureManagers when a nested child gesture begins, including across Shadow DOM, unless cancelAncestors is false', () => {
+  it('cancels an active gesture stream via cancel(), notifies recognizers, and recovers on the next gesture', () => {
     const outer = document.createElement('div');
-    const host = document.createElement('div');
-    outer.appendChild(host);
+    const inner = document.createElement('div');
+    outer.appendChild(inner);
     document.body.appendChild(outer);
 
-    const shadow = host.attachShadow({mode: 'open'});
-    const inner = document.createElement('div');
-    shadow.appendChild(inner);
-
     const onParentPan = vi.fn();
+    const onParentEnd = vi.fn();
     const onParentCancel = vi.fn();
     const onChildPan = vi.fn();
 
     const parentGm = new GestureManager(outer, {
       recognizers: [
         new PanRecognizer(
-          {onPan: onParentPan, onPanCancel: onParentCancel},
-          {direction: 'horizontal', slop: 8}
+          {onPan: onParentPan, onPanEnd: onParentEnd, onPanCancel: onParentCancel},
+          {direction: 'horizontal', slop: 4}
         ),
       ],
     });
     const childGm = new GestureManager(inner, {
-      recognizers: [new PanRecognizer({onPan: onChildPan}, {direction: 'vertical', slop: 4})],
+      recognizers: [
+        new PanRecognizer(
+          {
+            onPanStart: () => parentGm.cancel(),
+            onPan: onChildPan,
+          },
+          {direction: 'horizontal', slop: 8}
+        ),
+      ],
     });
 
-    // Vertical drag on child: child wins and cancels parent's tracking stream across Shadow DOM:
+    // Safe no-op when idle:
+    parentGm.cancel();
+    expect(onParentCancel).not.toHaveBeenCalled();
+
+    // Parent begins panning first (slop 4), then child crosses slop 8 and cancels parent:
     inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 0, clientY: 20}));
-    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 20}));
-    expect(onChildPan).toHaveBeenCalledTimes(1);
-    expect(onParentPan).not.toHaveBeenCalled();
-
-    // Horizontal drag on child: child fails vertical lock, so parent's horizontal pan wins:
-    onChildPan.mockClear();
-    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 2, clientX: 25, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 25, clientY: 0}));
-    expect(onChildPan).not.toHaveBeenCalled();
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 5, clientY: 0}));
     expect(onParentPan).toHaveBeenCalledTimes(1);
 
-    // Same-axis child pan with `cancelAncestors: true` cancels parent even if parent was also tracking:
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 20, clientY: 0}));
+    expect(onChildPan).toHaveBeenCalledTimes(1);
+    expect(onParentCancel).toHaveBeenCalledTimes(1);
+
+    // Subsequent moves and pointerup in the cancelled stream are ignored by parent:
     onParentPan.mockClear();
-    childGm.setOptions({
-      recognizers: [new PanRecognizer({onPan: onChildPan}, {direction: 'horizontal', slop: 4})],
-    });
-    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 3, clientX: 25, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 25, clientY: 0}));
-    expect(onChildPan).toHaveBeenCalledTimes(1);
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 40, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 40, clientY: 0}));
     expect(onParentPan).not.toHaveBeenCalled();
+    expect(onParentEnd).not.toHaveBeenCalled();
+    expect(onChildPan).toHaveBeenCalledTimes(2);
 
-    // `cancelAncestors: false` allows both parent and child to recognize simultaneously:
-    onChildPan.mockClear();
-    childGm.setOptions({cancelAncestors: false});
-    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 4, clientX: 0, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 4, clientX: 25, clientY: 0}));
-    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 4, clientX: 25, clientY: 0}));
-    expect(onChildPan).toHaveBeenCalledTimes(1);
+    // Next pointer sequence on outer works cleanly again:
+    outer.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 2, clientX: 15, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 15, clientY: 0}));
     expect(onParentPan).toHaveBeenCalledTimes(1);
+    expect(onParentEnd).toHaveBeenCalledTimes(1);
 
     childGm.destroy();
     parentGm.destroy();
+    // Safe no-op after destroy:
+    parentGm.cancel();
     outer.remove();
+  });
+
+  it('ignores form controls inside child Shadow DOM and respects nested contenteditable="false"', () => {
+    const outerEditable = document.createElement('div');
+    outerEditable.setAttribute('contenteditable', 'true');
+    const card = document.createElement('div');
+    const shadowHost = document.createElement('div');
+    const shadow = shadowHost.attachShadow({mode: 'open'});
+    const shadowInput = document.createElement('input');
+    shadow.appendChild(shadowInput);
+
+    const innerEditable = document.createElement('div');
+    innerEditable.setAttribute('contenteditable', 'true');
+    const nestedOptOut = document.createElement('div');
+    nestedOptOut.setAttribute('contenteditable', 'FALSE');
+    const nestedButton = document.createElement('button');
+    nestedOptOut.appendChild(nestedButton);
+    innerEditable.appendChild(nestedOptOut);
+
+    const normalChild = document.createElement('div');
+    card.append(shadowHost, innerEditable, normalChild);
+    outerEditable.appendChild(card);
+    document.body.appendChild(outerEditable);
+
+    const onPan = vi.fn();
+    const gm = new GestureManager(card, {
+      recognizers: [new PanRecognizer({onPan}, {slop: 4})],
+    });
+
+    // Input inside a child Shadow DOM is ignored:
+    shadowInput.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 30}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 30}));
+    expect(onPan).not.toHaveBeenCalled();
+
+    // Outer contenteditable ancestor outside `card` does NOT suppress gestures on `normalChild`:
+    normalChild.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 2, clientX: 30}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 30}));
+    expect(onPan).toHaveBeenCalledTimes(1);
+
+    // Nested `contenteditable="FALSE"` inside `contenteditable="true"` opts back in to gestures:
+    nestedButton.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 3, clientX: 30}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 30}));
+    expect(onPan).toHaveBeenCalledTimes(2);
+
+    gm.destroy();
+    outerEditable.remove();
+  });
+
+  it('respects ignoreTarget on dragstart and ignores secondary touches landing on ignored targets', () => {
+    const card = document.createElement('div');
+    const draggableChild = document.createElement('div');
+    draggableChild.dataset.allowDrag = 'true';
+    const input = document.createElement('input');
+    const normalChild = document.createElement('div');
+    card.append(draggableChild, input, normalChild);
+    document.body.appendChild(card);
+
+    const onScale = vi.fn();
+    const gm = new GestureManager(card, {
+      recognizers: [new ScaleRecognizer({onScale}, {spanSlop: 4, minSpan: 10})],
+      ignoreTarget: target =>
+        target instanceof Element && Boolean(target.closest('[data-allow-drag]')),
+    });
+
+    const normalDrag = new Event('dragstart', {bubbles: true, cancelable: true});
+    normalChild.dispatchEvent(normalDrag);
+    expect(normalDrag.defaultPrevented).toBe(true);
+
+    const allowedDrag = new Event('dragstart', {bubbles: true, cancelable: true});
+    draggableChild.dispatchEvent(allowedDrag);
+    expect(allowedDrag.defaultPrevented).toBe(false);
+
+    // Secondary touch landing on an ignored input must not join an active multi-touch stream:
+    gm.destroy();
+    const gmDefaultIgnore = new GestureManager(card, {
+      recognizers: [new ScaleRecognizer({onScale}, {spanSlop: 4, minSpan: 10})],
+    });
+    normalChild.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 10, clientX: 0, clientY: 0})
+    );
+    input.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'touch',
+        pointerId: 11,
+        isPrimary: false,
+        clientX: 100,
+        clientY: 0,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'touch',
+        pointerId: 11,
+        isPrimary: false,
+        clientX: 200,
+        clientY: 0,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointerup', {
+        pointerType: 'touch',
+        pointerId: 11,
+        isPrimary: false,
+        clientX: 200,
+        clientY: 0,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerType: 'touch', pointerId: 10, clientX: 0, clientY: 0})
+    );
+    expect(onScale).not.toHaveBeenCalled();
+
+    gmDefaultIgnore.destroy();
+    card.remove();
+  });
+
+  it('cancels pending multi-tap timers when cancel() is called between taps', () => {
+    vi.useFakeTimers();
+    try {
+      const onTap = vi.fn();
+      const onDoubleTap = vi.fn();
+      const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
+      const singleTap = new TapRecognizer({onTap}).requireFailureOf(doubleTap);
+
+      const gm = new GestureManager(element, {recognizers: [singleTap, doubleTap]});
+
+      element.dispatchEvent(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 0})
+      );
+      document.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 20})
+      );
+
+      gm.cancel();
+      vi.advanceTimersByTime(400);
+      expect(onTap).not.toHaveBeenCalled();
+      expect(onDoubleTap).not.toHaveBeenCalled();
+
+      gm.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('ignores orphaned pointermove events when recognizers are registered mid-pinch', () => {
+    const onInitialScale = vi.fn();
+    const gm = new GestureManager(element, {
+      recognizers: [new ScaleRecognizer({onScale: onInitialScale})],
+    });
+
+    element.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+    );
+    element.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerId: 2,
+        isPrimary: false,
+        clientX: 100,
+        clientY: 0,
+        timeStamp: 0,
+      })
+    );
+    const onLateScale = vi.fn();
+    const onLateRotate = vi.fn();
+    gm.register(
+      new ScaleRecognizer({onScale: onLateScale}, {spanSlop: 4, minSpan: 10}),
+      new RotateRecognizer({onRotate: onLateRotate}, {rotationSlop: 2, minSpan: 10})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerId: 2,
+        isPrimary: false,
+        clientX: 160,
+        clientY: 80,
+        timeStamp: 20,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 2, isPrimary: false, clientX: 160, clientY: 80})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0}));
+    expect(onLateScale).not.toHaveBeenCalled();
+    expect(onLateRotate).not.toHaveBeenCalled();
+
+    gm.destroy();
+  });
+
+  it('skips PointerEvent.getCoalescedEvents() unless a registered recognizer needs coalesced history', () => {
+    const gm = new GestureManager(element, {recognizers: [new TapRecognizer({})]});
+
+    const moveWithoutPan = pointerEvent('pointermove', {
+      pointerId: 1,
+      clientX: 12,
+      clientY: 10,
+      timeStamp: 16,
+    });
+    const skippedSpy = vi.fn(() => []);
+    Object.defineProperty(moveWithoutPan, 'getCoalescedEvents', {value: skippedSpy});
+
+    element.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 0})
+    );
+    document.dispatchEvent(moveWithoutPan);
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 1, clientX: 12, clientY: 10, timeStamp: 32})
+    );
+    expect(skippedSpy).not.toHaveBeenCalled();
+
+    const pan = new PanRecognizer({});
+    gm.register(pan);
+
+    const moveWithPan = pointerEvent('pointermove', {
+      pointerId: 2,
+      clientX: 30,
+      clientY: 10,
+      timeStamp: 66,
+    });
+    const usedSpy = vi.fn(() => [moveWithPan]);
+    Object.defineProperty(moveWithPan, 'getCoalescedEvents', {value: usedSpy});
+
+    element.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 2, clientX: 10, clientY: 10, timeStamp: 50})
+    );
+    document.dispatchEvent(moveWithPan);
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 2, clientX: 30, clientY: 10, timeStamp: 82})
+    );
+    expect(usedSpy).toHaveBeenCalledTimes(1);
+
+    gm.destroy();
+  });
+
+  it('ignores non-primary mouse buttons pressed outside the element during an active drag', () => {
+    const onPan = vi.fn();
+    const onPanCancel = vi.fn();
+    const gm = new GestureManager(element, {
+      recognizers: [new PanRecognizer({onPan, onPanCancel}, {slop: 4})],
+    });
+
+    element.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'touch',
+        pointerId: 1,
+        isPrimary: true,
+        clientX: 0,
+        clientY: 0,
+        timeStamp: 0,
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'touch',
+        pointerId: 1,
+        isPrimary: true,
+        clientX: 20,
+        clientY: 0,
+        timeStamp: 16,
+      })
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+
+    // Middle-click (button: 1) outside `element` must not abort the active touch drag:
+    document.body.dispatchEvent(
+      pointerEvent('pointerdown', {
+        pointerType: 'mouse',
+        pointerId: 2,
+        isPrimary: true,
+        button: 1,
+        clientX: 200,
+        clientY: 200,
+        timeStamp: 24,
+      })
+    );
+    expect(onPanCancel).not.toHaveBeenCalled();
+
+    document.dispatchEvent(
+      pointerEvent('pointermove', {
+        pointerType: 'touch',
+        pointerId: 1,
+        isPrimary: true,
+        clientX: 40,
+        clientY: 0,
+        timeStamp: 32,
+      })
+    );
+    expect(onPan).toHaveBeenCalledTimes(2);
+
+    gm.destroy();
   });
 });

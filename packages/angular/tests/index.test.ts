@@ -209,4 +209,50 @@ describe('@hammerjs/angular HammerDirective', () => {
     svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     expect(onTap).toHaveBeenCalledTimes(1);
   });
+
+  it('supports ignoreTarget predicates, transitions true <-> fn, and reacts to late programmatic output subscriptions', () => {
+    const onTap = vi.fn();
+    const el = document.createElement('div');
+    const inp = document.createElement('input');
+    const blocked = document.createElement('span');
+    blocked.dataset.ignore = '1';
+    el.append(inp, blocked);
+
+    const {directive, setOptions} = setup(el, {
+      initialOptions: {ignoreTarget: true},
+    });
+    expect(directive.instance).not.toBeNull();
+
+    // Late programmatic subscription after initial render registers the recognizer:
+    const sub = directive.hammerTap.subscribe(onTap);
+    TestBed.tick();
+    expect(el.style.touchAction).toBe('manipulation');
+
+    const tap = (target: HTMLElement, t: number) => {
+      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+    };
+
+    tap(inp, 0);
+    tap(blocked, 50);
+    expect(onTap).toHaveBeenCalledTimes(1);
+
+    // Switch `true -> fn`:
+    setOptions({
+      ignoreTarget: target => target instanceof Element && Boolean(target.closest('[data-ignore]')),
+    });
+    tap(blocked, 100);
+    tap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    // Switch `fn -> true`:
+    setOptions({ignoreTarget: true});
+    tap(inp, 200);
+    tap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
+
+    sub.unsubscribe();
+    TestBed.tick();
+    expect(el.style.touchAction || '').toBe('');
+  });
 });

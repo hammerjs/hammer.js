@@ -1,5 +1,5 @@
 import {cleanup, render} from '@testing-library/vue';
-import {defineComponent, h, nextTick, ref, withDirectives} from 'vue';
+import {defineComponent, h, nextTick, reactive, ref, withDirectives} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {useHammer, vHammer, type HammerOptions} from '../src/index.js';
 
@@ -172,5 +172,60 @@ describe('@hammerjs/vue', () => {
 
     unmount();
     expect(el.style.touchAction || '').toBe('');
+  });
+
+  it('preserves ignoreTarget predicate return values, handles true <-> fn transitions, and tracks reactive() options', async () => {
+    const onTap = vi.fn();
+    const opts = reactive<HammerOptions>({
+      onTap,
+      onPan: () => {},
+      pan: {direction: 'horizontal'},
+      ignoreTarget: true,
+    });
+
+    const Demo = defineComponent({
+      setup() {
+        const el = ref<HTMLDivElement | null>(null);
+        useHammer(el, opts);
+        return () =>
+          h('div', {ref: el, 'data-testid': 'surface'}, [
+            h('input', {'data-testid': 'inp'}),
+            h('span', {'data-testid': 'blocked', 'data-ignore': '1'}),
+          ]);
+      },
+    });
+
+    const {getByTestId} = render(Demo);
+    const surface = getByTestId('surface');
+    const inp = getByTestId('inp');
+    const blocked = getByTestId('blocked');
+    expect(surface.style.touchAction).toBe('pan-y pinch-zoom');
+
+    // Deep mutation on reactive() options updates touch-action in place:
+    opts.pan!.direction = 'vertical';
+    await nextTick();
+    expect(surface.style.touchAction).toBe('pan-x pinch-zoom');
+
+    const tap = (target: HTMLElement, t: number) => {
+      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+    };
+
+    tap(inp, 0);
+    tap(blocked, 50);
+    expect(onTap).toHaveBeenCalledTimes(1);
+
+    opts.ignoreTarget = target =>
+      target instanceof Element && Boolean(target.closest('[data-ignore]'));
+    await nextTick();
+    tap(blocked, 100);
+    tap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    opts.ignoreTarget = true;
+    await nextTick();
+    tap(inp, 200);
+    tap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
   });
 });

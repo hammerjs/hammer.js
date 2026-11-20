@@ -150,4 +150,47 @@ describe('@hammerjs/lit HammerController', () => {
     el.hammer.setOptions({onTap, onPan: () => {}, pan: {direction: 'vertical'}});
     expect(surface.style.touchAction).toBe('pan-x pinch-zoom');
   });
+
+  it('preserves ignoreTarget predicate return values and handles true <-> fn transitions', async () => {
+    const onTap = vi.fn();
+
+    class FilterEl extends LitElement {
+      readonly hammer = new HammerController(this, {onTap, ignoreTarget: true});
+      override render() {
+        return html`<input class="inp" /><span class="blocked" data-ignore="1"></span>`;
+      }
+    }
+
+    const tag = uniqueTag('hammer-filter');
+    customElements.define(tag, FilterEl);
+    const el = document.createElement(tag) as FilterEl;
+    document.body.appendChild(el);
+    mounted.push(el);
+    await el.updateComplete;
+
+    const inp = el.renderRoot.querySelector<HTMLInputElement>('.inp')!;
+    const blocked = el.renderRoot.querySelector<HTMLSpanElement>('.blocked')!;
+
+    const tap = (target: HTMLElement, t: number) => {
+      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+    };
+
+    tap(inp, 0);
+    tap(blocked, 50);
+    expect(onTap).toHaveBeenCalledTimes(1);
+
+    el.hammer.setOptions({
+      onTap,
+      ignoreTarget: target => target instanceof Element && Boolean(target.closest('[data-ignore]')),
+    });
+    tap(blocked, 100);
+    tap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    el.hammer.setOptions({onTap, ignoreTarget: true});
+    tap(inp, 200);
+    tap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
+  });
 });

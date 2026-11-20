@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent} from '../../src/motion_event';
+import {MotionEventStream} from '../../src/motion_event_stream';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {QuickScaleRecognizer} from '../../src/recognizers/quick_scale_recognizer';
 import {RotateRecognizer} from '../../src/recognizers/rotate_recognizer';
@@ -81,6 +82,11 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       )!
     );
     expect(onScaleEnd).toHaveBeenCalledTimes(1);
+    expect(onScaleEnd).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        center: {x: 150, y: 0},
+      })
+    );
 
     // Starting closer than minSpan (20px) anchors at minSpan + spanSlop (30px).
     stream.reset();
@@ -599,6 +605,9 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       )!
     );
     expect(onRotateEnd).toHaveBeenCalledTimes(1);
+    const endCenter = onRotateEnd.mock.calls[0][0].center;
+    expect(endCenter.x).toBeCloseTo(Math.cos(radPos175) * 50, 3);
+    expect(endCenter.y).toBeCloseTo(Math.sin(radPos175) * 50, 3);
 
     stream.reset();
     arena.reset();

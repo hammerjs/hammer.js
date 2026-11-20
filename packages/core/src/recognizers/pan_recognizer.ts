@@ -1,14 +1,12 @@
-import {type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {
-  type GestureEventData,
-  GestureRecognizer,
-  MAX_SWIPE_VELOCITY,
-  MIN_SWIPE_DISTANCE,
-  MIN_SWIPE_VELOCITY,
-  TOUCH_SLOP,
-} from '../gesture_recognizer.js';
+import {centroid, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
 import {VelocityTracker} from '../velocity_tracker.js';
+
+const DEFAULT_SLOP = 8;
+const DEFAULT_MIN_SWIPE_VELOCITY = 300;
+const DEFAULT_MAX_SWIPE_VELOCITY = 8000;
+const DEFAULT_MIN_SWIPE_DISTANCE = 30;
 
 export type CardinalDirection = 'left' | 'right' | 'up' | 'down';
 export type PanDirection = 'horizontal' | 'vertical' | 'both';
@@ -76,18 +74,6 @@ function setPoint(pt: MutablePoint, x: number, y: number): void {
   pt.y = y;
 }
 
-/** Centroid of every pointer in `event`, including the one lifting (`pointers` is never empty). */
-function computeAllPointersCentroid(event: MotionEvent): Point {
-  const pts = event.pointers;
-  let sumX = 0;
-  let sumY = 0;
-  for (const p of pts) {
-    sumX += p.x;
-    sumY += p.y;
-  }
-  return {x: sumX / pts.length, y: sumY / pts.length};
-}
-
 export class PanRecognizer extends GestureRecognizer {
   private readonly callbacks: PanCallbacks;
   private readonly numPointers: number;
@@ -111,11 +97,11 @@ export class PanRecognizer extends GestureRecognizer {
     super();
     this.callbacks = callbacks;
     this.numPointers = options.numPointers ?? 1;
-    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.slop = Math.max(0, options.slop ?? DEFAULT_SLOP);
     this.direction = options.direction ?? 'both';
-    this.minSwipeVelocity = options.minSwipeVelocity ?? MIN_SWIPE_VELOCITY;
-    this.maxSwipeVelocity = options.maxSwipeVelocity ?? MAX_SWIPE_VELOCITY;
-    this.minSwipeDistance = options.minSwipeDistance ?? MIN_SWIPE_DISTANCE;
+    this.minSwipeVelocity = options.minSwipeVelocity ?? DEFAULT_MIN_SWIPE_VELOCITY;
+    this.maxSwipeVelocity = options.maxSwipeVelocity ?? DEFAULT_MAX_SWIPE_VELOCITY;
+    this.minSwipeDistance = options.minSwipeDistance ?? DEFAULT_MIN_SWIPE_DISTANCE;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -132,6 +118,11 @@ export class PanRecognizer extends GestureRecognizer {
   /** @internal */
   override get acceptsMultiTouch(): boolean {
     return this.numPointers === 0 || this.numPointers >= 2;
+  }
+
+  /** @internal */
+  override get needsCoalescedHistory(): boolean {
+    return true;
   }
 
   /** @internal */
@@ -212,11 +203,9 @@ export class PanRecognizer extends GestureRecognizer {
 
             if (started && (postSlopX !== 0 || postSlopY !== 0)) {
               setPoint(this.totalDelta, postSlopX, postSlopY);
-              this.emitChange(() => {
-                if (this.callbacks.onPan) {
-                  this.callbacks.onPan(this.buildEventData(event, postSlopX, postSlopY));
-                }
-              });
+              if (this.emitChange() && this.callbacks.onPan) {
+                this.callbacks.onPan(this.buildEventData(event, postSlopX, postSlopY));
+              }
             }
             return;
           }
@@ -224,18 +213,16 @@ export class PanRecognizer extends GestureRecognizer {
           if (stepX !== 0 || stepY !== 0) {
             this.totalDelta.x += stepX;
             this.totalDelta.y += stepY;
-            this.emitChange(() => {
-              if (this.callbacks.onPan) {
-                this.callbacks.onPan(this.buildEventData(event, stepX, stepY));
-              }
-            });
+            if (this.emitChange() && this.callbacks.onPan) {
+              this.callbacks.onPan(this.buildEventData(event, stepX, stepY));
+            }
           }
           break;
         }
 
         case 'pointer_up': {
           if (this.numPointers > 0 && event.activePointerCount < this.numPointers) {
-            const endCenter = computeAllPointersCentroid(event);
+            const endCenter = centroid(event.pointers);
             this.finishGesture(event, endCenter, endCenter);
             return;
           }
@@ -310,6 +297,10 @@ export class PanRecognizer extends GestureRecognizer {
   }
 
   private finishGesture(event: MotionEvent, endFocus: Point, centerOverride?: Point): void {
+    if (!this.active) {
+      this.fail();
+      return;
+    }
     if (this.anchorReady) {
       this.rawTravel.x += endFocus.x - this.lastFocus.x;
       this.rawTravel.y += endFocus.y - this.lastFocus.y;
@@ -317,22 +308,17 @@ export class PanRecognizer extends GestureRecognizer {
       this.recordExtremum();
     }
 
-    if (this.active) {
-      const hasEndConsumer = Boolean(this.callbacks.onPanEnd || this.callbacks.onSwipe);
-      const endData = hasEndConsumer ? this.buildEventData(event, 0, 0, centerOverride) : null;
-      const swipeData = endData && this.callbacks.onSwipe ? this.evaluateSwipe(endData) : null;
-      this.completeActive(() => {
-        if (endData && this.callbacks.onPanEnd) {
-          this.callbacks.onPanEnd(endData);
-        }
-        if (swipeData && this.callbacks.onSwipe) {
-          this.callbacks.onSwipe(swipeData);
-        }
-      });
-      return;
+    const hasEndConsumer = Boolean(this.callbacks.onPanEnd || this.callbacks.onSwipe);
+    const endData = hasEndConsumer ? this.buildEventData(event, 0, 0, centerOverride) : null;
+    const swipeData = endData && this.callbacks.onSwipe ? this.evaluateSwipe(endData) : null;
+    if (this.completeActive()) {
+      if (endData && this.callbacks.onPanEnd) {
+        this.callbacks.onPanEnd(endData);
+      }
+      if (swipeData && this.callbacks.onSwipe && this.state === 'ended') {
+        this.callbacks.onSwipe(swipeData);
+      }
     }
-
-    this.fail();
   }
 
   private evaluateSwipe(endData: PanEventData): SwipeEventData | null {
@@ -380,7 +366,9 @@ export class PanRecognizer extends GestureRecognizer {
         ? this.tracker.getCentroidVelocity(event.pointers)
         : this.tracker.getVelocity(event.actionPointerId);
     return {
-      ...this.createEventData(event, centerOverride),
+      center: centerOverride ?? event.focus,
+      motionEvent: event,
+      originalEvent: event.originalEvent,
       deltaX: this.totalDelta.x,
       deltaY: this.totalDelta.y,
       stepX,

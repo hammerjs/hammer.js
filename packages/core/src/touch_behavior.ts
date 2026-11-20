@@ -1,4 +1,11 @@
-export type GestureTarget = HTMLElement | SVGElement;
+import {
+  NON_PASSIVE,
+  supportsGestureEvents,
+  toggleListener,
+  toggleSafariGestures,
+} from './dom_utils.js';
+
+export type GestureTargetElement = HTMLElement | SVGElement;
 
 export type TouchActionValue =
   | 'auto'
@@ -63,9 +70,7 @@ export function resolveSupportedTouchAction(value: TouchActionValue): TouchActio
   if (CSS.supports('touch-action', value)) {
     return value;
   }
-  if (value === 'pan-x pinch-zoom') return 'pan-x';
-  if (value === 'pan-y pinch-zoom') return 'pan-y';
-  return 'none';
+  return value === 'pan-x pinch-zoom' ? 'pan-x' : value === 'pan-y pinch-zoom' ? 'pan-y' : 'none';
 }
 
 /**
@@ -93,14 +98,15 @@ type WebkitStyle = CSSStyleDeclaration & {
  * guards, returning a cleanup callback that restores the element's prior state.
  */
 export function applySurfaceBehavior(
-  element: GestureTarget,
+  element: GestureTargetElement,
   touchAction: TouchActionValue | null,
-  preventSelectionAndDrag: boolean
+  preventSelectionAndDrag: boolean,
+  shouldIgnoreEvent?: (e: Event) => boolean
 ): () => void {
   const style = element.style as WebkitStyle;
   const prevTouchAction = style.touchAction ?? '';
   if (touchAction !== null) {
-    style.touchAction = resolveSupportedTouchAction(touchAction);
+    style.touchAction = touchAction;
   }
 
   if (!preventSelectionAndDrag) {
@@ -120,7 +126,9 @@ export function applySurfaceBehavior(
   style.webkitTouchCallout = 'none';
 
   const onDragStart = (e: Event) => {
-    e.preventDefault();
+    if (!shouldIgnoreEvent?.(e)) {
+      e.preventDefault();
+    }
   };
   element.addEventListener('dragstart', onDragStart);
 
@@ -133,4 +141,204 @@ export function applySurfaceBehavior(
       style.touchAction = prevTouchAction;
     }
   };
+}
+
+export interface SurfaceGuardOptions {
+  readonly element: GestureTargetElement;
+  readonly touchAction: TouchActionSetting;
+  readonly supportedPointerTypes: readonly string[];
+  readonly shouldIgnoreEvent: (e: Event) => boolean;
+  readonly shouldPreventTouchMove: () => boolean;
+  readonly getActivePointerType: () => string | null;
+  readonly onAbortActiveStream: (e: Event) => void;
+}
+
+/**
+ * Coordinates browser coexistence guards for a gesture target: CSS `touch-action`,
+ * selection/`dragstart` prevention, non-passive `touchmove` scroll/pinch guards,
+ * touch/pen `contextmenu` suppression, and iOS Safari `gesture*` guards (including
+ * document-level mirrors while a pointer stream is active).
+ */
+export class SurfaceGuard {
+  private readonly element: GestureTargetElement;
+  private readonly touchAction: TouchActionSetting;
+  private readonly supportedPointerTypes: readonly string[];
+  private readonly shouldIgnoreEvent: (e: Event) => boolean;
+  private readonly shouldPreventTouchMove: () => boolean;
+  private readonly getActivePointerType: () => string | null;
+  private readonly onAbortActiveStream: (e: Event) => void;
+
+  private unsetSurface: (() => void) | null = null;
+  private preventsPinchZoom = false;
+  private suppressesTouchContextMenu = false;
+  private activeTracking = false;
+  private activeWin: Window | null = null;
+  private activePinchGuard = false;
+  private destroyed = false;
+
+  constructor(options: SurfaceGuardOptions) {
+    this.element = options.element;
+    this.touchAction = options.touchAction;
+    this.supportedPointerTypes = options.supportedPointerTypes;
+    this.shouldIgnoreEvent = options.shouldIgnoreEvent;
+    this.shouldPreventTouchMove = options.shouldPreventTouchMove;
+    this.getActivePointerType = options.getActivePointerType;
+    this.onAbortActiveStream = options.onAbortActiveStream;
+  }
+
+  /** Recomputes CSS `touch-action` and element coexistence listeners for the current recognizers. */
+  sync(actions: readonly TouchActionValue[], hasNonTapRecognizer: boolean): void {
+    this.clearSurface();
+    if (this.destroyed || this.touchAction === false) {
+      return;
+    }
+    if (actions.length === 0 && this.touchAction === 'compute') {
+      return;
+    }
+
+    const supportsTouch = this.supportedPointerTypes.includes('touch');
+    const supportsTouchOrPen = supportsTouch || this.supportedPointerTypes.includes('pen');
+
+    const resolvedAction: TouchActionValue | null =
+      this.touchAction === 'compute'
+        ? supportsTouchOrPen
+          ? mergeTouchActions(actions)
+          : null
+        : resolveSupportedTouchAction(this.touchAction);
+
+    const preventsPinchZoom =
+      supportsTouch &&
+      resolvedAction !== null &&
+      (!allowsPinchZoom(resolvedAction) || actions.some(a => !allowsPinchZoom(a)));
+
+    this.preventsPinchZoom = preventsPinchZoom;
+    this.suppressesTouchContextMenu = hasNonTapRecognizer && supportsTouchOrPen;
+
+    const el = this.element;
+    const restoreStyles = applySurfaceBehavior(
+      el,
+      resolvedAction,
+      hasNonTapRecognizer,
+      this.shouldIgnoreEvent
+    );
+    const bindTouchMove =
+      supportsTouch && hasNonTapRecognizer && resolvedAction !== null && resolvedAction !== 'none';
+    const bindSafariGestures =
+      preventsPinchZoom &&
+      actions.length > 0 &&
+      supportsGestureEvents(el.ownerDocument.defaultView);
+
+    const toggleSurfaceListeners = (add: boolean) => {
+      if (hasNonTapRecognizer) {
+        toggleListener(el, 'contextmenu', this, add);
+        if (bindTouchMove) {
+          toggleListener(el, 'touchmove', this, add, NON_PASSIVE);
+        }
+      }
+      if (bindSafariGestures) {
+        toggleSafariGestures(el, this, add);
+      }
+    };
+
+    toggleSurfaceListeners(true);
+    this.unsetSurface = () => {
+      toggleSurfaceListeners(false);
+      restoreStyles();
+    };
+  }
+
+  /** Mirrors `contextmenu` and pinch-zoom guards on `ownerDocument` while a stream is active. */
+  setActive(active: boolean): void {
+    if (this.activeTracking === active) {
+      return;
+    }
+
+    const doc = this.element.ownerDocument;
+    const win = active ? doc.defaultView : this.activeWin;
+    const guardPinch = active ? this.preventsPinchZoom : this.activePinchGuard;
+
+    this.activeTracking = active;
+    this.activeWin = active ? win : null;
+    this.activePinchGuard = active && guardPinch;
+
+    toggleListener(doc, 'contextmenu', this, active);
+    // Straddling pinches whose second finger lands outside `element` dispatch touch/gesture
+    // events to other targets, so mirror the pinch-zoom guards on the document while active.
+    if (guardPinch) {
+      toggleListener(doc, 'touchmove', this, active, NON_PASSIVE);
+      if (supportsGestureEvents(win)) {
+        toggleSafariGestures(doc, this, active);
+      }
+    }
+  }
+
+  destroy(): void {
+    this.destroyed = true;
+    this.setActive(false);
+    this.clearSurface();
+  }
+
+  /** @internal */
+  handleEvent(ev: Event): void {
+    switch (ev.type) {
+      case 'touchmove':
+        this.onTouchMove(ev as TouchEvent);
+        break;
+      case 'gesturestart':
+      case 'gesturechange':
+        // WebKit `gesturestart` / `gesturechange` guard: iOS Safari ignores `touch-action: pan-x pan-y`
+        // for two-finger viewport zoom unless these proprietary events are prevented.
+        if (ev.cancelable) {
+          ev.preventDefault();
+        }
+        break;
+      case 'contextmenu':
+        this.onContextMenu(ev);
+        break;
+    }
+  }
+
+  private clearSurface(): void {
+    this.unsetSurface?.();
+    this.unsetSurface = null;
+    this.preventsPinchZoom = false;
+    this.suppressesTouchContextMenu = false;
+  }
+
+  /**
+   * Non-passive `touchmove` guard. Prevents native pinch-zoom when a recognizer claims it, and
+   * native scrolling while a gesture owns the stream. Scroll ownership only applies to touches
+   * that started on `element` (touch events always target their `touchstart` element).
+   */
+  private onTouchMove(e: TouchEvent): void {
+    if (!e.cancelable) {
+      return;
+    }
+    const isGuardedPinch = this.preventsPinchZoom && !!e.touches && e.touches.length >= 2;
+    const ownsScroll = e.currentTarget === this.element && this.shouldPreventTouchMove();
+    if (isGuardedPinch || ownsScroll) {
+      e.preventDefault();
+    }
+  }
+
+  /**
+   * Keeps desktop mouse context menus native (aborting a mouse drag whose `pointerup` the menu
+   * will swallow) while suppressing touch/pen long-press context menus on non-tap surfaces.
+   */
+  private onContextMenu(e: Event): void {
+    const pointerType = (e as Partial<PointerEvent>).pointerType;
+    const activeType = this.getActivePointerType();
+    if (pointerType === 'mouse' || activeType === 'mouse') {
+      if (activeType !== null) {
+        this.onAbortActiveStream(e);
+      }
+      return;
+    }
+    const isSupportedNonMouse =
+      (pointerType === 'touch' || pointerType === 'pen') &&
+      this.supportedPointerTypes.includes(pointerType);
+    if (this.suppressesTouchContextMenu && (activeType !== null || isSupportedNonMouse)) {
+      e.preventDefault();
+    }
+  }
 }

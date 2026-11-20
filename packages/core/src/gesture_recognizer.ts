@@ -1,33 +1,6 @@
 import type {MotionEvent, Point} from './motion_event.js';
 import type {TouchActionValue} from './touch_behavior.js';
 
-/** @internal */
-export const TOUCH_SLOP = 8;
-/** @internal */
-export const DOUBLE_TAP_SLOP = 100;
-/** @internal */
-export const MIN_SCALING_SPAN = 27;
-/** @internal */
-export const SPAN_SLOP = 16;
-/** @internal */
-export const ROTATION_SLOP = 5;
-/** @internal */
-export const MAX_TAP_DURATION_MS = 250;
-/** @internal */
-export const DOUBLE_TAP_TIMEOUT_MS = 300;
-/** @internal */
-export const DOUBLE_TAP_MIN_TIME_MS = 40;
-/** @internal */
-export const LONG_PRESS_DURATION_MS = 500;
-/** @internal */
-export const QUICK_SCALE_SENSITIVITY = 200;
-/** @internal */
-export const MIN_SWIPE_VELOCITY = 300;
-/** @internal */
-export const MAX_SWIPE_VELOCITY = 8000;
-/** @internal */
-export const MIN_SWIPE_DISTANCE = 30;
-
 export type RecognizerState =
   'possible' | 'pending' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed';
 
@@ -49,7 +22,7 @@ export interface ArenaContext {
   ): boolean;
   notifyStateChanged(
     recognizer: GestureRecognizer,
-    nextState: RecognizerState,
+    nextState: 'failed' | 'cancelled',
     yieldedForMultiTouch?: boolean
   ): void;
 }
@@ -59,15 +32,12 @@ export interface ArenaContext {
  * **Template Method** patterns in coordination with `GestureArena`.
  */
 export abstract class GestureRecognizer {
-  /** @internal */
-  deniedByArena = false;
-
   private currentState: RecognizerState = 'possible';
   private arena: ArenaContext | null = null;
   private timerId: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly simultaneousPeers = new Set<GestureRecognizer>();
-  private readonly failureDependencies = new Set<GestureRecognizer>();
+  private simultaneousPeers: Set<GestureRecognizer> | null = null;
+  private failureDependencies: Set<GestureRecognizer> | null = null;
 
   get state(): RecognizerState {
     return this.currentState;
@@ -81,7 +51,7 @@ export abstract class GestureRecognizer {
   simultaneousWith(...others: GestureRecognizer[]): this {
     for (const other of others) {
       if (other !== this) {
-        this.simultaneousPeers.add(other);
+        (this.simultaneousPeers ??= new Set()).add(other);
       }
     }
     return this;
@@ -94,7 +64,7 @@ export abstract class GestureRecognizer {
   requireFailureOf(...others: GestureRecognizer[]): this {
     for (const other of others) {
       if (other !== this) {
-        this.failureDependencies.add(other);
+        (this.failureDependencies ??= new Set()).add(other);
       }
     }
     return this;
@@ -118,22 +88,21 @@ export abstract class GestureRecognizer {
 
   /** Subclasses may override for conditional simultaneous cooperation (e.g. `QuickScale` stroke #1). */
   canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
-    return this.simultaneousPeers.has(other);
+    return this.simultaneousPeers?.has(other) ?? false;
   }
 
   /** Processes an incoming `MotionEvent` from `GestureArena`. */
   abstract onMotionEvent(event: MotionEvent): void;
 
-  /** Resets recognizer state and clears any scheduled timer. */
+  /** @internal */
   reset(): void {
     this.clearTimer();
     this.currentState = 'possible';
-    this.deniedByArena = false;
     this.onReset();
   }
 
   /** @internal */
-  get requiredFailures(): ReadonlySet<GestureRecognizer> {
+  get requiredFailures(): ReadonlySet<GestureRecognizer> | null {
     return this.failureDependencies;
   }
 
@@ -144,6 +113,11 @@ export abstract class GestureRecognizer {
 
   /** @internal */
   get acceptsMultiTouch(): boolean {
+    return false;
+  }
+
+  /** @internal */
+  get needsCoalescedHistory(): boolean {
     return false;
   }
 
@@ -181,7 +155,7 @@ export abstract class GestureRecognizer {
   /** @internal */
   denyByArena(): void {
     if (this.currentState === 'possible' || this.currentState === 'pending') {
-      this.failInternal(true);
+      this.fail();
     } else if (this.active) {
       this.cancel();
     }
@@ -208,25 +182,23 @@ export abstract class GestureRecognizer {
     return this.arena.requestClaim(this, 'began', onBegan);
   }
 
-  protected emitChange(onChange: () => void): void {
+  protected emitChange(): boolean {
     if (!this.active) {
-      return;
+      return false;
     }
     if (this.currentState === 'began') {
       this.currentState = 'changed';
-      this.arena?.notifyStateChanged(this, 'changed');
     }
-    onChange();
+    return true;
   }
 
-  protected completeActive(onEnded?: () => void): void {
+  protected completeActive(): boolean {
     if (!this.active) {
-      return;
+      return false;
     }
     this.clearTimer();
     this.currentState = 'ended';
-    onEnded?.();
-    this.arena?.notifyStateChanged(this, 'ended');
+    return true;
   }
 
   protected tryRecognizeDiscrete(onRecognized: () => void): boolean {
@@ -237,7 +209,17 @@ export abstract class GestureRecognizer {
   }
 
   protected fail(): void {
-    this.failInternal(false);
+    if (
+      this.currentState === 'failed' ||
+      this.currentState === 'ended' ||
+      this.currentState === 'cancelled'
+    ) {
+      return;
+    }
+    this.clearTimer();
+    this.currentState = 'failed';
+    this.onFail();
+    this.arena?.notifyStateChanged(this, 'failed');
   }
 
   protected cancel(yieldedForMultiTouch = false): void {
@@ -278,20 +260,5 @@ export abstract class GestureRecognizer {
       motionEvent: event,
       originalEvent: event.originalEvent,
     };
-  }
-
-  private failInternal(byArena: boolean): void {
-    if (
-      this.currentState === 'failed' ||
-      this.currentState === 'ended' ||
-      this.currentState === 'cancelled'
-    ) {
-      return;
-    }
-    this.deniedByArena = byArena;
-    this.clearTimer();
-    this.currentState = 'failed';
-    this.onFail();
-    this.arena?.notifyStateChanged(this, 'failed');
   }
 }

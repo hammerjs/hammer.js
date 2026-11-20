@@ -1,5 +1,6 @@
 import {describe, it, expect} from 'vitest';
-import {MotionEvent, MotionEventStream} from '../src/motion_event';
+import {MotionEvent} from '../src/motion_event';
+import {MotionEventStream} from '../src/motion_event_stream';
 import {VelocityTracker} from '../src/velocity_tracker';
 import {pointerEvent} from './test_helpers';
 

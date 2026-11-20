@@ -1,7 +1,8 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../src/gesture_arena';
 import {GestureRecognizer} from '../src/gesture_recognizer';
-import {type MotionEvent, MotionEventStream} from '../src/motion_event';
+import type {MotionEvent} from '../src/motion_event';
+import {MotionEventStream} from '../src/motion_event_stream';
 import {LongPressRecognizer} from '../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../src/recognizers/pan_recognizer';
 import {QuickScaleRecognizer} from '../src/recognizers/quick_scale_recognizer';
@@ -128,12 +129,16 @@ describe('GestureArena conflict resolution', () => {
     const onScaleEnd = vi.fn();
 
     const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
-    const singleTap = new TapRecognizer({onTap: onSingleTapConfirmed}).requireFailureOf(doubleTap);
+    const quickScale = new QuickScaleRecognizer({onScale, onScaleEnd}, {sensitivity: 100, slop: 8});
+    const singleTap = new TapRecognizer({onTap: onSingleTapConfirmed}).requireFailureOf(
+      doubleTap,
+      quickScale
+    );
 
     arena.add(singleTap);
     arena.add(doubleTap);
     arena.add(new PanRecognizer({onPan}, {slop: 8}));
-    arena.add(new QuickScaleRecognizer({onScale, onScaleEnd}, {sensitivity: 100, slop: 8}));
+    arena.add(quickScale);
 
     // Cancelled tap should not arm QuickScale.
     arena.dispatch(
@@ -573,8 +578,8 @@ describe('GestureArena conflict resolution', () => {
         expect(this.suppressesClick).toBe(true);
         expect(this.tryBegin(() => {})).toBe(false);
         expect(this.tryRecognizeDiscrete(() => {})).toBe(false);
-        this.emitChange(() => {});
-        this.completeActive(() => {});
+        expect(this.emitChange()).toBe(false);
+        expect(this.completeActive()).toBe(false);
         this.fail();
         this.fail();
         expect(this.tryBegin(() => {})).toBe(false);
@@ -855,5 +860,298 @@ describe('GestureArena conflict resolution', () => {
     );
     expect(onPan).toHaveBeenCalledTimes(1);
     expect(onPanEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let a prior stream delayed singleTap kill LongPress or Scale in the next stream', () => {
+    const onSingleTap = vi.fn();
+    const onDoubleTap = vi.fn();
+    const onLongPress = vi.fn();
+    const onPan = vi.fn();
+    const onScale = vi.fn();
+
+    const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2});
+    const singleTap = new TapRecognizer({onTap: onSingleTap}).requireFailureOf(doubleTap);
+    const longPress = new LongPressRecognizer({onLongPress}, {duration: 500});
+    const pan = new PanRecognizer({onPan}, {slop: 4});
+    const scale = new ScaleRecognizer({onScale}, {spanSlop: 4, minSpan: 10});
+
+    arena.add(singleTap);
+    arena.add(doubleTap);
+    arena.add(longPress);
+    arena.add(pan);
+    arena.add(scale);
+
+    // 1. Tap #1 followed 100ms later by a 500ms LongPress:
+    // At +250ms, doubleTap times out and Tap #1's singleTap resolves — LongPress must survive!
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 20, clientY: 20, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 20, clientY: 20, timeStamp: 20})
+      )!
+    );
+    expect(onSingleTap).not.toHaveBeenCalled();
+
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 20, clientY: 20, timeStamp: 120})
+      )!
+    );
+    vi.advanceTimersByTime(260);
+    expect(onSingleTap).toHaveBeenCalledTimes(1);
+    expect(longPress.state).toBe('possible');
+
+    vi.advanceTimersByTime(250);
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 20, clientY: 20, timeStamp: 650})
+      )!
+    );
+
+    // 2. Tap #1 followed 100ms later by a 2-finger pinch Scale:
+    // 2nd finger pointer_down fails doubleTap and resolves Tap #1's singleTap — Scale must survive!
+    onSingleTap.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 3, clientX: 50, clientY: 50, timeStamp: 1000})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 3, clientX: 50, clientY: 50, timeStamp: 1020})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 4, clientX: 50, clientY: 50, timeStamp: 1100})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {
+          pointerId: 5,
+          isPrimary: false,
+          clientX: 150,
+          clientY: 50,
+          timeStamp: 1110,
+        })
+      )!
+    );
+    expect(onSingleTap).toHaveBeenCalledTimes(1);
+    expect(scale.state).toBe('possible');
+
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {
+          pointerId: 5,
+          isPrimary: false,
+          clientX: 220,
+          clientY: 50,
+          timeStamp: 1130,
+        })
+      )!
+    );
+    expect(onScale).toHaveBeenCalled();
+
+    // 3. Tap #1 followed 100ms later by an immediate fast Pan:
+    // Pan winning stroke #2 denies doubleTap, so Tap #1's singleTap resolves AND Pan continues:
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {
+          pointerId: 5,
+          isPrimary: false,
+          clientX: 220,
+          clientY: 50,
+          timeStamp: 1150,
+        })
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 4, clientX: 50, clientY: 50, timeStamp: 1160})
+      )!
+    );
+    onSingleTap.mockClear();
+    onPan.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 6, clientX: 50, clientY: 50, timeStamp: 2000})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 6, clientX: 50, clientY: 50, timeStamp: 2020})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 7, clientX: 50, clientY: 50, timeStamp: 2100})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 7, clientX: 90, clientY: 50, timeStamp: 2116})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 7, clientX: 90, clientY: 50, timeStamp: 2132})
+      )!
+    );
+    expect(onSingleTap).toHaveBeenCalledTimes(1);
+    expect(onPan).toHaveBeenCalledTimes(1);
+  });
+
+  it('denies QuickScaleRecognizer when a non-tap gesture wins on stroke #1', () => {
+    const onPan = vi.fn();
+    const onScale = vi.fn();
+
+    const pan = new PanRecognizer({onPan}, {slop: 4});
+    const quickScale = new QuickScaleRecognizer({onScale}, {slop: 10, sensitivity: 100});
+    arena.add(pan);
+    arena.add(quickScale);
+
+    // Stroke #1: short 6px pan (< quickScale.slop 10, < 250ms) — Pan wins and must deny QuickScale:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 50, clientY: 56, timeStamp: 20})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 56, timeStamp: 40})
+      )!
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+
+    // Stroke #2 within 300ms: vertical drag must be recognized by Pan, NOT QuickScale:
+    onPan.mockClear();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 56, timeStamp: 120})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 50, clientY: 160, timeStamp: 150})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 50, clientY: 160, timeStamp: 170})
+      )!
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onScale).not.toHaveBeenCalled();
+  });
+
+  it('lets QuickScale win stroke #2 vertical drags even when Pan has smaller slop, while yielding horizontal drags and long presses', () => {
+    vi.useFakeTimers();
+    try {
+      const onPanStart = vi.fn();
+      const onPan = vi.fn();
+      const onScale = vi.fn();
+      const onLongPress = vi.fn();
+
+      const pan = new PanRecognizer({onPanStart, onPan}, {slop: 4});
+      const quickScale = new QuickScaleRecognizer({onScale}, {slop: 10, sensitivity: 100});
+      const longPress = new LongPressRecognizer({onLongPress}, {slop: 10, duration: 500});
+      arena.add(pan);
+      arena.add(quickScale);
+      arena.add(longPress);
+
+      const tapOnce = (id: number, t: number) => {
+        arena.dispatch(
+          stream.onPointerDown(
+            pointerEvent('pointerdown', {pointerId: id, clientX: 50, clientY: 50, timeStamp: t})
+          )!
+        );
+        arena.dispatch(
+          stream.onPointerUp(
+            pointerEvent('pointerup', {pointerId: id, clientX: 50, clientY: 50, timeStamp: t + 20})
+          )!
+        );
+      };
+
+      // 1. Stroke #2 vertical drag passing through Pan's slop (6px) into QuickScale's slop (14px):
+      tapOnce(1, 0);
+      arena.dispatch(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 50, timeStamp: 100})
+        )!
+      );
+      arena.dispatch(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 2, clientX: 50, clientY: 56, timeStamp: 110})
+        )!
+      );
+      expect(onPanStart).not.toHaveBeenCalled();
+      arena.dispatch(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 2, clientX: 50, clientY: 70, timeStamp: 120})
+        )!
+      );
+      arena.dispatch(
+        stream.onPointerUp(
+          pointerEvent('pointerup', {pointerId: 2, clientX: 50, clientY: 70, timeStamp: 130})
+        )!
+      );
+      expect(onScale).toHaveBeenCalledTimes(1);
+      expect(onPanStart).not.toHaveBeenCalled();
+
+      // 2. Stroke #2 horizontal drag defers Pan at 6px and grants Pan once QuickScale fails at 12px:
+      onScale.mockClear();
+      tapOnce(3, 500);
+      arena.dispatch(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 4, clientX: 50, clientY: 50, timeStamp: 600})
+        )!
+      );
+      arena.dispatch(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 4, clientX: 56, clientY: 50, timeStamp: 610})
+        )!
+      );
+      expect(onPanStart).not.toHaveBeenCalled();
+      arena.dispatch(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 4, clientX: 62, clientY: 50, timeStamp: 620})
+        )!
+      );
+      arena.dispatch(
+        stream.onPointerMove(
+          pointerEvent('pointermove', {pointerId: 4, clientX: 72, clientY: 50, timeStamp: 630})
+        )!
+      );
+      arena.dispatch(
+        stream.onPointerUp(
+          pointerEvent('pointerup', {pointerId: 4, clientX: 72, clientY: 50, timeStamp: 640})
+        )!
+      );
+      expect(onScale).not.toHaveBeenCalled();
+      expect(onPanStart).toHaveBeenCalledTimes(1);
+      expect(onPan).toHaveBeenCalledTimes(1);
+
+      // 3. Stroke #2 stationary hold still triggers LongPress on its timer:
+      tapOnce(5, 1100);
+      arena.dispatch(
+        stream.onPointerDown(
+          pointerEvent('pointerdown', {pointerId: 6, clientX: 50, clientY: 50, timeStamp: 1200})
+        )!
+      );
+      vi.advanceTimersByTime(500);
+      expect(onLongPress).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

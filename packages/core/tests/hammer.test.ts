@@ -16,10 +16,10 @@ describe('Hammer', () => {
 
   it('registers only requested recognizers and leaves empty instances passive', () => {
     const empty = new Hammer(element);
-    expect(empty.element).toBe(element);
+    expect(empty.manager.element).toBe(element);
     expect(empty.manager.computeTouchAction()).toBe('auto');
     expect(element.style.touchAction || '').toBe('');
-    empty.manager.reset();
+    empty.cancel();
     empty.destroy();
 
     const onTap = vi.fn();
@@ -368,52 +368,29 @@ describe('Hammer', () => {
     disabledQs.destroy();
   });
 
-  it('supports SVGElement targets and setOptions reconfiguration', () => {
+  it('supports SVGElement targets with combined recognizers', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     document.body.appendChild(svg);
 
     const calls: string[] = [];
     const hammer = new Hammer(svg, {
-      onTap: () => calls.push('tap1'),
-      onDoubleTap: () => calls.push('dbl1'),
-      onLongPress: () => calls.push('lp1'),
-      onPan: ev => calls.push(`v1:${ev.deltaX}`),
+      onTap: () => calls.push('tap'),
+      onDoubleTap: () => calls.push('dbl'),
+      onLongPress: () => calls.push('lp'),
+      onPan: ev => calls.push(`pan:${ev.deltaX}`),
       onScale: ev => calls.push(`scale:${ev.scale.toFixed(1)}`),
-      onRotate: () => calls.push('rot1'),
+      onRotate: () => calls.push('rot'),
       quickScale: true,
       pan: {numPointers: 0, slop: 4},
       scale: {spanSlop: 8, minSpan: 20},
     });
-    expect(hammer.element).toBe(svg);
+    expect(hammer.manager.element).toBe(svg);
 
     svg.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
     );
     document.dispatchEvent(
-      pointerEvent('pointermove', {pointerId: 1, clientX: 14, clientY: 0, timeStamp: 10})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 1, clientX: 14, clientY: 0, timeStamp: 15})
-    );
-    expect(calls).toEqual(['v1:10']);
-
-    hammer.setOptions({
-      onTap: () => calls.push('tap2'),
-      onDoubleTap: () => calls.push('dbl2'),
-      onLongPress: () => calls.push('lp2'),
-      onPan: ev => calls.push(`v2:${ev.deltaX}`),
-      onScale: ev => calls.push(`scale2:${ev.scale.toFixed(1)}`),
-      onRotate: () => calls.push('rot2'),
-      quickScale: true,
-      pan: {numPointers: 0, slop: 4},
-      scale: {spanSlop: 8, minSpan: 20},
-    });
-
-    svg.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 20})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointermove', {pointerId: 1, clientX: 24, clientY: 0, timeStamp: 25})
+      pointerEvent('pointermove', {pointerId: 1, clientX: 24, clientY: 0, timeStamp: 10})
     );
     svg.dispatchEvent(
       pointerEvent('pointerdown', {
@@ -421,7 +398,7 @@ describe('Hammer', () => {
         isPrimary: false,
         clientX: 124,
         clientY: 0,
-        timeStamp: 30,
+        timeStamp: 15,
       })
     );
     document.dispatchEvent(
@@ -430,37 +407,43 @@ describe('Hammer', () => {
         isPrimary: false,
         clientX: 240,
         clientY: 0,
-        timeStamp: 40,
+        timeStamp: 25,
       })
     );
     document.dispatchEvent(
       pointerEvent('pointerup', {pointerId: 2, isPrimary: false, clientX: 240, clientY: 0})
     );
     document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 24, clientY: 0}));
-    expect(calls).toContain('v2:20');
-    expect(calls).toContain('scale2:2.0');
-
-    // Changing recognizer topology via `setOptions` recomputes `touch-action`:
-    hammer.setOptions({
-      onPan: () => {},
-      pan: {direction: 'horizontal'},
-      touchAction: 'none',
-    });
-    expect(hammer.manager.computeTouchAction()).toBe('pan-y pinch-zoom');
-    expect(svg.style.touchAction).toBe('none');
-
-    // Omitting `touchAction` in `Hammer.setOptions` restores `'compute'`:
-    hammer.setOptions({
-      onTap: () => calls.push('tap3'),
-      onPan: () => {},
-      pan: {direction: 'vertical'},
-    });
-    expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
-    svg.dispatchEvent(pointerEvent('pointerdown', {pointerId: 9, clientX: 5, clientY: 5}));
-    svg.dispatchEvent(pointerEvent('pointerup', {pointerId: 9, clientX: 5, clientY: 5}));
-    expect(calls).toContain('tap3');
+    expect(calls).toContain('pan:20');
+    expect(calls).toContain('scale:2.0');
 
     hammer.destroy();
     svg.remove();
+  });
+
+  it('forwards cancel() to abort an active gesture and emit onPanCancel', () => {
+    const onPan = vi.fn();
+    const onPanEnd = vi.fn();
+    const onPanCancel = vi.fn();
+    const hammer = new Hammer(element, {
+      onPan,
+      onPanEnd,
+      onPanCancel,
+      pan: {slop: 4},
+    });
+
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 12, clientY: 0}));
+    expect(onPan).toHaveBeenCalledTimes(1);
+
+    hammer.cancel();
+    expect(onPanCancel).toHaveBeenCalledTimes(1);
+
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 30, clientY: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 30, clientY: 0}));
+    expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onPanEnd).not.toHaveBeenCalled();
+
+    hammer.destroy();
   });
 });

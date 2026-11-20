@@ -12,7 +12,7 @@ export type {
   Point,
   PointerSample,
 } from './motion_event.js';
-export type {GestureTarget, TouchActionSetting, TouchActionValue} from './touch_behavior.js';
+export type {GestureTargetElement, TouchActionSetting, TouchActionValue} from './touch_behavior.js';
 
 export {
   LongPressRecognizer,

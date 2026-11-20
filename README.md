@@ -11,7 +11,7 @@ Hammer.js 2.x was built for a different era of the web. This experiment rethinks
 - **One-finger Quick Scale** (`QuickScaleRecognizer` / `quickScale: true`) for double-tap-and-drag zooming alongside standard two-finger pinch
 - **Web-native scrolling & coexistence** via computed CSS `touch-action` and lazy pointer capture
 - **Small, tree-shakeable ESM** written in strict TypeScript
-- **Framework adapters** alongside the core engine (`@hammerjs/core`, `@hammerjs/react`, `@hammerjs/angular`)
+- **Framework adapters** alongside the core engine (`@hammerjs/core`, `@hammerjs/react`, `@hammerjs/angular`, `@hammerjs/vue`, `@hammerjs/lit`, `@hammerjs/svelte`, `@hammerjs/solid`)
 
 ## Quick Example
 
@@ -71,22 +71,26 @@ const manager = new GestureManager(element, {
 
 ## Browser Support
 
-`@hammerjs/core` is built to match its required Web APIs ([Pointer Events](https://caniuse.com/pointer), [CSS `touch-action`](https://caniuse.com/css-touch-action), [Shadow DOM v1](https://caniuse.com/shadowdomv1), and [ES Modules](https://caniuse.com/es6-module)):
+`@hammerjs/core` relies on [Pointer Events](https://caniuse.com/pointer) and [CSS `touch-action`](https://caniuse.com/css-touch-action):
 
 | Browser     | Minimum Version | Released | Platform Notes                                             |
 | :---------- | :-------------- | :------- | :--------------------------------------------------------- |
-| **Chrome**  | 61+             | Sep 2017 | Desktop & Android 4.1+ (updatable WebView on Android 5.0+) |
+| **Chrome**  | 60+             | Jul 2017 | Desktop & Android 4.1+ (updatable WebView on Android 5.0+) |
 | **Edge**    | 79+             | Jan 2020 | First Chromium-based Edge                                  |
-| **Firefox** | 63+             | Oct 2018 | Desktop & Android                                          |
+| **Firefox** | 59+             | Mar 2018 | Desktop & Android                                          |
 | **Safari**  | 13+             | Sep 2019 | macOS & iOS / iPadOS 13+ (iPhone 6s and newer)             |
 
-Optional APIs such as [`PointerEvent.getCoalescedEvents()`](https://caniuse.com/mdn-api_pointerevent_getcoalescedevents), [`Event.composedPath()`](https://caniuse.com/mdn-api_event_composedpath), and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
+Optional APIs such as [`PointerEvent.getCoalescedEvents()`](https://caniuse.com/mdn-api_pointerevent_getcoalescedevents) and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
 
 ## Packages
 
 - [`@hammerjs/core`](packages/core) — Core pointer/gesture recognition engine and built-in recognizers
 - [`@hammerjs/react`](packages/react) — React adapter
 - [`@hammerjs/angular`](packages/angular) — Angular adapter
+- [`@hammerjs/vue`](packages/vue) — Vue adapter
+- [`@hammerjs/lit`](packages/lit) — Lit adapter
+- [`@hammerjs/svelte`](packages/svelte) — Svelte adapter
+- [`@hammerjs/solid`](packages/solid) — Solid adapter
 
 ## Development
 

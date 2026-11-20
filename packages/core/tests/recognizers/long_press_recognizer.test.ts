@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {GestureArena} from '../../src/gesture_arena';
-import {MotionEvent, MotionEventStream} from '../../src/motion_event';
+import {MotionEvent} from '../../src/motion_event';
+import {MotionEventStream} from '../../src/motion_event_stream';
 import {LongPressRecognizer} from '../../src/recognizers/long_press_recognizer';
 import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
@@ -130,6 +131,13 @@ describe('LongPressRecognizer', () => {
       )!
     );
     expect(onLongPressUp).toHaveBeenCalledTimes(1);
+    expect(onLongPressUp).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        center: {x: 27.5, y: 0},
+        deltaX: 2.5,
+        deltaY: 0,
+      })
+    );
     arena.dispatch(
       stream.onPointerUp(
         pointerEvent('pointerup', {pointerId: 1, clientX: 5, clientY: 0, timeStamp: 460})
@@ -234,5 +242,32 @@ describe('LongPressRecognizer', () => {
 
     vi.advanceTimersByTime(500);
     expect(onLongPress).toHaveBeenCalledTimes(1);
+
+    // After handoff re-arms, dragging finger #1 beyond slop must fail the 2-finger long press:
+    onLongPress.mockClear();
+    stream.reset();
+    arena.reset();
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 1000})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 20, timeStamp: 1016})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 80, timeStamp: 1032})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 60, timeStamp: 1048})
+      )!
+    );
+    vi.advanceTimersByTime(500);
+    expect(onLongPress).not.toHaveBeenCalled();
   });
 });

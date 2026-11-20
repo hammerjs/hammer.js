@@ -1,15 +1,16 @@
 import {distance, type MotionEvent, type Point, ZERO_POINT} from '../motion_event.js';
-import {
-  DOUBLE_TAP_MIN_TIME_MS,
-  DOUBLE_TAP_SLOP,
-  DOUBLE_TAP_TIMEOUT_MS,
-  GestureRecognizer,
-  MAX_TAP_DURATION_MS,
-  QUICK_SCALE_SENSITIVITY,
-  TOUCH_SLOP,
-} from '../gesture_recognizer.js';
+import {GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
 import type {ScaleCallbacks, ScaleEventData} from './scale_recognizer.js';
+import {
+  DOUBLE_TAP_SLOP,
+  DOUBLE_TAP_TIMEOUT_MS,
+  isWithinMultiTapWindow,
+  MAX_TAP_DURATION_MS,
+} from './tap_recognizer.js';
+
+const DEFAULT_SLOP = 8;
+const DEFAULT_SENSITIVITY = 200;
 
 export interface QuickScaleOptions {
   /** Movement distance in `px` required before Quick-Scale begins (and max tap wander on stroke #1). Default: `8`. */
@@ -45,11 +46,11 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   constructor(callbacks: ScaleCallbacks, options: Partial<QuickScaleOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.slop = Math.max(0, options.slop ?? DEFAULT_SLOP);
     this.sensitivity =
       options.sensitivity !== undefined && options.sensitivity > 0
         ? options.sensitivity
-        : QUICK_SCALE_SENSITIVITY;
+        : DEFAULT_SENSITIVITY;
   }
 
   override getTouchAction(): TouchActionValue {
@@ -57,12 +58,15 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   }
 
   /**
-   * Quick-Scale can only claim the arena on the second stroke, so during the first stroke it
-   * never competes: a `Tap` (or any other recognizer) completing on stroke #1 must not deny it.
-   * Once armed on stroke #2 it follows normal mutual exclusion.
+   * Quick-Scale can only claim the arena on the second stroke, so during the first stroke a
+   * standalone `Tap` (`!other.suppressesClick`) completing on stroke #1 must not deny it.
+   * Non-tap gestures (`Pan`, `LongPress`, `Scale`, `Rotate`) winning on stroke #1 do deny it,
+   * and once armed on stroke #2 it follows normal mutual exclusion.
    */
   override canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
-    return this.phase < 2 && !this.active ? true : super.canRecognizeSimultaneouslyWith(other);
+    return this.phase < 2 && !this.active && !other.suppressesClick
+      ? true
+      : super.canRecognizeSimultaneouslyWith(other);
   }
 
   /** @internal */
@@ -81,16 +85,10 @@ export class QuickScaleRecognizer extends GestureRecognizer {
       return;
     }
 
-    const dt = event.eventTime - this.tapTime;
-    const minDt = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
-    const pointerMismatch = this.tapPointerType !== '' && event.pointerType !== this.tapPointerType;
-
     this.clearTimer();
     if (
       event.activePointerCount === 1 &&
-      !pointerMismatch &&
-      dt >= minDt &&
-      dt <= DOUBLE_TAP_TIMEOUT_MS &&
+      isWithinMultiTapWindow(event, this.tapTime, this.tapPointerType) &&
       distance(event.focus, this.tapDown) <= DOUBLE_TAP_SLOP
     ) {
       this.phase = 2;
@@ -172,11 +170,9 @@ export class QuickScaleRecognizer extends GestureRecognizer {
         const scaleFactor = nextScale / this.scale;
         if (scaleFactor !== 1) {
           this.scale = nextScale;
-          this.emitChange(() => {
-            if (this.callbacks.onScale) {
-              this.callbacks.onScale(this.buildEvent(event, scaleFactor));
-            }
-          });
+          if (this.emitChange() && this.callbacks.onScale) {
+            this.callbacks.onScale(this.buildEvent(event, scaleFactor));
+          }
         }
         break;
       }
@@ -186,12 +182,10 @@ export class QuickScaleRecognizer extends GestureRecognizer {
 
         if (this.phase === 2) {
           this.phase = 0;
-          if (this.active) {
-            this.completeActive(() => {
-              if (this.callbacks.onScaleEnd) {
-                this.callbacks.onScaleEnd(this.buildEvent(event, 1));
-              }
-            });
+          if (this.completeActive()) {
+            if (this.callbacks.onScaleEnd) {
+              this.callbacks.onScaleEnd(this.buildEvent(event, 1));
+            }
           } else {
             this.fail();
           }
@@ -243,7 +237,9 @@ export class QuickScaleRecognizer extends GestureRecognizer {
 
   private buildEvent(event: MotionEvent, scaleFactor: number): ScaleEventData {
     return {
-      ...this.createEventData(event, this.anchor),
+      center: this.anchor,
+      motionEvent: event,
+      originalEvent: event.originalEvent,
       scale: this.scale,
       scaleFactor,
       isQuickScale: true,

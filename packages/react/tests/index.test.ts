@@ -139,11 +139,11 @@ describe('@hammerjs/react useHammer', () => {
 
     const {getByTestId, rerender} = render(
       createElement(Configurable, {
-        options: {onPan: () => {}, pan: {direction: 'horizontal'}},
+        options: {onPan: () => {}, pan: {direction: 'horizontal'}, touchAction: 'none'},
       })
     );
     const el = getByTestId('cfg');
-    expect(el.style.touchAction).toBe('pan-y pinch-zoom');
+    expect(el.style.touchAction).toBe('none');
 
     rerender(
       createElement(Configurable, {
@@ -193,5 +193,52 @@ describe('@hammerjs/react useHammer', () => {
       el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     });
     expect(onTap).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports custom ignoreTarget predicates and toggling between ignoreTarget: true and a function', () => {
+    const onTap = vi.fn();
+
+    function FilterDemo({ignoreTarget}: {ignoreTarget: HammerOptions['ignoreTarget']}) {
+      const ref = useHammer<HTMLDivElement>({onTap, ignoreTarget});
+      return createElement(
+        'div',
+        {ref, 'data-testid': 'surface'},
+        createElement('input', {'data-testid': 'inp'}),
+        createElement('span', {'data-testid': 'blocked', 'data-ignore': '1'})
+      );
+    }
+
+    const {getByTestId, rerender} = render(createElement(FilterDemo, {ignoreTarget: true}));
+    const inp = getByTestId('inp');
+    const blocked = getByTestId('blocked');
+
+    const tap = (el: HTMLElement, t: number) => {
+      act(() => {
+        el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+        el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+      });
+    };
+
+    // Default `ignoreTarget: true` ignores `<input>` and allows `<span>`:
+    tap(inp, 0);
+    tap(blocked, 50);
+    expect(onTap).toHaveBeenCalledTimes(1);
+
+    // Switching `true -> fn` must NOT collide in configKey and must preserve predicate return value:
+    rerender(
+      createElement(FilterDemo, {
+        ignoreTarget: target =>
+          target instanceof Element && Boolean(target.closest('[data-ignore]')),
+      })
+    );
+    tap(blocked, 100);
+    tap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    // Switching `fn -> true` restores default form-control filtering:
+    rerender(createElement(FilterDemo, {ignoreTarget: true}));
+    tap(inp, 200);
+    tap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
   });
 });

@@ -33,7 +33,7 @@ function playgroundDevPlugin(): Plugin {
 export default defineConfig({
   plugins: [playgroundDevPlugin()],
   build: {
-    target: ['chrome61', 'edge79', 'firefox63', 'safari13'],
+    target: ['chrome60', 'edge79', 'firefox59', 'safari13'],
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

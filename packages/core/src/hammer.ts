@@ -1,4 +1,4 @@
-import {DEFAULT_POINTER_TYPES, GestureManager, type PointerType} from './gesture_manager.js';
+import {GestureManager, type PointerType} from './gesture_manager.js';
 import type {GestureEventData, GestureRecognizer} from './gesture_recognizer.js';
 import {
   type LongPressCallbacks,
@@ -21,14 +21,13 @@ import {
   type ScaleOptions,
 } from './recognizers/scale_recognizer.js';
 import {TapRecognizer, type TapOptions} from './recognizers/tap_recognizer.js';
-import type {GestureTarget, TouchActionSetting} from './touch_behavior.js';
+import type {GestureTargetElement, TouchActionSetting} from './touch_behavior.js';
 
 export interface HammerOptions
   extends LongPressCallbacks, PanCallbacks, ScaleCallbacks, RotateCallbacks {
   supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
   ignoreTarget?: boolean | ((target: EventTarget) => boolean);
-  cancelAncestors?: boolean;
 
   onTap?: (event: GestureEventData) => void;
   onDoubleTap?: (event: GestureEventData) => void;
@@ -143,30 +142,20 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
  * Note: importing `Hammer` bundles all built-in recognizers. For minimal tree-shaken bundles,
  * import `GestureManager` and only the individual recognizers you need.
  */
-export class Hammer<T extends GestureTarget = GestureTarget> {
-  readonly element: T;
+export class Hammer<T extends GestureTargetElement = GestureTargetElement> {
   readonly manager: GestureManager<T>;
 
   constructor(element: T, options: HammerOptions = {}) {
-    this.element = element;
     this.manager = new GestureManager(element, {
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
       ignoreTarget: options.ignoreTarget,
-      cancelAncestors: options.cancelAncestors,
       recognizers: buildRecognizers(options),
     });
   }
 
-  setOptions(options: HammerOptions): this {
-    this.manager.setOptions({
-      supportedPointerTypes: options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES,
-      touchAction: options.touchAction ?? 'compute',
-      ignoreTarget: options.ignoreTarget ?? true,
-      cancelAncestors: options.cancelAncestors ?? true,
-      recognizers: buildRecognizers(options),
-    });
-    return this;
+  cancel(): void {
+    this.manager.cancel();
   }
 
   destroy(): void {

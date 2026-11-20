@@ -1,14 +1,28 @@
 import {distance, type MotionEvent, type Point} from '../motion_event.js';
-import {
-  DOUBLE_TAP_MIN_TIME_MS,
-  DOUBLE_TAP_SLOP,
-  DOUBLE_TAP_TIMEOUT_MS,
-  type GestureEventData,
-  GestureRecognizer,
-  MAX_TAP_DURATION_MS,
-  TOUCH_SLOP,
-} from '../gesture_recognizer.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+
+const DEFAULT_SLOP = 8;
+const DOUBLE_TAP_MIN_TIME_MS = 40;
+/** @internal */
+export const MAX_TAP_DURATION_MS = 250;
+/** @internal */
+export const DOUBLE_TAP_TIMEOUT_MS = 300;
+/** @internal */
+export const DOUBLE_TAP_SLOP = 100;
+
+/** @internal */
+export function isWithinMultiTapWindow(
+  event: MotionEvent,
+  lastUpTime: number,
+  lastPointerType: string,
+  maxInterval = DOUBLE_TAP_TIMEOUT_MS
+): boolean {
+  const dt = event.eventTime - lastUpTime;
+  const minInterval = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
+  const pointerMatches = lastPointerType === '' || event.pointerType === lastPointerType;
+  return pointerMatches && dt >= minInterval && dt <= maxInterval;
+}
 
 export interface TapOptions {
   /** Required number of consecutive taps (`1` for single-tap, `2` for double-tap, etc.). Default: `1`. */
@@ -64,7 +78,7 @@ export class TapRecognizer extends GestureRecognizer {
     this.callbacks = callbacks;
     this.targetTaps = options.taps ?? 1;
     this.numPointers = options.numPointers ?? 1;
-    this.slop = Math.max(0, options.slop ?? TOUCH_SLOP);
+    this.slop = Math.max(0, options.slop ?? DEFAULT_SLOP);
     this.maxTime = options.maxTime ?? MAX_TAP_DURATION_MS;
     this.multiTapInterval = options.multiTapInterval ?? DOUBLE_TAP_TIMEOUT_MS;
     this.multiTapSlop = Math.max(0, options.multiTapSlop ?? DOUBLE_TAP_SLOP);
@@ -89,15 +103,17 @@ export class TapRecognizer extends GestureRecognizer {
       return;
     }
 
-    const dt = event.eventTime - this.lastTapUpTime;
-    const minInterval = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
-    const pointerMismatch =
-      this.lastTapPointerType !== '' && event.pointerType !== this.lastTapPointerType;
+    const withinWindow = isWithinMultiTapWindow(
+      event,
+      this.lastTapUpTime,
+      this.lastTapPointerType,
+      this.multiTapInterval
+    );
     const outOfSlop =
       event.activePointerCount >= this.numPointers &&
       distance(event.focus, this.lastTapDownFocus) > this.multiTapSlop;
 
-    if (pointerMismatch || dt < minInterval || dt > this.multiTapInterval || outOfSlop) {
+    if (!withinWindow || outOfSlop) {
       this.fail();
     } else {
       this.clearTimer();

@@ -1,11 +1,9 @@
-import {distance, type MotionEvent} from '../motion_event.js';
-import {
-  type GestureEventData,
-  GestureRecognizer,
-  MIN_SCALING_SPAN,
-  ROTATION_SLOP,
-} from '../gesture_recognizer.js';
+import {centroid, distance, type MotionEvent, type Point} from '../motion_event.js';
+import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
 import type {TouchActionValue} from '../touch_behavior.js';
+
+const DEFAULT_ROTATION_SLOP = 5;
+const DEFAULT_MIN_SPAN = 27;
 
 export interface RotateOptions {
   /** Angular change in degrees required before rotation begins. Default: `5`. */
@@ -26,6 +24,10 @@ export interface RotateCallbacks {
   onRotate?: (data: RotateEventData) => void;
   onRotateEnd?: (data: RotateEventData) => void;
   onRotateCancel?: () => void;
+}
+
+function angleDeg(a: Point, b: Point): number {
+  return Math.atan2(b.y - a.y, b.x - a.x) * (180 / Math.PI);
 }
 
 function shortestAngleDelta(fromDeg: number, toDeg: number): number {
@@ -52,8 +54,8 @@ export class RotateRecognizer extends GestureRecognizer {
   constructor(callbacks: RotateCallbacks, options: Partial<RotateOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.rotationSlop = Math.max(0, options.rotationSlop ?? ROTATION_SLOP);
-    this.minSpan = Math.max(0, options.minSpan ?? MIN_SCALING_SPAN);
+    this.rotationSlop = Math.max(0, options.rotationSlop ?? DEFAULT_ROTATION_SLOP);
+    this.minSpan = Math.max(1, options.minSpan ?? DEFAULT_MIN_SPAN);
   }
 
   override getTouchAction(): TouchActionValue {
@@ -93,11 +95,7 @@ export class RotateRecognizer extends GestureRecognizer {
       }
 
       case 'move': {
-        if (event.activePointerCount < 2) {
-          return;
-        }
-        if (!this.trackedPair) {
-          this.anchorPointerPair(event);
+        if (event.activePointerCount < 2 || !this.trackedPair) {
           return;
         }
         const idx0 = event.findPointerIndex(this.trackedPair[0]);
@@ -109,7 +107,7 @@ export class RotateRecognizer extends GestureRecognizer {
 
         const p0 = event.pointers[idx0];
         const p1 = event.pointers[idx1];
-        if (distance(p0, p1) < Math.max(1, this.minSpan)) {
+        if (distance(p0, p1) < this.minSpan) {
           // Wait to anchor angle until the tracked pair separates past `minSpan` so pinching
           // outward from close proximity starts cleanly at 0 deg instead of snapping.
           this.pairAnchored = false;
@@ -119,7 +117,7 @@ export class RotateRecognizer extends GestureRecognizer {
           return;
         }
 
-        const currentAngle = Math.atan2(p1.y - p0.y, p1.x - p0.x) * (180 / Math.PI);
+        const currentAngle = angleDeg(p0, p1);
         if (!this.pairAnchored) {
           this.prevAngle = currentAngle;
           this.pairAnchored = true;
@@ -156,22 +154,18 @@ export class RotateRecognizer extends GestureRecognizer {
         }
 
         this.totalRotation += emitDeg;
-        this.emitChange(() => {
-          if (this.callbacks.onRotate) {
-            this.callbacks.onRotate(this.buildEventData(event, emitDeg));
-          }
-        });
+        if (this.emitChange() && this.callbacks.onRotate) {
+          this.callbacks.onRotate(this.buildEventData(event, emitDeg));
+        }
         break;
       }
 
       case 'pointer_up': {
         if (event.activePointerCount < 2) {
-          if (this.active) {
-            this.completeActive(() => {
-              if (this.callbacks.onRotateEnd) {
-                this.callbacks.onRotateEnd(this.buildEventData(event, 0));
-              }
-            });
+          if (this.completeActive()) {
+            if (this.callbacks.onRotateEnd) {
+              this.callbacks.onRotateEnd(this.buildEventData(event, 0, centroid(event.pointers)));
+            }
           } else {
             this.fail();
           }
@@ -217,18 +211,23 @@ export class RotateRecognizer extends GestureRecognizer {
       return;
     }
     this.trackedPair = [active[0].pointerId, active[1].pointerId];
-    if (distance(active[0], active[1]) >= Math.max(1, this.minSpan)) {
-      this.prevAngle =
-        Math.atan2(active[1].y - active[0].y, active[1].x - active[0].x) * (180 / Math.PI);
+    if (distance(active[0], active[1]) >= this.minSpan) {
+      this.prevAngle = angleDeg(active[0], active[1]);
       this.pairAnchored = true;
     } else {
       this.pairAnchored = false;
     }
   }
 
-  private buildEventData(event: MotionEvent, rotationDelta: number): RotateEventData {
+  private buildEventData(
+    event: MotionEvent,
+    rotationDelta: number,
+    centerOverride?: Point
+  ): RotateEventData {
     return {
-      ...this.createEventData(event),
+      center: centerOverride ?? event.focus,
+      motionEvent: event,
+      originalEvent: event.originalEvent,
       rotation: this.totalRotation,
       rotationDelta,
     };

@@ -1,15 +1,26 @@
-import {Hammer, type GestureTarget, type HammerOptions} from '@hammerjs/core';
+import {Hammer, type GestureTargetElement, type HammerOptions} from '@hammerjs/core';
 import type {ActionReturn} from 'svelte/action';
 
-export type {GestureTarget, HammerOptions};
+export type {GestureTargetElement, HammerOptions};
+
+function normalizeValue(value: unknown): unknown {
+  if (typeof value === 'function') {
+    return '[fn]';
+  }
+  if (Array.isArray(value)) {
+    return value.map(normalizeValue);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([k, v]) => [k, normalizeValue(v)]);
+  }
+  return value;
+}
 
 function serializeConfig(options: HammerOptions): string {
-  return JSON.stringify(
-    Object.entries(options)
-      .filter(([, value]) => value !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([key, value]) => [key, typeof value === 'function' ? true : value])
-  );
+  return JSON.stringify(normalizeValue(options));
 }
 
 function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
@@ -19,8 +30,9 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
       wrapped[key] = (...args: unknown[]) => {
         const fn = (optionsRef.current as Record<string, unknown>)[key];
         if (typeof fn === 'function') {
-          fn(...args);
+          return fn(...args);
         }
+        return undefined;
       };
     } else if (value !== undefined) {
       wrapped[key] = value;
@@ -35,7 +47,7 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
  *
  * Reactive `update()` calls that only replace inline closures never cancel active gestures.
  */
-export function hammer<T extends GestureTarget = HTMLElement>(
+export function hammer<T extends GestureTargetElement = HTMLElement>(
   node: T,
   options: HammerOptions = {}
 ): ActionReturn<HammerOptions | undefined> {

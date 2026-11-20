@@ -1,17 +1,28 @@
-import {Hammer, type GestureTarget, type HammerOptions} from '@hammerjs/core';
+import {Hammer, type GestureTargetElement, type HammerOptions} from '@hammerjs/core';
 import {useEffect, useLayoutEffect, useRef, useState, type RefCallback} from 'react';
 
-export type {GestureTarget, HammerOptions};
+export type {GestureTargetElement, HammerOptions};
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-function serializeConfig(options: HammerOptions): string {
-  return JSON.stringify(
-    Object.entries(options)
-      .filter(([, value]) => value !== undefined)
+function normalizeValue(value: unknown): unknown {
+  if (typeof value === 'function') {
+    return '[fn]';
+  }
+  if (Array.isArray(value)) {
+    return value.map(normalizeValue);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, v]) => v !== undefined)
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([key, value]) => [key, typeof value === 'function' ? true : value])
-  );
+      .map(([k, v]) => [k, normalizeValue(v)]);
+  }
+  return value;
+}
+
+function serializeConfig(options: HammerOptions): string {
+  return JSON.stringify(normalizeValue(options));
 }
 
 function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
@@ -21,8 +32,9 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
       wrapped[key] = (...args: unknown[]) => {
         const fn = (optionsRef.current as Record<string, unknown>)[key];
         if (typeof fn === 'function') {
-          fn(...args);
+          return fn(...args);
         }
+        return undefined;
       };
     } else if (value !== undefined) {
       wrapped[key] = value;
@@ -37,24 +49,25 @@ function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
  * Inline callbacks can be passed safely without `useCallback` or `useMemo`: callback identity
  * changes never tear down active gestures while always invoking the latest closure.
  */
-export function useHammer<T extends GestureTarget = HTMLElement>(
+export function useHammer<T extends GestureTargetElement = HTMLElement>(
   options: HammerOptions = {}
 ): RefCallback<T> {
   const [element, setElement] = useState<T | null>(null);
+  const configKey = serializeConfig(options);
 
   const optionsRef = useRef(options);
   useIsomorphicLayoutEffect(() => {
     optionsRef.current = options;
   });
 
-  const configKey = serializeConfig(options);
-
   useEffect(() => {
     if (!element) {
       return;
     }
     const hammer = new Hammer(element, wrapCallbacks(optionsRef));
-    return () => hammer.destroy();
+    return () => {
+      hammer.destroy();
+    };
   }, [element, configKey]);
 
   return setElement;
