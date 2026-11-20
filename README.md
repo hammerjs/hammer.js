@@ -71,7 +71,7 @@ const manager = new GestureManager(element, {
 
 ## Browser Support
 
-`@hammerjs/core` is built to match its required Web APIs (Pointer Events, CSS `touch-action`, Shadow DOM v1, and ES Modules):
+`@hammerjs/core` is built to match its required Web APIs ([Pointer Events](https://caniuse.com/pointer), [CSS `touch-action`](https://caniuse.com/css-touch-action), [Shadow DOM v1](https://caniuse.com/shadowdomv1), and [ES Modules](https://caniuse.com/es6-module)):
 
 | Browser     | Minimum Version | Released | Platform Notes                                             |
 | :---------- | :-------------- | :------- | :--------------------------------------------------------- |
@@ -80,7 +80,7 @@ const manager = new GestureManager(element, {
 | **Firefox** | 63+             | Oct 2018 | Desktop & Android                                          |
 | **Safari**  | 13+             | Sep 2019 | macOS & iOS / iPadOS 13+ (iPhone 6s and newer)             |
 
-Optional APIs such as `PointerEvent.getCoalescedEvents()`, `Event.composedPath()`, and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
+Optional APIs such as [`PointerEvent.getCoalescedEvents()`](https://caniuse.com/mdn-api_pointerevent_getcoalescedevents), [`Event.composedPath()`](https://caniuse.com/mdn-api_event_composedpath), and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
 
 ## Packages
 
