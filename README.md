@@ -73,12 +73,12 @@ const manager = new GestureManager(element, {
 
 `@hammerjs/core` is built to match its required Web APIs (Pointer Events, CSS `touch-action`, Shadow DOM v1, and ES Modules):
 
-| Browser | Minimum Version | Released | Platform Notes |
-| :--- | :--- | :--- | :--- |
-| **Chrome** | 61+ | Sep 2017 | Desktop & Android 4.1+ (updatable WebView on Android 5.0+) |
-| **Edge** | 79+ | Jan 2020 | First Chromium-based Edge |
-| **Firefox** | 63+ | Oct 2018 | Desktop & Android |
-| **Safari** | 13+ | Sep 2019 | macOS & iOS / iPadOS 13+ (iPhone 6s and newer) |
+| Browser     | Minimum Version | Released | Platform Notes                                             |
+| :---------- | :-------------- | :------- | :--------------------------------------------------------- |
+| **Chrome**  | 61+             | Sep 2017 | Desktop & Android 4.1+ (updatable WebView on Android 5.0+) |
+| **Edge**    | 79+             | Jan 2020 | First Chromium-based Edge                                  |
+| **Firefox** | 63+             | Oct 2018 | Desktop & Android                                          |
+| **Safari**  | 13+             | Sep 2019 | macOS & iOS / iPadOS 13+ (iPhone 6s and newer)             |
 
 Optional APIs such as `PointerEvent.getCoalescedEvents()`, `Event.composedPath()`, and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
 
