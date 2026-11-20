@@ -33,6 +33,7 @@ function playgroundDevPlugin(): Plugin {
 export default defineConfig({
   plugins: [playgroundDevPlugin()],
   build: {
+    target: ['chrome61', 'edge79', 'firefox63', 'safari13'],
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -42,6 +43,11 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         minify: true,
+      },
+      transform: {
+        assumptions: {
+          setPublicClassFields: true,
+        },
       },
     },
   },
