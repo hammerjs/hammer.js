@@ -1,3 +1,12 @@
+/**
+ * Dedicated entry point for the classic, non-ESM browser bundle (`dist/hammer.min.js`),
+ * built via `vite.iife.config.ts` (`npm run build:iife`).
+ *
+ * This file is NOT imported by `src/index.ts` and is excluded from ESM / `.d.ts` output.
+ * It attaches the public v3 APIs onto `Hammer` and assigns `window.Hammer` for `<script>`
+ * drop-in usage (intentionally omitting `GestureBinding`, which is only for framework adapters).
+ */
+
 import {gesture} from './descriptors.js';
 import {GestureManager} from './gesture_manager.js';
 import {GestureRecognizer} from './gesture_recognizer.js';
