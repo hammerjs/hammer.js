@@ -15,9 +15,11 @@ import type {GestureTargetElement, TouchActionSetting} from './touch_action.js';
 
 export interface HammerOptions
   extends LongPressCallbacks, PanCallbacks, ScaleCallbacks, RotateCallbacks {
+  enabled?: boolean;
   supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
-  ignoreTarget?: boolean | ((target: EventTarget) => boolean);
+  ignoreTarget?: boolean | ((target: EventTarget, event: Event) => boolean);
+  propagate?: boolean;
 
   onTap?: (event: GestureEventData) => void;
   onDoubleTap?: (event: GestureEventData) => void;
@@ -137,9 +139,11 @@ export class Hammer<T extends GestureTargetElement = GestureTargetElement> {
 
   constructor(element: T, options: HammerOptions = {}) {
     this.manager = new GestureManager(element, {
+      enabled: options.enabled,
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
       ignoreTarget: options.ignoreTarget,
+      propagate: options.propagate,
       gestures: buildGestures(options),
     });
   }

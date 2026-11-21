@@ -1,6 +1,6 @@
 {
   "name": "@hammerjs/vue",
-  "version": "0.1.0",
+  "version": "3.0.0-alpha.0",
   "description": "Vue adapter for @hammerjs/core gesture recognition",
   "license": "MIT",
   "author": "Jorik Tangelder",
@@ -30,7 +30,7 @@
     "test:unit": "vitest run"
   },
   "peerDependencies": {
-    "@hammerjs/core": "^3.0.0-experimental",
+    "@hammerjs/core": "^3.0.0-alpha.0",
     "vue": ">=3.3.0"
   },
   "devDependencies": {

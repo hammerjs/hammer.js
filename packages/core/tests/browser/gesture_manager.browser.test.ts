@@ -1,10 +1,14 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {cdp} from 'vitest/browser';
 import {
+  GestureBinding,
   GestureManager,
   Hammer,
+  pan,
   PanRecognizer,
   ScaleRecognizer,
+  swipe,
+  tap,
   TapRecognizer,
   type RotateEventData,
   type ScaleEventData,
@@ -334,5 +338,69 @@ describe('GestureManager in a real browser (Chromium)', () => {
     expect(scales.every(ev => ev.isQuickScale)).toBe(true);
     expect(scales.at(-1)!.scale).toBeGreaterThan(1.5);
     expect(onTap).not.toHaveBeenCalled();
+  });
+
+  it('coordinates nested gesture surfaces and reports pointerType/target in a real browser', async () => {
+    const outer = document.getElementById('surface')!;
+    const inner = document.getElementById('child-b')!;
+
+    const onOuterPan = vi.fn();
+    const onInnerPan = vi.fn();
+    const onOuterTap = vi.fn();
+    const onInnerTap = vi.fn();
+
+    const outerGm = new GestureManager(outer, {
+      gestures: [pan({direction: 'horizontal', onPan: onOuterPan}), tap({onTap: onOuterTap})],
+    });
+    const innerGm = new GestureManager(inner, {
+      gestures: [pan({direction: 'horizontal', onPan: onInnerPan}), tap({onTap: onInnerTap})],
+    });
+
+    try {
+      // Tap on inner button fires only inner tap with real pointerType & target:
+      await touch('touchStart', [{id: 1, x: 240, y: 150}]);
+      await touch('touchEnd', []);
+      expect(onInnerTap).toHaveBeenCalledTimes(1);
+      expect(onInnerTap).toHaveBeenLastCalledWith(
+        expect.objectContaining({pointerType: 'touch', target: inner})
+      );
+      expect(onOuterTap).not.toHaveBeenCalled();
+
+      // Drag starting on inner button pans only inner, automatically cancelling outer:
+      await touchDrag(2, {x: 240, y: 150}, {x: 160, y: 150});
+      expect(onInnerPan).toHaveBeenCalled();
+      expect(onOuterPan).not.toHaveBeenCalled();
+    } finally {
+      innerGm.destroy();
+      outerGm.destroy();
+    }
+  });
+
+  it('supports swipe() descriptor and enabled toggling via GestureBinding in a real browser', async () => {
+    const onSwipe = vi.fn();
+    const binding = new GestureBinding(
+      surface,
+      [swipe({direction: 'horizontal', minSwipeVelocity: 100, minSwipeDistance: 40, onSwipe})],
+      {enabled: false}
+    );
+
+    try {
+      expect(getComputedStyle(surface).touchAction).toBe('auto');
+      await touchDrag(1, {x: 40, y: 150}, {x: 240, y: 150}, 4);
+      expect(onSwipe).not.toHaveBeenCalled();
+
+      binding.update(
+        [swipe({direction: 'horizontal', minSwipeVelocity: 100, minSwipeDistance: 40, onSwipe})],
+        {enabled: true}
+      );
+      expect(getComputedStyle(surface).touchAction).toBe('pan-y pinch-zoom');
+
+      await touchDrag(2, {x: 40, y: 150}, {x: 240, y: 150}, 4);
+      expect(onSwipe).toHaveBeenCalledWith(
+        expect.objectContaining({direction: 'right', pointerType: 'touch'})
+      );
+    } finally {
+      binding.destroy();
+    }
   });
 });

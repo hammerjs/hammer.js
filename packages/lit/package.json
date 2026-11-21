@@ -1,6 +1,6 @@
 {
   "name": "@hammerjs/lit",
-  "version": "0.1.0",
+  "version": "3.0.0-alpha.0",
   "description": "Lit reactive controller adapter for @hammerjs/core gesture recognition",
   "license": "MIT",
   "author": "Jorik Tangelder",
@@ -31,7 +31,7 @@
     "test:unit": "vitest run"
   },
   "peerDependencies": {
-    "@hammerjs/core": "^3.0.0-experimental",
+    "@hammerjs/core": "^3.0.0-alpha.0",
     "lit": ">=3.0.0"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {resolveGestures} from '../src/descriptors';
 import {
   doubleTap,
   gesture,
@@ -8,9 +9,9 @@ import {
   longPress,
   pan,
   quickScale,
-  resolveGestures,
   rotate,
   scale,
+  swipe,
   tap,
 } from '../src/index';
 import {pointerEvent} from './test_helpers';
@@ -393,6 +394,87 @@ describe('Gesture descriptors, resolveGestures, and GestureBinding', () => {
     const m7 = binding.manager;
     binding.update([tap({onTap: () => {}, slop: Number.NaN})]);
     expect(binding.manager).toBe(m7);
+
+    binding.destroy();
+  });
+
+  it('supports swipe() descriptor, enabled toggle (including mid-drag disable), and propagate option in GestureBinding', () => {
+    const onSwipe = vi.fn();
+    const binding = new GestureBinding(element, [
+      swipe({direction: 'horizontal', minSwipeVelocity: 200, minSwipeDistance: 30, onSwipe}),
+    ]);
+    expect(element.style.touchAction).toBe('pan-y pinch-zoom');
+
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 50, timeStamp: 10}));
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 1, clientX: 100, timeStamp: 20})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 100, timeStamp: 24}));
+    expect(onSwipe).toHaveBeenCalledWith(
+      expect.objectContaining({direction: 'right', pointerType: 'touch'})
+    );
+
+    // Toggling `enabled: false` mid-drag cancels the active pan, restores styles, and keeps manager null:
+    const onPanStart = vi.fn();
+    const onPanCancel = vi.fn();
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {enabled: true});
+    expect(element.style.touchAction).toBe('none');
+    expect(element.style.userSelect).toBe('none');
+
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 0, timeStamp: 100}));
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 2, clientX: 20, timeStamp: 116})
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
+
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {enabled: false});
+    expect(binding.manager).toBeNull();
+    expect(element.style.touchAction || '').toBe('');
+    expect(element.style.userSelect || '').toBe('');
+
+    // Repeated updates while disabled stay a clean no-op:
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {enabled: false});
+    expect(binding.manager).toBeNull();
+
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0, timeStamp: 200}));
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 3, clientX: 25, timeStamp: 216})
+    );
+    expect(onPanStart).toHaveBeenCalledTimes(1);
+
+    // Re-enabling mounts cleanly, toggling undefined <-> default option values keeps the same manager,
+    // and changing `propagate` remounts:
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {enabled: true});
+    const enabledMgr = binding.manager;
+    expect(enabledMgr).not.toBeNull();
+    expect(element.style.touchAction).toBe('none');
+
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {});
+    expect(binding.manager).toBe(enabledMgr);
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {
+      enabled: true,
+      autoWire: true,
+      propagate: false,
+      touchAction: 'compute',
+      ignoreTarget: true,
+    });
+    expect(binding.manager).toBe(enabledMgr);
+
+    binding.update([pan({slop: 4, onPanStart, onPanCancel})], {enabled: true, propagate: true});
+    expect(binding.manager).not.toBe(enabledMgr);
+
+    // `ignoreTarget` receives `(target, event)` so callers can gate on coordinates/modifiers:
+    const edgeTap = vi.fn();
+    binding.update([tap({onTap: edgeTap})], {
+      ignoreTarget: (_target, ev) => (ev as PointerEvent).clientX > 24,
+    });
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 4, clientX: 50, timeStamp: 300}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 4, clientX: 50, timeStamp: 320}));
+    expect(edgeTap).not.toHaveBeenCalled();
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 5, clientX: 10, timeStamp: 400}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 5, clientX: 10, timeStamp: 420}));
+    expect(edgeTap).toHaveBeenCalledTimes(1);
 
     binding.destroy();
   });

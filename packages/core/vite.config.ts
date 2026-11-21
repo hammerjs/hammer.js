@@ -34,6 +34,7 @@ export default defineConfig({
   plugins: [playgroundDevPlugin()],
   build: {
     target: ['chrome60', 'edge79', 'firefox59', 'safari13'],
+    minify: false,
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -41,9 +42,6 @@ export default defineConfig({
       fileName: () => 'hammer.es.js',
     },
     rolldownOptions: {
-      output: {
-        minify: true,
-      },
       transform: {
         assumptions: {
           setPublicClassFields: true,

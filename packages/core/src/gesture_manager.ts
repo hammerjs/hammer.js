@@ -1,5 +1,5 @@
 import {type GestureDescriptor, resolveGestures} from './descriptors.js';
-import {isEditableOrFormControl, ListenerBag} from './dom_utils.js';
+import {isComposedAncestor, isEditableOrFormControl, ListenerBag} from './dom_utils.js';
 import {GestureArena} from './gesture_arena.js';
 import type {GestureRecognizer} from './gesture_recognizer.js';
 import {MotionEventStream} from './motion_event_stream.js';
@@ -10,8 +10,14 @@ import type {GestureTargetElement, TouchActionSetting, TouchActionValue} from '.
 export type PointerType = 'touch' | 'pen' | 'mouse';
 
 const DEFAULT_POINTER_TYPES: readonly PointerType[] = ['touch', 'pen', 'mouse'];
+const activeManagers = new Set<GestureManager>();
 
 export interface GestureManagerOptions {
+  /**
+   * Whether gesture recognition and surface guards (`touch-action`, `user-select`, listeners)
+   * are active. Set to `false` to disable gestures without tearing down references. Default: `true`.
+   */
+  enabled?: boolean;
   /**
    * Pointer device types to observe (`'touch'`, `'pen'`, `'mouse'`).
    * Default: `['touch', 'pen', 'mouse']`.
@@ -42,9 +48,17 @@ export interface GestureManagerOptions {
    * so native typing, text selection, and range-slider drags remain unobstructed.
    * - `true` (default): ignores native form/editable controls inside `element`.
    * - `false`: observes all targets including form controls.
-   * - `(target: EventTarget) => boolean`: custom predicate returning `true` to ignore.
+   * - `(target: EventTarget, event: Event) => boolean`: custom predicate returning `true` to ignore.
    */
-  ignoreTarget?: boolean | ((target: EventTarget) => boolean);
+  ignoreTarget?: boolean | ((target: EventTarget, event: Event) => boolean);
+  /**
+   * Controls coordination across nested `GestureManager` surfaces sharing a pointer stream:
+   * - `false` (default): winning a gesture cancels competing ancestor managers (and descendant
+   *   managers when a continuous gesture claims the stream), so only one surface handles it.
+   * - `true`: opts this surface out of cross-manager cancellation (neither cancels nested
+   *   surfaces nor gets cancelled by them).
+   */
+  propagate?: boolean;
 }
 
 /**
@@ -61,31 +75,42 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
   private readonly elementListeners = new ListenerBag();
   private readonly trackingListeners = new ListenerBag();
   private readonly supportedPointerTypes: readonly PointerType[];
-  private readonly ignoreTarget: boolean | ((target: EventTarget) => boolean);
+  private readonly ignoreTarget: boolean | ((target: EventTarget, event: Event) => boolean);
+  private readonly propagate: boolean;
 
   private trackingActive = false;
   private lastHandledDown: Event | null = null;
+  private dispatchingPointerId: number | null = null;
   private destroyed = false;
 
   constructor(element: T, options: GestureManagerOptions = {}) {
     this.element = element;
-    this.pointerCapture = new PointerCapture(element, e => this.cancelPointer(e));
+    const enabled = options.enabled !== false;
+    this.pointerCapture = new PointerCapture(
+      element,
+      enabled ? e => this.cancelPointer(e) : undefined
+    );
     this.supportedPointerTypes = options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES;
     this.ignoreTarget = options.ignoreTarget ?? true;
+    this.propagate = options.propagate ?? false;
 
-    const initialRecognizers: GestureRecognizer[] = [
-      ...(options.gestures ? resolveGestures(options.gestures, {autoWire: options.autoWire}) : []),
-      ...(options.recognizers ?? []),
-    ];
+    const initialRecognizers: GestureRecognizer[] = enabled
+      ? [
+          ...(options.gestures
+            ? resolveGestures(options.gestures, {autoWire: options.autoWire})
+            : []),
+          ...(options.recognizers ?? []),
+        ]
+      : [];
 
     this.arena = new GestureArena(initialRecognizers, {
-      onActiveGestureStart: () => this.pointerCapture.capture(this.stream.activePointerIds),
+      onGestureClaim: targetState => this.onGestureClaim(targetState),
     });
 
     const recognizers = this.arena.getRecognizers();
     this.surfaceGuard = new SurfaceGuard({
       element,
-      touchAction: options.touchAction ?? 'compute',
+      touchAction: enabled ? (options.touchAction ?? 'compute') : false,
       supportedPointerTypes: this.supportedPointerTypes,
       actions: recognizers.map(r => r.getTouchAction()),
       hasContinuousRecognizer: recognizers.some(r => r.gestureKind === 'continuous'),
@@ -95,7 +120,9 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
       onAbortActiveStream: e => this.abortActiveStream(e),
     });
 
-    this.elementListeners.add(this.element, 'pointerdown', this);
+    if (enabled) {
+      this.elementListeners.add(this.element, 'pointerdown', this);
+    }
   }
 
   /** Returns the W3C CSS `touch-action` computed from the registered recognizers. */
@@ -220,7 +247,12 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     if (!motionEvent) {
       return;
     }
-    this.arena.dispatch(motionEvent);
+    this.dispatchingPointerId = e.pointerId;
+    try {
+      this.arena.dispatch(motionEvent);
+    } finally {
+      this.dispatchingPointerId = null;
+    }
     this.pointerCapture.release(e.pointerId);
     if (this.stream.activePointerCount === 0) {
       if (this.arena.didSuppressingGestureWin) {
@@ -240,7 +272,7 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
       return false;
     }
     if (typeof this.ignoreTarget === 'function') {
-      return this.ignoreTarget(target);
+      return this.ignoreTarget(target, e);
     }
     return isEditableOrFormControl(target, boundary, path);
   }
@@ -261,6 +293,7 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     this.trackingActive = active;
     this.trackingListeners.clear();
     if (active) {
+      activeManagers.add(this);
       const doc = this.element.ownerDocument;
       this.trackingListeners.add(doc, 'pointerdown', this);
       this.trackingListeners.add(doc, 'pointermove', this);
@@ -270,8 +303,41 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
       if (doc.defaultView) {
         this.trackingListeners.add(doc.defaultView, 'blur', this);
       }
+    } else {
+      activeManagers.delete(this);
     }
     this.surfaceGuard.setActive(active);
+  }
+
+  private onGestureClaim(targetState: 'began' | 'ended'): void {
+    // Skip explicit pointer capture when `propagate: true` so nested continuous surfaces
+    // never steal capture from each other and trigger `lostpointercapture` aborts.
+    if (targetState === 'began' && !this.propagate) {
+      this.pointerCapture.capture(this.stream.activePointerIds);
+    }
+    if (this.propagate) {
+      return;
+    }
+    for (const other of activeManagers) {
+      if (other === this || other.propagate || !this.sharesPointerWith(other)) {
+        continue;
+      }
+      if (
+        isComposedAncestor(other.element, this.element) ||
+        (targetState === 'began' && isComposedAncestor(this.element, other.element))
+      ) {
+        other.abortActiveStream(new Event('cancel'));
+      }
+    }
+  }
+
+  private sharesPointerWith(other: GestureManager): boolean {
+    for (const id of this.stream.activePointerIds) {
+      if (other.stream.hasPointer(id)) {
+        return true;
+      }
+    }
+    return this.dispatchingPointerId !== null && other.stream.hasPointer(this.dispatchingPointerId);
   }
 
   private processPointerDown(e: PointerEvent): void {
@@ -288,7 +354,7 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     this.setActiveTracking(true);
     this.arena.dispatch(motionEvent);
 
-    if (this.arena.hasActiveGesture) {
+    if (this.arena.hasActiveGesture && !this.propagate) {
       this.pointerCapture.capture(this.stream.activePointerIds);
     }
   }

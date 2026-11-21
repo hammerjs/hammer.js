@@ -436,4 +436,29 @@ describe('Hammer', () => {
 
     hammer.destroy();
   });
+
+  it('forwards enabled: false and propagate: true to GestureManager', () => {
+    const onTap = vi.fn();
+    const disabled = new Hammer(element, {enabled: false, onTap});
+    element.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 5, timeStamp: 0}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 5, timeStamp: 20}));
+    expect(onTap).not.toHaveBeenCalled();
+    expect(element.style.touchAction || '').toBe('');
+    disabled.destroy();
+
+    const child = document.createElement('div');
+    element.appendChild(child);
+    const onOuterTap = vi.fn();
+    const onInnerTap = vi.fn();
+    const outerHammer = new Hammer(element, {propagate: true, onTap: onOuterTap});
+    const innerHammer = new Hammer(child, {onTap: onInnerTap});
+
+    child.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 5, timeStamp: 100}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 5, timeStamp: 120}));
+    expect(onInnerTap).toHaveBeenCalledTimes(1);
+    expect(onOuterTap).toHaveBeenCalledTimes(1);
+
+    innerHammer.destroy();
+    outerHammer.destroy();
+  });
 });

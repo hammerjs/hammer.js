@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
+  isComposedAncestor,
   isEditableOrFormControl,
   ListenerBag,
   NON_PASSIVE,
@@ -107,5 +108,30 @@ describe('dom_utils', () => {
     expect(
       isEditableOrFormControl(shadowInput, card, [shadowInput, shadow, shadowHost, card, root])
     ).toBe(true);
+  });
+
+  it('checks strict ancestor relationships across light DOM and nested open Shadow DOM via isComposedAncestor', () => {
+    const outer = document.createElement('div');
+    const host = document.createElement('div');
+    const sibling = document.createElement('div');
+    outer.append(host, sibling);
+    root.appendChild(outer);
+
+    const shadow1 = host.attachShadow({mode: 'open'});
+    const innerHost = document.createElement('div');
+    shadow1.appendChild(innerHost);
+
+    const shadow2 = innerHost.attachShadow({mode: 'open'});
+    const leaf = document.createElement('span');
+    shadow2.appendChild(leaf);
+
+    expect(isComposedAncestor(outer, outer)).toBe(false);
+    expect(isComposedAncestor(outer, host)).toBe(true);
+    expect(isComposedAncestor(host, outer)).toBe(false);
+    expect(isComposedAncestor(host, sibling)).toBe(false);
+    expect(isComposedAncestor(host, leaf)).toBe(true);
+    expect(isComposedAncestor(outer, leaf)).toBe(true);
+    expect(isComposedAncestor(sibling, leaf)).toBe(false);
+    expect(isComposedAncestor(leaf, outer)).toBe(false);
   });
 });

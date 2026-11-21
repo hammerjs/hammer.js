@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   build: {
+    minify: false,
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -15,9 +16,6 @@ export default defineConfig({
     },
     rolldownOptions: {
       external: ['@angular/core', '@hammerjs/core'],
-      output: {
-        minify: true,
-      },
     },
   },
   test: {

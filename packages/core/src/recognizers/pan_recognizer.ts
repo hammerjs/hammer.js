@@ -172,19 +172,28 @@ export class PanRecognizer extends GestureRecognizer {
       this.totalDeltaX = 0;
       this.totalDeltaY = 0;
 
-      const started = this.tryBegin(() => {
+      this.tryBegin(grantEvent => {
+        const startEvent = grantEvent ?? event;
+        if (grantEvent && grantEvent !== event) {
+          this.tracker.addMovement(grantEvent);
+          const extraX = grantEvent.focus.x - this.lastFocus.x;
+          const extraY = grantEvent.focus.y - this.lastFocus.y;
+          this.lastFocus = grantEvent.focus;
+          this.swipe.record(extraX, extraY);
+        }
         if (this.callbacks.onPanStart) {
-          this.callbacks.onPanStart(this.buildEventData(event, 0, 0));
+          this.callbacks.onPanStart(this.buildEventData(startEvent, 0, 0));
+        }
+        const initialX = postSlopX + (startEvent.focus.x - event.focus.x);
+        const initialY = postSlopY + (startEvent.focus.y - event.focus.y);
+        if ((initialX !== 0 || initialY !== 0) && this.emitChange()) {
+          this.totalDeltaX = initialX;
+          this.totalDeltaY = initialY;
+          if (this.callbacks.onPan) {
+            this.callbacks.onPan(this.buildEventData(startEvent, initialX, initialY));
+          }
         }
       });
-
-      if (started && (postSlopX !== 0 || postSlopY !== 0) && this.emitChange()) {
-        this.totalDeltaX = postSlopX;
-        this.totalDeltaY = postSlopY;
-        if (this.callbacks.onPan) {
-          this.callbacks.onPan(this.buildEventData(event, postSlopX, postSlopY));
-        }
-      }
       return;
     }
 
@@ -287,9 +296,7 @@ export class PanRecognizer extends GestureRecognizer {
         ? this.tracker.getCentroidVelocity(event.pointers)
         : this.tracker.getVelocity(event.actionPointerId);
     return {
-      center: centerOverride ?? event.focus,
-      motionEvent: event,
-      originalEvent: event.originalEvent,
+      ...this.createEventData(event, centerOverride),
       deltaX: this.totalDeltaX,
       deltaY: this.totalDeltaY,
       stepX,
@@ -301,6 +308,7 @@ export class PanRecognizer extends GestureRecognizer {
 }
 
 export type PanGestureOptions = Partial<PanOptions> & PanCallbacks;
+export type SwipeGestureOptions = Partial<PanOptions> & Pick<PanCallbacks, 'onSwipe'>;
 
 /** Creates a tree-shakable `PanRecognizer` descriptor (with optional `onSwipe` flick detection). */
 export function pan(options?: PanGestureOptions): GestureDescriptor {
@@ -309,4 +317,14 @@ export function pan(options?: PanGestureOptions): GestureDescriptor {
     options as Record<string, unknown> | undefined,
     (cbs, cfg) => new PanRecognizer(cbs as PanCallbacks, cfg as Partial<PanOptions>)
   );
+}
+
+/**
+ * Creates a tree-shakable swipe descriptor backed by `PanRecognizer`.
+ *
+ * Equivalent to `pan(options)` with swipe-focused typing — ideal when you only need flick
+ * detection (`onSwipe`) without continuous pan callbacks.
+ */
+export function swipe(options?: SwipeGestureOptions): GestureDescriptor {
+  return pan(options);
 }

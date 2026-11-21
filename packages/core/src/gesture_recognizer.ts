@@ -9,6 +9,10 @@ export type GestureKind = 'continuous' | 'discrete';
 export interface GestureEventData {
   /** Focal point (`{x, y}`) in viewport (`clientX`/`clientY`) coordinates. */
   readonly center: Point;
+  /** Input modality (`'touch'`, `'pen'`, or `'mouse'`). */
+  readonly pointerType: string;
+  /** DOM target of the triggering event (`originalEvent.target`). */
+  readonly target: EventTarget | null;
   /** Underlying normalized multi-pointer `MotionEvent`. */
   readonly motionEvent: MotionEvent;
   /** DOM event that triggered this update (a `PointerEvent` for every pointer-driven update). */
@@ -20,7 +24,7 @@ export interface ArenaContext {
   requestClaim(
     recognizer: GestureRecognizer,
     targetState: 'began' | 'ended',
-    onGranted: () => void
+    onGranted: (grantEvent?: MotionEvent) => void
   ): boolean;
   notifyTerminal(recognizer: GestureRecognizer): void;
 }
@@ -251,7 +255,7 @@ export abstract class GestureRecognizer {
 
   protected onFail(): void {}
 
-  protected tryBegin(onBegan: () => void): boolean {
+  protected tryBegin(onBegan: (grantEvent?: MotionEvent) => void): boolean {
     if (this.currentState !== 'possible' || !this.arena) {
       return false;
     }
@@ -333,6 +337,8 @@ export abstract class GestureRecognizer {
   protected createEventData(event: MotionEvent, centerOverride?: Point): GestureEventData {
     return {
       center: centerOverride ?? event.focus,
+      pointerType: event.pointerType,
+      target: event.originalEvent.target,
       motionEvent: event,
       originalEvent: event.originalEvent,
     };

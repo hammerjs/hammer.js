@@ -1,4 +1,4 @@
-import {doubleTap, longPress, pan, tap} from '@hammerjs/core';
+import {doubleTap, longPress, pan, swipe, tap} from '@hammerjs/core';
 import {act, cleanup, render} from '@testing-library/react';
 import {StrictMode, createElement, useState, type RefCallback} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
@@ -212,5 +212,66 @@ describe('@hammerjs/react useGestures', () => {
     doTap(inp, 200);
     doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
+  });
+
+  it('supports enabled toggle, swipe() descriptor, and nested useGestures coordination', () => {
+    const onOuterSwipe = vi.fn();
+    const onInnerTap = vi.fn();
+    const onOuterTap = vi.fn();
+
+    function NestedDemo({enabled}: {enabled: boolean}) {
+      const outerRef = useGestures<HTMLDivElement>(
+        [
+          swipe({
+            direction: 'horizontal',
+            minSwipeVelocity: 200,
+            minSwipeDistance: 30,
+            onSwipe: onOuterSwipe,
+          }),
+          tap({onTap: onOuterTap}),
+        ],
+        {enabled}
+      );
+      const innerRef = useGestures<HTMLButtonElement>([tap({onTap: onInnerTap})], {enabled});
+      return createElement(
+        'div',
+        {ref: outerRef, 'data-testid': 'outer'},
+        createElement('button', {ref: innerRef, 'data-testid': 'inner', type: 'button'}, 'Click')
+      );
+    }
+
+    const {getByTestId, rerender} = render(createElement(NestedDemo, {enabled: false}));
+    const outer = getByTestId('outer');
+    const inner = getByTestId('inner');
+    expect(outer.style.touchAction || '').toBe('');
+
+    act(() => {
+      inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 5, timeStamp: 0}));
+      inner.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 5, timeStamp: 20}));
+    });
+    expect(onInnerTap).not.toHaveBeenCalled();
+
+    rerender(createElement(NestedDemo, {enabled: true}));
+    expect(outer.style.touchAction).toBe('pan-y pinch-zoom');
+
+    // Tapping inner fires only inner tap (cancels outer tap automatically):
+    act(() => {
+      inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 5, timeStamp: 100}));
+      inner.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 5, timeStamp: 120}));
+    });
+    expect(onInnerTap).toHaveBeenCalledTimes(1);
+    expect(onOuterTap).not.toHaveBeenCalled();
+
+    // Swiping horizontally starting on inner fires outer swipe:
+    act(() => {
+      inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 0, timeStamp: 200}));
+      document.dispatchEvent(
+        pointerEvent('pointermove', {pointerId: 3, clientX: 60, timeStamp: 215})
+      );
+      document.dispatchEvent(
+        pointerEvent('pointerup', {pointerId: 3, clientX: 120, timeStamp: 230})
+      );
+    });
+    expect(onOuterSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'right'}));
   });
 });

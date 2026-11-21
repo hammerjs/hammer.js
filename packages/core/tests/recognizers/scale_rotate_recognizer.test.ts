@@ -858,4 +858,48 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     expect(scales[0]).toBeCloseTo(30 / 44, 3);
     pinchArena.destroy();
   });
+
+  it('ignores sub-slop rotation jitter and stops rotating if the arena denies its claim', () => {
+    const onRotate = vi.fn();
+    const onScale = vi.fn();
+    // Scale and Rotate NOT marked simultaneous: Scale wins first, so Rotate's claim is denied.
+    const competingArena = new GestureArena([
+      new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}),
+      new RotateRecognizer({onRotate}, {rotationSlop: 5, minSpan: 10}),
+    ]);
+
+    competingArena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+      )!
+    );
+    competingArena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 0, timeStamp: 0})
+      )!
+    );
+    // Tiny 1-degree rotation below `rotationSlop: 5` (and small span change below `spanSlop: 5`):
+    const rad1 = (1 * Math.PI) / 180;
+    competingArena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {
+          pointerId: 2,
+          clientX: Math.cos(rad1) * 100,
+          clientY: Math.sin(rad1) * 100,
+          timeStamp: 10,
+        })
+      )!
+    );
+    expect(onRotate).not.toHaveBeenCalled();
+
+    // Large pinch + rotation: Scale wins first (registered first), denying Rotate's claim:
+    competingArena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 0, clientY: 200, timeStamp: 20})
+      )!
+    );
+    expect(onScale).toHaveBeenCalledWith(expect.objectContaining({pointerType: 'touch'}));
+    expect(onRotate).not.toHaveBeenCalled();
+    competingArena.destroy();
+  });
 });

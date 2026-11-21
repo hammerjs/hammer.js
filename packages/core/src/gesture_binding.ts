@@ -12,10 +12,12 @@ import type {GestureTargetElement, TouchActionSetting} from './touch_action.js';
 export type CallbackWrapper = <F extends (...args: never[]) => unknown>(fn: F) => F;
 
 export interface GesturesOptions {
+  enabled?: boolean;
   supportedPointerTypes?: readonly PointerType[];
   touchAction?: TouchActionSetting;
-  ignoreTarget?: boolean | ((target: EventTarget) => boolean);
+  ignoreTarget?: boolean | ((target: EventTarget, event: Event) => boolean);
   autoWire?: boolean;
+  propagate?: boolean;
 }
 
 export interface GestureBindingOptions extends GesturesOptions {
@@ -24,8 +26,10 @@ export interface GestureBindingOptions extends GesturesOptions {
 }
 
 interface BindingSnapshot {
-  readonly touchAction: TouchActionSetting | undefined;
-  readonly autoWire: boolean | undefined;
+  readonly enabled: boolean;
+  readonly touchAction: TouchActionSetting;
+  readonly autoWire: boolean;
+  readonly propagate: boolean;
   readonly supportedPointerTypes: unknown;
   readonly ignoreTarget: unknown;
   readonly gestures: ReadonlyArray<{
@@ -42,10 +46,12 @@ function snapshotBinding(
   options: GesturesOptions
 ): BindingSnapshot {
   return {
-    touchAction: options.touchAction,
-    autoWire: options.autoWire,
+    enabled: options.enabled !== false,
+    touchAction: options.touchAction ?? 'compute',
+    autoWire: options.autoWire !== false,
+    propagate: options.propagate ?? false,
     supportedPointerTypes: snapshotStructure(options.supportedPointerTypes),
-    ignoreTarget: snapshotStructure(options.ignoreTarget),
+    ignoreTarget: snapshotStructure(options.ignoreTarget ?? true),
     gestures: descriptors.map(d => ({
       kind: d.kind,
       config: snapshotStructure(d.config),
@@ -62,11 +68,13 @@ function matchesBinding(
   options: GesturesOptions
 ): boolean {
   if (
-    snap.touchAction !== options.touchAction ||
-    snap.autoWire !== options.autoWire ||
+    snap.enabled !== (options.enabled !== false) ||
+    snap.touchAction !== (options.touchAction ?? 'compute') ||
+    snap.autoWire !== (options.autoWire !== false) ||
+    snap.propagate !== (options.propagate ?? false) ||
     snap.gestures.length !== descriptors.length ||
     !matchesSnapshot(snap.supportedPointerTypes, options.supportedPointerTypes) ||
-    !matchesSnapshot(snap.ignoreTarget, options.ignoreTarget)
+    !matchesSnapshot(snap.ignoreTarget, options.ignoreTarget ?? true)
   ) {
     return false;
   }
@@ -139,14 +147,11 @@ export class GestureBinding<T extends GestureTargetElement = GestureTargetElemen
     if (this.destroyed) {
       return;
     }
-    if (
-      this.currentManager &&
-      this.mountedSnapshot &&
-      matchesBinding(this.mountedSnapshot, gestures, options)
-    ) {
+    if (this.mountedSnapshot && matchesBinding(this.mountedSnapshot, gestures, options)) {
       return;
     }
     this.currentManager?.destroy();
+    this.currentManager = null;
     this.mount();
   }
 
@@ -169,6 +174,11 @@ export class GestureBinding<T extends GestureTargetElement = GestureTargetElemen
     const options = this.latestOptions;
     this.mountedSnapshot = snapshotBinding(gestures, options);
 
+    if (options.enabled === false) {
+      this.currentManager = null;
+      return;
+    }
+
     const recognizers = resolveGestures(gestures, {
       autoWire: options.autoWire,
       resolveCallbacks: (index, desc) => this.proxyCallbacks(index, desc.callbacks),
@@ -176,9 +186,9 @@ export class GestureBinding<T extends GestureTargetElement = GestureTargetElemen
 
     const ignoreTarget =
       typeof options.ignoreTarget === 'function'
-        ? (target: EventTarget) => {
+        ? (target: EventTarget, event: Event) => {
             const pred = this.latestOptions.ignoreTarget;
-            return typeof pred === 'function' ? pred(target) : Boolean(pred ?? true);
+            return typeof pred === 'function' ? pred(target, event) : Boolean(pred ?? true);
           }
         : options.ignoreTarget;
 
@@ -186,6 +196,7 @@ export class GestureBinding<T extends GestureTargetElement = GestureTargetElemen
       supportedPointerTypes: options.supportedPointerTypes,
       touchAction: options.touchAction,
       ignoreTarget,
+      propagate: options.propagate,
       recognizers,
     });
   }

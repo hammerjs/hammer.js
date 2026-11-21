@@ -1073,6 +1073,7 @@ describe('GestureManager', () => {
     const onChildPan = vi.fn();
 
     const parentGm = new GestureManager(outer, {
+      propagate: true,
       recognizers: [
         new PanRecognizer(
           {onPan: onParentPan, onPanEnd: onParentEnd, onPanCancel: onParentCancel},
@@ -1081,6 +1082,7 @@ describe('GestureManager', () => {
       ],
     });
     const childGm = new GestureManager(inner, {
+      propagate: true,
       recognizers: [
         new PanRecognizer(
           {
@@ -1375,5 +1377,235 @@ describe('GestureManager', () => {
     expect(onPan).toHaveBeenCalledTimes(2);
 
     gm.destroy();
+  });
+
+  it('coordinates nested gesture surfaces automatically (including Shadow DOM), respects propagate: true, and preserves disjoint fingers', () => {
+    const outer = document.createElement('div');
+    const inner = document.createElement('div');
+    const shadowHost = document.createElement('div');
+    const shadow = shadowHost.attachShadow({mode: 'open'});
+    const shadowInner = document.createElement('div');
+    shadow.appendChild(shadowInner);
+    outer.append(inner, shadowHost);
+    document.body.appendChild(outer);
+
+    // 1. Inner pan inside outer pan (same slop): inner wins and cancels outer automatically.
+    const onOuterPan = vi.fn();
+    const onInnerPan = vi.fn();
+    const onOuterTap = vi.fn();
+    const onInnerTap = vi.fn();
+
+    const outerGm = new GestureManager(outer, {
+      recognizers: [
+        new PanRecognizer({onPan: onOuterPan}, {direction: 'horizontal', slop: 4}),
+        new TapRecognizer({onTap: onOuterTap}),
+      ],
+    });
+    const innerGm = new GestureManager(inner, {
+      recognizers: [
+        new PanRecognizer({onPan: onInnerPan}, {direction: 'horizontal', slop: 4}),
+        new TapRecognizer({onTap: onInnerTap}),
+      ],
+    });
+
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 1, clientX: 20, timeStamp: 16}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 20, timeStamp: 32}));
+    expect(onInnerPan).toHaveBeenCalledTimes(1);
+    expect(onOuterPan).not.toHaveBeenCalled();
+
+    // 2. Inner tap cancels outer tap; tapping outer directly fires outer tap.
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 10, timeStamp: 100}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 10, timeStamp: 120}));
+    expect(onInnerTap).toHaveBeenCalledTimes(1);
+    expect(onOuterTap).not.toHaveBeenCalled();
+
+    outer.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 10, timeStamp: 200}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 10, timeStamp: 220}));
+    expect(onOuterTap).toHaveBeenCalledTimes(1);
+
+    // 3. Disjoint fingers: dragging outer with finger #4 while finger #5 taps an isolated child
+    // (stopped from joining outer's stream) keeps outer's drag alive because pointer IDs don't overlap.
+    onOuterPan.mockClear();
+    onInnerTap.mockClear();
+    const stopDown = (e: Event) => e.stopPropagation();
+    inner.addEventListener('pointerdown', stopDown);
+    outer.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 4, isPrimary: true, clientX: 0, timeStamp: 300})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 4, isPrimary: true, clientX: 20, timeStamp: 316})
+    );
+    expect(onOuterPan).toHaveBeenCalledTimes(1);
+    inner.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 5, isPrimary: false, clientX: 50, timeStamp: 320})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 5, isPrimary: false, clientX: 50, timeStamp: 340})
+    );
+    expect(onInnerTap).toHaveBeenCalledTimes(1);
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 4, isPrimary: true, clientX: 40, timeStamp: 350})
+    );
+    expect(onOuterPan).toHaveBeenCalledTimes(2);
+    document.dispatchEvent(
+      pointerEvent('pointerup', {pointerId: 4, isPrimary: true, clientX: 40, timeStamp: 360})
+    );
+    inner.removeEventListener('pointerdown', stopDown);
+
+    // 4. Shadow DOM inner surface cancels light-DOM ancestor surface.
+    const onShadowPan = vi.fn();
+    const shadowGm = new GestureManager(shadowInner, {
+      recognizers: [new PanRecognizer({onPan: onShadowPan}, {direction: 'horizontal', slop: 4})],
+    });
+    onOuterPan.mockClear();
+    shadowInner.dispatchEvent(
+      pointerEvent('pointerdown', {pointerId: 6, clientX: 0, timeStamp: 400})
+    );
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 6, clientX: 25, timeStamp: 416})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 6, clientX: 25, timeStamp: 432}));
+    expect(onShadowPan).toHaveBeenCalledTimes(1);
+    expect(onOuterPan).not.toHaveBeenCalled();
+
+    // 5. Outer continuous winner cancels descendant when outer claims first (e.g. smaller slop).
+    shadowGm.destroy();
+    innerGm.destroy();
+    outerGm.destroy();
+
+    const onOuterFastPan = vi.fn();
+    const onInnerSlowPan = vi.fn();
+    const outerFastGm = new GestureManager(outer, {
+      recognizers: [new PanRecognizer({onPan: onOuterFastPan}, {slop: 4})],
+    });
+    const innerSlowGm = new GestureManager(inner, {
+      recognizers: [new PanRecognizer({onPan: onInnerSlowPan}, {slop: 16})],
+    });
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 7, clientX: 0, timeStamp: 500}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 7, clientX: 8, timeStamp: 516}));
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 7, clientX: 30, timeStamp: 532})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 7, clientX: 30, timeStamp: 548}));
+    expect(onOuterFastPan).toHaveBeenCalledTimes(2);
+    expect(onInnerSlowPan).not.toHaveBeenCalled();
+    innerSlowGm.destroy();
+    outerFastGm.destroy();
+
+    // 6. `propagate: true` allows nested surfaces to observe simultaneously without cancelling each other
+    // or fighting over `setPointerCapture` / `lostpointercapture` on continuous gestures:
+    const onObserverTap = vi.fn();
+    const onCardTap = vi.fn();
+    const onObserverPan = vi.fn();
+    const onCardPan = vi.fn();
+    const onObserverPanCancel = vi.fn();
+    const onCardPanCancel = vi.fn();
+
+    let captureOwner: HTMLElement | null = null;
+    for (const el of [outer, inner]) {
+      el.setPointerCapture = (id: number) => {
+        if (captureOwner && captureOwner !== el) {
+          const prev = captureOwner;
+          captureOwner = el;
+          prev.dispatchEvent(pointerEvent('lostpointercapture', {pointerId: id}));
+        } else {
+          captureOwner = el;
+        }
+      };
+      el.hasPointerCapture = () => captureOwner === el;
+      el.releasePointerCapture = () => {
+        if (captureOwner === el) captureOwner = null;
+      };
+    }
+
+    const observerGm = new GestureManager(outer, {
+      propagate: true,
+      recognizers: [
+        new TapRecognizer({onTap: onObserverTap}),
+        new PanRecognizer({onPan: onObserverPan, onPanCancel: onObserverPanCancel}, {slop: 4}),
+      ],
+    });
+    const cardGm = new GestureManager(inner, {
+      recognizers: [
+        new TapRecognizer({onTap: onCardTap}),
+        new PanRecognizer({onPan: onCardPan, onPanCancel: onCardPanCancel}, {slop: 8}),
+      ],
+    });
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 8, clientX: 10, timeStamp: 600}));
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 8, clientX: 10, timeStamp: 620}));
+    expect(onCardTap).toHaveBeenCalledTimes(1);
+    expect(onObserverTap).toHaveBeenCalledTimes(1);
+
+    // Outer pan starts first (slop 4), inner pan starts second (slop 8) and captures without cancelling outer:
+    inner.dispatchEvent(pointerEvent('pointerdown', {pointerId: 9, clientX: 0, timeStamp: 700}));
+    document.dispatchEvent(pointerEvent('pointermove', {pointerId: 9, clientX: 6, timeStamp: 716}));
+    document.dispatchEvent(
+      pointerEvent('pointermove', {pointerId: 9, clientX: 20, timeStamp: 732})
+    );
+    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 9, clientX: 20, timeStamp: 748}));
+    expect(onObserverPan).toHaveBeenCalledTimes(2);
+    expect(onCardPan).toHaveBeenCalledTimes(1);
+    expect(onObserverPanCancel).not.toHaveBeenCalled();
+    expect(onCardPanCancel).not.toHaveBeenCalled();
+
+    cardGm.destroy();
+    observerGm.destroy();
+    outer.remove();
+  });
+
+  it('supports enabled: false without attaching listeners or mutating element styles, and populates pointerType and target on events', () => {
+    const box = document.createElement('div');
+    const child = document.createElement('span');
+    box.appendChild(child);
+    document.body.appendChild(box);
+
+    const addListenerSpy = vi.spyOn(box, 'addEventListener');
+    const onDisabledTap = vi.fn();
+    const disabledGm = new GestureManager(box, {
+      enabled: false,
+      recognizers: [new TapRecognizer({onTap: onDisabledTap}), new PanRecognizer({})],
+    });
+    expect(addListenerSpy).not.toHaveBeenCalled();
+    expect(disabledGm.computeTouchAction()).toBe('auto');
+    expect(box.style.touchAction || '').toBe('');
+    expect(box.style.userSelect || '').toBe('');
+
+    child.dispatchEvent(pointerEvent('pointerdown', {pointerId: 1, clientX: 5, timeStamp: 0}));
+    child.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 5, timeStamp: 20}));
+    expect(onDisabledTap).not.toHaveBeenCalled();
+    disabledGm.destroy();
+
+    const onTap = vi.fn();
+    const onPan = vi.fn();
+    const activeGm = new GestureManager(box, {
+      recognizers: [new TapRecognizer({onTap}), new PanRecognizer({onPan}, {slop: 4})],
+    });
+
+    child.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'pen', pointerId: 2, clientX: 5, timeStamp: 50})
+    );
+    child.dispatchEvent(
+      pointerEvent('pointerup', {pointerType: 'pen', pointerId: 2, clientX: 5, timeStamp: 70})
+    );
+    expect(onTap).toHaveBeenCalledWith(
+      expect.objectContaining({pointerType: 'pen', target: child})
+    );
+
+    child.dispatchEvent(
+      pointerEvent('pointerdown', {pointerType: 'mouse', pointerId: 3, clientX: 0, timeStamp: 100})
+    );
+    child.dispatchEvent(
+      pointerEvent('pointermove', {pointerType: 'mouse', pointerId: 3, clientX: 20, timeStamp: 116})
+    );
+    child.dispatchEvent(
+      pointerEvent('pointerup', {pointerType: 'mouse', pointerId: 3, clientX: 20, timeStamp: 132})
+    );
+    expect(onPan).toHaveBeenCalledWith(
+      expect.objectContaining({pointerType: 'mouse', target: child})
+    );
+
+    activeGm.destroy();
+    box.remove();
   });
 });

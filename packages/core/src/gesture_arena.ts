@@ -5,11 +5,11 @@ import {mergeTouchActions, type TouchActionValue} from './touch_action.js';
 interface PendingClaim {
   readonly streamId: number;
   readonly targetState: 'began' | 'ended';
-  readonly onGranted: () => void;
+  readonly onGranted: (grantEvent?: MotionEvent) => void;
 }
 
 export interface GestureArenaOptions {
-  readonly onActiveGestureStart?: () => void;
+  readonly onGestureClaim?: (targetState: 'began' | 'ended') => void;
 }
 
 function isDispatchEligible(recognizer: GestureRecognizer): boolean {
@@ -29,7 +29,7 @@ export class GestureArena {
   readonly acceptsMultiTouch: boolean;
   readonly needsCoalescedHistory: boolean;
 
-  private readonly onActiveGestureStart?: () => void;
+  private readonly onGestureClaim?: (targetState: 'began' | 'ended') => void;
   private recognizers: readonly GestureRecognizer[];
   private readonly winners = new Set<GestureRecognizer>();
   private readonly pendingClaims = new Map<GestureRecognizer, PendingClaim>();
@@ -40,7 +40,7 @@ export class GestureArena {
   private suppressingWinnerInStream = false;
 
   constructor(recognizers: readonly GestureRecognizer[] = [], options: GestureArenaOptions = {}) {
-    this.onActiveGestureStart = options.onActiveGestureStart;
+    this.onGestureClaim = options.onGestureClaim;
     const unique = Array.from(new Set(recognizers));
     this.recognizers = unique;
     this.acceptsMultiTouch = unique.some(r => r.acceptsMultiTouch);
@@ -112,7 +112,7 @@ export class GestureArena {
     } finally {
       this.dispatchDepth--;
       if (this.dispatchDepth === 0) {
-        this.evaluatePendingClaims();
+        this.evaluatePendingClaims(event);
       }
     }
   }
@@ -121,7 +121,7 @@ export class GestureArena {
   requestClaim(
     recognizer: GestureRecognizer,
     targetState: 'began' | 'ended',
-    onGranted: () => void
+    onGranted: (grantEvent?: MotionEvent) => void
   ): boolean {
     if (!this.hasCompatibleWinners(recognizer)) {
       recognizer.deny();
@@ -246,8 +246,9 @@ export class GestureArena {
   private grantClaim(
     winner: GestureRecognizer,
     targetState: 'began' | 'ended',
-    onGranted: () => void,
-    claimStreamId: number
+    onGranted: (grantEvent?: MotionEvent) => void,
+    claimStreamId: number,
+    grantEvent?: MotionEvent
   ): boolean {
     const isCurrentStream = claimStreamId === this.streamId;
     this.pendingClaims.delete(winner);
@@ -290,15 +291,15 @@ export class GestureArena {
       }
     }
 
-    if (isCurrentStream && targetState === 'began') {
-      this.onActiveGestureStart?.();
+    if (isCurrentStream) {
+      this.onGestureClaim?.(targetState);
     }
 
-    onGranted();
+    onGranted(grantEvent);
     return true;
   }
 
-  private evaluatePendingClaims(): void {
+  private evaluatePendingClaims(triggerEvent?: MotionEvent): void {
     if (this.evaluatingPending || this.pendingClaims.size === 0) {
       return;
     }
@@ -320,7 +321,17 @@ export class GestureArena {
             recognizer.deny();
             progressed = true;
           } else if (depStatus === 'satisfied') {
-            this.grantClaim(recognizer, claim.targetState, claim.onGranted, claim.streamId);
+            const grantEvent =
+              claim.streamId === this.streamId && claim.targetState === 'began'
+                ? triggerEvent
+                : undefined;
+            this.grantClaim(
+              recognizer,
+              claim.targetState,
+              claim.onGranted,
+              claim.streamId,
+              grantEvent
+            );
             progressed = true;
           }
         }

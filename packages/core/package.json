@@ -1,6 +1,6 @@
 {
   "name": "@hammerjs/core",
-  "version": "3.0.0-experimental",
+  "version": "3.0.0-alpha.0",
   "description": "Modern multi-touch and pointer gesture recognition library for the web",
   "license": "MIT",
   "author": "Jorik Tangelder",

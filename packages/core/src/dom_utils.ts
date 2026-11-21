@@ -45,6 +45,31 @@ export class ListenerBag {
 }
 
 /**
+ * Returns `true` when `ancestor` strictly contains `descendant` in the composed DOM tree
+ * (including across open Shadow DOM boundaries).
+ */
+export function isComposedAncestor(ancestor: Element, descendant: Element): boolean {
+  if (ancestor === descendant) {
+    return false;
+  }
+  if (ancestor.contains(descendant)) {
+    return true;
+  }
+  let node: Node | null = descendant;
+  while (node) {
+    const root = node.getRootNode();
+    if (!(root instanceof ShadowRoot)) {
+      return false;
+    }
+    node = root.host;
+    if (node === ancestor || ancestor.contains(node)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Returns `true` when `node` is equal to or nested inside `boundary`, including across open
  * Shadow DOM boundaries.
  *

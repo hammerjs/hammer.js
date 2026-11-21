@@ -7,7 +7,7 @@
     }
   ],
   "commit": false,
-  "fixed": [],
+  "fixed": [["@hammerjs/*"]],
   "linked": [],
   "access": "public",
   "baseBranch": "3.x",

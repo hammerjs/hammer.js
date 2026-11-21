@@ -26,6 +26,10 @@ export class MotionEventStream {
     return this.pointers.size > 0 ? this.streamPointerType : null;
   }
 
+  hasPointer(pointerId: number): boolean {
+    return this.pointers.has(pointerId);
+  }
+
   /**
    * Returns `true` when a tracked mouse pointer reports `buttons` without the
    * primary button bit (`1`), indicating `pointerup` was swallowed off-page

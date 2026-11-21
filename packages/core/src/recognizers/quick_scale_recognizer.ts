@@ -158,15 +158,14 @@ export class QuickScaleRecognizer extends GestureRecognizer {
       const startY = anchor.y + Math.sign(dy) * Math.min(this.slop, Math.abs(dy));
       const scalingPhase: ScalingPhase = {kind: 'scaling', anchor, startY, scale: 1};
 
-      const started = this.tryBegin(() => {
+      this.tryBegin(grantEvent => {
+        const startEvent = grantEvent ?? event;
         this.phase = scalingPhase;
         if (this.callbacks.onScaleStart) {
-          this.callbacks.onScaleStart(this.buildEvent(event, anchor, 1, 1));
+          this.callbacks.onScaleStart(this.buildEvent(startEvent, anchor, 1, 1));
         }
+        this.updateScaling(startEvent, scalingPhase);
       });
-      if (started) {
-        this.updateScaling(event, scalingPhase);
-      }
       return;
     }
 
@@ -250,9 +249,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
     scaleFactor: number
   ): ScaleEventData {
     return {
-      center: anchor,
-      motionEvent: event,
-      originalEvent: event.originalEvent,
+      ...this.createEventData(event, anchor),
       scale,
       scaleFactor,
       isQuickScale: true,

@@ -129,20 +129,39 @@ export class RotateRecognizer extends GestureRecognizer {
       emitDeg = this.rawPreSlopRotation - Math.sign(this.rawPreSlopRotation) * this.rotationSlop;
       this.totalRotation = 0;
 
-      const started = this.tryBegin(() => {
+      this.tryBegin(grantEvent => {
+        const startEvent = grantEvent ?? event;
+        let totalEmit = emitDeg;
+        if (grantEvent && grantEvent !== event && this.trackedPair) {
+          const i0 = grantEvent.findPointerIndex(this.trackedPair[0]);
+          const i1 = grantEvent.findPointerIndex(this.trackedPair[1]);
+          if (i0 !== -1 && i1 !== -1) {
+            const q0 = grantEvent.pointers[i0];
+            const q1 = grantEvent.pointers[i1];
+            if (distance(q0, q1) >= this.minSpan) {
+              const angle = angleDeg(q0, q1);
+              totalEmit += shortestAngleDelta(this.prevAngle, angle);
+              this.prevAngle = angle;
+            }
+          }
+        }
         if (this.callbacks.onRotateStart) {
-          this.callbacks.onRotateStart(this.buildEventData(event, 0));
+          this.callbacks.onRotateStart(this.buildEventData(startEvent, 0));
+        }
+        if (totalEmit !== 0 && this.emitChange()) {
+          this.totalRotation += totalEmit;
+          if (this.callbacks.onRotate) {
+            this.callbacks.onRotate(this.buildEventData(startEvent, totalEmit));
+          }
         }
       });
-      if (!started) {
-        return;
-      }
+      return;
     }
 
     if (this.emitChange()) {
-      this.totalRotation += emitDeg;
+      this.totalRotation += stepDeg;
       if (this.callbacks.onRotate) {
-        this.callbacks.onRotate(this.buildEventData(event, emitDeg));
+        this.callbacks.onRotate(this.buildEventData(event, stepDeg));
       }
     }
   }
@@ -203,9 +222,7 @@ export class RotateRecognizer extends GestureRecognizer {
     centerOverride?: Point
   ): RotateEventData {
     return {
-      center: centerOverride ?? event.focus,
-      motionEvent: event,
-      originalEvent: event.originalEvent,
+      ...this.createEventData(event, centerOverride),
       rotation: this.totalRotation,
       rotationDelta,
     };

@@ -1,6 +1,6 @@
 {
   "name": "@hammerjs/angular",
-  "version": "0.1.0",
+  "version": "3.0.0-alpha.0",
   "description": "Angular adapter for @hammerjs/core gesture recognition",
   "license": "MIT",
   "author": "Jorik Tangelder",
@@ -31,7 +31,7 @@
   },
   "peerDependencies": {
     "@angular/core": ">=17.0.0",
-    "@hammerjs/core": "^3.0.0-experimental"
+    "@hammerjs/core": "^3.0.0-alpha.0"
   },
   "devDependencies": {
     "@angular/compiler": "^21.0.0",

@@ -154,13 +154,11 @@ export class LongPressRecognizer extends GestureRecognizer {
   }
 
   private buildEventData(event: MotionEvent, centerOverride?: Point): LongPressEventData {
-    const center = centerOverride ?? event.focus;
+    const base = this.createEventData(event, centerOverride);
     return {
-      center,
-      motionEvent: event,
-      originalEvent: event.originalEvent,
-      deltaX: center.x - this.anchorFocus.x,
-      deltaY: center.y - this.anchorFocus.y,
+      ...base,
+      deltaX: base.center.x - this.anchorFocus.x,
+      deltaY: base.center.y - this.anchorFocus.y,
     };
   }
 }

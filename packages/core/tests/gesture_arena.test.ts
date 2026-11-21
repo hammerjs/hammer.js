@@ -758,7 +758,8 @@ describe('GestureArena conflict resolution', () => {
     expect(pan.active).toBe(false);
     expect(onPanStart).not.toHaveBeenCalled();
 
-    // 2. When dependency fails while pointer remains down, pending pan starts and finishes cleanly:
+    // 2. When dependency fails while pointer remains down, pending pan starts with the fresh
+    // grant event (not the stale pending event), immediately emits onPan, and finishes cleanly:
     arena.dispatch(
       stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 300}))!
     );
@@ -774,6 +775,13 @@ describe('GestureArena conflict resolution', () => {
       )!
     );
     expect(onPanStart).toHaveBeenCalledTimes(1);
+    expect(onPanStart).toHaveBeenLastCalledWith(
+      expect.objectContaining({center: {x: 30, y: 0}, deltaX: 0})
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onPan).toHaveBeenLastCalledWith(
+      expect.objectContaining({center: {x: 30, y: 0}, deltaX: 25, stepX: 25})
+    );
     arena.dispatch(
       stream.onPointerMove(
         pointerEvent('pointermove', {pointerId: 1, clientX: 40, timeStamp: 348})
@@ -782,7 +790,10 @@ describe('GestureArena conflict resolution', () => {
     arena.dispatch(
       stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 40, timeStamp: 364}))!
     );
-    expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onPan).toHaveBeenCalledTimes(2);
+    expect(onPan).toHaveBeenLastCalledWith(
+      expect.objectContaining({center: {x: 40, y: 0}, deltaX: 35, stepX: 10})
+    );
     expect(onPanEnd).toHaveBeenCalledTimes(1);
   });
 
@@ -1024,5 +1035,110 @@ describe('GestureArena conflict resolution', () => {
       )!
     );
     expect(onScale).not.toHaveBeenCalled();
+  });
+
+  it('settles competing prior-stream pending claims without defeating the active new stream', () => {
+    const onFirstSingle = vi.fn();
+    const onSecondSingle = vi.fn();
+    const onPan = vi.fn();
+
+    const doubleTap = new TapRecognizer({onTap: vi.fn()}, {taps: 2});
+    const firstSingle = new TapRecognizer({onTap: onFirstSingle}).requireFailureOf(doubleTap);
+    const secondSingle = new TapRecognizer({onTap: onSecondSingle}).requireFailureOf(doubleTap);
+    const pan = new PanRecognizer({onPan}, {slop: 4});
+
+    arena = new GestureArena([firstSingle, secondSingle, doubleTap, pan]);
+
+    // Stream #1: tap puts both incompatible single taps into `pending` waiting on `doubleTap`.
+    arena.dispatch(
+      stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 10, timeStamp: 0}))!
+    );
+    arena.dispatch(
+      stream.onPointerUp(pointerEvent('pointerup', {pointerId: 1, clientX: 10, timeStamp: 20}))!
+    );
+    expect(firstSingle.state).toBe('pending');
+    expect(secondSingle.state).toBe('pending');
+
+    // Stream #2 starts near tap #1 so `doubleTap` survives `down` and increments `streamId`.
+    // Then a 2nd finger `pointer_down` fails `doubleTap`, so stream #1's `firstSingle` resolves
+    // (entering the prior-stream branch) and denies stream #1's `secondSingle` while stream #2's
+    // `pan` stays alive!
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 10, timeStamp: 100})
+      )!
+    );
+    expect(firstSingle.state).toBe('pending');
+    expect(secondSingle.state).toBe('pending');
+
+    vi.advanceTimersByTime(310);
+    expect(onFirstSingle).toHaveBeenCalledTimes(1);
+    expect(onSecondSingle).not.toHaveBeenCalled();
+    expect(secondSingle.state).toBe('failed');
+
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 40, timeStamp: 420})
+      )!
+    );
+    expect(onPan).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts pending Scale and Rotate with the fresh grant event when a 2-finger dependency fails', () => {
+    const onScaleStart = vi.fn();
+    const onScale = vi.fn();
+    const onRotateStart = vi.fn();
+    const onRotate = vi.fn();
+
+    const hold2 = new LongPressRecognizer({onLongPress: vi.fn()}, {numPointers: 2, slop: 40});
+    const scale = new ScaleRecognizer(
+      {onScaleStart, onScale},
+      {spanSlop: 10, minSpan: 20}
+    ).requireFailureOf(hold2);
+    const rotate = new RotateRecognizer({onRotateStart, onRotate}, {rotationSlop: 5, minSpan: 20})
+      .requireFailureOf(hold2)
+      .simultaneousWith(scale);
+
+    arena = new GestureArena([hold2, scale, rotate]);
+
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 100, clientY: 0, timeStamp: 0})
+      )!
+    );
+    // Move finger 2 by ~27px (< hold2.slop 40) with ~10 deg angle & +20px span -> both enter pending:
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 118, clientY: 20, timeStamp: 16})
+      )!
+    );
+    expect(scale.state).toBe('pending');
+    expect(rotate.state).toBe('pending');
+
+    // Move finger 2 to (150, 100) (> hold2.slop 40) -> hold2 fails, granting both with fresh grantEvent:
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 150, clientY: 100, timeStamp: 32})
+      )!
+    );
+    expect(onScaleStart).toHaveBeenCalledTimes(1);
+    expect(onScaleStart).toHaveBeenLastCalledWith(
+      expect.objectContaining({center: {x: 75, y: 50}})
+    );
+    expect(onScale).toHaveBeenCalledTimes(1);
+    expect(onScale.mock.calls[0][0].scale).toBeCloseTo(Math.hypot(150, 100) / 110, 3);
+
+    expect(onRotateStart).toHaveBeenCalledTimes(1);
+    expect(onRotateStart).toHaveBeenLastCalledWith(
+      expect.objectContaining({center: {x: 75, y: 50}})
+    );
+    expect(onRotate).toHaveBeenCalledTimes(1);
+    const expectedDeg = (Math.atan2(100, 150) * 180) / Math.PI - 5;
+    expect(onRotate.mock.calls[0][0].rotation).toBeCloseTo(expectedDeg, 2);
   });
 });

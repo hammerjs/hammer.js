@@ -86,27 +86,17 @@ export class ScaleRecognizer extends GestureRecognizer {
       this.prevSpan = Math.max(this.minSpan, baseSpan + Math.sign(spanDelta) * this.spanSlop);
       this.cumulativeScale = 1;
 
-      const started = this.tryBegin(() => {
+      this.tryBegin(grantEvent => {
+        const startEvent = grantEvent ?? event;
         if (this.callbacks.onScaleStart) {
-          this.callbacks.onScaleStart(this.buildEvent(event, 1));
+          this.callbacks.onScaleStart(this.buildEvent(startEvent, 1));
         }
+        this.emitScale(startEvent);
       });
-      if (!started) {
-        return;
-      }
+      return;
     }
 
-    // Clamp at `minSpan` while active (matching `RotateRecognizer` and `3->2` re-anchors)
-    // so pinching close and spreading back out stays alive without zoom spikes.
-    const effectiveSpan = Math.max(this.minSpan, span);
-    const scaleFactor = effectiveSpan / this.prevSpan;
-    if (scaleFactor !== 1 && this.emitChange()) {
-      this.cumulativeScale *= scaleFactor;
-      if (this.callbacks.onScale) {
-        this.callbacks.onScale(this.buildEvent(event, scaleFactor));
-      }
-      this.prevSpan = effectiveSpan;
-    }
+    this.emitScale(event);
   }
 
   protected override onPointerUp(event: MotionEvent): void {
@@ -139,6 +129,20 @@ export class ScaleRecognizer extends GestureRecognizer {
     this.anchored = false;
   }
 
+  private emitScale(event: MotionEvent): void {
+    // Clamp at `minSpan` while active (matching `RotateRecognizer` and `3->2` re-anchors)
+    // so pinching close and spreading back out stays alive without zoom spikes.
+    const effectiveSpan = Math.max(this.minSpan, event.getSpan());
+    const scaleFactor = effectiveSpan / this.prevSpan;
+    if (scaleFactor !== 1 && this.emitChange()) {
+      this.cumulativeScale *= scaleFactor;
+      if (this.callbacks.onScale) {
+        this.callbacks.onScale(this.buildEvent(event, scaleFactor));
+      }
+      this.prevSpan = effectiveSpan;
+    }
+  }
+
   private configureMultiPointerSpan(event: MotionEvent): void {
     const span = event.getSpan();
     this.initialSpan = span;
@@ -152,9 +156,7 @@ export class ScaleRecognizer extends GestureRecognizer {
     centerOverride?: Point
   ): ScaleEventData {
     return {
-      center: centerOverride ?? event.focus,
-      motionEvent: event,
-      originalEvent: event.originalEvent,
+      ...this.createEventData(event, centerOverride),
       scale: this.cumulativeScale,
       scaleFactor,
       isQuickScale: false,
