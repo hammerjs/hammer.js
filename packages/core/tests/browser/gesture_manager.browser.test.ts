@@ -42,16 +42,14 @@ function waitMs(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Sends a real multi-touch frame through Chromium's input pipeline (hit-testing, implicit
- * touch capture, `touch-action`, and PointerEvent generation all run natively).
- */
-async function touch(
+async function sendTouch(
   type: 'touchStart' | 'touchMove' | 'touchEnd',
-  points: readonly TouchPoint[]
+  points: readonly TouchPoint[],
+  timestampSec?: number
 ): Promise<void> {
   await cdp().send('Input.dispatchTouchEvent', {
     type,
+    ...(timestampSec !== undefined ? {timestamp: timestampSec} : {}),
     touchPoints: points.map(p => ({
       id: p.id,
       radiusX: 1,
@@ -60,6 +58,17 @@ async function touch(
       ...toPage(p.x, p.y),
     })),
   });
+}
+
+/**
+ * Sends a real multi-touch frame through Chromium's input pipeline (hit-testing, implicit
+ * touch capture, `touch-action`, and PointerEvent generation all run natively).
+ */
+async function touch(
+  type: 'touchStart' | 'touchMove' | 'touchEnd',
+  points: readonly TouchPoint[]
+): Promise<void> {
+  await sendTouch(type, points);
   await nextFrames();
 }
 
@@ -102,6 +111,30 @@ async function touchDrag(
     ]);
   }
   await touch('touchEnd', []);
+}
+
+/**
+ * Performs a fast single-finger flick with deterministic 10ms CDP timestamps and no
+ * multi-frame pause before liftoff so velocity stays reliable even on slow CI runners.
+ */
+async function touchFlick(
+  id: number,
+  from: {x: number; y: number},
+  to: {x: number; y: number},
+  steps = 4
+): Promise<void> {
+  const baseSec = Date.now() / 1000;
+  await sendTouch('touchStart', [{id, ...from}], baseSec);
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    await sendTouch(
+      'touchMove',
+      [{id, x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t}],
+      baseSec + i * 0.01
+    );
+  }
+  await sendTouch('touchEnd', [], baseSec + steps * 0.01 + 0.005);
+  await nextFrames();
 }
 
 describe('GestureManager in a real browser (Chromium)', () => {
@@ -386,7 +419,7 @@ describe('GestureManager in a real browser (Chromium)', () => {
 
     try {
       expect(getComputedStyle(surface).touchAction).toBe('auto');
-      await touchDrag(1, {x: 40, y: 150}, {x: 240, y: 150}, 4);
+      await touchFlick(1, {x: 40, y: 150}, {x: 240, y: 150});
       expect(onSwipe).not.toHaveBeenCalled();
 
       binding.update(
@@ -395,7 +428,7 @@ describe('GestureManager in a real browser (Chromium)', () => {
       );
       expect(getComputedStyle(surface).touchAction).toBe('pan-y pinch-zoom');
 
-      await touchDrag(2, {x: 40, y: 150}, {x: 240, y: 150}, 4);
+      await touchFlick(2, {x: 40, y: 150}, {x: 240, y: 150});
       expect(onSwipe).toHaveBeenCalledWith(
         expect.objectContaining({direction: 'right', pointerType: 'touch'})
       );
