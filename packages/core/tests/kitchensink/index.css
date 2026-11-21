@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+@import 'konsta/react/theme.css';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overscroll-behavior: none;
+}
+
+/* Keep mobile inputs >= 16px to prevent iOS Safari focus zoom */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ks-anim {
+    transition: none !important;
+  }
+}

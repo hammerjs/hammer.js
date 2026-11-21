@@ -91,11 +91,13 @@
       }
 
       .top-controls select,
-      .top-controls button {
+      .top-controls button,
+      .top-controls a[role='button'] {
         margin: 0;
         padding: 0.4rem 0.75rem;
         width: auto;
         max-inline-size: 100%;
+        font-size: 1rem;
       }
 
       .top-controls select {
@@ -481,6 +483,7 @@
           </li>
         </ul>
         <div class="top-controls">
+          <a href="../" role="button" class="secondary outline">← Kitchensink</a>
           <select id="presetSelect" name="preset" aria-label="Configuration preset">
             <option value="default">Preset: All Gestures (Default)</option>
             <option value="carousel">Preset: Horizontal Carousel (Vertical Scroll)</option>
