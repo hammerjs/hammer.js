@@ -1,5 +1,6 @@
+import {pan, tap} from '@hammerjs/core';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {hammer} from '../src/index.js';
+import {gestures} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -24,7 +25,7 @@ function pointerEvent(type: string, init: MockPointerInit = {}): PointerEvent {
   return ev;
 }
 
-describe('@hammerjs/svelte hammer action', () => {
+describe('@hammerjs/svelte gestures action', () => {
   const elements: Array<HTMLElement | SVGElement> = [];
 
   afterEach(() => {
@@ -43,7 +44,7 @@ describe('@hammerjs/svelte hammer action', () => {
     const el = mount(document.createElement('div'));
     const onTap = vi.fn();
 
-    const action = hammer(el, {onTap});
+    const action = gestures(el, [tap({onTap})]);
     expect(el.style.touchAction).toBe('manipulation');
 
     el.dispatchEvent(pointerEvent('pointerdown', {clientX: 10, clientY: 10, timeStamp: 0}));
@@ -64,21 +65,23 @@ describe('@hammerjs/svelte hammer action', () => {
     const seen: Array<{step: number; deltaX: number}> = [];
     let step = 0;
 
-    const makeOptions = () => {
+    const makeList = () => {
       const current = step;
-      return {
-        pan: {slop: 4},
-        onPan: (ev: {deltaX: number}) => {
-          seen.push({step: current, deltaX: ev.deltaX});
-          step++;
-          action.update?.(makeOptions());
-        },
-        onPanEnd,
-        onPanCancel,
-      };
+      return [
+        pan({
+          slop: 4,
+          onPan: ev => {
+            seen.push({step: current, deltaX: ev.deltaX});
+            step++;
+            action.update?.(makeList());
+          },
+          onPanEnd,
+          onPanCancel,
+        }),
+      ];
     };
 
-    const action = hammer(el, makeOptions());
+    const action = gestures(el, makeList());
 
     el.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
     document.dispatchEvent(pointerEvent('pointermove', {clientX: 24, clientY: 0, timeStamp: 16}));
@@ -94,15 +97,18 @@ describe('@hammerjs/svelte hammer action', () => {
     action.destroy?.();
   });
 
-  it('supports structural option updates and SVGElement targets', () => {
+  it('supports structural option updates, options wrapper, and SVGElement targets', () => {
     const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
     const onTap = vi.fn();
 
-    const action = hammer(svg, {onTap, onPan: () => {}, pan: {direction: 'horizontal'}});
+    const action = gestures(svg, [tap({onTap}), pan({direction: 'horizontal', onPan: () => {}})]);
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
 
-    action.update?.({onTap, onPan: () => {}, pan: {direction: 'vertical'}});
+    action.update?.([tap({onTap}), pan({direction: 'vertical', onPan: () => {}})]);
     expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
+
+    action.update?.({gestures: [tap({onTap})], touchAction: 'none'});
+    expect(svg.style.touchAction).toBe('none');
 
     svg.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
     svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
@@ -120,28 +126,28 @@ describe('@hammerjs/svelte hammer action', () => {
     el.append(inp, blocked);
 
     const onTap = vi.fn();
-    const action = hammer(el, {onTap, ignoreTarget: true});
+    const action = gestures(el, {gestures: [tap({onTap})], ignoreTarget: true});
 
-    const tap = (target: HTMLElement, t: number) => {
+    const doTap = (target: HTMLElement, t: number) => {
       target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
       target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
     };
 
-    tap(inp, 0);
-    tap(blocked, 50);
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
 
     action.update?.({
-      onTap,
+      gestures: [tap({onTap})],
       ignoreTarget: target => target instanceof Element && Boolean(target.closest('[data-ignore]')),
     });
-    tap(blocked, 100);
-    tap(inp, 150);
+    doTap(blocked, 100);
+    doTap(inp, 150);
     expect(onTap).toHaveBeenCalledTimes(2);
 
-    action.update?.({onTap, ignoreTarget: true});
-    tap(inp, 200);
-    tap(blocked, 250);
+    action.update?.({gestures: [tap({onTap})], ignoreTarget: true});
+    doTap(inp, 200);
+    doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
 
     action.destroy?.();

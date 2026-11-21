@@ -6,23 +6,23 @@ import {TapRecognizer} from '../../src/recognizers/tap_recognizer';
 import {pointerEvent} from '../test_helpers';
 
 describe('TapRecognizer', () => {
-  let arena: GestureArena;
+  let arena: GestureArena | undefined;
   let stream: MotionEventStream;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    arena = new GestureArena();
+    arena = undefined;
     stream = new MotionEventStream();
   });
 
   afterEach(() => {
-    arena.destroy();
+    arena?.destroy();
     vi.useRealTimers();
   });
 
   it('detects a valid single tap and emits center', () => {
     const onTap = vi.fn();
-    arena.add(new TapRecognizer({onTap}));
+    arena = new GestureArena([new TapRecognizer({onTap})]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -49,7 +49,7 @@ describe('TapRecognizer', () => {
 
   it('fails if pointer exceeds radial slop or maxTime or is cancelled', () => {
     const onTap = vi.fn();
-    arena.add(new TapRecognizer({onTap}, {slop: 10, maxTime: 250}));
+    arena = new GestureArena([new TapRecognizer({onTap}, {slop: 10, maxTime: 250})]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -99,8 +99,6 @@ describe('TapRecognizer', () => {
     const onSingleTapConfirmed = vi.fn();
     const onDoubleTap = vi.fn();
 
-    const arenaWithTimeouts = new GestureArena();
-
     const doubleTap = new TapRecognizer(
       {onTap: onDoubleTap},
       {taps: 2, maxTime: 300, multiTapInterval: 300}
@@ -114,9 +112,7 @@ describe('TapRecognizer', () => {
       doubleTap
     );
 
-    arenaWithTimeouts.add(singleTapUp);
-    arenaWithTimeouts.add(singleTapConfirmed);
-    arenaWithTimeouts.add(doubleTap);
+    const arenaWithTimeouts = new GestureArena([singleTapUp, singleTapConfirmed, doubleTap]);
 
     arenaWithTimeouts.dispatch(
       stream.onPointerDown(
@@ -206,8 +202,7 @@ describe('TapRecognizer', () => {
       {onTap: onTwoFingerSingle},
       {numPointers: 2}
     ).requireFailureOf(twoFingerDouble);
-    arena.add(twoFingerSingle);
-    arena.add(twoFingerDouble);
+    arena = new GestureArena([twoFingerSingle, twoFingerDouble]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -339,8 +334,7 @@ describe('TapRecognizer', () => {
     const singleTap = new TapRecognizer({onTap: onSingleConfirmed}, {slop: 8}).requireFailureOf(
       doubleTap
     );
-    arena.add(singleTap);
-    arena.add(doubleTap);
+    arena = new GestureArena([singleTap, doubleTap]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -379,8 +373,9 @@ describe('TapRecognizer', () => {
     );
     expect(onSingleConfirmed).toHaveBeenCalledTimes(1);
 
+    arena.destroy();
     const twoFingerTap = new TapRecognizer({onTap: onDouble}, {numPointers: 2, slop: 5});
-    arena.add(twoFingerTap);
+    arena = new GestureArena([singleTap, doubleTap, twoFingerTap]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -516,15 +511,16 @@ describe('TapRecognizer', () => {
 
   it('requires all numPointers fingers to be down simultaneously for a multi-finger tap', () => {
     const onTap = vi.fn();
-    arena.add(new TapRecognizer({onTap}, {numPointers: 3}));
+    const tapArena = new GestureArena([new TapRecognizer({onTap}, {numPointers: 3})]);
+    arena = tapArena;
     const down = (id: number, t: number) =>
-      arena.dispatch(
+      tapArena.dispatch(
         stream.onPointerDown(
           pointerEvent('pointerdown', {pointerId: id, clientX: id * 20, timeStamp: t})
         )!
       );
     const up = (id: number, t: number) =>
-      arena.dispatch(
+      tapArena.dispatch(
         stream.onPointerUp(
           pointerEvent('pointerup', {pointerId: id, clientX: id * 20, timeStamp: t})
         )!

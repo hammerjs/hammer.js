@@ -2,8 +2,9 @@ import '@angular/compiler';
 import {ElementRef, NgZone, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
+import {pan, tap} from '@hammerjs/core';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
-import {HammerDirective, type HammerDirectiveOptions} from '../src/index.js';
+import {GesturesDirective, type GestureDescriptor, type GesturesOptions} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -28,7 +29,7 @@ function pointerEvent(type: string, init: MockPointerInit = {}): PointerEvent {
   return ev;
 }
 
-describe('@hammerjs/angular HammerDirective', () => {
+describe('@hammerjs/angular GesturesDirective', () => {
   const elements: Array<HTMLElement | SVGElement> = [];
 
   beforeAll(() => {
@@ -44,10 +45,8 @@ describe('@hammerjs/angular HammerDirective', () => {
 
   function setup<T extends HTMLElement | SVGElement = HTMLDivElement>(
     element: T,
-    opts?: {
-      initialOptions?: HammerDirectiveOptions | '';
-      subscribe?: (directive: HammerDirective<T>) => void;
-    }
+    initialGestures: readonly GestureDescriptor[] = [],
+    initialOptions: GesturesOptions = {}
   ) {
     document.body.appendChild(element);
     elements.push(element);
@@ -56,35 +55,35 @@ describe('@hammerjs/angular HammerDirective', () => {
       providers: [{provide: ElementRef, useValue: new ElementRef(element)}],
     });
 
-    const hammerSig = signal<HammerDirectiveOptions | ''>(opts?.initialOptions ?? '');
+    const gesturesSig = signal<readonly GestureDescriptor[]>(initialGestures);
+    const optionsSig = signal<GesturesOptions>(initialOptions);
 
     const directive = TestBed.runInInjectionContext(() => {
-      const dir = new HammerDirective<T>();
-      Object.defineProperty(dir, 'hammer', {value: hammerSig});
+      const dir = new GesturesDirective<T>();
+      Object.defineProperty(dir, 'gestures', {value: gesturesSig});
+      Object.defineProperty(dir, 'gesturesOptions', {value: optionsSig});
       return dir;
     });
-
-    opts?.subscribe?.(directive);
     TestBed.tick();
 
     return {
       directive,
       element,
-      setOptions: (value: HammerDirectiveOptions | '') => {
-        hammerSig.set(value);
+      setGestures: (next: readonly GestureDescriptor[]) => {
+        gesturesSig.set(next);
+        TestBed.tick();
+      },
+      setOptions: (next: GesturesOptions) => {
+        optionsSig.set(next);
         TestBed.tick();
       },
     };
   }
 
-  it('registers only subscribed outputs, preserves touch-action, and cleans up on destroy', () => {
+  it('attaches descriptors, preserves touch-action, and cleans up on destroy', () => {
     const onTap = vi.fn();
     const el = document.createElement('div');
-    const {directive} = setup(el, {
-      subscribe: dir => {
-        dir.hammerTap.subscribe(onTap);
-      },
-    });
+    const {directive} = setup(el, [tap({onTap})]);
 
     expect(directive.instance).not.toBeNull();
     expect(el.style.touchAction).toBe('manipulation');
@@ -101,7 +100,7 @@ describe('@hammerjs/angular HammerDirective', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  it('attaches DOM listeners outside NgZone and re-enters NgZone only when gestures emit', () => {
+  it('attaches DOM listeners outside NgZone, re-enters only on emit, and survives mid-drag updates', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
     elements.push(el);
@@ -113,146 +112,100 @@ describe('@hammerjs/angular HammerDirective', () => {
     const runOutsideSpy = vi.spyOn(ngZone, 'runOutsideAngular');
     const runSpy = vi.spyOn(ngZone, 'run');
 
-    const hammerSig = signal<HammerDirectiveOptions | ''>({pan: {slop: 10}});
-    const onPan = vi.fn();
+    const onPanCancel = vi.fn();
+    const onPanEnd = vi.fn();
+    const seen: Array<{step: number; deltaX: number}> = [];
+    let step = 0;
+
+    const gesturesSig = signal<readonly GestureDescriptor[]>([]);
+    const optionsSig = signal<GesturesOptions>({});
+
+    const makeList = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
+      const current = step;
+      return [
+        pan({
+          direction,
+          slop: 10,
+          onPan: ev => {
+            seen.push({step: current, deltaX: ev.deltaX});
+            step++;
+            gesturesSig.set(makeList(direction));
+            TestBed.tick();
+          },
+          onPanEnd,
+          onPanCancel,
+        }),
+      ];
+    };
+
+    gesturesSig.set(makeList('horizontal'));
+
     const directive = TestBed.runInInjectionContext(() => {
-      const dir = new HammerDirective();
-      Object.defineProperty(dir, 'hammer', {value: hammerSig});
+      const dir = new GesturesDirective();
+      Object.defineProperty(dir, 'gestures', {value: gesturesSig});
+      Object.defineProperty(dir, 'gesturesOptions', {value: optionsSig});
       return dir;
     });
-    directive.hammerPan.subscribe(onPan);
     TestBed.tick();
 
-    expect(runOutsideSpy.mock.results.some(r => r.value === directive.instance)).toBe(true);
+    expect(directive.instance).not.toBeNull();
+    expect(el.style.touchAction).toBe('pan-y pinch-zoom');
+    expect(runOutsideSpy).toHaveBeenCalled();
     runSpy.mockClear();
 
-    // Pointer movement within slop should never enter NgZone:
+    // Movement within slop stays outside NgZone:
     el.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
     document.dispatchEvent(pointerEvent('pointermove', {clientX: 4, clientY: 0, timeStamp: 16}));
     expect(runSpy).not.toHaveBeenCalled();
-    expect(onPan).not.toHaveBeenCalled();
 
-    // Exceeding slop fires onPan inside NgZone:
+    // Exceeding slop fires inside NgZone and mid-drag array updates never cancel pan:
     document.dispatchEvent(pointerEvent('pointermove', {clientX: 25, clientY: 0, timeStamp: 32}));
-    expect(runSpy).toHaveBeenCalledTimes(1);
-    expect(onPan).toHaveBeenCalledTimes(1);
-  });
-
-  it('works cleanly in zoneless mode', () => {
-    const onTap = vi.fn();
-    const el = document.createElement('div');
-    setup(el, {
-      subscribe: dir => {
-        dir.hammerTap.subscribe(onTap);
-      },
-    });
-
-    el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-    el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
-    expect(onTap).toHaveBeenCalledTimes(1);
-  });
-
-  it('reactively updates Hammer when [hammer] options change', () => {
-    const onPan = vi.fn();
-    const el = document.createElement('div');
-    const {setOptions} = setup(el, {
-      initialOptions: {pan: {direction: 'horizontal'}},
-      subscribe: dir => {
-        dir.hammerPan.subscribe(onPan);
-      },
-    });
-
-    expect(el.style.touchAction).toBe('pan-y pinch-zoom');
-
-    setOptions({pan: {direction: 'vertical'}});
-    expect(el.style.touchAction).toBe('pan-x pinch-zoom');
-  });
-
-  it('never cancels an active pan when [hammer] receives a new equal object literal mid-drag', () => {
-    const onPanCancel = vi.fn();
-    const onPanEnd = vi.fn();
-    const deltas: number[] = [];
-    const el = document.createElement('div');
-    const {setOptions} = setup(el, {
-      initialOptions: {pan: {slop: 4}},
-      subscribe: dir => {
-        dir.hammerPan.subscribe(ev => {
-          deltas.push(ev.deltaX);
-          setOptions({pan: {slop: 4}});
-        });
-        dir.hammerPanEnd.subscribe(onPanEnd);
-        dir.hammerPanCancel.subscribe(onPanCancel);
-      },
-    });
-
-    el.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
-    document.dispatchEvent(pointerEvent('pointermove', {clientX: 24, clientY: 0, timeStamp: 16}));
-    document.dispatchEvent(pointerEvent('pointermove', {clientX: 44, clientY: 0, timeStamp: 32}));
-    document.dispatchEvent(pointerEvent('pointerup', {clientX: 44, clientY: 0, timeStamp: 48}));
+    document.dispatchEvent(pointerEvent('pointermove', {clientX: 45, clientY: 0, timeStamp: 48}));
+    document.dispatchEvent(pointerEvent('pointerup', {clientX: 45, clientY: 0, timeStamp: 64}));
 
     expect(onPanCancel).not.toHaveBeenCalled();
     expect(onPanEnd).toHaveBeenCalledTimes(1);
-    expect(deltas).toEqual([20, 40]);
+    expect(seen).toEqual([
+      {step: 0, deltaX: 15},
+      {step: 1, deltaX: 35},
+    ]);
+    expect(runSpy).toHaveBeenCalled();
+
+    gesturesSig.set(makeList('vertical'));
+    TestBed.tick();
+    expect(el.style.touchAction).toBe('pan-x pinch-zoom');
   });
 
-  it('supports SVGElement host targets', () => {
+  it('supports SVGElement host targets and ignoreTarget true <-> fn transitions', () => {
     const onTap = vi.fn();
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    setup(svg, {
-      subscribe: dir => {
-        dir.hammerTap.subscribe(onTap);
-      },
-    });
-
-    expect(svg.style.touchAction).toBe('manipulation');
-    svg.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-    svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
-    expect(onTap).toHaveBeenCalledTimes(1);
-  });
-
-  it('supports ignoreTarget predicates, transitions true <-> fn, and reacts to late programmatic output subscriptions', () => {
-    const onTap = vi.fn();
-    const el = document.createElement('div');
     const inp = document.createElement('input');
     const blocked = document.createElement('span');
     blocked.dataset.ignore = '1';
-    el.append(inp, blocked);
+    svg.append(inp, blocked);
 
-    const {directive, setOptions} = setup(el, {
-      initialOptions: {ignoreTarget: true},
-    });
-    expect(directive.instance).not.toBeNull();
+    const {setOptions} = setup(svg, [tap({onTap})], {ignoreTarget: true});
+    expect(svg.style.touchAction).toBe('manipulation');
 
-    // Late programmatic subscription after initial render registers the recognizer:
-    const sub = directive.hammerTap.subscribe(onTap);
-    TestBed.tick();
-    expect(el.style.touchAction).toBe('manipulation');
-
-    const tap = (target: HTMLElement, t: number) => {
+    const doTap = (target: Element, t: number) => {
       target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
       target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
     };
 
-    tap(inp, 0);
-    tap(blocked, 50);
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    // Switch `true -> fn`:
     setOptions({
       ignoreTarget: target => target instanceof Element && Boolean(target.closest('[data-ignore]')),
     });
-    tap(blocked, 100);
-    tap(inp, 150);
+    doTap(blocked, 100);
+    doTap(inp, 150);
     expect(onTap).toHaveBeenCalledTimes(2);
 
-    // Switch `fn -> true`:
     setOptions({ignoreTarget: true});
-    tap(inp, 200);
-    tap(blocked, 250);
+    doTap(inp, 200);
+    doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
-
-    sub.unsubscribe();
-    TestBed.tick();
-    expect(el.style.touchAction || '').toBe('');
   });
 });

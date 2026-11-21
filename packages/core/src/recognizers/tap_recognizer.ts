@@ -1,27 +1,28 @@
+import {createDescriptor, type GestureDescriptor} from '../descriptors.js';
 import {distance, type MotionEvent, type Point} from '../motion_event.js';
-import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
-import type {TouchActionValue} from '../touch_behavior.js';
+import {type GestureEventData, type GestureKind, GestureRecognizer} from '../gesture_recognizer.js';
+import type {TouchActionValue} from '../touch_action.js';
+import {
+  DOUBLE_TAP_SLOP,
+  DOUBLE_TAP_TIMEOUT_MS,
+  isWithinTapSlop,
+  isWithinTapWindow,
+  MAX_TAP_DURATION_MS,
+  type TapAnchor,
+} from './multi_tap_window.js';
 
 const DEFAULT_SLOP = 8;
-const DOUBLE_TAP_MIN_TIME_MS = 40;
-/** @internal */
-export const MAX_TAP_DURATION_MS = 250;
-/** @internal */
-export const DOUBLE_TAP_TIMEOUT_MS = 300;
-/** @internal */
-export const DOUBLE_TAP_SLOP = 100;
 
-/** @internal */
-export function isWithinMultiTapWindow(
-  event: MotionEvent,
-  lastUpTime: number,
-  lastPointerType: string,
-  maxInterval = DOUBLE_TAP_TIMEOUT_MS
-): boolean {
-  const dt = event.eventTime - lastUpTime;
-  const minInterval = event.pointerType === 'touch' ? DOUBLE_TAP_MIN_TIME_MS : 0;
-  const pointerMatches = lastPointerType === '' || event.pointerType === lastPointerType;
-  return pointerMatches && dt >= minInterval && dt <= maxInterval;
+interface ActiveStroke {
+  readonly downTime: number;
+  totalPointers: number;
+  downCenter: Point | null;
+  center: Point | null;
+}
+
+interface MultiTapSequence {
+  readonly completedTaps: number;
+  readonly lastTap: TapAnchor;
 }
 
 export interface TapOptions {
@@ -63,15 +64,8 @@ export class TapRecognizer extends GestureRecognizer {
   private readonly multiTapSlop: number;
 
   private readonly downPositions = new Map<number, Point>();
-  private strokeDownTime = 0;
-  private totalPointersInStroke = 0;
-  private strokeDownCenter: Point | null = null;
-  private strokeCenter: Point | null = null;
-
-  private completedTaps = 0;
-  private lastTapDownFocus: Point | null = null;
-  private lastTapUpTime = 0;
-  private lastTapPointerType = '';
+  private stroke: ActiveStroke | null = null;
+  private sequence: MultiTapSequence | null = null;
 
   constructor(callbacks: TapCallbacks, options: Partial<TapOptions> = {}) {
     super();
@@ -84,12 +78,12 @@ export class TapRecognizer extends GestureRecognizer {
     this.multiTapSlop = Math.max(0, options.multiTapSlop ?? DOUBLE_TAP_SLOP);
   }
 
-  override getTouchAction(): TouchActionValue {
-    return 'manipulation';
+  override get gestureKind(): GestureKind {
+    return 'discrete';
   }
 
-  override get suppressesClick(): boolean {
-    return false;
+  override getTouchAction(): TouchActionValue {
+    return 'manipulation';
   }
 
   /** @internal */
@@ -99,19 +93,14 @@ export class TapRecognizer extends GestureRecognizer {
 
   /** @internal */
   override prepareForDown(event: MotionEvent): void {
-    if (this.completedTaps === 0 || !this.lastTapDownFocus) {
+    if (!this.sequence) {
       return;
     }
 
-    const withinWindow = isWithinMultiTapWindow(
-      event,
-      this.lastTapUpTime,
-      this.lastTapPointerType,
-      this.multiTapInterval
-    );
+    const withinWindow = isWithinTapWindow(event, this.sequence.lastTap, this.multiTapInterval);
     const outOfSlop =
       event.activePointerCount >= this.numPointers &&
-      distance(event.focus, this.lastTapDownFocus) > this.multiTapSlop;
+      !isWithinTapSlop(event.focus, this.sequence.lastTap, this.multiTapSlop);
 
     if (!withinWindow || outOfSlop) {
       this.fail();
@@ -122,129 +111,127 @@ export class TapRecognizer extends GestureRecognizer {
 
   /** @internal */
   override shouldResetOnDown(): boolean {
-    return this.completedTaps > 0 ? false : super.shouldResetOnDown();
+    return this.sequence ? false : super.shouldResetOnDown();
   }
 
-  onMotionEvent(event: MotionEvent): void {
-    switch (event.action) {
-      case 'down': {
-        this.downPositions.clear();
-        for (const p of event.pointers) {
-          this.downPositions.set(p.pointerId, p);
-        }
-        this.strokeDownTime = event.eventTime;
-        this.totalPointersInStroke = event.pointers.length;
-        this.strokeDownCenter = event.activePointerCount === this.numPointers ? event.focus : null;
-        this.strokeCenter = this.strokeDownCenter;
+  protected override onDown(event: MotionEvent): void {
+    this.downPositions.clear();
+    for (const p of event.pointers) {
+      this.downPositions.set(p.pointerId, p);
+    }
 
-        if (this.totalPointersInStroke > this.numPointers) {
-          this.fail();
-          return;
-        }
+    const initialCenter = event.activePointerCount === this.numPointers ? event.focus : null;
+    this.stroke = {
+      downTime: event.eventTime,
+      totalPointers: event.pointers.length,
+      downCenter: initialCenter,
+      center: initialCenter,
+    };
 
-        this.setTimer(this.maxTime, () => this.fail());
-        break;
-      }
+    if (this.stroke.totalPointers > this.numPointers) {
+      this.fail();
+      return;
+    }
 
-      case 'pointer_down': {
-        this.totalPointersInStroke = Math.max(
-          this.totalPointersInStroke + 1,
-          event.pointers.length
-        );
-        const p = event.pointers[event.actionIndex];
-        if (!p || this.totalPointersInStroke > this.numPointers) {
-          this.fail();
-          return;
-        }
-        this.downPositions.set(p.pointerId, p);
-        if (event.activePointerCount === this.numPointers) {
-          this.strokeDownCenter = event.focus;
-          this.strokeCenter = event.focus;
-          if (
-            this.completedTaps > 0 &&
-            this.lastTapDownFocus &&
-            distance(event.focus, this.lastTapDownFocus) > this.multiTapSlop
-          ) {
-            this.fail();
-            return;
-          }
-        }
-        break;
-      }
+    this.setTimer(this.maxTime, () => this.fail());
+  }
 
-      case 'move': {
-        if (this.exceedsSlop(event)) {
-          this.fail();
-          return;
-        }
-        if (event.activePointerCount === this.numPointers) {
-          this.strokeCenter = event.focus;
-        }
-        break;
-      }
-
-      case 'pointer_up': {
-        if (this.exceedsSlop(event)) {
-          this.fail();
-        }
-        break;
-      }
-
-      case 'up': {
-        this.clearTimer();
-
-        // `strokeDownCenter` is only set once all `numPointers` were down simultaneously.
-        const duration = event.eventTime - this.strokeDownTime;
-        if (
-          duration > this.maxTime ||
-          this.totalPointersInStroke !== this.numPointers ||
-          !this.strokeDownCenter ||
-          this.exceedsSlop(event)
-        ) {
-          this.fail();
-          return;
-        }
-
-        this.lastTapDownFocus = this.strokeDownCenter;
-        this.completedTaps++;
-        this.lastTapUpTime = event.eventTime;
-        this.lastTapPointerType = event.pointerType;
-
-        if (this.completedTaps < this.targetTaps) {
-          this.setTimer(this.multiTapInterval, () => this.fail());
-          return;
-        }
-
-        const centerOverride =
-          this.numPointers > 1 && this.strokeCenter ? this.strokeCenter : undefined;
-        this.clearMultiTapSequence();
-        this.tryRecognizeDiscrete(() => {
-          if (this.callbacks.onTap) {
-            this.callbacks.onTap(this.createEventData(event, centerOverride));
-          }
-        });
-        break;
-      }
-
-      case 'cancel': {
-        this.clearMultiTapSequence();
-        this.cancel();
-        break;
+  protected override onPointerDown(event: MotionEvent): void {
+    if (!this.stroke) {
+      return;
+    }
+    this.stroke.totalPointers = Math.max(this.stroke.totalPointers + 1, event.pointers.length);
+    const p = event.pointers[event.actionIndex];
+    if (!p || this.stroke.totalPointers > this.numPointers) {
+      this.fail();
+      return;
+    }
+    this.downPositions.set(p.pointerId, p);
+    if (event.activePointerCount === this.numPointers) {
+      this.stroke.downCenter = event.focus;
+      this.stroke.center = event.focus;
+      if (
+        this.sequence &&
+        !isWithinTapSlop(event.focus, this.sequence.lastTap, this.multiTapSlop)
+      ) {
+        this.fail();
       }
     }
   }
 
+  protected override onMove(event: MotionEvent): void {
+    if (!this.stroke) {
+      return;
+    }
+    if (this.exceedsSlop(event)) {
+      this.fail();
+      return;
+    }
+    if (event.activePointerCount === this.numPointers) {
+      this.stroke.center = event.focus;
+    }
+  }
+
+  protected override onPointerUp(event: MotionEvent): void {
+    if (this.exceedsSlop(event)) {
+      this.fail();
+    }
+  }
+
+  protected override onUp(event: MotionEvent): void {
+    this.clearTimer();
+    const stroke = this.stroke;
+    this.stroke = null;
+
+    // `stroke.downCenter` is only set once all `numPointers` were down simultaneously.
+    if (
+      !stroke ||
+      event.eventTime - stroke.downTime > this.maxTime ||
+      stroke.totalPointers !== this.numPointers ||
+      !stroke.downCenter ||
+      this.exceedsSlop(event)
+    ) {
+      this.fail();
+      return;
+    }
+
+    const completedTaps = (this.sequence?.completedTaps ?? 0) + 1;
+    if (completedTaps < this.targetTaps) {
+      this.sequence = {
+        completedTaps,
+        lastTap: {
+          downFocus: stroke.downCenter,
+          upTime: event.eventTime,
+          pointerType: event.pointerType,
+        },
+      };
+      this.setTimer(this.multiTapInterval, () => this.fail());
+      return;
+    }
+
+    const centerOverride = this.numPointers > 1 && stroke.center ? stroke.center : undefined;
+    this.clearSequence();
+    this.tryRecognizeDiscrete(() => {
+      if (this.callbacks.onTap) {
+        this.callbacks.onTap(this.createEventData(event, centerOverride));
+      }
+    });
+  }
+
+  protected override onPointerCancel(): void {
+    this.clearSequence();
+    this.cancel();
+  }
+
   protected override onReset(): void {
     this.downPositions.clear();
-    this.strokeDownTime = 0;
-    this.totalPointersInStroke = 0;
-    this.strokeDownCenter = null;
-    this.strokeCenter = null;
-    this.clearMultiTapSequence();
+    this.stroke = null;
+    this.clearSequence();
   }
 
   protected override onFail(): void {
-    this.clearMultiTapSequence();
+    this.stroke = null;
+    this.clearSequence();
   }
 
   /** Whether the pointer that triggered `event` wandered beyond `slop` from where it went down. */
@@ -254,11 +241,25 @@ export class TapRecognizer extends GestureRecognizer {
     return !!p && !!start && distance(p, start) > this.slop;
   }
 
-  private clearMultiTapSequence(): void {
+  private clearSequence(): void {
     this.clearTimer();
-    this.completedTaps = 0;
-    this.lastTapDownFocus = null;
-    this.lastTapUpTime = 0;
-    this.lastTapPointerType = '';
+    this.sequence = null;
   }
+}
+
+export type TapGestureOptions = Partial<TapOptions> & TapCallbacks;
+export type DoubleTapGestureOptions = Partial<Omit<TapOptions, 'taps'>> & TapCallbacks;
+
+/** Creates a tree-shakable `TapRecognizer` descriptor (`taps: 1` by default). */
+export function tap(options?: TapGestureOptions): GestureDescriptor {
+  return createDescriptor(
+    'tap',
+    options as Record<string, unknown> | undefined,
+    (cbs, cfg) => new TapRecognizer(cbs as TapCallbacks, cfg as Partial<TapOptions>)
+  );
+}
+
+/** Creates a tree-shakable double-tap (`taps: 2`) `TapRecognizer` descriptor. */
+export function doubleTap(options?: DoubleTapGestureOptions): GestureDescriptor {
+  return tap({...options, taps: 2});
 }

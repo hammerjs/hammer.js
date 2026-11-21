@@ -1,6 +1,7 @@
+import {pan, tap} from '@hammerjs/core';
 import {createRoot, createSignal} from 'solid-js';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {createHammer, hammer} from '../src/index.js';
+import {createGestures, gestures} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -40,12 +41,12 @@ describe('@hammerjs/solid', () => {
     return el;
   }
 
-  it('createHammer attaches reactively and cleans up when the owner disposes', () => {
+  it('createGestures attaches reactively and cleans up when the owner disposes', () => {
     const el = mount(document.createElement('div'));
     const onTap = vi.fn();
 
     const dispose = createRoot(d => {
-      createHammer(el, {onTap});
+      createGestures(el, [tap({onTap})]);
       return d;
     });
 
@@ -69,17 +70,19 @@ describe('@hammerjs/solid', () => {
 
     const dispose = createRoot(d => {
       const [step, setStep] = createSignal(0);
-      createHammer(el, () => {
+      createGestures(el, () => {
         const current = step();
-        return {
-          pan: {slop: 4},
-          onPan: ev => {
-            seen.push({step: current, deltaX: ev.deltaX});
-            setStep(s => s + 1);
-          },
-          onPanEnd,
-          onPanCancel,
-        };
+        return [
+          pan({
+            slop: 4,
+            onPan: ev => {
+              seen.push({step: current, deltaX: ev.deltaX});
+              setStep(s => s + 1);
+            },
+            onPanEnd,
+            onPanCancel,
+          }),
+        ];
       });
       return d;
     });
@@ -98,7 +101,7 @@ describe('@hammerjs/solid', () => {
     dispose();
   });
 
-  it('supports hammer directive, reactive options, and SVGElement targets', () => {
+  it('supports gestures directive, reactive options, and SVGElement targets', () => {
     const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
     const onTap = vi.fn();
 
@@ -108,10 +111,8 @@ describe('@hammerjs/solid', () => {
       const [direction, _setDirection] = createSignal<'horizontal' | 'vertical'>('horizontal');
       setDirection = _setDirection;
 
-      hammer(svg, () => ({
-        onTap,
-        onPan: () => {},
-        pan: {direction: direction()},
+      gestures(svg, () => ({
+        gestures: [tap({onTap}), pan({direction: direction(), onPan: () => {}})],
       }));
       return d;
     });
@@ -144,30 +145,30 @@ describe('@hammerjs/solid', () => {
         true
       );
       setIgnore = _setIgnore;
-      createHammer(el, () => ({onTap, ignoreTarget: ignoreTarget()}));
+      createGestures(el, [tap({onTap})], () => ({ignoreTarget: ignoreTarget()}));
       return d;
     });
 
-    const tap = (target: HTMLElement, t: number) => {
+    const doTap = (target: HTMLElement, t: number) => {
       target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
       target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
     };
 
-    tap(inp, 0);
-    tap(blocked, 50);
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
 
     setIgnore(
       () => (target: EventTarget) =>
         target instanceof Element && Boolean(target.closest('[data-ignore]'))
     );
-    tap(blocked, 100);
-    tap(inp, 150);
+    doTap(blocked, 100);
+    doTap(inp, 150);
     expect(onTap).toHaveBeenCalledTimes(2);
 
     setIgnore(true);
-    tap(inp, 200);
-    tap(blocked, 250);
+    doTap(inp, 200);
+    doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
 
     dispose();

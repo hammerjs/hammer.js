@@ -1,6 +1,7 @@
+import {createDescriptor, type GestureDescriptor} from '../descriptors.js';
 import {centroid, distance, type MotionEvent, type Point} from '../motion_event.js';
 import {type GestureEventData, GestureRecognizer} from '../gesture_recognizer.js';
-import type {TouchActionValue} from '../touch_behavior.js';
+import type {TouchActionValue} from '../touch_action.js';
 
 const DEFAULT_ROTATION_SLOP = 5;
 const DEFAULT_MIN_SPAN = 27;
@@ -67,118 +68,105 @@ export class RotateRecognizer extends GestureRecognizer {
     return true;
   }
 
-  onMotionEvent(event: MotionEvent): void {
-    switch (event.action) {
-      case 'down': {
+  protected override onDown(event: MotionEvent): void {
+    this.rawPreSlopRotation = 0;
+    this.totalRotation = 0;
+    this.anchorPointerPair(event);
+  }
+
+  protected override onPointerDown(event: MotionEvent): void {
+    if (!this.active) {
+      this.rawPreSlopRotation = 0;
+    }
+    this.anchorPointerPair(event);
+  }
+
+  protected override onMove(event: MotionEvent): void {
+    if (event.activePointerCount < 2 || !this.trackedPair) {
+      return;
+    }
+    const idx0 = event.findPointerIndex(this.trackedPair[0]);
+    const idx1 = event.findPointerIndex(this.trackedPair[1]);
+    if (idx0 === -1 || idx1 === -1) {
+      this.anchorPointerPair(event);
+      return;
+    }
+
+    const p0 = event.pointers[idx0];
+    const p1 = event.pointers[idx1];
+    if (distance(p0, p1) < this.minSpan) {
+      // Wait to anchor angle until the tracked pair separates past `minSpan` so pinching
+      // outward from close proximity starts cleanly at 0 deg instead of snapping.
+      this.pairAnchored = false;
+      if (!this.active) {
         this.rawPreSlopRotation = 0;
-        this.totalRotation = 0;
-        this.anchorPointerPair(event);
-        break;
+      }
+      return;
+    }
+
+    const currentAngle = angleDeg(p0, p1);
+    if (!this.pairAnchored) {
+      this.prevAngle = currentAngle;
+      this.pairAnchored = true;
+      return;
+    }
+
+    const stepDeg = shortestAngleDelta(this.prevAngle, currentAngle);
+    this.prevAngle = currentAngle;
+    if (stepDeg === 0) {
+      return;
+    }
+
+    let emitDeg = stepDeg;
+    if (!this.active) {
+      this.rawPreSlopRotation += stepDeg;
+      if (Math.abs(this.rawPreSlopRotation) <= this.rotationSlop) {
+        return;
       }
 
-      case 'pointer_down': {
-        if (!this.active) {
-          this.rawPreSlopRotation = 0;
+      // Subtract `rotationSlop` so `onRotateStart` begins cleanly at `0` degrees
+      // and `onRotate` grows smoothly from `0` without snapping.
+      emitDeg = this.rawPreSlopRotation - Math.sign(this.rawPreSlopRotation) * this.rotationSlop;
+      this.totalRotation = 0;
+
+      const started = this.tryBegin(() => {
+        if (this.callbacks.onRotateStart) {
+          this.callbacks.onRotateStart(this.buildEventData(event, 0));
         }
-        this.anchorPointerPair(event);
-        break;
-      }
-
-      case 'move': {
-        if (event.activePointerCount < 2 || !this.trackedPair) {
-          return;
-        }
-        const idx0 = event.findPointerIndex(this.trackedPair[0]);
-        const idx1 = event.findPointerIndex(this.trackedPair[1]);
-        if (idx0 === -1 || idx1 === -1) {
-          this.anchorPointerPair(event);
-          return;
-        }
-
-        const p0 = event.pointers[idx0];
-        const p1 = event.pointers[idx1];
-        if (distance(p0, p1) < this.minSpan) {
-          // Wait to anchor angle until the tracked pair separates past `minSpan` so pinching
-          // outward from close proximity starts cleanly at 0 deg instead of snapping.
-          this.pairAnchored = false;
-          if (!this.active) {
-            this.rawPreSlopRotation = 0;
-          }
-          return;
-        }
-
-        const currentAngle = angleDeg(p0, p1);
-        if (!this.pairAnchored) {
-          this.prevAngle = currentAngle;
-          this.pairAnchored = true;
-          return;
-        }
-
-        const stepDeg = shortestAngleDelta(this.prevAngle, currentAngle);
-        this.prevAngle = currentAngle;
-        if (stepDeg === 0) {
-          return;
-        }
-
-        let emitDeg = stepDeg;
-        if (!this.active) {
-          this.rawPreSlopRotation += stepDeg;
-          if (Math.abs(this.rawPreSlopRotation) <= this.rotationSlop) {
-            return;
-          }
-
-          // Subtract `rotationSlop` so `onRotateStart` begins cleanly at `0` degrees
-          // and `onRotate` grows smoothly from `0` without snapping.
-          emitDeg =
-            this.rawPreSlopRotation - Math.sign(this.rawPreSlopRotation) * this.rotationSlop;
-          this.totalRotation = 0;
-
-          const started = this.tryBegin(() => {
-            if (this.callbacks.onRotateStart) {
-              this.callbacks.onRotateStart(this.buildEventData(event, 0));
-            }
-          });
-          if (!started) {
-            return;
-          }
-        }
-
-        this.totalRotation += emitDeg;
-        if (this.emitChange() && this.callbacks.onRotate) {
-          this.callbacks.onRotate(this.buildEventData(event, emitDeg));
-        }
-        break;
-      }
-
-      case 'pointer_up': {
-        if (event.activePointerCount < 2) {
-          if (this.completeActive()) {
-            if (this.callbacks.onRotateEnd) {
-              this.callbacks.onRotateEnd(this.buildEventData(event, 0, centroid(event.pointers)));
-            }
-          } else {
-            this.fail();
-          }
-          return;
-        }
-        if (!this.active) {
-          this.rawPreSlopRotation = 0;
-        }
-        this.anchorPointerPair(event);
-        break;
-      }
-
-      case 'up': {
-        // An active rotation always ends on the preceding `'pointer_up'` (fewer than 2 pointers).
-        this.fail();
-        break;
-      }
-
-      case 'cancel': {
-        this.cancel();
-        break;
+      });
+      if (!started) {
+        return;
       }
     }
+
+    if (this.emitChange()) {
+      this.totalRotation += emitDeg;
+      if (this.callbacks.onRotate) {
+        this.callbacks.onRotate(this.buildEventData(event, emitDeg));
+      }
+    }
+  }
+
+  protected override onPointerUp(event: MotionEvent): void {
+    if (event.activePointerCount < 2) {
+      if (this.completeActive()) {
+        if (this.callbacks.onRotateEnd) {
+          this.callbacks.onRotateEnd(this.buildEventData(event, 0, centroid(event.pointers)));
+        }
+      } else {
+        this.fail();
+      }
+      return;
+    }
+    if (!this.active) {
+      this.rawPreSlopRotation = 0;
+    }
+    this.anchorPointerPair(event);
+  }
+
+  protected override onUp(): void {
+    // An active rotation always ends on the preceding `'pointer_up'` (fewer than 2 pointers).
+    this.fail();
   }
 
   protected override onCancel(): void {
@@ -222,4 +210,15 @@ export class RotateRecognizer extends GestureRecognizer {
       rotationDelta,
     };
   }
+}
+
+export type RotateGestureOptions = Partial<RotateOptions> & RotateCallbacks;
+
+/** Creates a tree-shakable `RotateRecognizer` descriptor (multi-pointer rotation). */
+export function rotate(options?: RotateGestureOptions): GestureDescriptor {
+  return createDescriptor(
+    'rotate',
+    options as Record<string, unknown> | undefined,
+    (cbs, cfg) => new RotateRecognizer(cbs as RotateCallbacks, cfg as Partial<RotateOptions>)
+  );
 }

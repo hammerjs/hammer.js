@@ -1,86 +1,65 @@
-import {Hammer, type GestureTargetElement, type HammerOptions} from '@hammerjs/core';
+import {
+  GestureBinding,
+  type GestureDescriptor,
+  type GesturesOptions,
+  type GestureTargetElement,
+} from '@hammerjs/core';
 import type {ActionReturn} from 'svelte/action';
 
-export type {GestureTargetElement, HammerOptions};
+export type {GestureDescriptor, GesturesOptions, GestureTargetElement};
 
-function normalizeValue(value: unknown): unknown {
-  if (typeof value === 'function') {
-    return '[fn]';
-  }
-  if (Array.isArray(value)) {
-    return value.map(normalizeValue);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value)
-      .filter(([, v]) => v !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([k, v]) => [k, normalizeValue(v)]);
-  }
-  return value;
-}
+export type GesturesActionInput =
+  | readonly GestureDescriptor[]
+  | ({readonly gestures: readonly GestureDescriptor[]} & GesturesOptions);
 
-function serializeConfig(options: HammerOptions): string {
-  return JSON.stringify(normalizeValue(options));
-}
-
-function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
-  const wrapped: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(optionsRef.current)) {
-    if (typeof value === 'function') {
-      wrapped[key] = (...args: unknown[]) => {
-        const fn = (optionsRef.current as Record<string, unknown>)[key];
-        if (typeof fn === 'function') {
-          return fn(...args);
-        }
-        return undefined;
-      };
-    } else if (value !== undefined) {
-      wrapped[key] = value;
-    }
+function normalizeInput(input: GesturesActionInput | undefined): {
+  gestures: readonly GestureDescriptor[];
+  options: GesturesOptions;
+} {
+  if (!input) {
+    return {gestures: [], options: {}};
   }
-  return wrapped as HammerOptions;
+  if (Array.isArray(input)) {
+    return {gestures: input, options: {}};
+  }
+  const {gestures, ...options} = input as {
+    readonly gestures: readonly GestureDescriptor[];
+  } & GesturesOptions;
+  return {gestures, options};
 }
 
 /**
- * Svelte action (`use:hammer`) that attaches a {@link Hammer} instance to an element:
- * `<div use:hammer={{ onTap, onPan }} />`.
+ * Tree-shakable Svelte action (`use:gestures`) that binds {@link GestureDescriptor}s to an element
+ * without importing unused recognizers:
+ * `<div use:gestures={[tap({ onTap }), pan({ onPan })]} />`.
  *
  * Reactive `update()` calls that only replace inline closures never cancel active gestures.
  */
-export function hammer<T extends GestureTargetElement = HTMLElement>(
+export function gestures<T extends GestureTargetElement = HTMLElement>(
   node: T,
-  options: HammerOptions = {}
-): ActionReturn<HammerOptions | undefined> {
-  const optionsRef: {current: HammerOptions} = {current: {}};
-  let instance: Hammer<T> | null = null;
-  let activeKey: string | null = null;
-
-  const sync = (next: HammerOptions = {}) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    optionsRef.current = next;
-    const nextKey = serializeConfig(next);
-
-    if (activeKey === nextKey) {
-      return;
-    }
-
-    instance?.destroy();
-    instance = new Hammer(node, wrapCallbacks(optionsRef));
-    activeKey = nextKey;
-  };
-
-  sync(options);
+  input: GesturesActionInput = []
+): ActionReturn<GesturesActionInput | undefined> {
+  const initial = normalizeInput(input);
+  let binding: GestureBinding<T> | null =
+    typeof window !== 'undefined'
+      ? new GestureBinding(node, initial.gestures, initial.options)
+      : null;
 
   return {
     update(next) {
-      sync(next);
+      if (typeof window === 'undefined') {
+        return;
+      }
+      const parsed = normalizeInput(next);
+      if (binding) {
+        binding.update(parsed.gestures, parsed.options);
+      } else {
+        binding = new GestureBinding(node, parsed.gestures, parsed.options);
+      }
     },
     destroy() {
-      instance?.destroy();
-      instance = null;
-      activeKey = null;
+      binding?.destroy();
+      binding = null;
     },
   };
 }

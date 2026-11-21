@@ -9,16 +9,16 @@ import {ScaleRecognizer} from '../../src/recognizers/scale_recognizer';
 import {pointerEvent} from '../test_helpers';
 
 describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
-  let arena: GestureArena;
+  let arena: GestureArena | undefined;
   let stream: MotionEventStream;
 
   beforeEach(() => {
-    arena = new GestureArena();
+    arena = undefined;
     stream = new MotionEventStream();
   });
 
   afterEach(() => {
-    arena.destroy();
+    arena?.destroy();
   });
 
   it('anchors smoothly at the spanSlop boundary without a first-frame zoom snap', () => {
@@ -26,9 +26,9 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     const onScale = vi.fn();
     const onScaleEnd = vi.fn();
 
-    arena.add(
-      new ScaleRecognizer({onScaleStart, onScale, onScaleEnd}, {spanSlop: 10, minSpan: 20})
-    );
+    arena = new GestureArena([
+      new ScaleRecognizer({onScaleStart, onScale, onScaleEnd}, {spanSlop: 10, minSpan: 20}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -125,9 +125,9 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       scaleFactor: number;
       isQuickScale: boolean;
     }> = [];
-    arena.add(
-      new QuickScaleRecognizer({onScale: ev => events.push(ev)}, {sensitivity: 100, slop: 8})
-    );
+    arena = new GestureArena([
+      new QuickScaleRecognizer({onScale: ev => events.push(ev)}, {sensitivity: 100, slop: 8}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -167,20 +167,21 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
 
   it('unwraps rotation smoothly across the +/-180 degree branch cut and ignores close-proximity angle drift', () => {
     const rotations: number[] = [];
-    arena.add(
+    const rotArena = new GestureArena([
       new RotateRecognizer(
         {
           onRotate: ev => rotations.push(ev.rotation),
         },
         {rotationSlop: 2, minSpan: 27}
-      )
-    );
+      ),
+    ]);
+    arena = rotArena;
 
     const setAngleDeg = (deg: number, radius: number, timeStamp: number) => {
       const rad = (deg * Math.PI) / 180;
       const x = Math.cos(rad) * radius;
       const y = Math.sin(rad) * radius;
-      arena.dispatch(
+      rotArena.dispatch(
         stream.onPointerMove(
           pointerEvent('pointermove', {pointerId: 2, clientX: x, clientY: y, timeStamp})
         )!
@@ -239,8 +240,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       {onScaleStart, onScaleEnd, onScaleCancel},
       {slop: 8}
     );
-    arena.add(new PanRecognizer({onPan}, {slop: 6}));
-    arena.add(quickScaleRec);
+    arena = new GestureArena([new PanRecognizer({onPan}, {slop: 6}), quickScaleRec]);
 
     // Distant second tap fails QuickScale instead of arming:
     arena.dispatch(
@@ -389,7 +389,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       {onScale: ev => scale3Values.push(ev.scale), onScaleEnd, onScaleCancel},
       {spanSlop: 5, minSpan: 40}
     );
-    arena.add(scale3);
+    arena = new GestureArena([scale3]);
 
     // Pinching below minSpan before exceeding spanSlop and lifting does not start scaling:
     arena.dispatch(
@@ -543,7 +543,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       },
       {rotationSlop: 2, minSpan: 10}
     );
-    arena.add(rot);
+    arena = new GestureArena([rot]);
 
     const radNeg170 = (-170 * Math.PI) / 180;
     const radPos175 = (175 * Math.PI) / 180;
@@ -674,7 +674,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
         {onScaleStart, onScale: ev => scales.push(ev.scale)},
         {slop: 8}
       );
-      arena.add(quickScale);
+      arena = new GestureArena([quickScale]);
 
       arena.dispatch(
         stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, timeStamp: 0}))!
@@ -718,7 +718,7 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
       {onScale: ev => scaleFactors.push(ev.scaleFactor)},
       {spanSlop: 5, minSpan: 30}
     );
-    arena.add(scaleRec);
+    arena = new GestureArena([scaleRec]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -759,13 +759,12 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
     arena.destroy();
 
     const rotDeltas: number[] = [];
-    const rotArena = new GestureArena();
-    rotArena.add(
+    const rotArena = new GestureArena([
       new RotateRecognizer(
         {onRotate: ev => rotDeltas.push(ev.rotationDelta)},
         {rotationSlop: 2, minSpan: 25}
-      )
-    );
+      ),
+    ]);
     rotArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 100})
@@ -816,10 +815,9 @@ describe('ScaleRecognizer, QuickScaleRecognizer & RotateRecognizer', () => {
 
   it('avoids false zoom-ins when span dips below minSpan and returns to initialSpan', () => {
     const scales: number[] = [];
-    const pinchArena = new GestureArena();
-    pinchArena.add(
-      new ScaleRecognizer({onScale: ev => scales.push(ev.scale)}, {spanSlop: 16, minSpan: 27})
-    );
+    const pinchArena = new GestureArena([
+      new ScaleRecognizer({onScale: ev => scales.push(ev.scale)}, {spanSlop: 16, minSpan: 27}),
+    ]);
 
     // Dipping `45 -> 20 (< minSpan 27) -> 45` must NOT overwrite `initialSpan` to `20` and fire a bogus zoom-in:
     pinchArena.dispatch(

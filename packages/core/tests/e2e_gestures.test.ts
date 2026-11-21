@@ -4,7 +4,7 @@ import {GestureManager, PanRecognizer, TapRecognizer} from '../src/index';
 
 describe('Gesture Engine E2E', () => {
   let element: HTMLElement;
-  let manager: GestureManager;
+  let manager: GestureManager | null;
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
@@ -12,11 +12,11 @@ describe('Gesture Engine E2E', () => {
     document.body.innerHTML =
       '<div id="touch-area" style="width: 500px; height: 500px;"><button id="inner-btn" type="button">Action</button></div>';
     element = document.getElementById('touch-area')!;
-    manager = new GestureManager(element);
+    manager = null;
   });
 
   afterEach(() => {
-    manager.destroy();
+    manager?.destroy();
     document.body.innerHTML = '';
   });
 
@@ -28,7 +28,9 @@ describe('Gesture Engine E2E', () => {
     const innerBtn = document.getElementById('inner-btn')!;
     innerBtn.addEventListener('click', btnClickSpy);
 
-    manager.register(new TapRecognizer({onTap: tapSpy}), new PanRecognizer({onPan: panSpy}));
+    manager = new GestureManager(element, {
+      recognizers: [new TapRecognizer({onTap: tapSpy}), new PanRecognizer({onPan: panSpy})],
+    });
 
     await user.click(innerBtn);
 
@@ -39,7 +41,9 @@ describe('Gesture Engine E2E', () => {
 
   it('recognizes a double-tap gesture via user-event', async () => {
     const doubleTapSpy = vi.fn();
-    manager.register(new TapRecognizer({onTap: doubleTapSpy}, {taps: 2}));
+    manager = new GestureManager(element, {
+      recognizers: [new TapRecognizer({onTap: doubleTapSpy}, {taps: 2})],
+    });
 
     await user.dblClick(element);
 
@@ -56,17 +60,19 @@ describe('Gesture Engine E2E', () => {
     const innerBtn = document.getElementById('inner-btn')!;
     innerBtn.addEventListener('click', btnClickSpy);
 
-    manager.register(
-      new TapRecognizer({onTap: tapSpy}),
-      new PanRecognizer(
-        {
-          onPanStart: startSpy,
-          onPan: panSpy,
-          onPanEnd: endSpy,
-        },
-        {slop: 4}
-      )
-    );
+    manager = new GestureManager(element, {
+      recognizers: [
+        new TapRecognizer({onTap: tapSpy}),
+        new PanRecognizer(
+          {
+            onPanStart: startSpy,
+            onPan: panSpy,
+            onPanEnd: endSpy,
+          },
+          {slop: 4}
+        ),
+      ],
+    });
 
     await user.pointer([
       {keys: '[MouseLeft>]', target: innerBtn, coords: {x: 0, y: 0}},

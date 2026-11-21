@@ -1,3 +1,5 @@
+import {ListenerBag} from './dom_utils.js';
+
 /**
  * Tracks explicit pointer captures acquired by a `GestureManager` on its target element so
  * releases are idempotent and `lostpointercapture` only aborts pointers we actually captured.
@@ -5,9 +7,15 @@
 export class PointerCapture {
   private readonly element: Element;
   private readonly captured = new Set<number>();
+  private readonly listeners = new ListenerBag();
+  private readonly onLost?: (event: PointerEvent) => void;
 
-  constructor(element: Element) {
+  constructor(element: Element, onLost?: (event: PointerEvent) => void) {
     this.element = element;
+    this.onLost = onLost;
+    if (onLost) {
+      this.listeners.add(element, 'lostpointercapture', this);
+    }
   }
 
   get hasCaptures(): boolean {
@@ -50,5 +58,19 @@ export class PointerCapture {
   /** Removes `pointerId` on `lostpointercapture`, returning `true` if we owned the capture. */
   consumeLost(pointerId: number): boolean {
     return this.captured.delete(pointerId);
+  }
+
+  destroy(): void {
+    this.releaseAll();
+    this.listeners.clear();
+  }
+
+  /** @internal */
+  handleEvent(ev: Event): void {
+    const e = ev as PointerEvent;
+    // Ignore `lostpointercapture` from child descendants or pointers we never captured / already released.
+    if (e.target === this.element && this.consumeLost(e.pointerId)) {
+      this.onLost?.(e);
+    }
   }
 }

@@ -3,6 +3,15 @@ export interface Point {
   readonly y: number;
 }
 
+/**
+ * Pointer-stream lifecycle action (modeled after Android's `MotionEvent` actions):
+ * - `'down'`: first pointer contacts the surface (starts a stream)
+ * - `'pointer_down'`: an additional pointer contacts while at least one pointer is already down
+ * - `'move'`: one or more active pointers moved
+ * - `'pointer_up'`: one pointer lifted while at least one other pointer remains down
+ * - `'up'`: the final remaining pointer lifted cleanly (ends the stream)
+ * - `'cancel'`: the active stream was aborted externally
+ */
 export type MotionAction = 'down' | 'pointer_down' | 'move' | 'pointer_up' | 'up' | 'cancel';
 
 export interface PointerSample {

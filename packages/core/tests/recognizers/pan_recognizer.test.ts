@@ -6,16 +6,16 @@ import {PanRecognizer} from '../../src/recognizers/pan_recognizer';
 import {pointerEvent} from '../test_helpers';
 
 describe('PanRecognizer (with integrated Swipe)', () => {
-  let arena: GestureArena;
+  let arena: GestureArena | undefined;
   let stream: MotionEventStream;
 
   beforeEach(() => {
-    arena = new GestureArena();
+    arena = undefined;
     stream = new MotionEventStream();
   });
 
   afterEach(() => {
-    arena.destroy();
+    arena?.destroy();
   });
 
   it('starts panning smoothly from the slop boundary without a first-frame jump and reports velocity', () => {
@@ -23,7 +23,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     const onPan = vi.fn();
     const onPanEnd = vi.fn();
 
-    arena.add(new PanRecognizer({onPanStart, onPan, onPanEnd}, {slop: 5}));
+    arena = new GestureArena([new PanRecognizer({onPanStart, onPan, onPanEnd}, {slop: 5})]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -60,7 +60,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     const deltas: number[] = [];
     let latestVelocityX = 0;
 
-    arena.add(
+    arena = new GestureArena([
       new PanRecognizer(
         {
           onPan: ev => {
@@ -69,8 +69,8 @@ describe('PanRecognizer (with integrated Swipe)', () => {
           },
         },
         {numPointers: 0, slop: 2}
-      )
-    );
+      ),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -113,7 +113,9 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
   it('respects horizontal and vertical axis constraints', () => {
     const onHorizPan = vi.fn();
-    arena.add(new PanRecognizer({onPan: onHorizPan}, {direction: 'horizontal', slop: 5}));
+    arena = new GestureArena([
+      new PanRecognizer({onPan: onHorizPan}, {direction: 'horizontal', slop: 5}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -134,7 +136,9 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
     const onVertPan = vi.fn();
     arena.destroy();
-    arena.add(new PanRecognizer({onPan: onVertPan}, {direction: 'vertical', slop: 5}));
+    arena = new GestureArena([
+      new PanRecognizer({onPan: onVertPan}, {direction: 'vertical', slop: 5}),
+    ]);
     stream.reset();
     arena.dispatch(
       stream.onPointerDown(
@@ -159,7 +163,7 @@ describe('PanRecognizer (with integrated Swipe)', () => {
       {onPanStart, onPan, onPanEnd, onPanCancel},
       {numPointers: 2, direction: 'vertical', slop: 4}
     );
-    arena.add(pan2);
+    arena = new GestureArena([pan2]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -287,7 +291,9 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
   it('detects fast horizontal, vertical, and 2-pointer swipes while rejecting >40ms pauses or short flicks', () => {
     const onSwipe = vi.fn();
-    arena.add(new PanRecognizer({onSwipe}, {minSwipeVelocity: 500, minSwipeDistance: 40}));
+    arena = new GestureArena([
+      new PanRecognizer({onSwipe}, {minSwipeVelocity: 500, minSwipeDistance: 40}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -353,13 +359,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     expect(onSwipe).toHaveBeenCalledWith(expect.objectContaining({direction: 'up'}));
 
     const onHorizSwipe = vi.fn();
-    const horizArena = new GestureArena();
-    horizArena.add(
+    const horizArena = new GestureArena([
       new PanRecognizer(
         {onSwipe: onHorizSwipe},
         {direction: 'horizontal', minSwipeVelocity: 300, minSwipeDistance: 100}
-      )
-    );
+      ),
+    ]);
     horizArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 0, timeStamp: 400})
@@ -396,13 +401,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     horizArena.destroy();
 
     const onTwoFingerDown = vi.fn();
-    const arena2 = new GestureArena();
-    arena2.add(
+    const arena2 = new GestureArena([
       new PanRecognizer(
         {onSwipe: onTwoFingerDown},
         {numPointers: 2, direction: 'vertical', minSwipeVelocity: 300, minSwipeDistance: 30}
-      )
-    );
+      ),
+    ]);
     arena2.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 600})
@@ -439,12 +443,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
   it('recognizes pull-out-then-flick-back swipes returning to origin while rejecting tiny liftoff recoil', () => {
     const onSwipe = vi.fn();
-    arena.add(
+    arena = new GestureArena([
       new PanRecognizer(
         {onSwipe},
         {direction: 'horizontal', minSwipeVelocity: 400, minSwipeDistance: 50}
-      )
-    );
+      ),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -503,13 +507,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
     expect(onSwipe).not.toHaveBeenCalled();
 
     const onHorizOnlySwipe = vi.fn();
-    const axisArena = new GestureArena();
-    axisArena.add(
+    const axisArena = new GestureArena([
       new PanRecognizer(
         {onSwipe: onHorizOnlySwipe},
         {direction: 'horizontal', minSwipeVelocity: 400, minSwipeDistance: 40}
-      )
-    );
+      ),
+    ]);
     axisArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 400})
@@ -536,12 +539,12 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
   it('keeps swipe travel extrema invariant across pointer additions and lifts in numPointers: 0 mode', () => {
     const onSwipe = vi.fn();
-    arena.add(
+    arena = new GestureArena([
       new PanRecognizer(
         {onSwipe},
         {numPointers: 0, slop: 4, minSwipeVelocity: 400, minSwipeDistance: 30}
-      )
-    );
+      ),
+    ]);
 
     // 1. Stationary multi-touch re-anchor + tiny liftoff wobble (< 30px) must NOT fabricate a swipe:
     arena.dispatch(
@@ -620,8 +623,9 @@ describe('PanRecognizer (with integrated Swipe)', () => {
 
     // Negative `slop` is clamped to `0` so a 0-delta move never produces `NaN`:
     const deltas: number[] = [];
-    const zeroSlopArena = new GestureArena();
-    zeroSlopArena.add(new PanRecognizer({onPan: ev => deltas.push(ev.deltaX)}, {slop: -5}));
+    const zeroSlopArena = new GestureArena([
+      new PanRecognizer({onPan: ev => deltas.push(ev.deltaX)}, {slop: -5}),
+    ]);
     zeroSlopArena.dispatch(
       stream.onPointerDown(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 10, timeStamp: 300})
@@ -644,11 +648,14 @@ describe('PanRecognizer (with integrated Swipe)', () => {
   it('does not fire onSwipe if onPanEnd tears down the arena or recognizer', () => {
     const onSwipe = vi.fn();
     const onPanEnd = vi.fn(() => {
-      arena.destroy();
+      arena?.destroy();
     });
-    arena.add(
-      new PanRecognizer({onPanEnd, onSwipe}, {slop: 4, minSwipeVelocity: 200, minSwipeDistance: 20})
-    );
+    arena = new GestureArena([
+      new PanRecognizer(
+        {onPanEnd, onSwipe},
+        {slop: 4, minSwipeVelocity: 200, minSwipeDistance: 20}
+      ),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(pointerEvent('pointerdown', {pointerId: 1, clientX: 0, timeStamp: 0}))!

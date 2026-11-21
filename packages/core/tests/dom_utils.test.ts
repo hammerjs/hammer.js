@@ -1,10 +1,9 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
-  armClickSuppression,
   isEditableOrFormControl,
+  ListenerBag,
+  NON_PASSIVE,
   supportsGestureEvents,
-  toggleListener,
-  toggleSafariGestures,
 } from '../src/dom_utils';
 
 describe('dom_utils', () => {
@@ -17,7 +16,6 @@ describe('dom_utils', () => {
 
   afterEach(() => {
     root.remove();
-    vi.useRealTimers();
   });
 
   it('detects WebKit GestureEvent support safely', () => {
@@ -26,26 +24,30 @@ describe('dom_utils', () => {
     expect(supportsGestureEvents({GestureEvent: function () {}} as unknown as Window)).toBe(true);
   });
 
-  it('adds and removes listeners via toggleListener and toggleSafariGestures', () => {
-    const handler = vi.fn();
-    toggleListener(root, 'custom', handler, true);
+  it('attaches and batch-removes scoped DOM listeners via ListenerBag', () => {
+    const bag = new ListenerBag();
+    const customHandler = vi.fn();
+    const objectHandler = {handleEvent: vi.fn()};
+
+    bag.add(root, 'custom', customHandler);
+    bag.add(root, 'touchmove', objectHandler, NON_PASSIVE);
+    bag.add(document, 'click', objectHandler, true);
+
     root.dispatchEvent(new Event('custom'));
-    expect(handler).toHaveBeenCalledTimes(1);
+    root.dispatchEvent(new Event('touchmove'));
+    root.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(customHandler).toHaveBeenCalledTimes(1);
+    expect(objectHandler.handleEvent).toHaveBeenCalledTimes(2);
 
-    toggleListener(root, 'custom', handler, false);
+    bag.clear();
+    // Idempotent second clear:
+    bag.clear();
+
     root.dispatchEvent(new Event('custom'));
-    expect(handler).toHaveBeenCalledTimes(1);
-
-    const gestureHandler = vi.fn();
-    toggleSafariGestures(root, gestureHandler, true);
-    root.dispatchEvent(new Event('gesturestart'));
-    root.dispatchEvent(new Event('gesturechange'));
-    expect(gestureHandler).toHaveBeenCalledTimes(2);
-
-    toggleSafariGestures(root, gestureHandler, false);
-    root.dispatchEvent(new Event('gesturestart'));
-    root.dispatchEvent(new Event('gesturechange'));
-    expect(gestureHandler).toHaveBeenCalledTimes(2);
+    root.dispatchEvent(new Event('touchmove'));
+    root.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(customHandler).toHaveBeenCalledTimes(1);
+    expect(objectHandler.handleEvent).toHaveBeenCalledTimes(2);
   });
 
   it('classifies form controls, contenteditable regions, Shadow DOM targets, and boundary containment', () => {
@@ -105,70 +107,5 @@ describe('dom_utils', () => {
     expect(
       isEditableOrFormControl(shadowInput, card, [shadowInput, shadow, shadowHost, card, root])
     ).toBe(true);
-  });
-
-  it('suppresses a single trailing ghost click within timeout and ignores keyboard, unrelated, or expired clicks', () => {
-    vi.useFakeTimers();
-
-    const child = document.createElement('button');
-    const sibling = document.createElement('button');
-    root.append(child, sibling);
-
-    const childClick = vi.fn();
-    const siblingClick = vi.fn();
-    child.addEventListener('click', childClick);
-    sibling.addEventListener('click', siblingClick);
-
-    const disarm = armClickSuppression(child);
-
-    // Programmatic/keyboard click (`detail === 0`) is NOT suppressed:
-    const keyboardClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 0});
-    child.dispatchEvent(keyboardClick);
-    expect(keyboardClick.defaultPrevented).toBe(false);
-    expect(childClick).toHaveBeenCalledTimes(1);
-
-    // Unrelated sibling click is NOT suppressed:
-    const otherClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    sibling.dispatchEvent(otherClick);
-    expect(otherClick.defaultPrevented).toBe(false);
-    expect(siblingClick).toHaveBeenCalledTimes(1);
-
-    // Trailing synthetic click (`detail === 1`) on target IS suppressed once, then auto-disarms:
-    const ghostClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    child.dispatchEvent(ghostClick);
-    expect(ghostClick.defaultPrevented).toBe(true);
-    expect(childClick).toHaveBeenCalledTimes(1);
-
-    const followUpClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    child.dispatchEvent(followUpClick);
-    expect(followUpClick.defaultPrevented).toBe(false);
-    expect(childClick).toHaveBeenCalledTimes(2);
-
-    // Idempotent disarm after auto-disarm:
-    disarm();
-
-    // Timeout expiry (> 400ms) lets clicks through:
-    armClickSuppression(child);
-    vi.advanceTimersByTime(450);
-    const lateClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    child.dispatchEvent(lateClick);
-    expect(lateClick.defaultPrevented).toBe(false);
-    expect(childClick).toHaveBeenCalledTimes(3);
-
-    // Next `pointerdown` disarms suppression immediately:
-    armClickSuppression(child);
-    document.dispatchEvent(new Event('pointerdown', {bubbles: true}));
-    const afterDownClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    child.dispatchEvent(afterDownClick);
-    expect(afterDownClick.defaultPrevented).toBe(false);
-    expect(childClick).toHaveBeenCalledTimes(4);
-
-    // Manual disarm cancels suppression before any click arrives:
-    const manualDisarm = armClickSuppression(child);
-    manualDisarm();
-    const afterDisarmClick = new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1});
-    child.dispatchEvent(afterDisarmClick);
-    expect(afterDisarmClick.defaultPrevented).toBe(false);
-    expect(childClick).toHaveBeenCalledTimes(5);
   });
 });

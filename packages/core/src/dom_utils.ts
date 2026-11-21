@@ -1,4 +1,3 @@
-const GHOST_CLICK_TIMEOUT_MS = 400;
 const FORM_CONTROL_SELECTOR = 'input,textarea,select,option';
 
 /** Listener options opting out of passive-by-default `touchmove` / WebKit `gesture*` handling. */
@@ -9,43 +8,40 @@ export function supportsGestureEvents(win: Window | null): boolean {
   return !!win && 'GestureEvent' in win;
 }
 
-/** Attaches (`add: true`) or detaches (`add: false`) a DOM event listener with matching options. */
-export function toggleListener(
-  target: EventTarget,
-  type: string,
-  handler: EventListenerOrEventListenerObject,
-  add: boolean,
-  options?: AddEventListenerOptions | boolean
-): void {
-  if (add) {
-    target.addEventListener(type, handler, options);
-  } else {
-    target.removeEventListener(type, handler, options);
-  }
-}
-
-/** Attaches or detaches non-passive WebKit `gesturestart` and `gesturechange` guards on `target`. */
-export function toggleSafariGestures(
-  target: EventTarget,
-  handler: EventListenerOrEventListenerObject,
-  add: boolean
-): void {
-  toggleListener(target, 'gesturestart', handler, add, NON_PASSIVE);
-  toggleListener(target, 'gesturechange', handler, add, NON_PASSIVE);
+interface ListenerBinding {
+  readonly target: EventTarget;
+  readonly type: string;
+  readonly handler: EventListenerOrEventListenerObject;
+  readonly options?: AddEventListenerOptions | boolean;
 }
 
 /**
- * Returns `true` if `event` targeted `element` or a descendant/ancestor sharing its click path,
- * using `composedPath()` when available so targets inside Shadow DOM still match.
+ * Scoped DOM listener group with single-call teardown (`clear()`).
+ *
+ * Provides `AbortController`-style batch removal without bumping browser support
+ * past Chrome 60 / Edge 79 / Firefox 59 / Safari 13 (`addEventListener({signal})`
+ * requires Chrome 90+ / Firefox 86+ / Safari 15+).
  */
-function isRelatedClickTarget(event: Event, element: Element): boolean {
-  if (event.composedPath().includes(element)) {
-    return true;
+export class ListenerBag {
+  private readonly bindings: ListenerBinding[] = [];
+
+  add(
+    target: EventTarget,
+    type: string,
+    handler: EventListenerOrEventListenerObject,
+    options?: AddEventListenerOptions | boolean
+  ): void {
+    target.addEventListener(type, handler, options);
+    this.bindings.push({target, type, handler, options});
   }
-  return (
-    event.target instanceof Node &&
-    (element.contains(event.target) || event.target.contains(element))
-  );
+
+  clear(): void {
+    for (let i = this.bindings.length - 1; i >= 0; i--) {
+      const {target, type, handler, options} = this.bindings[i];
+      target.removeEventListener(type, handler, options);
+    }
+    this.bindings.length = 0;
+  }
 }
 
 /**
@@ -99,41 +95,4 @@ export function isEditableOrFormControl(
     return false;
   }
   return !boundary || isWithinBoundary(editable, boundary, composedPath);
-}
-
-/**
- * Suppresses a single trailing synthetic DOM `click` on `element` within `GHOST_CLICK_TIMEOUT_MS`
- * after a continuous gesture finishes, returning an idempotent cleanup function to disarm early.
- */
-export function armClickSuppression(element: Element): () => void {
-  const doc = element.ownerDocument;
-  const suppressUntil = performance.now() + GHOST_CLICK_TIMEOUT_MS;
-  let active = true;
-
-  const disarm = (): void => {
-    if (!active) {
-      return;
-    }
-    active = false;
-    toggleListener(doc, 'click', onClickCapture, false, true);
-    toggleListener(doc, 'pointerdown', disarm, false, true);
-  };
-
-  const onClickCapture = (e: Event): void => {
-    if (performance.now() > suppressUntil) {
-      disarm();
-      return;
-    }
-    // `detail === 0` marks programmatic / keyboard-activated clicks, which are never ghosts.
-    if ((e as MouseEvent).detail === 0 || !isRelatedClickTarget(e, element)) {
-      return;
-    }
-    disarm();
-    e.preventDefault();
-    e.stopImmediatePropagation();
-  };
-
-  toggleListener(doc, 'pointerdown', disarm, true, true);
-  toggleListener(doc, 'click', onClickCapture, true, true);
-  return disarm;
 }

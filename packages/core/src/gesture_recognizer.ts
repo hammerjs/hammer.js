@@ -1,8 +1,10 @@
 import type {MotionEvent, Point} from './motion_event.js';
-import type {TouchActionValue} from './touch_behavior.js';
+import type {TouchActionValue} from './touch_action.js';
 
 export type RecognizerState =
   'possible' | 'pending' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed';
+
+export type GestureKind = 'continuous' | 'discrete';
 
 export interface GestureEventData {
   /** Focal point (`{x, y}`) in viewport (`clientX`/`clientY`) coordinates. */
@@ -20,7 +22,7 @@ export interface ArenaContext {
     targetState: 'began' | 'ended',
     onGranted: () => void
   ): boolean;
-  notifyStateChanged(recognizer: GestureRecognizer): void;
+  notifyTerminal(recognizer: GestureRecognizer): void;
 }
 
 /**
@@ -41,6 +43,26 @@ export abstract class GestureRecognizer {
 
   get active(): boolean {
     return this.currentState === 'began' || this.currentState === 'changed';
+  }
+
+  /**
+   * Classification of this gesture's lifecycle (`'continuous'` for drag/pinch/rotate/hold,
+   * `'discrete'` for atomic point-in-time gestures like `Tap`).
+   *
+   * Determines default surface coexistence (`user-select: none`, `dragstart`/`contextmenu` guards)
+   * and whether multi-stroke gestures such as `QuickScale` may coexist on their opening stroke.
+   */
+  get gestureKind(): GestureKind {
+    return 'continuous';
+  }
+
+  /**
+   * Whether winning this gesture should suppress trailing synthetic DOM `click`s on pointer release.
+   * Defaults to `true` for `'continuous'` gestures and `false` for `'discrete'` gestures;
+   * subclasses may override independently of `gestureKind`.
+   */
+  get suppressesClick(): boolean {
+    return this.gestureKind === 'continuous';
   }
 
   /** Allows this recognizer and `others` to win in `GestureArena` simultaneously. */
@@ -74,21 +96,42 @@ export abstract class GestureRecognizer {
     return 'none';
   }
 
-  /**
-   * Whether winning this gesture should suppress trailing synthetic DOM `click`s
-   * on pointer release (true for `Pan`, `LongPress`, `Scale`, `QuickScale`, `Rotate`; false for `Tap`).
-   */
-  get suppressesClick(): boolean {
-    return true;
-  }
-
   /** Subclasses may override for conditional simultaneous cooperation (e.g. `QuickScale` stroke #1). */
   canRecognizeSimultaneouslyWith(other: GestureRecognizer): boolean {
     return this.simultaneousPeers?.has(other) ?? false;
   }
 
-  /** Processes an incoming `MotionEvent` from `GestureArena`. */
-  abstract onMotionEvent(event: MotionEvent): void;
+  /**
+   * Processes an incoming `MotionEvent` from `GestureArena`, dispatching to the
+   * pointer-stream lifecycle hooks below:
+   *
+   * ```
+   * Single-pointer:  onDown -> onMove* -> onUp (or onPointerCancel)
+   * Multi-pointer:   onDown -> onPointerDown* -> onMove* -> onPointerUp* -> onUp (or onPointerCancel)
+   * ```
+   */
+  onMotionEvent(event: MotionEvent): void {
+    switch (event.action) {
+      case 'down':
+        this.onDown(event);
+        break;
+      case 'pointer_down':
+        this.onPointerDown(event);
+        break;
+      case 'move':
+        this.onMove(event);
+        break;
+      case 'pointer_up':
+        this.onPointerUp(event);
+        break;
+      case 'up':
+        this.onUp(event);
+        break;
+      case 'cancel':
+        this.onPointerCancel(event);
+        break;
+    }
+  }
 
   /** @internal */
   reset(): void {
@@ -104,6 +147,11 @@ export abstract class GestureRecognizer {
 
   /** @internal */
   get isPrioritized(): boolean {
+    return false;
+  }
+
+  /** @internal */
+  get blocksTouchMove(): boolean {
     return false;
   }
 
@@ -126,11 +174,6 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
-  isAttachedTo(arena: ArenaContext): boolean {
-    return this.arena === arena;
-  }
-
-  /** @internal */
   prepareForDown(_event: MotionEvent): void {}
 
   /** @internal */
@@ -139,7 +182,7 @@ export abstract class GestureRecognizer {
   }
 
   /** @internal */
-  denyByArena(): void {
+  deny(): void {
     if (this.currentState === 'possible' || this.currentState === 'pending') {
       this.fail();
     } else if (this.active) {
@@ -153,6 +196,53 @@ export abstract class GestureRecognizer {
       this.clearTimer();
     }
     this.currentState = targetState;
+  }
+
+  /**
+   * Called when the **first** pointer contacts the surface (`action === 'down'`), starting a new
+   * pointer stream (`event.activePointerCount === 1`). Record initial anchors or arm timers here.
+   */
+  protected onDown(_event: MotionEvent): void {}
+
+  /**
+   * Called when an **additional** (2nd, 3rd, ...) pointer contacts the surface while at least one
+   * pointer is already down (`action === 'pointer_down'`, `event.activePointerCount >= 2`).
+   * The newly added pointer is `event.pointers[event.actionIndex]`. Re-anchor multi-pointer metrics
+   * or fail/cancel single-pointer gestures here.
+   */
+  protected onPointerDown(_event: MotionEvent): void {}
+
+  /**
+   * Called when any active pointer moves (`action === 'move'`).
+   * The moving pointer is `event.pointers[event.actionIndex]` (with optional coalesced samples in
+   * `event.history`). Evaluate slop thresholds to call `tryBegin(...)` or emit active updates via
+   * `emitChange()`.
+   */
+  protected onMove(_event: MotionEvent): void {}
+
+  /**
+   * Called when a non-final pointer lifts while at least one other pointer remains on the surface
+   * (`action === 'pointer_up'`, `event.activePointerCount >= 1`). The lifting pointer is
+   * `event.pointers[event.actionIndex]`, while `event.focus` and `event.getActivePointers()`
+   * reflect the remaining pointers for jump-free re-anchoring.
+   */
+  protected onPointerUp(_event: MotionEvent): void {}
+
+  /**
+   * Called when the **final** remaining pointer lifts cleanly (`action === 'up'`,
+   * `event.activePointerCount === 0`), ending the pointer stream. Complete active continuous
+   * gestures via `completeActive()`, trigger discrete gestures via `tryRecognizeDiscrete(...)`,
+   * or call `fail()` if recognition criteria were not met.
+   */
+  protected onUp(_event: MotionEvent): void {}
+
+  /**
+   * Called when the pointer stream is aborted externally (`action === 'cancel'`,
+   * `event.activePointerCount === 0` — e.g. native scroll takeover, `pointercancel`, window `blur`,
+   * lost capture, or `GestureManager.cancel()`). Defaults to calling `this.cancel()`.
+   */
+  protected onPointerCancel(_event: MotionEvent): void {
+    this.cancel();
   }
 
   protected onReset(): void {}
@@ -205,7 +295,7 @@ export abstract class GestureRecognizer {
     this.clearTimer();
     this.currentState = 'failed';
     this.onFail();
-    this.arena?.notifyStateChanged(this);
+    this.arena?.notifyTerminal(this);
   }
 
   protected cancel(): void {
@@ -222,7 +312,7 @@ export abstract class GestureRecognizer {
     if (wasActive) {
       this.onCancel();
     }
-    this.arena?.notifyStateChanged(this);
+    this.arena?.notifyTerminal(this);
   }
 
   protected setTimer(delayMs: number, callback: () => void): void {

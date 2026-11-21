@@ -12,17 +12,17 @@ import {TapRecognizer} from '../src/recognizers/tap_recognizer';
 import {pointerEvent} from './test_helpers';
 
 describe('GestureArena conflict resolution', () => {
-  let arena: GestureArena;
+  let arena: GestureArena | undefined;
   let stream: MotionEventStream;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    arena = new GestureArena();
+    arena = undefined;
     stream = new MotionEventStream();
   });
 
   afterEach(() => {
-    arena.destroy();
+    arena?.destroy();
     vi.useRealTimers();
   });
 
@@ -33,10 +33,12 @@ describe('GestureArena conflict resolution', () => {
     const onPanStart = vi.fn();
     const onScale = vi.fn();
 
-    arena.add(new TapRecognizer({onTap}, {maxTime: 1000}));
-    arena.add(new LongPressRecognizer({onLongPress, onLongPressCancel}, {duration: 500}));
-    arena.add(new PanRecognizer({onPanStart}));
-    arena.add(new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}));
+    arena = new GestureArena([
+      new TapRecognizer({onTap}, {maxTime: 1000}),
+      new LongPressRecognizer({onLongPress, onLongPressCancel}, {duration: 500}),
+      new PanRecognizer({onPanStart}),
+      new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -75,8 +77,7 @@ describe('GestureArena conflict resolution', () => {
     const doubleTap = new TapRecognizer({onTap: onDoubleTap}, {taps: 2, multiTapInterval: 300});
     singleTap.requireFailureOf(doubleTap);
 
-    arena.add(singleTap);
-    arena.add(doubleTap);
+    arena = new GestureArena([singleTap, doubleTap]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -135,10 +136,12 @@ describe('GestureArena conflict resolution', () => {
       quickScale
     );
 
-    arena.add(singleTap);
-    arena.add(doubleTap);
-    arena.add(new PanRecognizer({onPan}, {slop: 8}));
-    arena.add(quickScale);
+    arena = new GestureArena([
+      singleTap,
+      doubleTap,
+      new PanRecognizer({onPan}, {slop: 8}),
+      quickScale,
+    ]);
 
     // Cancelled tap should not arm QuickScale.
     arena.dispatch(
@@ -208,9 +211,7 @@ describe('GestureArena conflict resolution', () => {
     );
     scale.simultaneousWith(rotate);
 
-    arena.add(scale);
-    arena.add(rotate);
-    arena.add(pan);
+    arena = new GestureArena([scale, rotate, pan]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -256,9 +257,11 @@ describe('GestureArena conflict resolution', () => {
     const onScale = vi.fn();
     const onTap = vi.fn();
 
-    arena.add(new PanRecognizer({onPanCancel}, {numPointers: 1, slop: 5}));
-    arena.add(new TapRecognizer({onTap}, {slop: 50}));
-    arena.add(new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}));
+    arena = new GestureArena([
+      new PanRecognizer({onPanCancel}, {numPointers: 1, slop: 5}),
+      new TapRecognizer({onTap}, {slop: 50}),
+      new ScaleRecognizer({onScale}, {spanSlop: 5, minSpan: 10}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -284,8 +287,10 @@ describe('GestureArena conflict resolution', () => {
     const onPanCancel = vi.fn();
     const onLongPress = vi.fn();
 
-    arena.add(new PanRecognizer({onPanStart, onPanCancel}, {slop: 4}));
-    arena.add(new LongPressRecognizer({onLongPress}, {duration: 500, slop: 100}));
+    arena = new GestureArena([
+      new PanRecognizer({onPanStart, onPanCancel}, {slop: 4}),
+      new LongPressRecognizer({onLongPress}, {duration: 500, slop: 100}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -329,7 +334,7 @@ describe('GestureArena conflict resolution', () => {
     expect(onPanStart).toHaveBeenCalledTimes(2);
   });
 
-  it('handles recognizer removal, duplicate registration, competing pending claims, and defeated dependencies', () => {
+  it('handles duplicate registration, unattached dependencies, and competing pending claims', () => {
     const onFirstPending = vi.fn();
     const onSecondPending = vi.fn();
     const blocker = new TapRecognizer({onTap: () => {}}, {taps: 2, multiTapInterval: 300});
@@ -338,10 +343,7 @@ describe('GestureArena conflict resolution', () => {
     const unattachedDep = new TapRecognizer({onTap: () => {}});
     pendingA.requireFailureOf(unattachedDep, pendingA);
 
-    arena.add(blocker);
-    arena.add(blocker);
-    arena.add(pendingA);
-    arena.add(pendingB);
+    arena = new GestureArena([blocker, blocker, pendingA, pendingB]);
     expect(arena.getRecognizers()).toHaveLength(3);
 
     arena.dispatch(
@@ -357,8 +359,7 @@ describe('GestureArena conflict resolution', () => {
     expect(pendingA.state).toBe('pending');
     expect(pendingB.state).toBe('pending');
 
-    arena.remove(unattachedDep);
-    arena.remove(blocker);
+    vi.advanceTimersByTime(300);
     expect(onFirstPending).toHaveBeenCalledTimes(1);
     expect(onSecondPending).not.toHaveBeenCalled();
     expect(pendingB.state).toBe('failed');
@@ -367,53 +368,7 @@ describe('GestureArena conflict resolution', () => {
     expect(pendingA.state).toBe('possible');
   });
 
-  it('defeats late claims when a required-failure dependency or incompatible winner has already won', () => {
-    class LateClaimRecognizer extends GestureRecognizer {
-      granted = false;
-      onMotionEvent(event: MotionEvent): void {
-        if (event.action === 'up') {
-          this.tryRecognizeDiscrete(() => {
-            this.granted = true;
-          });
-        }
-      }
-    }
-
-    const earlyWinner = new PanRecognizer({}, {slop: 4});
-    const incompatibleDynamic = new LateClaimRecognizer();
-    const defeatedDepDynamic = new LateClaimRecognizer();
-    defeatedDepDynamic.simultaneousWith(earlyWinner, defeatedDepDynamic);
-    defeatedDepDynamic.requireFailureOf(earlyWinner);
-
-    arena.add(earlyWinner);
-
-    arena.dispatch(
-      stream.onPointerDown(
-        pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
-      )!
-    );
-    arena.dispatch(
-      stream.onPointerMove(
-        pointerEvent('pointermove', {pointerId: 1, clientX: 25, clientY: 0, timeStamp: 16})
-      )!
-    );
-    expect(earlyWinner.active).toBe(true);
-
-    arena.add(incompatibleDynamic);
-    arena.add(defeatedDepDynamic);
-
-    arena.dispatch(
-      stream.onPointerUp(
-        pointerEvent('pointerup', {pointerId: 1, clientX: 25, clientY: 0, timeStamp: 32})
-      )!
-    );
-    expect(incompatibleDynamic.granted).toBe(false);
-    expect(incompatibleDynamic.state).toBe('failed');
-    expect(defeatedDepDynamic.granted).toBe(false);
-    expect(defeatedDepDynamic.state).toBe('failed');
-  });
-
-  describe('arena invariants with dynamic compatibility and re-entrant callbacks', () => {
+  describe('arena invariants with dynamic compatibility and dependencies', () => {
     class ScriptedRecognizer extends GestureRecognizer {
       compatibleWithAll = false;
       granted = false;
@@ -448,22 +403,44 @@ describe('GestureArena conflict resolution', () => {
       }
     }
 
-    const down = () =>
-      arena.dispatch(
+    const down = (target: GestureArena) =>
+      target.dispatch(
         stream.onPointerDown(
           pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
         )!
       );
+
+    it('defeats late claims when an existing winner is incompatible or a required dependency already won', () => {
+      const winner = new ScriptedRecognizer();
+      winner.compatibleWithAll = true;
+      const incompatibleLate = new ScriptedRecognizer();
+      const defeatedDepLate = new ScriptedRecognizer();
+      defeatedDepLate.simultaneousWith(winner, defeatedDepLate);
+
+      const target = new GestureArena([winner, incompatibleLate, defeatedDepLate]);
+      arena = target;
+      down(target);
+
+      expect(winner.begin()).toBe(true);
+      winner.compatibleWithAll = false;
+      defeatedDepLate.requireFailureOf(winner);
+
+      expect(incompatibleLate.recognize()).toBe(false);
+      expect(incompatibleLate.granted).toBe(false);
+      expect(incompatibleLate.state).toBe('failed');
+      expect(defeatedDepLate.recognize()).toBe(false);
+      expect(defeatedDepLate.granted).toBe(false);
+      expect(defeatedDepLate.state).toBe('failed');
+    });
 
     it('denies a pending claim when an existing winner has since become incompatible', () => {
       const winner = new ScriptedRecognizer();
       winner.compatibleWithAll = true;
       const dep = new ScriptedRecognizer();
       const pending = new ScriptedRecognizer().requireFailureOf(dep);
-      arena.add(winner);
-      arena.add(dep);
-      arena.add(pending);
-      down();
+      const target = new GestureArena([winner, dep, pending]);
+      arena = target;
+      down(target);
 
       expect(winner.begin()).toBe(true);
       expect(pending.recognize()).toBe(false);
@@ -476,22 +453,55 @@ describe('GestureArena conflict resolution', () => {
       expect(pending.state).toBe('failed');
     });
 
-    it('does not grant a winner that a defeated competitor detaches from its cancel callback', () => {
+    it('cancels active dependents and transitions the claimer before invoking cancel callbacks', () => {
       const claimer = new ScriptedRecognizer();
-      const victim = new ScriptedRecognizer();
-      claimer.simultaneousWith(victim);
-      victim.onCancelHook = () => arena.remove(claimer);
-      arena.add(victim);
-      arena.add(claimer);
-      down();
+      const victimA = new ScriptedRecognizer();
+      const victimB = new ScriptedRecognizer();
+      claimer.simultaneousWith(victimA, victimB);
+      victimA.simultaneousWith(victimB);
 
-      expect(victim.begin()).toBe(true);
-      victim.requireFailureOf(claimer);
+      let claimerStateDuringACancel = '';
+      victimA.onCancelHook = () => {
+        claimerStateDuringACancel = claimer.state;
+      };
 
-      expect(claimer.begin()).toBe(false);
-      expect(victim.cancelled).toBe(true);
-      expect(claimer.granted).toBe(false);
-      expect(arena.getRecognizers()).not.toContain(claimer);
+      const target = new GestureArena([victimA, victimB, claimer]);
+      arena = target;
+      down(target);
+
+      expect(victimA.begin()).toBe(true);
+      expect(victimB.begin()).toBe(true);
+      victimA.requireFailureOf(claimer);
+      victimB.requireFailureOf(claimer);
+
+      expect(claimer.begin()).toBe(true);
+      expect(claimerStateDuringACancel).toBe('began');
+      expect(victimA.cancelled).toBe(true);
+      expect(victimB.cancelled).toBe(true);
+      expect(claimer.granted).toBe(true);
+    });
+
+    it('cancels all simultaneous active recognizers on a cancel event', () => {
+      const recA = new ScriptedRecognizer();
+      const recB = new ScriptedRecognizer();
+      recA.simultaneousWith(recB);
+
+      const target = new GestureArena([recA, recB]);
+      arena = target;
+      down(target);
+
+      expect(recA.begin()).toBe(true);
+      expect(recB.begin()).toBe(true);
+
+      target.dispatch(
+        stream.onPointerCancel(
+          pointerEvent('pointercancel', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 16})
+        )!
+      );
+
+      expect(target.hasActiveGesture).toBe(false);
+      expect(recA.cancelled).toBe(true);
+      expect(recB.cancelled).toBe(true);
     });
 
     it('resolves transitive requireFailureOf chains regardless of pending insertion order', () => {
@@ -501,10 +511,9 @@ describe('GestureArena conflict resolution', () => {
       a.requireFailureOf(b);
       b.requireFailureOf(c);
 
-      arena.add(a);
-      arena.add(b);
-      arena.add(c);
-      down();
+      const target = new GestureArena([a, b, c]);
+      arena = target;
+      down(target);
 
       expect(a.recognize()).toBe(false);
       expect(b.recognize()).toBe(false);
@@ -595,9 +604,7 @@ describe('GestureArena conflict resolution', () => {
     pan.simultaneousWith(scale, rotate);
     scale.simultaneousWith(rotate);
 
-    arena.add(pan);
-    arena.add(scale);
-    arena.add(rotate);
+    arena = new GestureArena([pan, scale, rotate]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -645,9 +652,7 @@ describe('GestureArena conflict resolution', () => {
     const quickScale = new QuickScaleRecognizer({onScale: onQuickScale}, {slop: 6});
     const singleTap = new TapRecognizer({onTap: onSingle}).requireFailureOf(doubleTap, quickScale);
 
-    arena.add(singleTap);
-    arena.add(doubleTap);
-    arena.add(quickScale);
+    arena = new GestureArena([singleTap, doubleTap, quickScale]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -697,22 +702,19 @@ describe('GestureArena conflict resolution', () => {
     expect(onDouble).not.toHaveBeenCalled();
   });
 
-  it('settles competitors before invoking a winner callback that re-entrantly removes itself', () => {
+  it('settles competitors before invoking winner callback while keeping simultaneous peers eligible', () => {
     const peerTapSpy = vi.fn();
     let competitorStateInCallback = '';
     const competitor = new LongPressRecognizer({onLongPress: vi.fn()}, {duration: 500});
-    const selfRemovingTap = new TapRecognizer({
+    const winningTap = new TapRecognizer({
       onTap: () => {
         competitorStateInCallback = competitor.state;
-        arena.remove(selfRemovingTap);
       },
     });
     const siblingTap = new TapRecognizer({onTap: peerTapSpy});
-    selfRemovingTap.simultaneousWith(siblingTap);
+    winningTap.simultaneousWith(siblingTap);
 
-    arena.add(competitor);
-    arena.add(selfRemovingTap);
-    arena.add(siblingTap);
+    arena = new GestureArena([competitor, winningTap, siblingTap]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -738,8 +740,7 @@ describe('GestureArena conflict resolution', () => {
       longPress
     );
 
-    arena.add(longPress);
-    arena.add(pan);
+    arena = new GestureArena([longPress, pan]);
 
     // 1. Move past pan.slop (12 > 5) while longPress (< 25) keeps pan in `'pending'`, then lift:
     arena.dispatch(
@@ -798,11 +799,7 @@ describe('GestureArena conflict resolution', () => {
     const pan = new PanRecognizer({onPan}, {slop: 4});
     const scale = new ScaleRecognizer({onScale}, {spanSlop: 4, minSpan: 10});
 
-    arena.add(singleTap);
-    arena.add(doubleTap);
-    arena.add(longPress);
-    arena.add(pan);
-    arena.add(scale);
+    arena = new GestureArena([singleTap, doubleTap, longPress, pan, scale]);
 
     // 1. Tap #1 followed 100ms later by a 500ms LongPress:
     // At +250ms, doubleTap times out and Tap #1's singleTap resolves — LongPress must survive!
@@ -935,8 +932,7 @@ describe('GestureArena conflict resolution', () => {
 
     const pan = new PanRecognizer({onPan}, {slop: 4});
     const quickScale = new QuickScaleRecognizer({onScale}, {slop: 10, sensitivity: 100});
-    arena.add(pan);
-    arena.add(quickScale);
+    arena = new GestureArena([pan, quickScale]);
 
     // Stroke #1: short 6px pan (< quickScale.slop 10, < 250ms) — Pan wins and must deny QuickScale:
     arena.dispatch(
@@ -974,6 +970,59 @@ describe('GestureArena conflict resolution', () => {
       )!
     );
     expect(onPan).toHaveBeenCalledTimes(1);
+    expect(onScale).not.toHaveBeenCalled();
+  });
+
+  it('decouples gestureKind from suppressesClick for QuickScale stroke #1 coexistence', () => {
+    class NonSuppressingContinuous extends GestureRecognizer {
+      override get suppressesClick(): boolean {
+        return false;
+      }
+      protected override onMove(): void {
+        this.tryBegin(() => {});
+      }
+    }
+
+    const onScale = vi.fn();
+    const continuous = new NonSuppressingContinuous();
+    const quickScale = new QuickScaleRecognizer({onScale}, {slop: 10, sensitivity: 100});
+    arena = new GestureArena([continuous, quickScale]);
+
+    // Stroke #1: continuous recognizer with `suppressesClick: false` wins and must still deny QuickScale:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 1, clientX: 50, clientY: 54, timeStamp: 16})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 1, clientX: 50, clientY: 54, timeStamp: 32})
+      )!
+    );
+    expect(continuous.active).toBe(true);
+    expect(quickScale.state).toBe('failed');
+
+    // Stroke #2 within 300ms must not arm QuickScale:
+    arena.dispatch(
+      stream.onPointerDown(
+        pointerEvent('pointerdown', {pointerId: 2, clientX: 50, clientY: 54, timeStamp: 120})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerMove(
+        pointerEvent('pointermove', {pointerId: 2, clientX: 50, clientY: 160, timeStamp: 150})
+      )!
+    );
+    arena.dispatch(
+      stream.onPointerUp(
+        pointerEvent('pointerup', {pointerId: 2, clientX: 50, clientY: 160, timeStamp: 170})
+      )!
+    );
     expect(onScale).not.toHaveBeenCalled();
   });
 });

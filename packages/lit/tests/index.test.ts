@@ -1,6 +1,7 @@
+import {pan, tap} from '@hammerjs/core';
 import {LitElement, html} from 'lit';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {HammerController} from '../src/index.js';
+import {GesturesController} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -30,7 +31,7 @@ function uniqueTag(prefix: string): string {
   return `${prefix}-${++tagSeq}`;
 }
 
-describe('@hammerjs/lit HammerController', () => {
+describe('@hammerjs/lit GesturesController', () => {
   const mounted: HTMLElement[] = [];
 
   afterEach(() => {
@@ -43,20 +44,20 @@ describe('@hammerjs/lit HammerController', () => {
     const onTap = vi.fn();
 
     class HostTapEl extends LitElement {
-      readonly hammer = new HammerController(this, {onTap});
+      readonly gestures = new GesturesController(this, [tap({onTap})]);
       override render() {
         return html`<span>tap</span>`;
       }
     }
 
-    const tag = uniqueTag('hammer-host-tap');
+    const tag = uniqueTag('gestures-host-tap');
     customElements.define(tag, HostTapEl);
     const el = document.createElement(tag) as HostTapEl;
     document.body.appendChild(el);
     mounted.push(el);
     await el.updateComplete;
 
-    expect(el.hammer.instance).not.toBeNull();
+    expect(el.gestures.instance).not.toBeNull();
     expect(el.style.touchAction).toBe('manipulation');
 
     el.dispatchEvent(pointerEvent('pointerdown', {clientX: 10, clientY: 10, timeStamp: 0}));
@@ -64,41 +65,45 @@ describe('@hammerjs/lit HammerController', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
 
     el.remove();
-    expect(el.hammer.instance).toBeNull();
+    expect(el.gestures.instance).toBeNull();
     expect(el.style.touchAction || '').toBe('');
     el.dispatchEvent(pointerEvent('pointerdown', {clientX: 10, clientY: 10, timeStamp: 100}));
     el.dispatchEvent(pointerEvent('pointerup', {clientX: 10, clientY: 10, timeStamp: 130}));
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  it('never cancels an active pan when setOptions replaces inline callbacks mid-drag', async () => {
+  it('never cancels an active pan when setGestures replaces inline callbacks mid-drag', async () => {
     const onPanCancel = vi.fn();
     const onPanEnd = vi.fn();
     const seen: Array<{step: number; deltaX: number}> = [];
 
     class DragEl extends LitElement {
       step = 0;
-      readonly hammer = new HammerController(this, {
-        pan: {slop: 4},
-        onPan: ev => {
-          seen.push({step: this.step, deltaX: ev.deltaX});
-          this.step++;
-          this.hammer.setOptions({
-            pan: {slop: 4},
-            onPan: nextEv => {
-              seen.push({step: this.step, deltaX: nextEv.deltaX});
-              this.step++;
-            },
-            onPanEnd,
-            onPanCancel,
-          });
-        },
-        onPanEnd,
-        onPanCancel,
-      });
+      readonly gestures = new GesturesController(this, [
+        pan({
+          slop: 4,
+          onPan: ev => {
+            seen.push({step: this.step, deltaX: ev.deltaX});
+            this.step++;
+            this.gestures.setGestures([
+              pan({
+                slop: 4,
+                onPan: nextEv => {
+                  seen.push({step: this.step, deltaX: nextEv.deltaX});
+                  this.step++;
+                },
+                onPanEnd,
+                onPanCancel,
+              }),
+            ]);
+          },
+          onPanEnd,
+          onPanCancel,
+        }),
+      ]);
     }
 
-    const tag = uniqueTag('hammer-drag');
+    const tag = uniqueTag('gestures-drag');
     customElements.define(tag, DragEl);
     const el = document.createElement(tag) as DragEl;
     document.body.appendChild(el);
@@ -122,9 +127,10 @@ describe('@hammerjs/lit HammerController', () => {
     const onTap = vi.fn();
 
     class ShadowSurfaceEl extends LitElement {
-      readonly hammer = new HammerController(
+      readonly gestures = new GesturesController(
         this,
-        {onTap, onPan: () => {}, pan: {direction: 'horizontal'}},
+        [tap({onTap}), pan({direction: 'horizontal', onPan: () => {}})],
+        {},
         () => this.renderRoot.querySelector<HTMLDivElement>('.surface')
       );
 
@@ -133,7 +139,7 @@ describe('@hammerjs/lit HammerController', () => {
       }
     }
 
-    const tag = uniqueTag('hammer-shadow');
+    const tag = uniqueTag('gestures-shadow');
     customElements.define(tag, ShadowSurfaceEl);
     const el = document.createElement(tag) as ShadowSurfaceEl;
     document.body.appendChild(el);
@@ -147,7 +153,7 @@ describe('@hammerjs/lit HammerController', () => {
     surface.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    el.hammer.setOptions({onTap, onPan: () => {}, pan: {direction: 'vertical'}});
+    el.gestures.setGestures([tap({onTap}), pan({direction: 'vertical', onPan: () => {}})]);
     expect(surface.style.touchAction).toBe('pan-x pinch-zoom');
   });
 
@@ -155,13 +161,13 @@ describe('@hammerjs/lit HammerController', () => {
     const onTap = vi.fn();
 
     class FilterEl extends LitElement {
-      readonly hammer = new HammerController(this, {onTap, ignoreTarget: true});
+      readonly gestures = new GesturesController(this, [tap({onTap})], {ignoreTarget: true});
       override render() {
         return html`<input class="inp" /><span class="blocked" data-ignore="1"></span>`;
       }
     }
 
-    const tag = uniqueTag('hammer-filter');
+    const tag = uniqueTag('gestures-filter');
     customElements.define(tag, FilterEl);
     const el = document.createElement(tag) as FilterEl;
     document.body.appendChild(el);
@@ -171,26 +177,25 @@ describe('@hammerjs/lit HammerController', () => {
     const inp = el.renderRoot.querySelector<HTMLInputElement>('.inp')!;
     const blocked = el.renderRoot.querySelector<HTMLSpanElement>('.blocked')!;
 
-    const tap = (target: HTMLElement, t: number) => {
+    const doTap = (target: HTMLElement, t: number) => {
       target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
       target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
     };
 
-    tap(inp, 0);
-    tap(blocked, 50);
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    el.hammer.setOptions({
-      onTap,
+    el.gestures.setGestures([tap({onTap})], {
       ignoreTarget: target => target instanceof Element && Boolean(target.closest('[data-ignore]')),
     });
-    tap(blocked, 100);
-    tap(inp, 150);
+    doTap(blocked, 100);
+    doTap(inp, 150);
     expect(onTap).toHaveBeenCalledTimes(2);
 
-    el.hammer.setOptions({onTap, ignoreTarget: true});
-    tap(inp, 200);
-    tap(blocked, 250);
+    el.gestures.setGestures([tap({onTap})], {ignoreTarget: true});
+    doTap(inp, 200);
+    doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
   });
 });

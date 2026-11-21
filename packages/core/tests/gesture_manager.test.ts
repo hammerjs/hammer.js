@@ -61,9 +61,11 @@ describe('GestureManager', () => {
   });
 
   it('ignores unsupported pointer types', () => {
-    const touchOnly = new GestureManager(element, {supportedPointerTypes: ['touch']});
     const spy = new SpyRecognizer();
-    touchOnly.register(spy);
+    const touchOnly = new GestureManager(element, {
+      supportedPointerTypes: ['touch'],
+      recognizers: [spy],
+    });
 
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'mouse', pointerId: 1}));
     element.dispatchEvent(pointerEvent('pointerup', {pointerType: 'mouse', pointerId: 1}));
@@ -85,8 +87,10 @@ describe('GestureManager', () => {
 
     const onTap = vi.fn();
     const onPanStart = vi.fn();
-    const gm = new GestureManager(container, {supportedPointerTypes: ['touch', 'mouse']});
-    gm.register(new TapRecognizer({onTap}), new PanRecognizer({onPanStart}, {slop: 8}));
+    const gm = new GestureManager(container, {
+      supportedPointerTypes: ['touch', 'mouse'],
+      recognizers: [new TapRecognizer({onTap}), new PanRecognizer({onPanStart}, {slop: 8})],
+    });
 
     childButton.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 20, clientY: 20, timeStamp: 0})
@@ -146,15 +150,16 @@ describe('GestureManager', () => {
     const onScaleCancel = vi.fn();
     const onRotate = vi.fn();
 
-    const gm = new GestureManager(container);
     const rotate = new RotateRecognizer({onRotate}, {rotationSlop: 2, minSpan: 20});
-    gm.register(
-      new ScaleRecognizer(
-        {onScaleStart, onScale, onScaleCancel},
-        {spanSlop: 8, minSpan: 20}
-      ).simultaneousWith(rotate),
-      rotate
-    );
+    const gm = new GestureManager(container, {
+      recognizers: [
+        new ScaleRecognizer(
+          {onScaleStart, onScale, onScaleCancel},
+          {spanSlop: 8, minSpan: 20}
+        ).simultaneousWith(rotate),
+        rotate,
+      ],
+    });
 
     childSpan.dispatchEvent(
       pointerEvent('pointerdown', {
@@ -418,23 +423,19 @@ describe('GestureManager', () => {
   it('cleans up listeners on destroy', () => {
     manager.destroy();
     manager.destroy();
-    manager.register(new SpyRecognizer());
-    manager.unregister(recognizer);
     element.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
     expect(recognizer.events).toHaveLength(0);
   });
 
-  it('covers unregister, cancel, document pointerup/cancel, and touchAction: false', () => {
+  it('covers cancel, document pointerup/cancel, and touchAction: false', () => {
     const unstyledEl = document.createElement('div');
     document.body.appendChild(unstyledEl);
+    const spy = new SpyRecognizer();
     const customManager = new GestureManager(unstyledEl, {
       supportedPointerTypes: ['touch', 'mouse'],
       touchAction: false,
+      recognizers: [spy],
     });
-    expect(unstyledEl.style.touchAction || '').toBe('');
-
-    const spy = new SpyRecognizer();
-    customManager.register(spy);
     expect(unstyledEl.style.touchAction || '').toBe('');
 
     unstyledEl.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 1}));
@@ -442,10 +443,6 @@ describe('GestureManager', () => {
     unstyledEl.dispatchEvent(pointerEvent('pointerup', {pointerType: 'touch', pointerId: 1}));
     expect(spy.events).toHaveLength(3);
     customManager.cancel();
-
-    customManager.unregister(spy);
-    unstyledEl.dispatchEvent(pointerEvent('pointerdown', {pointerType: 'touch', pointerId: 5}));
-    expect(spy.events).toHaveLength(3);
     customManager.destroy();
     unstyledEl.remove();
 
@@ -483,27 +480,22 @@ describe('GestureManager', () => {
     expect(recognizer.cancelled).toBe(true);
   });
 
-  it('dynamically computes and diffs least-restrictive CSS touch-action without scroll-locking mobile pages', () => {
+  it('computes least-restrictive CSS touch-action without scroll-locking mobile pages', () => {
     const card = document.createElement('div');
     document.body.appendChild(card);
 
-    const addListenerSpy = vi.spyOn(card, 'addEventListener');
-    const gm = new GestureManager(card);
+    const emptyGm = new GestureManager(card);
     expect(card.style.touchAction || '').toBe('');
+    emptyGm.destroy();
 
+    const addListenerSpy = vi.spyOn(card, 'addEventListener');
     const mouseTapSpy = vi.fn();
     const tap = new TapRecognizer({onTap: mouseTapSpy});
-    gm.register(tap);
-    expect(gm.computeTouchAction()).toBe('manipulation');
+    const tapGm = new GestureManager(card, {recognizers: [tap]});
+    expect(tapGm.computeTouchAction()).toBe('manipulation');
     expect(card.style.touchAction).toBe('manipulation');
     expect(card.style.userSelect || '').toBe('');
     expect(addListenerSpy.mock.calls.some(([type]) => type === 'touchmove')).toBe(false);
-
-    const listenerCountBeforeSecondTap = addListenerSpy.mock.calls.length;
-    const secondTap = new TapRecognizer({});
-    gm.register(secondTap);
-    expect(addListenerSpy.mock.calls.length).toBe(listenerCountBeforeSecondTap);
-    gm.unregister(secondTap);
 
     card.dispatchEvent(
       pointerEvent('pointerdown', {
@@ -524,19 +516,26 @@ describe('GestureManager', () => {
       })
     );
     expect(mouseTapSpy).toHaveBeenCalledTimes(1);
+    tapGm.destroy();
+    expect(card.style.touchAction || '').toBe('');
 
     const horizPan = new PanRecognizer({}, {direction: 'horizontal'});
-    gm.register(horizPan);
+    const panGm = new GestureManager(card, {recognizers: [tap, horizPan]});
     expect(card.style.touchAction).toBe('pan-y pinch-zoom');
     expect(card.style.userSelect).toBe('none');
     expect((card.style as unknown as Record<string, string>).webkitTouchCallout).toBe('none');
+    panGm.destroy();
 
     const scale = new ScaleRecognizer({});
-    gm.register(scale);
+    const panScaleGm = new GestureManager(card, {recognizers: [tap, horizPan, scale]});
     expect(card.style.touchAction).toBe('pan-y');
+    panScaleGm.destroy();
 
-    gm.unregister(horizPan);
+    const scaleGm = new GestureManager(card, {recognizers: [tap, scale]});
     expect(card.style.touchAction).toBe('pan-x pan-y');
+    scaleGm.destroy();
+    expect(card.style.touchAction).toBe('');
+    expect(card.style.userSelect || '').toBe('');
 
     expect(new PanRecognizer({}, {direction: 'vertical'}).getTouchAction()).toBe(
       'pan-x pinch-zoom'
@@ -549,16 +548,11 @@ describe('GestureManager', () => {
     expect(new LongPressRecognizer({onLongPress: () => {}}).getTouchAction()).toBe('manipulation');
     expect(new RotateRecognizer({}).getTouchAction()).toBe('pan-x pan-y');
 
-    gm.unregister(scale, tap);
-    expect(card.style.touchAction).toBe('');
-    expect(card.style.userSelect || '').toBe('');
-
     const explicitActionEl = document.createElement('div');
     const gmExplicitAction = new GestureManager(explicitActionEl, {touchAction: 'pan-x'});
     expect(explicitActionEl.style.touchAction).toBe('pan-x');
     gmExplicitAction.destroy();
 
-    gm.destroy();
     card.remove();
   });
 
@@ -579,8 +573,9 @@ describe('GestureManager', () => {
     const carousel = document.createElement('div');
     document.body.appendChild(carousel);
     const onPan = vi.fn();
-    const gmCarousel = new GestureManager(carousel);
-    gmCarousel.register(new PanRecognizer({onPan}, {direction: 'horizontal', slop: 8}));
+    const gmCarousel = new GestureManager(carousel, {
+      recognizers: [new PanRecognizer({onPan}, {direction: 'horizontal', slop: 8})],
+    });
 
     carousel.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 50, clientY: 50, timeStamp: 0})
@@ -612,8 +607,9 @@ describe('GestureManager', () => {
     const swipeCard = document.createElement('div');
     document.body.appendChild(swipeCard);
     const onSwipe = vi.fn();
-    const gmSwipe = new GestureManager(swipeCard);
-    gmSwipe.register(new PanRecognizer({onSwipe}, {direction: 'horizontal'}));
+    const gmSwipe = new GestureManager(swipeCard, {
+      recognizers: [new PanRecognizer({onSwipe}, {direction: 'horizontal'})],
+    });
 
     swipeCard.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 1, clientX: 100, clientY: 100, timeStamp: 0})
@@ -642,8 +638,9 @@ describe('GestureManager', () => {
     expect(onSwipe).toHaveBeenCalledTimes(1);
 
     gmSwipe.destroy();
-    const gmVertSwipe = new GestureManager(swipeCard);
-    gmVertSwipe.register(new PanRecognizer({}, {direction: 'vertical'}));
+    const gmVertSwipe = new GestureManager(swipeCard, {
+      recognizers: [new PanRecognizer({}, {direction: 'vertical'})],
+    });
     swipeCard.dispatchEvent(
       pointerEvent('pointerdown', {pointerId: 3, clientX: 100, clientY: 100, timeStamp: 100})
     );
@@ -678,8 +675,9 @@ describe('GestureManager', () => {
     try {
       const photo = document.createElement('div');
       document.body.appendChild(photo);
-      const gmPhoto = new GestureManager(photo);
-      gmPhoto.register(new ScaleRecognizer({}), new QuickScaleRecognizer({}));
+      const gmPhoto = new GestureManager(photo, {
+        recognizers: [new ScaleRecognizer({}), new QuickScaleRecognizer({})],
+      });
       expect(photo.style.touchAction).toBe('pan-x pan-y');
 
       photo.dispatchEvent(
@@ -753,10 +751,9 @@ describe('GestureManager', () => {
       outerLink.addEventListener('click', linkClickSpy);
       otherBtn.addEventListener('click', otherClickSpy);
 
-      const gm = new GestureManager(innerCard);
       const tap = new TapRecognizer({});
       const pan = new PanRecognizer({onPanCancel, onPanEnd}, {slop: 5});
-      gm.register(tap, pan);
+      const gm = new GestureManager(innerCard, {recognizers: [tap, pan]});
 
       innerCard.dispatchEvent(
         pointerEvent('pointerdown', {pointerId: 1, clientX: 10, clientY: 10, timeStamp: 10})
@@ -1275,51 +1272,8 @@ describe('GestureManager', () => {
     }
   });
 
-  it('ignores orphaned pointermove events when recognizers are registered mid-pinch', () => {
-    const onInitialScale = vi.fn();
-    const gm = new GestureManager(element, {
-      recognizers: [new ScaleRecognizer({onScale: onInitialScale})],
-    });
-
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {pointerId: 1, clientX: 0, clientY: 0, timeStamp: 0})
-    );
-    element.dispatchEvent(
-      pointerEvent('pointerdown', {
-        pointerId: 2,
-        isPrimary: false,
-        clientX: 100,
-        clientY: 0,
-        timeStamp: 0,
-      })
-    );
-    const onLateScale = vi.fn();
-    const onLateRotate = vi.fn();
-    gm.register(
-      new ScaleRecognizer({onScale: onLateScale}, {spanSlop: 4, minSpan: 10}),
-      new RotateRecognizer({onRotate: onLateRotate}, {rotationSlop: 2, minSpan: 10})
-    );
-    document.dispatchEvent(
-      pointerEvent('pointermove', {
-        pointerId: 2,
-        isPrimary: false,
-        clientX: 160,
-        clientY: 80,
-        timeStamp: 20,
-      })
-    );
-    document.dispatchEvent(
-      pointerEvent('pointerup', {pointerId: 2, isPrimary: false, clientX: 160, clientY: 80})
-    );
-    document.dispatchEvent(pointerEvent('pointerup', {pointerId: 1, clientX: 0, clientY: 0}));
-    expect(onLateScale).not.toHaveBeenCalled();
-    expect(onLateRotate).not.toHaveBeenCalled();
-
-    gm.destroy();
-  });
-
   it('skips PointerEvent.getCoalescedEvents() unless a registered recognizer needs coalesced history', () => {
-    const gm = new GestureManager(element, {recognizers: [new TapRecognizer({})]});
+    const tapOnly = new GestureManager(element, {recognizers: [new TapRecognizer({})]});
 
     const moveWithoutPan = pointerEvent('pointermove', {
       pointerId: 1,
@@ -1338,9 +1292,11 @@ describe('GestureManager', () => {
       pointerEvent('pointerup', {pointerId: 1, clientX: 12, clientY: 10, timeStamp: 32})
     );
     expect(skippedSpy).not.toHaveBeenCalled();
+    tapOnly.destroy();
 
-    const pan = new PanRecognizer({});
-    gm.register(pan);
+    const withPan = new GestureManager(element, {
+      recognizers: [new TapRecognizer({}), new PanRecognizer({})],
+    });
 
     const moveWithPan = pointerEvent('pointermove', {
       pointerId: 2,
@@ -1360,7 +1316,7 @@ describe('GestureManager', () => {
     );
     expect(usedSpy).toHaveBeenCalledTimes(1);
 
-    gm.destroy();
+    withPan.destroy();
   });
 
   it('ignores non-primary mouse buttons pressed outside the element during an active drag', () => {

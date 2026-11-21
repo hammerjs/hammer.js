@@ -6,17 +6,17 @@ import {LongPressRecognizer} from '../../src/recognizers/long_press_recognizer';
 import {pointerEvent} from '../test_helpers';
 
 describe('LongPressRecognizer', () => {
-  let arena: GestureArena;
+  let arena: GestureArena | undefined;
   let stream: MotionEventStream;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    arena = new GestureArena();
+    arena = undefined;
     stream = new MotionEventStream();
   });
 
   afterEach(() => {
-    arena.destroy();
+    arena?.destroy();
     vi.useRealTimers();
   });
 
@@ -25,9 +25,9 @@ describe('LongPressRecognizer', () => {
     const onLongPressMove = vi.fn();
     const onLongPressUp = vi.fn();
 
-    arena.add(
-      new LongPressRecognizer({onLongPress, onLongPressMove, onLongPressUp}, {duration: 500})
-    );
+    arena = new GestureArena([
+      new LongPressRecognizer({onLongPress, onLongPressMove, onLongPressUp}, {duration: 500}),
+    ]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -55,7 +55,7 @@ describe('LongPressRecognizer', () => {
 
   it('cancels if pointer moves beyond slop before duration', () => {
     const onLongPress = vi.fn();
-    arena.add(new LongPressRecognizer({onLongPress}, {duration: 500, slop: 8}));
+    arena = new GestureArena([new LongPressRecognizer({onLongPress}, {duration: 500, slop: 8})]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -76,7 +76,7 @@ describe('LongPressRecognizer', () => {
 
   it('cancels if pointer is released before duration', () => {
     const onLongPress = vi.fn();
-    arena.add(new LongPressRecognizer({onLongPress}, {duration: 500}));
+    arena = new GestureArena([new LongPressRecognizer({onLongPress}, {duration: 500})]);
 
     arena.dispatch(
       stream.onPointerDown(
@@ -103,7 +103,7 @@ describe('LongPressRecognizer', () => {
       {onLongPress, onLongPressUp, onLongPressCancel},
       {numPointers: 2, duration: 400, slop: 10}
     );
-    arena.add(lp);
+    arena = new GestureArena([lp]);
 
     arena.dispatch(
       stream.onPointerDown(

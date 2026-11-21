@@ -1,14 +1,11 @@
-import {armClickSuppression, isEditableOrFormControl, toggleListener} from './dom_utils.js';
+import {type GestureDescriptor, resolveGestures} from './descriptors.js';
+import {isEditableOrFormControl, ListenerBag} from './dom_utils.js';
 import {GestureArena} from './gesture_arena.js';
 import type {GestureRecognizer} from './gesture_recognizer.js';
 import {MotionEventStream} from './motion_event_stream.js';
 import {PointerCapture} from './pointer_capture.js';
-import {
-  type GestureTargetElement,
-  SurfaceGuard,
-  type TouchActionSetting,
-  type TouchActionValue,
-} from './touch_behavior.js';
+import {SurfaceGuard} from './surface_guard.js';
+import type {GestureTargetElement, TouchActionSetting, TouchActionValue} from './touch_action.js';
 
 export type PointerType = 'touch' | 'pen' | 'mouse';
 
@@ -30,7 +27,14 @@ export interface GestureManagerOptions {
    * - `false`: leaves element inline styles and extra touch/selection guards untouched.
    */
   touchAction?: TouchActionSetting;
-  /** Recognizers to register in the gesture arena. */
+  /** Tree-shakable gesture descriptors to materialize and register in the arena. */
+  gestures?: readonly GestureDescriptor[];
+  /**
+   * Whether `gestures` should automatically wire standard relationships (e.g. `tap` waiting on
+   * `doubleTap`/`quickScale`, `scale` simultaneous with `rotate`). Default: `true`.
+   */
+  autoWire?: boolean;
+  /** Recognizers to register directly in the gesture arena. */
   recognizers?: readonly GestureRecognizer[];
   /**
    * Controls whether pointer presses originating on interactive form controls
@@ -54,68 +58,49 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
   private readonly arena: GestureArena;
   private readonly pointerCapture: PointerCapture;
   private readonly surfaceGuard: SurfaceGuard;
+  private readonly elementListeners = new ListenerBag();
+  private readonly trackingListeners = new ListenerBag();
   private readonly supportedPointerTypes: readonly PointerType[];
   private readonly ignoreTarget: boolean | ((target: EventTarget) => boolean);
 
-  private disarmClickSuppression: (() => void) | null = null;
   private trackingActive = false;
-  private trackingWin: Window | null = null;
   private lastHandledDown: Event | null = null;
   private destroyed = false;
 
   constructor(element: T, options: GestureManagerOptions = {}) {
     this.element = element;
-    this.pointerCapture = new PointerCapture(element);
+    this.pointerCapture = new PointerCapture(element, e => this.cancelPointer(e));
     this.supportedPointerTypes = options.supportedPointerTypes ?? DEFAULT_POINTER_TYPES;
     this.ignoreTarget = options.ignoreTarget ?? true;
 
-    this.arena = new GestureArena({
+    const initialRecognizers: GestureRecognizer[] = [
+      ...(options.gestures ? resolveGestures(options.gestures, {autoWire: options.autoWire}) : []),
+      ...(options.recognizers ?? []),
+    ];
+
+    this.arena = new GestureArena(initialRecognizers, {
       onActiveGestureStart: () => this.pointerCapture.capture(this.stream.activePointerIds),
     });
 
+    const recognizers = this.arena.getRecognizers();
     this.surfaceGuard = new SurfaceGuard({
       element,
       touchAction: options.touchAction ?? 'compute',
       supportedPointerTypes: this.supportedPointerTypes,
+      actions: recognizers.map(r => r.getTouchAction()),
+      hasContinuousRecognizer: recognizers.some(r => r.gestureKind === 'continuous'),
       shouldIgnoreEvent: e => this.shouldIgnoreTarget(e),
       shouldPreventTouchMove: () => this.arena.shouldPreventTouchMove,
       getActivePointerType: () => this.stream.activePointerType,
       onAbortActiveStream: e => this.abortActiveStream(e),
     });
 
-    if (options.recognizers) {
-      for (const recognizer of options.recognizers) {
-        this.arena.add(recognizer);
-      }
-    }
-    toggleListener(this.element, 'pointerdown', this, true);
-    toggleListener(this.element, 'lostpointercapture', this, true);
-    this.syncSurface();
+    this.elementListeners.add(this.element, 'pointerdown', this);
   }
 
   /** Returns the W3C CSS `touch-action` computed from the registered recognizers. */
   computeTouchAction(): TouchActionValue {
     return this.arena.computeTouchAction();
-  }
-
-  register(...recognizers: GestureRecognizer[]): this {
-    if (!this.destroyed && recognizers.length > 0) {
-      for (const recognizer of recognizers) {
-        this.arena.add(recognizer);
-      }
-      this.syncSurface();
-    }
-    return this;
-  }
-
-  unregister(...recognizers: GestureRecognizer[]): this {
-    if (!this.destroyed && recognizers.length > 0) {
-      for (const recognizer of recognizers) {
-        this.arena.remove(recognizer);
-      }
-      this.syncSurface();
-    }
-    return this;
   }
 
   /**
@@ -127,7 +112,7 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     if (this.destroyed) {
       return;
     }
-    this.clearClickSuppression();
+    this.surfaceGuard.clearClickSuppression();
     this.abortActiveStream(new Event('cancel'));
   }
 
@@ -136,10 +121,9 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
       return;
     }
     this.destroyed = true;
-    this.clearClickSuppression();
     this.stopTracking();
-    toggleListener(this.element, 'pointerdown', this, false);
-    toggleListener(this.element, 'lostpointercapture', this, false);
+    this.elementListeners.clear();
+    this.pointerCapture.destroy();
     this.surfaceGuard.destroy();
     this.stream.reset();
     this.arena.destroy();
@@ -165,9 +149,6 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
         if (this.isValidPointer(ev as PointerEvent)) {
           this.cancelPointer(ev as PointerEvent);
         }
-        break;
-      case 'lostpointercapture':
-        this.onLostPointerCapture(ev as PointerEvent);
         break;
       case 'blur':
         this.abortActiveStream(ev);
@@ -243,20 +224,9 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     this.pointerCapture.release(e.pointerId);
     if (this.stream.activePointerCount === 0) {
       if (this.arena.didSuppressingGestureWin) {
-        this.clearClickSuppression();
-        this.disarmClickSuppression = armClickSuppression(this.element);
+        this.surfaceGuard.armClickSuppression();
       }
       this.setActiveTracking(false);
-    }
-  }
-
-  private onLostPointerCapture(e: PointerEvent): void {
-    // Ignore `lostpointercapture` from child descendants or pointers we never captured / already released.
-    if (e.target !== this.element) {
-      return;
-    }
-    if (this.pointerCapture.consumeLost(e.pointerId)) {
-      this.cancelPointer(e);
     }
   }
 
@@ -279,14 +249,6 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
     return (this.supportedPointerTypes as readonly string[]).includes(e.pointerType || 'touch');
   }
 
-  private syncSurface(): void {
-    const recognizers = this.arena.getRecognizers();
-    this.surfaceGuard.sync(
-      recognizers.map(r => r.getTouchAction()),
-      recognizers.some(r => r.suppressesClick)
-    );
-  }
-
   /** Attaches or detaches document-level listeners for the lifetime of a single pointer stream. */
   private setActiveTracking(active: boolean): void {
     if (!active) {
@@ -296,30 +258,24 @@ export class GestureManager<T extends GestureTargetElement = GestureTargetElemen
       return;
     }
 
-    const doc = this.element.ownerDocument;
-    const win = active ? doc.defaultView : this.trackingWin;
-
     this.trackingActive = active;
-    this.trackingWin = active ? win : null;
-
-    toggleListener(doc, 'pointerdown', this, active);
-    toggleListener(doc, 'pointermove', this, active);
-    toggleListener(doc, 'pointerup', this, active);
-    toggleListener(doc, 'pointercancel', this, active);
-    toggleListener(doc, 'visibilitychange', this, active);
-    if (win) {
-      toggleListener(win, 'blur', this, active);
+    this.trackingListeners.clear();
+    if (active) {
+      const doc = this.element.ownerDocument;
+      this.trackingListeners.add(doc, 'pointerdown', this);
+      this.trackingListeners.add(doc, 'pointermove', this);
+      this.trackingListeners.add(doc, 'pointerup', this);
+      this.trackingListeners.add(doc, 'pointercancel', this);
+      this.trackingListeners.add(doc, 'visibilitychange', this);
+      if (doc.defaultView) {
+        this.trackingListeners.add(doc.defaultView, 'blur', this);
+      }
     }
     this.surfaceGuard.setActive(active);
   }
 
-  private clearClickSuppression(): void {
-    this.disarmClickSuppression?.();
-    this.disarmClickSuppression = null;
-  }
-
   private processPointerDown(e: PointerEvent): void {
-    this.clearClickSuppression();
+    this.surfaceGuard.clearClickSuppression();
 
     const motionEvent = this.stream.onPointerDown(e);
     if (!motionEvent) {

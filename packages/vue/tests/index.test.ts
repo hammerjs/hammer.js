@@ -1,7 +1,8 @@
+import {pan, tap} from '@hammerjs/core';
 import {cleanup, render} from '@testing-library/vue';
 import {defineComponent, h, nextTick, reactive, ref, withDirectives} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {useHammer, vHammer, type HammerOptions} from '../src/index.js';
+import {useGestures, vGestures, type GesturesOptions} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -29,13 +30,13 @@ function pointerEvent(type: string, init: MockPointerInit = {}): PointerEvent {
 describe('@hammerjs/vue', () => {
   afterEach(cleanup);
 
-  it('useHammer attaches to a template ref, handles gestures, and cleans up on unmount', () => {
+  it('useGestures attaches to a template ref, handles gestures, and cleans up on unmount', () => {
     const onTap = vi.fn();
 
     const Demo = defineComponent({
       setup() {
         const el = ref<HTMLDivElement | null>(null);
-        useHammer(el, {onTap});
+        useGestures(el, [tap({onTap})]);
         return () => h('div', {ref: el, 'data-testid': 'surface'});
       },
     });
@@ -55,28 +56,28 @@ describe('@hammerjs/vue', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  it('useHammer never cancels an active pan when reactive state updates mid-drag', async () => {
+  it('useGestures never cancels an active pan when reactive state updates mid-drag', async () => {
     const onPanCancel = vi.fn();
     const onPanEnd = vi.fn();
-    const getterCalls = vi.fn();
     const seenSteps: Array<{step: number; deltaX: number}> = [];
 
     const Draggable = defineComponent({
       setup() {
         const el = ref<HTMLDivElement | null>(null);
         const step = ref(0);
-        useHammer(el, () => {
-          getterCalls();
+        useGestures(el, () => {
           const current = step.value;
-          return {
-            pan: {slop: 4},
-            onPan: ev => {
-              seenSteps.push({step: current, deltaX: ev.deltaX});
-              step.value++;
-            },
-            onPanEnd,
-            onPanCancel,
-          };
+          return [
+            pan({
+              slop: 4,
+              onPan: ev => {
+                seenSteps.push({step: current, deltaX: ev.deltaX});
+                step.value++;
+              },
+              onPanEnd,
+              onPanCancel,
+            }),
+          ];
         });
         return () => h('div', {ref: el, 'data-testid': 'drag', 'data-step': String(step.value)});
       },
@@ -84,7 +85,6 @@ describe('@hammerjs/vue', () => {
 
     const {getByTestId} = render(Draggable);
     const drag = getByTestId('drag');
-    expect(getterCalls).toHaveBeenCalledTimes(1);
 
     drag.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
     document.dispatchEvent(pointerEvent('pointermove', {clientX: 24, clientY: 0, timeStamp: 16}));
@@ -102,36 +102,61 @@ describe('@hammerjs/vue', () => {
     expect(drag.dataset.step).toBe('2');
   });
 
-  it('useHammer supports reactive option updates and SVGElement targets', async () => {
+  it('useGestures supports reactive option updates, SVGElement targets, and ignoreTarget transitions', async () => {
     const onTap = vi.fn();
     const direction = ref<'horizontal' | 'vertical'>('horizontal');
+    const options = reactive<GesturesOptions>({ignoreTarget: true});
 
     const Demo = defineComponent({
       setup() {
         const svg = ref<SVGSVGElement | null>(null);
-        useHammer(svg, () => ({
-          onTap,
-          onPan: () => {},
-          pan: {direction: direction.value},
-        }));
-        return () => h('svg', {ref: svg, 'data-testid': 'svg'});
+        useGestures(
+          svg,
+          () => [tap({onTap}), pan({direction: direction.value, onPan: () => {}})],
+          options
+        );
+        return () =>
+          h('svg', {ref: svg, 'data-testid': 'svg'}, [
+            h('input', {'data-testid': 'inp'}),
+            h('span', {'data-testid': 'blocked', 'data-ignore': '1'}),
+          ]);
       },
     });
 
     const {getByTestId} = render(Demo);
     const svg = getByTestId('svg');
+    const inp = getByTestId('inp');
+    const blocked = getByTestId('blocked');
     expect(svg.style.touchAction).toBe('pan-y pinch-zoom');
 
     direction.value = 'vertical';
     await nextTick();
     expect(svg.style.touchAction).toBe('pan-x pinch-zoom');
 
-    svg.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-    svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
+    const doTap = (target: Element, t: number) => {
+      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
+      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
+    };
+
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
+
+    options.ignoreTarget = target =>
+      target instanceof Element && Boolean(target.closest('[data-ignore]'));
+    await nextTick();
+    doTap(blocked, 100);
+    doTap(inp, 150);
+    expect(onTap).toHaveBeenCalledTimes(2);
+
+    options.ignoreTarget = true;
+    await nextTick();
+    doTap(inp, 200);
+    doTap(blocked, 250);
+    expect(onTap).toHaveBeenCalledTimes(3);
   });
 
-  it('vHammer directive attaches, updates without cancelling active pans, and cleans up', async () => {
+  it('vGestures directive attaches, updates without cancelling active pans, and cleans up', async () => {
     const onPanCancel = vi.fn();
     const onPanEnd = vi.fn();
     const deltas: number[] = [];
@@ -139,18 +164,25 @@ describe('@hammerjs/vue', () => {
     const DirectiveDemo = defineComponent({
       setup() {
         const count = ref(0);
-        const options = (): HammerOptions => ({
-          pan: {slop: 4},
-          onPan: ev => {
-            deltas.push(ev.deltaX);
-            count.value++;
-          },
-          onPanEnd,
-          onPanCancel,
-        });
         return () =>
           withDirectives(h('div', {'data-testid': 'dir', 'data-count': String(count.value)}), [
-            [vHammer, options()],
+            [
+              vGestures,
+              {
+                gestures: [
+                  pan({
+                    slop: 4,
+                    onPan: ev => {
+                      deltas.push(ev.deltaX);
+                      count.value++;
+                    },
+                    onPanEnd,
+                    onPanCancel,
+                  }),
+                ],
+                touchAction: 'none',
+              },
+            ],
           ]);
       },
     });
@@ -172,60 +204,5 @@ describe('@hammerjs/vue', () => {
 
     unmount();
     expect(el.style.touchAction || '').toBe('');
-  });
-
-  it('preserves ignoreTarget predicate return values, handles true <-> fn transitions, and tracks reactive() options', async () => {
-    const onTap = vi.fn();
-    const opts = reactive<HammerOptions>({
-      onTap,
-      onPan: () => {},
-      pan: {direction: 'horizontal'},
-      ignoreTarget: true,
-    });
-
-    const Demo = defineComponent({
-      setup() {
-        const el = ref<HTMLDivElement | null>(null);
-        useHammer(el, opts);
-        return () =>
-          h('div', {ref: el, 'data-testid': 'surface'}, [
-            h('input', {'data-testid': 'inp'}),
-            h('span', {'data-testid': 'blocked', 'data-ignore': '1'}),
-          ]);
-      },
-    });
-
-    const {getByTestId} = render(Demo);
-    const surface = getByTestId('surface');
-    const inp = getByTestId('inp');
-    const blocked = getByTestId('blocked');
-    expect(surface.style.touchAction).toBe('pan-y pinch-zoom');
-
-    // Deep mutation on reactive() options updates touch-action in place:
-    opts.pan!.direction = 'vertical';
-    await nextTick();
-    expect(surface.style.touchAction).toBe('pan-x pinch-zoom');
-
-    const tap = (target: HTMLElement, t: number) => {
-      target.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
-      target.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
-    };
-
-    tap(inp, 0);
-    tap(blocked, 50);
-    expect(onTap).toHaveBeenCalledTimes(1);
-
-    opts.ignoreTarget = target =>
-      target instanceof Element && Boolean(target.closest('[data-ignore]'));
-    await nextTick();
-    tap(blocked, 100);
-    tap(inp, 150);
-    expect(onTap).toHaveBeenCalledTimes(2);
-
-    opts.ignoreTarget = true;
-    await nextTick();
-    tap(inp, 200);
-    tap(blocked, 250);
-    expect(onTap).toHaveBeenCalledTimes(3);
   });
 });

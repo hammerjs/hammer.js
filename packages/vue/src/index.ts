@@ -1,128 +1,110 @@
-import {Hammer, type GestureTargetElement, type HammerOptions} from '@hammerjs/core';
-import {ref, toValue, watch, type MaybeRefOrGetter, type ObjectDirective} from 'vue';
+import {
+  GestureBinding,
+  type GestureDescriptor,
+  type GesturesOptions,
+  type GestureTargetElement,
+} from '@hammerjs/core';
+import {toValue, watch, type MaybeRefOrGetter, type ObjectDirective} from 'vue';
 
-export type {GestureTargetElement, HammerOptions};
+export type {GestureDescriptor, GesturesOptions, GestureTargetElement};
 
-function normalizeValue(value: unknown): unknown {
-  if (typeof value === 'function') {
-    return '[fn]';
+export type GesturesDirectiveValue =
+  | readonly GestureDescriptor[]
+  | ({readonly gestures: readonly GestureDescriptor[]} & GesturesOptions);
+
+function normalizeGesturesValue(value: GesturesDirectiveValue | undefined): {
+  gestures: readonly GestureDescriptor[];
+  options: GesturesOptions;
+} {
+  if (!value) {
+    return {gestures: [], options: {}};
   }
   if (Array.isArray(value)) {
-    return value.map(normalizeValue);
+    return {gestures: value, options: {}};
   }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value)
-      .filter(([, v]) => v !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([k, v]) => [k, normalizeValue(v)]);
-  }
-  return value;
-}
-
-function serializeConfig(options: HammerOptions): string {
-  return JSON.stringify(normalizeValue(options));
-}
-
-function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
-  const wrapped: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(optionsRef.current)) {
-    if (typeof value === 'function') {
-      wrapped[key] = (...args: unknown[]) => {
-        const fn = (optionsRef.current as Record<string, unknown>)[key];
-        if (typeof fn === 'function') {
-          return fn(...args);
-        }
-        return undefined;
-      };
-    } else if (value !== undefined) {
-      wrapped[key] = value;
-    }
-  }
-  return wrapped as HammerOptions;
+  const {gestures, ...options} = value as {
+    readonly gestures: readonly GestureDescriptor[];
+  } & GesturesOptions;
+  return {gestures, options};
 }
 
 /**
- * Vue 3 composable that attaches a {@link Hammer} instance to a template ref or getter
- * and cleans it up automatically on unmount or scope disposal.
+ * Tree-shakable Vue 3 composable that binds {@link GestureDescriptor}s (`tap`, `pan`, ...)
+ * to a template ref or getter without importing unused recognizers.
  *
- * Inline callbacks can be returned from a reactive options getter without tearing down
- * active gestures when Vue re-evaluates the getter.
+ * Inline callbacks returned from reactive getters never tear down active gestures when
+ * Vue re-evaluates the getter.
  */
-export function useHammer<T extends GestureTargetElement = HTMLElement>(
+export function useGestures<T extends GestureTargetElement = HTMLElement>(
   target: MaybeRefOrGetter<T | null | undefined>,
-  options: MaybeRefOrGetter<HammerOptions> = {}
+  gestures: MaybeRefOrGetter<readonly GestureDescriptor[]>,
+  options: MaybeRefOrGetter<GesturesOptions> = {}
 ): void {
-  const optionsRef: {current: HammerOptions} = {current: {}};
-  const structuralKey = ref('');
+  let binding: GestureBinding<T> | null = null;
+  let latestGestures: readonly GestureDescriptor[] = [];
+  let latestOptions: GesturesOptions = {};
 
   watch(
-    () => toValue(options),
-    next => {
-      optionsRef.current = next;
-      structuralKey.value = serializeConfig(next);
+    () => [toValue(gestures), toValue(options)] as const,
+    ([nextGestures, nextOptions]) => {
+      latestGestures = nextGestures;
+      latestOptions = nextOptions;
+      binding?.update(nextGestures, nextOptions);
     },
     {immediate: true, flush: 'sync', deep: true}
   );
 
   watch(
-    [() => toValue(target), structuralKey],
-    ([element], _prev, onCleanup) => {
+    () => toValue(target),
+    (element, _prev, onCleanup) => {
       if (!element || typeof window === 'undefined') {
         return;
       }
-      const hammer = new Hammer(element, wrapCallbacks(optionsRef));
+      const instance = new GestureBinding(element, latestGestures, latestOptions);
+      binding = instance;
       onCleanup(() => {
-        hammer.destroy();
+        instance.destroy();
+        if (binding === instance) {
+          binding = null;
+        }
       });
     },
     {immediate: true, flush: 'sync'}
   );
 }
 
-interface DirectiveState {
-  hammer: Hammer | null;
-  optionsRef: {current: HammerOptions};
-  configKey: string | null;
-}
+const gestureBindings = new WeakMap<GestureTargetElement, GestureBinding>();
 
-const directiveStates = new WeakMap<GestureTargetElement, DirectiveState>();
-
-function syncDirective(el: GestureTargetElement, value: HammerOptions = {}): void {
+function syncGesturesDirective(
+  el: GestureTargetElement,
+  value: GesturesDirectiveValue | undefined
+): void {
   if (typeof window === 'undefined') {
     return;
   }
-  const nextKey = serializeConfig(value);
-
-  let state = directiveStates.get(el);
-  if (!state) {
-    state = {hammer: null, optionsRef: {current: value}, configKey: null};
-    directiveStates.set(el, state);
+  const {gestures, options} = normalizeGesturesValue(value);
+  const existing = gestureBindings.get(el);
+  if (existing) {
+    existing.update(gestures, options);
+  } else {
+    gestureBindings.set(el, new GestureBinding(el, gestures, options));
   }
-  state.optionsRef.current = value;
-
-  if (state.configKey === nextKey) {
-    return;
-  }
-
-  state.hammer?.destroy();
-  state.hammer = new Hammer(el, wrapCallbacks(state.optionsRef));
-  state.configKey = nextKey;
 }
 
 /**
- * Vue 3 directive (`v-hammer`) that attaches {@link Hammer} directly in templates:
- * `<div v-hammer="{ onTap, onPan }" />`.
+ * Tree-shakable Vue 3 directive (`v-gestures`) that binds {@link GestureDescriptor}s directly
+ * in templates: `<div v-gestures="[tap({ onTap }), pan({ onPan })]" />`.
  */
-export const vHammer: ObjectDirective<GestureTargetElement, HammerOptions | undefined> = {
-  mounted(el, binding) {
-    syncDirective(el, binding.value);
-  },
-  updated(el, binding) {
-    syncDirective(el, binding.value);
-  },
-  unmounted(el) {
-    const state = directiveStates.get(el);
-    state?.hammer?.destroy();
-    directiveStates.delete(el);
-  },
-};
+export const vGestures: ObjectDirective<GestureTargetElement, GesturesDirectiveValue | undefined> =
+  {
+    mounted(el, binding) {
+      syncGesturesDirective(el, binding.value);
+    },
+    updated(el, binding) {
+      syncGesturesDirective(el, binding.value);
+    },
+    unmounted(el) {
+      gestureBindings.get(el)?.destroy();
+      gestureBindings.delete(el);
+    },
+  };

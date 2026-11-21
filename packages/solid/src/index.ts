@@ -1,95 +1,108 @@
-import {Hammer, type GestureTargetElement, type HammerOptions} from '@hammerjs/core';
-import {createEffect, createMemo, onCleanup, type Accessor} from 'solid-js';
+import {
+  GestureBinding,
+  type GestureDescriptor,
+  type GesturesOptions,
+  type GestureTargetElement,
+} from '@hammerjs/core';
+import {createEffect, onCleanup, type Accessor} from 'solid-js';
 
-export type {GestureTargetElement, HammerOptions};
+export type {GestureDescriptor, GesturesOptions, GestureTargetElement};
 
-function normalizeValue(value: unknown): unknown {
-  if (typeof value === 'function') {
-    return '[fn]';
-  }
-  if (Array.isArray(value)) {
-    return value.map(normalizeValue);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value)
-      .filter(([, v]) => v !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([k, v]) => [k, normalizeValue(v)]);
-  }
-  return value;
-}
-
-function serializeConfig(options: HammerOptions): string {
-  return JSON.stringify(normalizeValue(options));
-}
-
-function wrapCallbacks(optionsRef: {current: HammerOptions}): HammerOptions {
-  const wrapped: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(optionsRef.current)) {
-    if (typeof value === 'function') {
-      wrapped[key] = (...args: unknown[]) => {
-        const fn = (optionsRef.current as Record<string, unknown>)[key];
-        if (typeof fn === 'function') {
-          return fn(...args);
-        }
-        return undefined;
-      };
-    } else if (value !== undefined) {
-      wrapped[key] = value;
-    }
-  }
-  return wrapped as HammerOptions;
-}
+export type GesturesDirectiveValue =
+  | readonly GestureDescriptor[]
+  | ({readonly gestures: readonly GestureDescriptor[]} & GesturesOptions);
 
 function resolveValue<V>(value: Accessor<V> | V): V {
   return typeof value === 'function' ? (value as Accessor<V>)() : value;
 }
 
+function normalizeDirectiveValue(value: GesturesDirectiveValue | undefined): {
+  gestures: readonly GestureDescriptor[];
+  options: GesturesOptions;
+} {
+  if (!value) {
+    return {gestures: [], options: {}};
+  }
+  if (Array.isArray(value)) {
+    return {gestures: value, options: {}};
+  }
+  const {gestures, ...options} = value as {
+    readonly gestures: readonly GestureDescriptor[];
+  } & GesturesOptions;
+  return {gestures, options};
+}
+
 /**
- * SolidJS reactive primitive that attaches a {@link Hammer} instance to an element or
- * element accessor and cleans it up automatically when the reactive owner disposes.
+ * Tree-shakable SolidJS primitive that binds {@link GestureDescriptor}s (`tap`, `pan`, ...)
+ * to an element or accessor without importing unused recognizers.
  *
- * Inline callbacks inside reactive option accessors never cancel active gestures when
+ * Inline callbacks inside reactive descriptor accessors never cancel active gestures when
  * signals update mid-drag.
  */
-export function createHammer<T extends GestureTargetElement = HTMLElement>(
+export function createGestures<T extends GestureTargetElement = HTMLElement>(
   target: Accessor<T | null | undefined> | T | null | undefined,
-  options: Accessor<HammerOptions> | HammerOptions = {}
+  gestures: Accessor<readonly GestureDescriptor[]> | readonly GestureDescriptor[],
+  options: Accessor<GesturesOptions> | GesturesOptions = {}
 ): void {
-  const optionsRef: {current: HammerOptions} = {current: {}};
+  let binding: GestureBinding<T> | null = null;
+  let latestGestures: readonly GestureDescriptor[] = [];
+  let latestOptions: GesturesOptions = {};
 
-  const structuralKey = createMemo(() => {
-    const resolved = resolveValue(options);
-    optionsRef.current = resolved;
-    return serializeConfig(resolved);
+  createEffect(() => {
+    latestGestures = resolveValue(gestures);
+    latestOptions = resolveValue(options);
+    binding?.update(latestGestures, latestOptions);
   });
 
   createEffect(() => {
     const element = resolveValue(target);
-    structuralKey();
     if (!element || typeof window === 'undefined') {
       return;
     }
-    const instance = new Hammer(element, wrapCallbacks(optionsRef));
-    onCleanup(() => instance.destroy());
+    const instance = new GestureBinding(element, latestGestures, latestOptions);
+    binding = instance;
+    onCleanup(() => {
+      instance.destroy();
+      if (binding === instance) {
+        binding = null;
+      }
+    });
   });
 }
 
 /**
- * SolidJS `use:hammer` directive: `<div use:hammer={{ onTap, onPan }} />`.
+ * Tree-shakable SolidJS `use:gestures` directive:
+ * `<div use:gestures={[tap({ onTap }), pan({ onPan })]} />`.
  */
-export function hammer<T extends GestureTargetElement = HTMLElement>(
+export function gestures<T extends GestureTargetElement = HTMLElement>(
   element: T,
-  accessor: Accessor<HammerOptions>
+  accessor: Accessor<GesturesDirectiveValue | undefined>
 ): void {
-  createHammer(element, accessor);
+  let binding: GestureBinding<T> | null = null;
+
+  createEffect(() => {
+    const {gestures: list, options} = normalizeDirectiveValue(accessor());
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (binding) {
+      binding.update(list, options);
+    } else {
+      binding = new GestureBinding(element, list, options);
+    }
+  });
+
+  onCleanup(() => {
+    binding?.destroy();
+    binding = null;
+  });
 }
 
 declare module 'solid-js' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface Directives {
-      hammer: HammerOptions;
+      gestures: GesturesDirectiveValue;
     }
   }
 }

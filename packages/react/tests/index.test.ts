@@ -1,7 +1,8 @@
+import {doubleTap, longPress, pan, tap} from '@hammerjs/core';
 import {act, cleanup, render} from '@testing-library/react';
 import {StrictMode, createElement, useState, type RefCallback} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {useHammer, type HammerOptions} from '../src/index.js';
+import {useGestures, type GesturesOptions} from '../src/index.js';
 
 interface MockPointerInit {
   pointerId?: number;
@@ -26,7 +27,7 @@ function pointerEvent(type: string, init: MockPointerInit = {}): PointerEvent {
   return ev;
 }
 
-describe('@hammerjs/react useHammer', () => {
+describe('@hammerjs/react useGestures', () => {
   afterEach(cleanup);
 
   it('attaches via callback ref, handles gestures, keeps stable ref identity, and cleans up on unmount', () => {
@@ -34,7 +35,7 @@ describe('@hammerjs/react useHammer', () => {
     const seenRefs: Array<RefCallback<HTMLDivElement>> = [];
 
     function Demo({label}: {label: string}) {
-      const ref = useHammer<HTMLDivElement>({onTap});
+      const ref = useGestures<HTMLDivElement>([tap({onTap})]);
       seenRefs.push(ref);
       return createElement('div', {ref, 'data-testid': 'surface'}, label);
     }
@@ -60,27 +61,36 @@ describe('@hammerjs/react useHammer', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  it('never cancels an active pan when inline callbacks trigger setState and always reads latest state', () => {
+  it('auto-wires descriptors, never cancels active pans on mid-drag setState, and preserves explicit relationships', () => {
     const onPanCancel = vi.fn();
     const onPanEnd = vi.fn();
+    const onDoubleTap = vi.fn();
     const seenSteps: Array<{step: number; deltaX: number}> = [];
 
-    function Draggable() {
+    function Draggable({direction}: {direction: 'horizontal' | 'vertical'}) {
       const [step, setStep] = useState(0);
-      const ref = useHammer<HTMLDivElement>({
-        pan: {slop: 4},
-        onPan: ev => {
-          seenSteps.push({step, deltaX: ev.deltaX});
-          setStep(s => s + 1);
-        },
-        onPanEnd,
-        onPanCancel,
-      });
+      const hold = longPress({duration: 500, slop: 4, onLongPress: () => {}});
+      const ref = useGestures<HTMLDivElement>([
+        tap({onTap: () => {}}),
+        doubleTap({onTap: onDoubleTap}),
+        hold,
+        pan({
+          direction,
+          slop: 4,
+          onPan: ev => {
+            seenSteps.push({step, deltaX: ev.deltaX});
+            setStep(s => s + 1);
+          },
+          onPanEnd,
+          onPanCancel,
+        }).requireFailureOf(hold),
+      ]);
       return createElement('div', {ref, 'data-testid': 'drag', 'data-step': String(step)});
     }
 
-    const {getByTestId} = render(createElement(Draggable));
+    const {getByTestId, rerender} = render(createElement(Draggable, {direction: 'horizontal'}));
     const drag = getByTestId('drag');
+    expect(drag.style.touchAction).toBe('pan-y pinch-zoom');
 
     act(() => {
       drag.dispatchEvent(pointerEvent('pointerdown', {clientX: 0, clientY: 0, timeStamp: 0}));
@@ -102,71 +112,33 @@ describe('@hammerjs/react useHammer', () => {
       {step: 1, deltaX: 40},
     ]);
     expect(drag.dataset.step).toBe('2');
-  });
 
-  it('attaches and detaches across conditional rendering', () => {
-    const onTap = vi.fn();
-
-    function Conditional({show}: {show: boolean}) {
-      const ref = useHammer<HTMLDivElement>({onTap});
-      return show ? createElement('div', {ref, 'data-testid': 'cond'}) : null;
-    }
-
-    const {queryByTestId, getByTestId, rerender} = render(
-      createElement(Conditional, {show: false})
-    );
-    expect(queryByTestId('cond')).toBeNull();
-
-    rerender(createElement(Conditional, {show: true}));
-    const el = getByTestId('cond');
-    expect(el.style.touchAction).toBe('manipulation');
+    rerender(createElement(Draggable, {direction: 'vertical'}));
+    expect(drag.style.touchAction).toBe('pan-x pinch-zoom');
 
     act(() => {
-      el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: 0}));
-      el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
+      drag.dispatchEvent(pointerEvent('pointerdown', {pointerId: 2, clientX: 5, timeStamp: 200}));
+      drag.dispatchEvent(pointerEvent('pointerup', {pointerId: 2, clientX: 5, timeStamp: 220}));
+      drag.dispatchEvent(pointerEvent('pointerdown', {pointerId: 3, clientX: 5, timeStamp: 280}));
+      drag.dispatchEvent(pointerEvent('pointerup', {pointerId: 3, clientX: 5, timeStamp: 300}));
     });
-    expect(onTap).toHaveBeenCalledTimes(1);
-
-    rerender(createElement(Conditional, {show: false}));
-    expect(queryByTestId('cond')).toBeNull();
+    expect(onDoubleTap).toHaveBeenCalledTimes(1);
   });
 
-  it('updates Hammer options when structural config or enabled callbacks change', () => {
-    function Configurable({options}: {options: HammerOptions}) {
-      const ref = useHammer<HTMLDivElement>(options);
-      return createElement('div', {ref, 'data-testid': 'cfg'});
-    }
-
-    const {getByTestId, rerender} = render(
-      createElement(Configurable, {
-        options: {onPan: () => {}, pan: {direction: 'horizontal'}, touchAction: 'none'},
-      })
-    );
-    const el = getByTestId('cfg');
-    expect(el.style.touchAction).toBe('none');
-
-    rerender(
-      createElement(Configurable, {
-        options: {onPan: () => {}, pan: {direction: 'vertical'}},
-      })
-    );
-    expect(el.style.touchAction).toBe('pan-x pinch-zoom');
-
-    rerender(createElement(Configurable, {options: {onTap: () => {}}}));
-    expect(el.style.touchAction).toBe('manipulation');
-  });
-
-  it('supports SVGElement targets across conditional rendering', () => {
+  it('attaches and detaches across conditional rendering and supports SVGElement targets', () => {
     const onTap = vi.fn();
 
-    function SvgTarget({show}: {show: boolean}) {
-      const ref = useHammer<SVGSVGElement>({onTap});
+    function ConditionalSvg({show}: {show: boolean}) {
+      const ref = useGestures<SVGSVGElement>([tap({onTap})]);
       return show ? createElement('svg', {ref, 'data-testid': 'svg-target'}) : null;
     }
 
-    const {getByTestId, rerender} = render(createElement(SvgTarget, {show: false}));
-    rerender(createElement(SvgTarget, {show: true}));
+    const {queryByTestId, getByTestId, rerender} = render(
+      createElement(ConditionalSvg, {show: false})
+    );
+    expect(queryByTestId('svg-target')).toBeNull();
 
+    rerender(createElement(ConditionalSvg, {show: true}));
     const svg = getByTestId('svg-target');
     expect(svg.style.touchAction).toBe('manipulation');
 
@@ -175,13 +147,16 @@ describe('@hammerjs/react useHammer', () => {
       svg.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: 20}));
     });
     expect(onTap).toHaveBeenCalledTimes(1);
+
+    rerender(createElement(ConditionalSvg, {show: false}));
+    expect(queryByTestId('svg-target')).toBeNull();
   });
 
   it('is resilient to React.StrictMode double-invocation without duplicating listeners', () => {
     const onTap = vi.fn();
 
     function StrictDemo() {
-      const ref = useHammer<HTMLDivElement>({onTap});
+      const ref = useGestures<HTMLDivElement>([tap({onTap})]);
       return createElement('div', {ref, 'data-testid': 'strict'});
     }
 
@@ -198,8 +173,8 @@ describe('@hammerjs/react useHammer', () => {
   it('supports custom ignoreTarget predicates and toggling between ignoreTarget: true and a function', () => {
     const onTap = vi.fn();
 
-    function FilterDemo({ignoreTarget}: {ignoreTarget: HammerOptions['ignoreTarget']}) {
-      const ref = useHammer<HTMLDivElement>({onTap, ignoreTarget});
+    function FilterDemo({ignoreTarget}: {ignoreTarget: GesturesOptions['ignoreTarget']}) {
+      const ref = useGestures<HTMLDivElement>([tap({onTap})], {ignoreTarget});
       return createElement(
         'div',
         {ref, 'data-testid': 'surface'},
@@ -212,33 +187,30 @@ describe('@hammerjs/react useHammer', () => {
     const inp = getByTestId('inp');
     const blocked = getByTestId('blocked');
 
-    const tap = (el: HTMLElement, t: number) => {
+    const doTap = (el: HTMLElement, t: number) => {
       act(() => {
         el.dispatchEvent(pointerEvent('pointerdown', {clientX: 5, clientY: 5, timeStamp: t}));
         el.dispatchEvent(pointerEvent('pointerup', {clientX: 5, clientY: 5, timeStamp: t + 20}));
       });
     };
 
-    // Default `ignoreTarget: true` ignores `<input>` and allows `<span>`:
-    tap(inp, 0);
-    tap(blocked, 50);
+    doTap(inp, 0);
+    doTap(blocked, 50);
     expect(onTap).toHaveBeenCalledTimes(1);
 
-    // Switching `true -> fn` must NOT collide in configKey and must preserve predicate return value:
     rerender(
       createElement(FilterDemo, {
         ignoreTarget: target =>
           target instanceof Element && Boolean(target.closest('[data-ignore]')),
       })
     );
-    tap(blocked, 100);
-    tap(inp, 150);
+    doTap(blocked, 100);
+    doTap(inp, 150);
     expect(onTap).toHaveBeenCalledTimes(2);
 
-    // Switching `fn -> true` restores default form-control filtering:
     rerender(createElement(FilterDemo, {ignoreTarget: true}));
-    tap(inp, 200);
-    tap(blocked, 250);
+    doTap(inp, 200);
+    doTap(blocked, 250);
     expect(onTap).toHaveBeenCalledTimes(3);
   });
 });

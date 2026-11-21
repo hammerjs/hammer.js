@@ -84,4 +84,41 @@ describe('PointerCapture', () => {
     expect(() => pc.release(2)).not.toThrow();
     expect(pc.hasCaptures).toBe(false);
   });
+
+  it('invokes onLost only for owned captures on element and detaches on destroy', () => {
+    const child = document.createElement('span');
+    element.appendChild(child);
+    const onLost = vi.fn();
+    const pc = new PointerCapture(element, onLost);
+
+    pc.capture([7]);
+
+    // Bubbling `lostpointercapture` from a child descendant is ignored:
+    const childLost = new Event('lostpointercapture', {bubbles: true});
+    Object.defineProperty(childLost, 'pointerId', {value: 7});
+    child.dispatchEvent(childLost);
+    expect(onLost).not.toHaveBeenCalled();
+
+    // Unowned pointerId on element is ignored:
+    const unownedLost = new Event('lostpointercapture', {bubbles: true});
+    Object.defineProperty(unownedLost, 'pointerId', {value: 99});
+    element.dispatchEvent(unownedLost);
+    expect(onLost).not.toHaveBeenCalled();
+
+    // Owned capture on element triggers onLost once:
+    const ownedLost = new Event('lostpointercapture', {bubbles: true});
+    Object.defineProperty(ownedLost, 'pointerId', {value: 7});
+    element.dispatchEvent(ownedLost);
+    expect(onLost).toHaveBeenCalledTimes(1);
+    expect(pc.hasCaptures).toBe(false);
+
+    // After destroy, listeners are detached and captures released:
+    pc.capture([8]);
+    pc.destroy();
+    expect(pc.hasCaptures).toBe(false);
+    const afterDestroyLost = new Event('lostpointercapture', {bubbles: true});
+    Object.defineProperty(afterDestroyLost, 'pointerId', {value: 8});
+    element.dispatchEvent(afterDestroyLost);
+    expect(onLost).toHaveBeenCalledTimes(1);
+  });
 });
