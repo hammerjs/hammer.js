@@ -1,0 +1,50 @@
+{
+  "name": "@hammerjs/lit",
+  "version": "3.0.0-alpha.0",
+  "description": "Lit reactive controller adapter for @hammerjs/core gesture recognition",
+  "license": "MIT",
+  "author": "Jorik Tangelder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hammerjs/hammer.js.git",
+    "directory": "packages/lit"
+  },
+  "keywords": [
+    "hammerjs",
+    "lit",
+    "web-components",
+    "gestures",
+    "touch",
+    "pointer-events"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "peerDependencies": {
+    "@hammerjs/core": "^3.0.0-alpha.0",
+    "lit": ">=3.0.0"
+  },
+  "devDependencies": {
+    "lit": "^3.2.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.es.js"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

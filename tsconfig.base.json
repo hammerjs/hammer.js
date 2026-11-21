@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["DOM", "ES2022"],
+    "declaration": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "emitDeclarationOnly": true,
+    "stripInternal": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
+}

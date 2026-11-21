@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-playground
+coverage
+*.min.js
+*.d.ts
+.vscode
+.git

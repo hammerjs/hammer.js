@@ -1,120 +1,136 @@
-# [hammer.js][hammerjs-url]  [![NPM Version][npm-image]][npm-url]  [![NPM Downloads][downloads-image]][downloads-url]  [![Build Status][travis-image]][travis-url]
-> A JavaScript library for detecting touch gestures.
+# Hammer.js v3 (Experimental)
 
+> **Note:** This branch is an active experiment exploring what a modern Hammer.js could look like today. APIs are evolving and not yet ready for production use.
+>
+> **Try the live playground:** https://hammerjs.github.io/hammer.js/3.x/
 
-## Installation
-### NPM
-```sh
-npm install --save hammerjs
+Hammer.js 2.x was built for a different era of the web. This experiment rethinks it from scratch around:
+
+- **W3C Pointer Events** instead of legacy mouse/touch juggling
+- **Android-inspired gesture physics & arbitration** (`MotionEvent`, polynomial `VelocityTracker`, and an order-independent `GestureArena`)
+- **Tree-shakable gesture descriptors** (`tap`, `doubleTap`, `longPress`, `pan`, `swipe`, `scale`, `quickScale`, `rotate`, `gesture`) so you only ship the recognizers you import
+- **One-finger Quick Scale** (`quickScale`) for double-tap-and-drag zooming alongside two-finger pinch
+- **Web-native scrolling & coexistence** via computed CSS `touch-action`, lazy pointer capture, ghost-click suppression, and automatic nested surface coordination
+- **Tiny framework adapters** (`@hammerjs/react`, `@hammerjs/vue`, `@hammerjs/svelte`, `@hammerjs/solid`, `@hammerjs/lit`, `@hammerjs/angular`) that hot-swap inline callbacks without cancelling active gestures
+
+## Quick Start
+
+### Tree-shakable descriptors (recommended)
+
+Import only the gesture factories you need. Standard relationships (e.g. `tap` waiting on `doubleTap`/`quickScale`, `scale` simultaneous with `rotate`) are auto-wired by default:
+
+```ts
+import {GestureManager, doubleTap, pan, rotate, scale, tap} from '@hammerjs/core';
+
+const manager = new GestureManager(element, {
+  gestures: [
+    tap({onTap: ev => console.log('Tap', ev.center, ev.pointerType)}),
+    doubleTap({onTap: ev => console.log('Double tap', ev.center)}),
+    pan({
+      numPointers: 0,
+      onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
+      onSwipe: ev => console.log('Swipe', ev.direction),
+    }),
+    scale({onScale: ev => console.log('Scale', ev.scale)}),
+    rotate({onRotate: ev => console.log('Rotate', ev.rotation)}),
+  ],
+});
+
+// Clean up listeners and restore inline styles when done
+manager.destroy();
 ```
 
-**or**
+For swipe-only surfaces (without continuous pan tracking), use `swipe({direction: 'horizontal', onSwipe})`.
 
-### Yarn
-```sh
-yarn add hammerjs
-```
+### Explicit relationships, `enabled`, and nested surfaces
 
-**or**
+- Chain `.requireFailureOf(...)` and `.simultaneousWith(...)` on descriptors for custom arbitration (pass `autoWire: false` to disable default wiring).
+- Pass `enabled: false` to disable gestures without removing bindings or mutating `touch-action` / `user-select`.
+- Nested `GestureManager` surfaces coordinate automatically: when an inner surface claims a gesture, competing ancestor surfaces in the same pointer stream are cancelled (pass `propagate: true` to observe simultaneously without cancelling).
 
-### CDN
-[https://cdnjs.com/libraries/hammer.js/](https://cdnjs.com/libraries/hammer.js/)
+```ts
+import {GestureManager, longPress, pan} from '@hammerjs/core';
 
+const hold = longPress({duration: 400, onLongPress: ev => console.log('Hold', ev.center)});
+const drag = pan({onPan: ev => console.log('Drag', ev.deltaX, ev.deltaY)}).requireFailureOf(hold);
 
-## Usage
-hammer.js has a quick start option for gestures it already recognizes.
-```js
-// Get a reference to an element.
-var square = document.querySelector('.square');
-
-// Create an instance of Hammer with the reference.
-var hammer = new Hammer(square);
-
-// Subscribe to a quick start event: press, tap, or doubletap.
-// For a full list of quick start events, read the documentation.
-hammer.on('press', function(e) {
-  e.target.classList.toggle('expand');
-  console.log("You're pressing me!");
-  console.log(e);
+const manager = new GestureManager(element, {
+  gestures: [hold, drag],
+  enabled: true,
 });
 ```
 
-If you want to recognize your own gestures, such as `tripletap`, then you'll have to use these steps:
-```js
-// Get a reference to an element.
-var square = document.querySelector('.square');
+### Batteries-included `Hammer` wrapper
 
-// Create a manager to manage the element.
-var manager = new Hammer.Manager(square);
+For quick prototypes where tree-shaking isn’t needed, `Hammer` configures all built-in gestures from a single options object:
 
-// Create a recognizer.
-var TripleTap = new Hammer.Tap({
-  event: 'tripletap',
-  taps: 3
+```ts
+import {Hammer} from '@hammerjs/core';
+
+const hammer = new Hammer(element, {
+  onTap: ev => console.log('Tap', ev.center),
+  onLongPress: ev => console.log('Hold', ev.center),
+  onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
+  onSwipe: ev => console.log('Swipe', ev.direction),
+  onScale: ev => console.log('Scale', ev.scale),
+  onRotate: ev => console.log('Rotate', ev.rotation),
+  quickScale: true, // Double-tap and drag vertically to zoom with one finger
 });
 
-// Add the recognizer to the manager.
-manager.add(TripleTap);
-
-// Subscribe to the event.
-manager.on('tripletap', function(e) {
-  e.target.classList.toggle('expand');
-  console.log("You're triple tapping me!");
-  console.log(e);
-});
+hammer.destroy();
 ```
 
+### Framework Adapters
 
-## Examples
-- [tap][tap]
-- [double tap][double-tap]
-- [press][press]
-- [swipe][swipe]
+All framework adapters wrap `GestureBinding` — inline callbacks never cancel active drags on re-render, and only imported gesture descriptors end up in your bundle.
 
+```tsx
+// React (@hammerjs/react)
+import {pan, tap} from '@hammerjs/core';
+import {useGestures} from '@hammerjs/react';
 
-## Documentation
-For further information regarding hammer.js, please read our [documentation][hammerjs-url].
+function Card({enabled = true}: {enabled?: boolean}) {
+  const ref = useGestures<HTMLDivElement>(
+    [
+      tap({onTap: ev => console.log('Tap', ev.center)}),
+      pan({onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY)}),
+    ],
+    {enabled}
+  );
+  return <div ref={ref}>Drag or tap me</div>;
+}
+```
 
+## Packages
 
-## Contributions  [![Github Issues][issues-image]][issues-url]  [![Github PRs][pulls-image]][pulls-url]  [![Slack][slack-image]][slack-url]
-Feel encouraged to report issues or submit pull requests. When you're ready to do either, read our [contribution guidelines][contribution-guidelines]. If you're looking for another form of contribution, we love help answering questions on our [slack channel][slack-url].
+All packages are versioned in lockstep:
 
+- [`@hammerjs/core`](packages/core/README.md) — Core pointer/gesture engine, descriptors, and built-in recognizers
+- [`@hammerjs/react`](packages/react/README.md) — React `useGestures` hook
+- [`@hammerjs/vue`](packages/vue/README.md) — Vue 3 `useGestures` composable & `vGestures` directive
+- [`@hammerjs/svelte`](packages/svelte/README.md) — Svelte `use:gestures` action
+- [`@hammerjs/solid`](packages/solid/README.md) — SolidJS `createGestures` primitive & `use:gestures` directive
+- [`@hammerjs/lit`](packages/lit/README.md) — Lit `GesturesController` reactive controller
+- [`@hammerjs/angular`](packages/angular/README.md) — Standalone Angular `[gestures]` directive (zone-aware)
 
-## License
-[MIT][license]
+## Browser Support & Scope
 
-[hammerjs-url]: http://hammerjs.github.io
+`@hammerjs/core` is **Pointer Events only** — it relies on [W3C Pointer Events](https://caniuse.com/pointer) and [CSS `touch-action`](https://caniuse.com/css-touch-action) rather than legacy `TouchEvent`/`MouseEvent` recognizers. Note that laptop trackpad pinch-to-zoom (`ctrl` + `wheel` / macOS Safari `GestureEvent`) does not emit multi-touch Pointer Events and is intentionally outside the scope of `@hammerjs/core`.
 
-[npm-image]: https://img.shields.io/npm/v/hammerjs.svg
-[npm-url]: https://npmjs.org/package/hammerjs
+| Browser     | Minimum Version | Released | Platform Notes                                             |
+| :---------- | :-------------- | :------- | :--------------------------------------------------------- |
+| **Chrome**  | 60+             | Jul 2017 | Desktop & Android 4.1+ (updatable WebView on Android 5.0+) |
+| **Edge**    | 79+             | Jan 2020 | First Chromium-based Edge                                  |
+| **Firefox** | 59+             | Mar 2018 | Desktop & Android                                          |
+| **Safari**  | 13+             | Sep 2019 | macOS & iOS / iPadOS 13+ (iPhone 6s and newer)             |
 
-[travis-image]: https://img.shields.io/travis/stream-utils/raw-body/master.svg
-[travis-url]: https://travis-ci.org/hammerjs/hammer.js
+Optional APIs such as [`PointerEvent.getCoalescedEvents()`](https://caniuse.com/mdn-api_pointerevent_getcoalescedevents) and compound `touch-action` tokens (`pan-x pinch-zoom`) are feature-detected and used progressively.
 
-[downloads-image]: https://img.shields.io/npm/dm/hammerjs.svg
-[downloads-url]: https://npmjs.org/package/hammerjs
+## Development
 
-
-<!-- Examples -->
-[tap]: https://codepen.io/choskim/pen/WZggmg
-[double-tap]: https://codepen.io/choskim/pen/vezzwZ
-[press]: https://codepen.io/choskim/pen/RLYebL
-[pan]: ''
-[swipe]: https://codepen.io/choskim/pen/rGZqxa
-[pinch]: ''
-[rotate]: ''
-
-
-<!-- Contributions -->
-[issues-image]: https://img.shields.io/github/issues/hammerjs/hammer.js.svg
-[issues-url]: https://github.com/hammerjs/hammer.js/issues
-
-[pulls-image]: https://img.shields.io/github/issues-pr/hammerjs/hammer.js.svg
-[pulls-url]: https://github.com/hammerjs/hammer.js/pulls
-
-[slack-image]: https://hammerjs.herokuapp.com/badge.svg
-[slack-url]: https://hammerjs.herokuapp.com/
-
-[contribution-guidelines]: ./CONTRIBUTING.md
-
-[license]: ./LICENSE.md
+```bash
+npm install
+npm run dev        # Open the interactive gesture playground
+npm run test:unit  # Run unit tests across all packages
+npm test           # Full suite (including Playwright browser tests and lint)
+```

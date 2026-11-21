@@ -1,8 +1,0 @@
-language: node_js
-node_js:
-  - "6.3.0"
-
-sudo: false
-
-script:
-  - npm run test
