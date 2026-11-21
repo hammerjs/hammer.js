@@ -11,7 +11,7 @@ Hammer.js 2.x was built for a different era of the web. This experiment rethinks
 - **Tree-shakable gesture descriptors** (`tap`, `doubleTap`, `longPress`, `pan`, `swipe`, `scale`, `quickScale`, `rotate`, `gesture`) so you only ship the recognizers you import
 - **One-finger Quick Scale** (`quickScale`) for double-tap-and-drag zooming alongside two-finger pinch
 - **Web-native scrolling & coexistence** via computed CSS `touch-action`, lazy pointer capture, ghost-click suppression, and automatic nested surface coordination
-- **Tiny framework adapters** (`@hammerjs/react`, `@hammerjs/vue`, `@hammerjs/svelte`, `@hammerjs/solid`, `@hammerjs/lit`, `@hammerjs/angular`) that hot-swap inline callbacks without cancelling active gestures
+- **Tiny framework adapters** (`@hammerjs/react`, `@hammerjs/angular`) that hot-swap inline callbacks without cancelling active gestures
 
 ## Quick Start
 
@@ -80,6 +80,20 @@ const hammer = new Hammer(element, {
 hammer.destroy();
 ```
 
+### Classic `<script>` Drop-in (`window.Hammer`)
+
+Prefer no bundler or ES modules? Load `dist/hammer.min.js` directly — it exposes `window.Hammer` (plus `Hammer.GestureManager`, `Hammer.tap`, `Hammer.pan`, etc.) as a compact, property-mangled IIFE build:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@hammerjs/core/dist/hammer.min.js"></script>
+<script>
+  const hammer = new Hammer(element, {
+    onTap: ev => console.log('Tap', ev.center),
+    onSwipe: ev => console.log('Swipe', ev.direction),
+  });
+</script>
+```
+
 ### Framework Adapters
 
 All framework adapters wrap `GestureBinding` — inline callbacks never cancel active drags on re-render, and only imported gesture descriptors end up in your bundle.
@@ -107,10 +121,6 @@ All packages are versioned in lockstep:
 
 - [`@hammerjs/core`](packages/core/README.md) — Core pointer/gesture engine, descriptors, and built-in recognizers
 - [`@hammerjs/react`](packages/react/README.md) — React `useGestures` hook
-- [`@hammerjs/vue`](packages/vue/README.md) — Vue 3 `useGestures` composable & `vGestures` directive
-- [`@hammerjs/svelte`](packages/svelte/README.md) — Svelte `use:gestures` action
-- [`@hammerjs/solid`](packages/solid/README.md) — SolidJS `createGestures` primitive & `use:gestures` directive
-- [`@hammerjs/lit`](packages/lit/README.md) — Lit `GesturesController` reactive controller
 - [`@hammerjs/angular`](packages/angular/README.md) — Standalone Angular `[gestures]` directive (zone-aware)
 
 ## Browser Support & Scope

@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const playgroundDir = resolve(__dirname, 'tests/playground');
-const outDir = resolve(__dirname, 'dist-playground/playground');
+const outDir = resolve(__dirname, 'dist-playground');
 
 export default defineConfig({
   root: playgroundDir,

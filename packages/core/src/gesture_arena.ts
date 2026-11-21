@@ -1,5 +1,5 @@
 import type {MotionEvent} from './motion_event.js';
-import type {GestureRecognizer} from './gesture_recognizer.js';
+import type {ArenaContext, GestureRecognizer} from './gesture_recognizer.js';
 import {mergeTouchActions, type TouchActionValue} from './touch_action.js';
 
 interface PendingClaim {
@@ -25,7 +25,7 @@ function isDispatchEligible(recognizer: GestureRecognizer): boolean {
  * - Arbitrates mutual exclusion unless either peer opts into `canRecognizeSimultaneouslyWith`.
  * - Resolves `.requireFailureOf(...)` dependencies with registration-order-independent batching.
  */
-export class GestureArena {
+export class GestureArena implements ArenaContext {
   readonly acceptsMultiTouch: boolean;
   readonly needsCoalescedHistory: boolean;
 

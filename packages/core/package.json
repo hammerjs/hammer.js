@@ -31,8 +31,9 @@
   "sideEffects": false,
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && tsc --emitDeclarationOnly",
-    "build:playground": "vite build --config vite.kitchensink.config.ts && vite build --config vite.playground.config.ts",
+    "build": "vite build && vite build --config vite.iife.config.ts && tsc --emitDeclarationOnly",
+    "build:iife": "vite build --config vite.iife.config.ts",
+    "build:playground": "vite build --config vite.playground.config.ts",
     "build:watch": "tsc --emitDeclarationOnly --watch & vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
@@ -48,6 +49,8 @@
     }
   },
   "types": "./dist/types/index.d.ts",
+  "unpkg": "./dist/hammer.min.js",
+  "jsdelivr": "./dist/hammer.min.js",
   "files": [
     "dist"
   ]

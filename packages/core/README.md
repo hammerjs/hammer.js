@@ -8,6 +8,21 @@ Modern multi-touch and pointer gesture recognition engine for the web. Zero depe
 npm install @hammerjs/core
 ```
 
+Or drop the classic minified browser build directly into a `<script>` tag (exposes `window.Hammer`, no ES modules required):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@hammerjs/core/dist/hammer.min.js"></script>
+<script>
+  const hammer = new Hammer(document.getElementById('stage'), {
+    onTap: ev => console.log('Tap', ev.center),
+    onPan: ev => console.log('Pan', ev.deltaX, ev.deltaY),
+  });
+
+  // Modular descriptors are also available on window.Hammer:
+  // new Hammer.GestureManager(el, { gestures: [Hammer.tap(...), Hammer.pan(...)] })
+</script>
+```
+
 ## Usage
 
 ### Declarative descriptors (tree-shakable)

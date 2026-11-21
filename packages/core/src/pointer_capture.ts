@@ -4,7 +4,7 @@ import {ListenerBag} from './dom_utils.js';
  * Tracks explicit pointer captures acquired by a `GestureManager` on its target element so
  * releases are idempotent and `lostpointercapture` only aborts pointers we actually captured.
  */
-export class PointerCapture {
+export class PointerCapture implements EventListenerObject {
   private readonly element: Element;
   private readonly captured = new Set<number>();
   private readonly listeners = new ListenerBag();

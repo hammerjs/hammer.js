@@ -66,7 +66,9 @@ export interface GestureManagerOptions {
  * into unified `MotionEvent` snapshots via `MotionEventStream`, and arbitrates registered
  * `GestureRecognizer`s through `GestureArena`.
  */
-export class GestureManager<T extends GestureTargetElement = GestureTargetElement> {
+export class GestureManager<
+  T extends GestureTargetElement = GestureTargetElement,
+> implements EventListenerObject {
   readonly element: T;
   private readonly stream = new MotionEventStream();
   private readonly arena: GestureArena;
