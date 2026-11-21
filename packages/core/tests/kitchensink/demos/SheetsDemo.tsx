@@ -16,18 +16,18 @@ const DETENT_PCT: Record<SheetDetent, number> = {
 const DETENT_ORDER: readonly SheetDetent[] = ['peek', 'half', 'full'];
 
 const TRACKS = [
-  {title: 'Pointer Events Nocturne', artist: 'Hammer Ensemble', duration: 228},
-  {title: 'Arena Resolution', artist: 'LSQ2 Quartet', duration: 194},
-  {title: 'Lazy Capture', artist: 'The Recognizers', duration: 245},
+  {title: "U Can't Touch This", artist: "MC Hammer · Please Hammer, Don't Hurt 'Em", duration: 257},
+  {title: '2 Legit 2 Quit', artist: 'MC Hammer · Too Legit to Quit', duration: 335},
+  {title: 'Pray', artist: "MC Hammer · Please Hammer, Don't Hurt 'Em", duration: 313},
 ] as const;
 
 export const sheetsMeta: DemoMeta = {
   id: 'sheets',
   label: 'Sheets',
-  title: 'Sheets & Drawer',
+  title: 'Hammer Player',
   subtitle: 'Multi-detent bottom sheet, nested scrubber & left-edge swipe drawer',
   badges: ['nested surfaces', 'propagate', 'ignoreTarget(t, ev)', 'pan', 'onSwipe'],
-  hint: 'Drag the bottom sheet between peek/half/full, scrub the nested audio bar inside it (try toggling propagate), or swipe right from the left 28px edge for the drawer.',
+  hint: 'Drag the bottom sheet between peek/half/full, scrub "U Can\'t Touch This" inside it (try toggling propagate), or swipe right from the left 28px edge for the drawer.',
   code: `import {pan, tap} from '@hammerjs/core';
 import {useGestures} from '@hammerjs/react';
 
@@ -441,7 +441,7 @@ export function SheetsDemo({onEmit}: DemoProps) {
         />
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-bold">Nested Controls</span>
+          <span className="text-sm font-bold">Break It Down</span>
           <label className="flex items-center gap-2 text-xs font-medium">
             <code className="text-[11px]">propagate</code>
             <Toggle
@@ -530,7 +530,7 @@ export function SheetsDemo({onEmit}: DemoProps) {
         style={{transform: drawerTransform}}
       >
         <div className="flex items-center justify-between">
-          <span className="text-sm font-bold">Edge Drawer</span>
+          <span className="text-sm font-bold">Hammer Time Drawer</span>
           <Button small clear inline onClick={() => setDrawer(false)} aria-label="Close drawer">
             <X className="h-4 w-4" />
           </Button>

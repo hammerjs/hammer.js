@@ -151,7 +151,7 @@ export function KitchensinkApp() {
           <Page className="!flex !flex-col !overflow-hidden">
             <Navbar
               title={activeMeta.title}
-              subtitle="Hammer.js v3"
+              subtitle="Stop! Hammer.js v3"
               className="shrink-0"
               right={
                 <div className="flex items-center gap-1 lg:hidden">
@@ -233,7 +233,7 @@ export function KitchensinkApp() {
             <div className="flex items-baseline gap-2">
               <h1 className="text-xl font-bold tracking-tight">Hammer.js</h1>
               <span className="rounded-full bg-sky-500/15 px-2 py-0.5 font-mono text-xs font-semibold text-sky-600 dark:text-sky-400">
-                v3 Kitchensink
+                v3 · U Can Touch This
               </span>
             </div>
 
@@ -302,7 +302,7 @@ export function KitchensinkApp() {
             <ul className="flex flex-col gap-1 font-mono text-[11px]">
               {events.length === 0 ? (
                 <li className="rounded-lg bg-zinc-100 dark:bg-zinc-800/70 px-2.5 py-1.5 opacity-60">
-                  Interact with the phone preview to inspect live gesture events.
+                  Break it down — touch, drag, or pinch the phone preview to see live events.
                 </li>
               ) : (
                 events.map((ev, idx) => (

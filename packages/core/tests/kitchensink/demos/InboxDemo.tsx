@@ -21,23 +21,25 @@ interface MailItem {
 const INITIAL_MAIL: readonly MailItem[] = [
   {
     id: 'm1',
-    sender: 'Maya Lin',
-    subject: 'Touch-action scroll coexistence',
-    preview: 'Horizontal row swipe works without blocking vertical list scrolling on mobile.',
-    time: '2m',
-    avatar: 'ML',
-    color: 'bg-sky-600',
+    sender: 'MC Hammer',
+    subject: 'Stop! Hammer Time (touch-action)',
+    preview:
+      'Turns out U CAN touch this: horizontal row swipe works without blocking vertical list scroll.',
+    time: '1990',
+    avatar: 'MC',
+    color: 'bg-amber-500',
     starred: true,
     archived: false,
     expanded: false,
   },
   {
     id: 'm2',
-    sender: 'Jonas Berg',
-    subject: 'Long-press context actions',
-    preview: 'Press and hold any row for 420ms to reveal quick actions without text callouts.',
+    sender: 'Stanley Burrell',
+    subject: '2 Legit 2 Quit (longPress)',
+    preview:
+      'Press and hold any row for 420ms to drop quick actions — no accidental text selection callouts.',
     time: '14m',
-    avatar: 'JB',
+    avatar: 'SB',
     color: 'bg-emerald-600',
     starred: false,
     archived: false,
@@ -45,9 +47,10 @@ const INITIAL_MAIL: readonly MailItem[] = [
   },
   {
     id: 'm3',
-    sender: 'Priya Patel',
-    subject: 'Velocity-aware flicks',
-    preview: 'Even a short fast flick commits via onSwipe — slow partial drags snap back cleanly.',
+    sender: 'Parachute Pants Co.',
+    subject: 'Break it down! Velocity flicks',
+    preview:
+      'My, my, my, my physics hits so hard — fast flicks commit via onSwipe, slow drags snap back.',
     time: '1h',
     avatar: 'PP',
     color: 'bg-violet-600',
@@ -57,23 +60,25 @@ const INITIAL_MAIL: readonly MailItem[] = [
   },
   {
     id: 'm4',
-    sender: 'Alex Rivera',
-    subject: 'Native input controls',
-    preview: 'Try typing in the search bar above: native inputs stay completely unobstructed.',
+    sender: 'Oakland Studio',
+    subject: "Please Hammer, Don't Hurt 'Em",
+    preview:
+      'Try typing in the search bar above: native inputs stay completely untouched by gestures.',
     time: '3h',
-    avatar: 'AR',
-    color: 'bg-amber-600',
+    avatar: 'OS',
+    color: 'bg-sky-600',
     starred: false,
     archived: false,
     expanded: false,
   },
   {
     id: 'm5',
-    sender: 'Sofia Rossi',
-    subject: 'Ghost-click suppression',
-    preview: 'After swiping a row, trailing synthetic clicks are swallowed automatically.',
+    sender: 'Bust It Records',
+    subject: "Can't Touch Ghost Clicks",
+    preview:
+      'After swiping a row, trailing synthetic clicks are swallowed automatically so nothing misfires.',
     time: '5h',
-    avatar: 'SR',
+    avatar: 'BR',
     color: 'bg-rose-600',
     starred: false,
     archived: false,
@@ -81,11 +86,11 @@ const INITIAL_MAIL: readonly MailItem[] = [
   },
   {
     id: 'm6',
-    sender: 'Devon Brooks',
-    subject: 'Zero-dependency ESM core',
-    preview: 'Import only tap, pan, and longPress — unused recognizers tree-shake away.',
+    sender: 'Oaktown 357',
+    subject: 'Fresh new kicks & tree-shaking',
+    preview: 'Import only tap, pan, and longPress — unused recognizers stay out of your bundle.',
     time: 'Yesterday',
-    avatar: 'DB',
+    avatar: 'O3',
     color: 'bg-teal-600',
     starred: false,
     archived: false,
@@ -96,10 +101,10 @@ const INITIAL_MAIL: readonly MailItem[] = [
 export const inboxMeta: DemoMeta = {
   id: 'inbox',
   label: 'Inbox',
-  title: 'Inbox Feed',
-  subtitle: 'Swipeable mail rows inside a vertically scrolling list',
+  title: 'Hammer Mail',
+  subtitle: 'Swipeable tour inbox inside a vertically scrolling list',
   badges: ['pan (horizontal)', 'onSwipe', 'longPress', 'tap'],
-  hint: 'Scroll vertically, swipe right to star, swipe left to archive, tap to expand, or press-and-hold (420ms) for quick actions.',
+  hint: 'Break it down: scroll vertically, swipe right to star, swipe left to archive, tap to expand, or press-and-hold (420ms) for quick actions.',
   code: `import {longPress, pan, tap} from '@hammerjs/core';
 import {useGestures} from '@hammerjs/react';
 
@@ -407,7 +412,7 @@ export function InboxDemo({onEmit}: DemoProps) {
       <div className="flex shrink-0 items-center gap-2 border-b border-black/10 dark:border-white/10 px-3 py-2">
         <div className="min-w-0 flex-1">
           <Searchbar
-            placeholder="Filter messages..."
+            placeholder="U Can Search This..."
             value={query}
             onInput={e => setQuery((e.target as HTMLInputElement).value)}
             onClear={() => setQuery('')}
@@ -427,7 +432,9 @@ export function InboxDemo({onEmit}: DemoProps) {
       >
         {visible.length === 0 ? (
           <div className="py-12 text-center text-sm opacity-60">
-            {archivedCount > 0 ? 'Inbox zero! Tap Restore above.' : 'No matching messages.'}
+            {archivedCount > 0
+              ? 'Inbox zero — 2 Legit 2 Quit! Tap Restore above.'
+              : "Can't find that message."}
           </div>
         ) : (
           visible.map(item => (

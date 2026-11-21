@@ -16,52 +16,53 @@ interface DeckCard {
 const DECK: readonly DeckCard[] = [
   {
     id: 'c1',
-    title: 'Kyoto Bamboo Trail',
-    subtitle: 'Arashiyama · 4.2 km',
+    title: 'Gold Parachute Pants',
+    subtitle: '1990 · Baggy & 2 Legit',
     details:
-      'Early morning mist walk through towering groves. Velocity fling projects the card smoothly off-screen.',
-    gradient: 'from-emerald-800 via-emerald-700 to-teal-700',
+      'Drop-crotch lamé engineered for maximum lateral velocity. Flick hard to project this card off-screen!',
+    gradient: 'from-amber-700 via-yellow-600 to-amber-500',
   },
   {
     id: 'c2',
-    title: 'Amalfi Cliff Walk',
-    subtitle: 'Positano · 6.8 km',
+    title: "U Can't Touch This",
+    subtitle: "Please Hammer, Don't Hurt 'Em · 4:17",
     details:
-      'Lemon terraces overlooking the Tyrrhenian Sea. Tap anywhere on the card to flip details without dragging.',
+      'My, my, my, my music hits me so hard — and inspired a gesture library! Tap anywhere on the card to flip details.',
     gradient: 'from-sky-800 via-sky-600 to-cyan-600',
   },
   {
     id: 'c3',
-    title: 'Dolomites Ridge',
-    subtitle: 'Seceda · 9.1 km',
+    title: 'Stop! Hammer Time',
+    subtitle: '133 BPM · Running Man',
     details:
-      'Dramatic alpine spires at 2,500m. In-card buttons stay clickable natively via lazy pointer capture.',
+      'Iconic typewriter footwork meets lazy pointer capture — buttons inside the card stay natively clickable!',
     gradient: 'from-indigo-900 via-indigo-700 to-violet-700',
   },
   {
     id: 'c4',
-    title: 'Reynisfjara Coast',
-    subtitle: 'Vík · 3.5 km',
+    title: '2 Legit 2 Quit',
+    subtitle: '1991 · Hand Sign Anthem',
     details:
-      'Basalt columns and Atlantic surf. Trailing ghost clicks are suppressed automatically after dragging.',
+      'Too legit to quit mid-gesture. Trailing ghost clicks are automatically suppressed after dragging.',
     gradient: 'from-slate-800 via-slate-700 to-zinc-600',
   },
   {
     id: 'c5',
-    title: 'Big Sur Overlook',
-    subtitle: 'Highway 1 · 5.4 km',
-    details: 'Redwood canyons meeting coastal cliffs. Release early to feel the spring snap-back.',
-    gradient: 'from-orange-800 via-orange-600 to-amber-600',
+    title: 'Addams Groove',
+    subtitle: '1991 · Tour Encore',
+    details:
+      'Yo, let me bust the funky lyrics — release early before the threshold to feel the spring snap-back.',
+    gradient: 'from-rose-800 via-rose-600 to-orange-600',
   },
 ];
 
 export const cardsMeta: DemoMeta = {
   id: 'cards',
   label: 'Cards',
-  title: 'Card Deck',
-  subtitle: '2D velocity-projected swipeable stack with tap-to-flip & in-card buttons',
+  title: 'Hammer Deck',
+  subtitle: '2D velocity-projected MC Hammer stack with tap-to-flip & lazy capture',
   badges: ['pan (both)', 'velocityX/Y', 'onSwipe', 'tap', 'lazy capture'],
-  hint: 'Drag or flick left/right to pass or like, tap a card (or its button) to reveal details, or use the action buttons below.',
+  hint: 'Flick right for "2 Legit" or left for "Can\'t Touch", tap a card (or its button) to reveal lore, or tap the controls below.',
   code: `import {pan, tap} from '@hammerjs/core';
 import {useGestures} from '@hammerjs/react';
 
@@ -228,17 +229,19 @@ export function CardsDemo({onEmit}: DemoProps) {
     <div className="flex h-full min-h-0 flex-col items-center justify-between gap-3 p-4 overflow-hidden">
       <div className="flex w-full items-center justify-between text-xs font-medium opacity-70">
         <span>
-          Passed: <strong className="text-rose-500">{passes}</strong>
+          Can&apos;t Touch: <strong className="text-rose-500">{passes}</strong>
         </span>
         <span>
-          Liked: <strong className="text-emerald-500">{likes}</strong>
+          2 Legit: <strong className="text-emerald-500">{likes}</strong>
         </span>
       </div>
 
       <div className="relative flex min-h-[260px] w-full flex-1 items-center justify-center">
         {index >= DECK.length ? (
           <div className="flex flex-col items-center gap-3 text-center">
-            <p className="text-sm opacity-70">You reviewed all {DECK.length} cards.</p>
+            <p className="text-sm opacity-70">
+              Break it down! You reviewed all {DECK.length} Hammer artifacts.
+            </p>
             <Button
               rounded
               inline
@@ -251,7 +254,7 @@ export function CardsDemo({onEmit}: DemoProps) {
               }}
             >
               <RotateCcw className="mr-1.5 h-4 w-4" />
-              Shuffle again
+              Encore (Shuffle again)
             </Button>
           </div>
         ) : (
@@ -284,14 +287,14 @@ export function CardsDemo({onEmit}: DemoProps) {
                         className="pointer-events-none absolute top-5 left-4 -rotate-12 rounded-lg border-4 border-emerald-400 px-2.5 py-0.5 text-lg font-black tracking-wider text-emerald-400"
                         style={{opacity: likeOpacity}}
                       >
-                        LIKE
+                        2 LEGIT
                       </span>
                       <span
                         aria-hidden="true"
-                        className="pointer-events-none absolute top-5 right-4 rotate-12 rounded-lg border-4 border-rose-400 px-2.5 py-0.5 text-lg font-black tracking-wider text-rose-400"
+                        className="pointer-events-none absolute top-5 right-4 rotate-12 rounded-lg border-4 border-rose-400 px-2.5 py-0.5 text-sm font-black tracking-wider text-rose-400"
                         style={{opacity: nopeOpacity}}
                       >
-                        NOPE
+                        CAN&apos;T TOUCH
                       </span>
                     </>
                   )}

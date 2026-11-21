@@ -14,18 +14,36 @@ interface Landmark {
 }
 
 const LANDMARKS: readonly Landmark[] = [
-  {id: 'harbor', name: 'Pointer Harbor', note: 'Multi-touch focal pinch & zoom', x: 112, y: 122},
-  {id: 'park', name: 'Arena Park', note: 'Auto-wired tap vs doubleTap', x: 248, y: 174},
-  {id: 'tower', name: 'QuickScale Tower', note: 'Double-tap & drag with 1 thumb', x: 175, y: 282},
+  {
+    id: 'harbor',
+    name: 'Oaktown Harbor',
+    note: "MC Hammer's hometown — pinch & rotate with 2 fingers!",
+    x: 112,
+    y: 122,
+  },
+  {
+    id: 'park',
+    name: 'Hammer Time Plaza',
+    note: 'Auto-wired tap vs doubleTap — double-tap to zoom the stage!',
+    x: 248,
+    y: 174,
+  },
+  {
+    id: 'tower',
+    name: 'Parachute Park',
+    note: 'Double-tap & drag with 1 thumb for Quick Scale — break it down!',
+    x: 175,
+    y: 282,
+  },
 ];
 
 export const mapMeta: DemoMeta = {
   id: 'map',
   label: 'Map',
-  title: 'Interactive Map',
+  title: 'Oaktown Tour Map',
   subtitle: 'Simultaneous pan, pinch-zoom, rotate, double-tap & 1-finger Quick Scale',
   badges: ['pan (0)', 'scale', 'rotate', 'quickScale', 'doubleTap', 'enabled'],
-  hint: 'Drag to pan, pinch/rotate with 2 fingers, double-tap to zoom, or double-tap-and-drag vertically for 1-finger Quick Scale. Toggle Lock to disable gestures.',
+  hint: 'Drag to pan Oaktown, pinch/rotate with 2 fingers, double-tap to zoom, or double-tap-and-drag vertically for Quick Scale. Flip "Can\'t Touch This" to lock gestures.',
   code: `import {doubleTap, pan, quickScale, rotate, scale, tap} from '@hammerjs/core';
 import {useGestures} from '@hammerjs/react';
 
@@ -236,8 +254,8 @@ export function MapDemo({onEmit}: DemoProps) {
     const nextLocked = !locked;
     setLocked(nextLocked);
     onEmit({
-      gesture: nextLocked ? 'enabled: false' : 'enabled: true',
-      detail: nextLocked ? 'Map locked (0 listeners attached)' : 'Map unlocked',
+      gesture: nextLocked ? "Can't Touch This" : 'Hammer Time!',
+      detail: nextLocked ? 'enabled: false (0 listeners attached)' : 'enabled: true (map unlocked)',
       touchAction: nextLocked ? '(none)' : viewportRef.current?.style.touchAction,
     });
   };
@@ -318,7 +336,7 @@ export function MapDemo({onEmit}: DemoProps) {
           ) : (
             <Unlock className="h-3.5 w-3.5 text-emerald-500" />
           )}
-          <span>Lock</span>
+          <span>Can&apos;t Touch This</span>
           <Toggle checked={locked} onChange={handleToggleLock} aria-label="Lock map gestures" />
         </label>
 

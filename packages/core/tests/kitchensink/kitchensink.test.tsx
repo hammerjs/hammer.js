@@ -8,25 +8,25 @@ describe('Mobile Kitchensink (Konsta UI + @hammerjs/react)', () => {
     window.history.replaceState(null, '', '#inbox');
   });
 
-  it('mounts Inbox, switches across all 5 tabs, and renders @hammerjs/react code', () => {
+  it('mounts Hammer Mail, switches across all 5 tabs, and renders @hammerjs/react code', () => {
     render(<KitchensinkApp />);
 
-    // Starts on Inbox Feed with @hammerjs/react code and link to Debug Playground
-    expect(screen.getAllByText('Inbox Feed').length).toBeGreaterThan(0);
+    // Starts on Hammer Mail with @hammerjs/react code and link to Debug Playground
+    expect(screen.getAllByText('Hammer Mail').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/from '@hammerjs\/react'/).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', {name: /Debug Playground/i}).getAttribute('href')).toBe(
       './playground/'
     );
 
     // Searchbar filters mail rows natively
-    const searchInput = screen.getByPlaceholderText('Filter messages...') as HTMLInputElement;
-    fireEvent.input(searchInput, {target: {value: 'Maya'}});
-    expect(screen.getByText('Maya Lin')).toBeTruthy();
-    expect(screen.queryByText('Jonas Berg')).toBeNull();
+    const searchInput = screen.getByPlaceholderText('U Can Search This...') as HTMLInputElement;
+    fireEvent.input(searchInput, {target: {value: 'MC Hammer'}});
+    expect(screen.getByText('MC Hammer')).toBeTruthy();
+    expect(screen.queryByText('Stanley Burrell')).toBeNull();
 
-    // Switch to Map tab & verify Lock toggle (enabled option)
+    // Switch to Map tab & verify "Can't Touch This" Lock toggle (enabled option)
     fireEvent.click(screen.getByText('Map'));
-    expect(screen.getAllByText('Interactive Map').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Oaktown Tour Map').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/quickScale/).length).toBeGreaterThan(0);
     const lockToggle = screen.getByLabelText('Lock map gestures');
     fireEvent.click(lockToggle);
@@ -34,13 +34,13 @@ describe('Mobile Kitchensink (Konsta UI + @hammerjs/react)', () => {
 
     // Switch to Cards tab & verify in-card flip button
     fireEvent.click(screen.getByText('Cards'));
-    expect(screen.getAllByText('Card Deck').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Hammer Deck').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText('Tap card or button to flip'));
     expect(screen.getByText('Hide details')).toBeTruthy();
 
     // Switch to Reorder tab & verify native checkbox works with ignoreTarget: true
     fireEvent.click(screen.getByText('Reorder'));
-    expect(screen.getAllByText('Drag to Reorder').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Hammer Setlist').length).toBeGreaterThan(0);
     const firstCheckbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement;
     expect(firstCheckbox.checked).toBe(true);
     fireEvent.click(firstCheckbox);
@@ -48,12 +48,12 @@ describe('Mobile Kitchensink (Konsta UI + @hammerjs/react)', () => {
 
     // Switch to Sheets tab & verify propagate toggle + drawer open button
     fireEvent.click(screen.getByText('Sheets'));
-    expect(screen.getAllByText('Sheets & Drawer').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Hammer Player').length).toBeGreaterThan(0);
     const propToggle = screen.getByLabelText('Toggle gesture propagation');
     fireEvent.click(propToggle);
     expect(screen.getAllByText(/propagate: true/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByLabelText('Open navigation drawer'));
-    expect(screen.getByText('Edge Drawer')).toBeTruthy();
+    expect(screen.getByText('Hammer Time Drawer')).toBeTruthy();
   });
 });

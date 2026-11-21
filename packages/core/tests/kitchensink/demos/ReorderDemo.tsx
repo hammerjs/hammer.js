@@ -13,21 +13,21 @@ interface QueueItem {
 }
 
 const INITIAL_QUEUE: readonly QueueItem[] = [
-  {id: 'q1', title: 'Pointer capture on active drag', tag: 'Core', done: true},
-  {id: 'q2', title: 'Automatic touch-action policy', tag: 'CSS', done: false},
-  {id: 'q3', title: 'LongPress + drag scroll coexistence', tag: 'UX', done: false},
-  {id: 'q4', title: 'Velocity LSQ2 smoothing', tag: 'Math', done: false},
-  {id: 'q5', title: 'Nested surface auto-cancel', tag: 'Arena', done: false},
-  {id: 'q6', title: 'Tree-shakeable ESM descriptors', tag: 'Bundle', done: false},
+  {id: 'q1', title: "Cue the 'Super Freak' bassline", tag: 'Intro', done: true},
+  {id: 'q2', title: 'Warm up the Running Man', tag: 'Dance', done: false},
+  {id: 'q3', title: 'Press the gold parachute pants', tag: 'Wardrobe', done: false},
+  {id: 'q4', title: "Drop 'Stop! Hammer Time!'", tag: 'Hook', done: false},
+  {id: 'q5', title: "Flash the '2 Legit 2 Quit' sign", tag: 'Encore', done: false},
+  {id: 'q6', title: 'Keep native scroll & checkboxes working', tag: 'Core', done: false},
 ];
 
 export const reorderMeta: DemoMeta = {
   id: 'reorder',
   label: 'Reorder',
-  title: 'Drag to Reorder',
-  subtitle: 'Instant handle drag + press-and-hold reorder with native checkboxes',
+  title: 'Hammer Setlist',
+  subtitle: 'Instant handle drag + press-and-hold reorder for MC Hammer showtime',
   badges: ['pan (vertical)', 'longPress', 'onLongPressMove', 'ignoreTarget: true'],
-  hint: 'Drag the grip handle immediately, or press-and-hold anywhere on a row (360ms) to pick it up without breaking vertical scroll.',
+  hint: 'Choreograph the show: drag the grip handle immediately, or press-and-hold anywhere on a row (360ms) to reorder without blocking list scroll.',
   code: `import {longPress, pan} from '@hammerjs/core';
 import {useGestures} from '@hammerjs/react';
 
@@ -339,11 +339,11 @@ export function ReorderDemo({onEmit}: DemoProps) {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 px-3 py-2 text-xs">
         <span className="font-medium opacity-70">
-          {completed} of {items.length} done
+          {completed} of {items.length} ready for Hammer Time
         </span>
         <Button small tonal inline onClick={handleReset}>
           <RotateCcw className="mr-1 h-3.5 w-3.5" />
-          Reset order
+          Reset setlist
         </Button>
       </div>
 
