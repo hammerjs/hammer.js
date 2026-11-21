@@ -26,6 +26,11 @@ const propertiesRenameTransformer: PropertiesRenameFactory =
  * Compiles `packages/core/src` with the TypeScript Compiler API and
  * `ts-transformer-properties-rename`, serving the property-prefixed JS directly
  * to Vite/Rolldown so Terser can safely mangle every private & internal property.
+ *
+ * Note: `ts-transformer-properties-rename` traces public/DOM contracts via explicit
+ * inheritance trees (not structural duck typing), so internal classes fulfilling
+ * public or DOM interfaces (e.g. `ArenaContext`, `EventListenerObject`) must use
+ * explicit `implements` clauses so those methods are not mangled.
  */
 function tsPropertiesRenamePlugin(): Plugin {
   const emittedBySource = new Map<string, string>();

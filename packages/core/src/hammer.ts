@@ -1,5 +1,5 @@
 import type {GestureDescriptor} from './descriptors.js';
-import {GestureManager, type PointerType} from './gesture_manager.js';
+import {GestureManager, type GestureManagerOptions} from './gesture_manager.js';
 import type {GestureEventData} from './gesture_recognizer.js';
 import {
   longPress,
@@ -11,16 +11,18 @@ import {quickScale, type QuickScaleOptions} from './recognizers/quick_scale_reco
 import {rotate, type RotateCallbacks, type RotateOptions} from './recognizers/rotate_recognizer.js';
 import {scale, type ScaleCallbacks, type ScaleOptions} from './recognizers/scale_recognizer.js';
 import {doubleTap, tap, type TapOptions} from './recognizers/tap_recognizer.js';
-import type {GestureTargetElement, TouchActionSetting} from './touch_action.js';
+import type {GestureTargetElement} from './touch_action.js';
 
 export interface HammerOptions
-  extends LongPressCallbacks, PanCallbacks, ScaleCallbacks, RotateCallbacks {
-  enabled?: boolean;
-  supportedPointerTypes?: readonly PointerType[];
-  touchAction?: TouchActionSetting;
-  ignoreTarget?: boolean | ((target: EventTarget, event: Event) => boolean);
-  propagate?: boolean;
-
+  extends
+    Pick<
+      GestureManagerOptions,
+      'enabled' | 'supportedPointerTypes' | 'touchAction' | 'ignoreTarget' | 'propagate'
+    >,
+    LongPressCallbacks,
+    PanCallbacks,
+    ScaleCallbacks,
+    RotateCallbacks {
   onTap?: (event: GestureEventData) => void;
   onDoubleTap?: (event: GestureEventData) => void;
   tap?: Partial<Omit<TapOptions, 'taps'>>;

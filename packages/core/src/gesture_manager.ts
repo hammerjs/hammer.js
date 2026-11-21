@@ -10,6 +10,8 @@ import type {GestureTargetElement, TouchActionSetting, TouchActionValue} from '.
 export type PointerType = 'touch' | 'pen' | 'mouse';
 
 const DEFAULT_POINTER_TYPES: readonly PointerType[] = ['touch', 'pen', 'mouse'];
+// Tracks only managers with an in-flight pointer stream (added on down, removed on end/cancel)
+// so nested-surface cancellation can find competing ancestors/descendants without retaining idle managers.
 const activeManagers = new Set<GestureManager>();
 
 export interface GestureManagerOptions {
@@ -249,6 +251,8 @@ export class GestureManager<
     if (!motionEvent) {
       return;
     }
+    // `stream.onPointerUp` removes `e.pointerId` before dispatch; keep it visible during
+    // dispatch so discrete gestures claiming on lift (e.g. `tap`) still match nested managers.
     this.dispatchingPointerId = e.pointerId;
     try {
       this.arena.dispatch(motionEvent);

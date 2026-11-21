@@ -6,19 +6,15 @@ import {
   resolveGestures,
   snapshotStructure,
 } from './descriptors.js';
-import {GestureManager, type PointerType} from './gesture_manager.js';
+import {GestureManager, type GestureManagerOptions} from './gesture_manager.js';
 import type {GestureTargetElement, TouchActionSetting} from './touch_action.js';
 
 export type CallbackWrapper = <F extends (...args: never[]) => unknown>(fn: F) => F;
 
-export interface GesturesOptions {
-  enabled?: boolean;
-  supportedPointerTypes?: readonly PointerType[];
-  touchAction?: TouchActionSetting;
-  ignoreTarget?: boolean | ((target: EventTarget, event: Event) => boolean);
-  autoWire?: boolean;
-  propagate?: boolean;
-}
+export type GesturesOptions = Pick<
+  GestureManagerOptions,
+  'enabled' | 'supportedPointerTypes' | 'touchAction' | 'ignoreTarget' | 'autoWire' | 'propagate'
+>;
 
 export interface GestureBindingOptions extends GesturesOptions {
   /** Optional wrapper applied when invoking callbacks (e.g. Angular `NgZone.run`). */

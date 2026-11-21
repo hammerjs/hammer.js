@@ -267,6 +267,8 @@ export function quickScale(options?: QuickScaleGestureOptions): GestureDescripto
     (cbs, cfg, peers) => {
       const opts = {...cfg} as Partial<QuickScaleOptions>;
       if (opts.slop === undefined) {
+        // Cap default slop against any peer `pan` slop so a low-slop `PanRecognizer` cannot
+        // claim stroke #2 before an armed `QuickScaleRecognizer` crosses its own threshold.
         let minPanSlop: number | undefined;
         for (const peer of peers) {
           if (peer.kind === 'pan') {
