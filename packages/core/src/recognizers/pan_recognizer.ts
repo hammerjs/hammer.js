@@ -125,16 +125,6 @@ export class PanRecognizer extends GestureRecognizer {
     return true;
   }
 
-  /** @internal */
-  override canRearmOnPointerDown(event: MotionEvent): boolean {
-    return this.numPointers >= 2 && event.activePointerCount >= this.numPointers;
-  }
-
-  /** @internal */
-  override canSustainPendingBegan(activePointerCount: number): boolean {
-    return this.matchesPointerRequirement(activePointerCount);
-  }
-
   onMotionEvent(event: MotionEvent): void {
     this.tracker.addMovement(event);
 
@@ -153,7 +143,7 @@ export class PanRecognizer extends GestureRecognizer {
         case 'pointer_down': {
           if (this.numPointers > 0 && event.activePointerCount > this.numPointers) {
             if (this.active) {
-              this.cancel(true);
+              this.cancel();
             } else {
               this.fail();
             }

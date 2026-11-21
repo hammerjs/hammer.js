@@ -1019,7 +1019,7 @@ function rebuildHammer(): void {
             }
           : undefined,
         onPanCancel: () => {
-          appendLog('lifecycle', 'PanCancel', 'cancelled (yielded or interrupted)');
+          appendLog('lifecycle', 'PanCancel', 'cancelled');
           settleOrPersistTransform();
           scheduleArenaStateWatch();
         },

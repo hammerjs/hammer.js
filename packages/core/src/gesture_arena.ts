@@ -6,7 +6,6 @@ interface PendingClaim {
   readonly streamId: number;
   readonly targetState: 'began' | 'ended';
   readonly onGranted: () => void;
-  readonly deferToPrioritized?: boolean;
 }
 
 export interface GestureArenaOptions {
@@ -30,7 +29,6 @@ export class GestureArena {
   private readonly onActiveGestureStart?: () => void;
   private recognizers: readonly GestureRecognizer[] = [];
   private readonly winners = new Set<GestureRecognizer>();
-  private readonly deniedRecognizers = new Set<GestureRecognizer>();
   private readonly pendingClaims = new Map<GestureRecognizer, PendingClaim>();
 
   private dispatchDepth = 0;
@@ -38,8 +36,6 @@ export class GestureArena {
   private evaluatingPending = false;
   private multiTouchAccepted = false;
   private coalescedHistoryNeeded = false;
-  private totalWinnersInStream = 0;
-  private yieldedWinnersInStream = 0;
   private suppressingWinnerInStream = false;
 
   constructor(options: GestureArenaOptions = {}) {
@@ -99,7 +95,6 @@ export class GestureArena {
     this.recognizers = this.recognizers.filter(r => r !== recognizer);
     this.refreshCapabilities();
     this.winners.delete(recognizer);
-    this.deniedRecognizers.delete(recognizer);
     this.pendingClaims.delete(recognizer);
     recognizer.attach(null);
     if (this.dispatchDepth === 0) {
@@ -118,11 +113,8 @@ export class GestureArena {
 
       if (event.action === 'down') {
         this.dispatchDown(event, recognizers);
-      } else if (event.action === 'pointer_down') {
-        this.dispatchPointerDown(event, recognizers);
-        return;
-      } else if (event.action === 'pointer_up' || event.action === 'up') {
-        this.prunePendingBeganClaims(event.activePointerCount);
+      } else if (event.action === 'up') {
+        this.clearPendingBeganClaims();
       }
 
       for (const r of recognizers) {
@@ -154,25 +146,18 @@ export class GestureArena {
     onGranted: () => void
   ): boolean {
     if (!this.hasCompatibleWinners(recognizer)) {
-      this.deny(recognizer);
+      recognizer.denyByArena();
       return false;
     }
 
     const dependencyStatus = this.checkFailureDependencies(recognizer);
     if (dependencyStatus === 'defeated') {
-      this.deny(recognizer);
+      recognizer.denyByArena();
       return false;
     }
 
-    const deferToPrioritized =
-      this.dispatchDepth > 0 && this.hasIncompatiblePrioritizedPeer(recognizer);
-    if (dependencyStatus === 'waiting' || deferToPrioritized) {
-      this.pendingClaims.set(recognizer, {
-        streamId: this.streamId,
-        targetState,
-        onGranted,
-        deferToPrioritized,
-      });
+    if (dependencyStatus === 'waiting') {
+      this.pendingClaims.set(recognizer, {streamId: this.streamId, targetState, onGranted});
       recognizer.setClaimState('pending');
       return false;
     }
@@ -181,15 +166,8 @@ export class GestureArena {
   }
 
   /** @internal */
-  notifyStateChanged(
-    recognizer: GestureRecognizer,
-    nextState: 'failed' | 'cancelled',
-    yieldedForMultiTouch = false
-  ): void {
-    const wasWinner = this.winners.delete(recognizer);
-    if (wasWinner && nextState === 'cancelled' && yieldedForMultiTouch) {
-      this.yieldedWinnersInStream++;
-    }
+  notifyStateChanged(recognizer: GestureRecognizer): void {
+    this.winners.delete(recognizer);
     this.pendingClaims.delete(recognizer);
     if (this.dispatchDepth === 0) {
       this.evaluatePendingClaims();
@@ -218,10 +196,10 @@ export class GestureArena {
   private dispatchDown(event: MotionEvent, recognizers: readonly GestureRecognizer[]): void {
     // If a prior stream was orphaned without `'up'`/`'cancel'`, cancel active winners and
     // stale continuous `'began'` claims cleanly first.
-    this.prunePendingBeganClaims(0);
+    this.clearPendingBeganClaims();
     for (const r of recognizers) {
       if (r.isAttachedTo(this) && r.active) {
-        this.deny(r);
+        r.denyByArena();
       }
     }
 
@@ -235,42 +213,9 @@ export class GestureArena {
     this.streamId++;
 
     for (const r of recognizers) {
-      if (r.isAttachedTo(this) && r.shouldResetOnDown(event)) {
+      if (r.isAttachedTo(this) && r.shouldResetOnDown()) {
         this.pendingClaims.delete(r);
         r.reset();
-      }
-    }
-  }
-
-  private dispatchPointerDown(event: MotionEvent, recognizers: readonly GestureRecognizer[]): void {
-    this.prunePendingBeganClaims(event.activePointerCount);
-    for (const r of recognizers) {
-      if (r.isAttachedTo(this) && r.active) {
-        r.onMotionEvent(event);
-      }
-    }
-
-    const canHandoffToMultiTouch =
-      this.totalWinnersInStream > 0 && this.yieldedWinnersInStream === this.totalWinnersInStream;
-
-    if (canHandoffToMultiTouch) {
-      for (const r of recognizers) {
-        if (
-          r.isAttachedTo(this) &&
-          r.state === 'failed' &&
-          this.deniedRecognizers.has(r) &&
-          r.canRearmOnPointerDown(event) &&
-          this.hasCompatibleWinners(r)
-        ) {
-          this.deniedRecognizers.delete(r);
-          r.reset();
-        }
-      }
-    }
-
-    for (const r of recognizers) {
-      if (r.isAttachedTo(this) && r.state === 'possible') {
-        r.onMotionEvent(event);
       }
     }
   }
@@ -278,39 +223,28 @@ export class GestureArena {
   private dispatchCancel(recognizers: readonly GestureRecognizer[]): void {
     for (const r of recognizers) {
       if (r.isAttachedTo(this)) {
-        this.deny(r);
+        r.denyByArena();
       }
     }
     this.winners.clear();
-    this.deniedRecognizers.clear();
     this.pendingClaims.clear();
     this.suppressingWinnerInStream = false;
   }
 
-  private deny(recognizer: GestureRecognizer): void {
-    if (recognizer.state === 'possible' || recognizer.state === 'pending') {
-      this.deniedRecognizers.add(recognizer);
-    }
-    recognizer.denyByArena();
-  }
-
-  private prunePendingBeganClaims(activePointerCount: number): void {
+  private clearPendingBeganClaims(): void {
     for (const [recognizer, claim] of this.pendingClaims) {
-      if (claim.targetState === 'began' && !recognizer.canSustainPendingBegan(activePointerCount)) {
+      if (claim.targetState === 'began') {
         this.pendingClaims.delete(recognizer);
-        this.deny(recognizer);
+        recognizer.denyByArena();
       }
     }
   }
 
   private clearStreamTracking(includePendingClaims: boolean): void {
     this.winners.clear();
-    this.deniedRecognizers.clear();
     if (includePendingClaims) {
       this.pendingClaims.clear();
     }
-    this.totalWinnersInStream = 0;
-    this.yieldedWinnersInStream = 0;
     this.suppressingWinnerInStream = false;
   }
 
@@ -330,24 +264,6 @@ export class GestureArena {
       }
     }
     return true;
-  }
-
-  private hasIncompatiblePrioritizedPeer(candidate: GestureRecognizer): boolean {
-    if (candidate.isPrioritized) {
-      return false;
-    }
-    for (const other of this.recognizers) {
-      if (
-        other !== candidate &&
-        other.isAttachedTo(this) &&
-        other.isPrioritized &&
-        other.state === 'possible' &&
-        !this.areCompatible(candidate, other)
-      ) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private checkFailureDependencies(
@@ -383,7 +299,6 @@ export class GestureArena {
 
     if (isCurrentStream) {
       this.winners.add(winner);
-      this.totalWinnersInStream++;
       if (winner.suppressesClick) {
         this.suppressingWinnerInStream = true;
       }
@@ -402,7 +317,7 @@ export class GestureArena {
           (!isPriorStreamPending && !this.areCompatible(winner, other))
         ) {
           this.pendingClaims.delete(other);
-          this.deny(other);
+          other.denyByArena();
         }
       }
     } else {
@@ -415,7 +330,7 @@ export class GestureArena {
           (!this.areCompatible(winner, other) || other.requiredFailures?.has(winner))
         ) {
           this.pendingClaims.delete(other);
-          this.deny(other);
+          other.denyByArena();
         }
       }
     }
@@ -444,17 +359,14 @@ export class GestureArena {
         for (const [recognizer, claim] of this.pendingClaims) {
           if (claim.streamId === this.streamId && !this.hasCompatibleWinners(recognizer)) {
             this.pendingClaims.delete(recognizer);
-            this.deny(recognizer);
+            recognizer.denyByArena();
             progressed = true;
-            continue;
-          }
-          if (claim.deferToPrioritized && this.hasIncompatiblePrioritizedPeer(recognizer)) {
             continue;
           }
           const depStatus = this.checkFailureDependencies(recognizer);
           if (depStatus === 'defeated') {
             this.pendingClaims.delete(recognizer);
-            this.deny(recognizer);
+            recognizer.denyByArena();
             progressed = true;
           } else if (depStatus === 'satisfied') {
             this.grantClaim(recognizer, claim.targetState, claim.onGranted, claim.streamId);

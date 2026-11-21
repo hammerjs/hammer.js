@@ -20,11 +20,7 @@ export interface ArenaContext {
     targetState: 'began' | 'ended',
     onGranted: () => void
   ): boolean;
-  notifyStateChanged(
-    recognizer: GestureRecognizer,
-    nextState: 'failed' | 'cancelled',
-    yieldedForMultiTouch?: boolean
-  ): void;
+  notifyStateChanged(recognizer: GestureRecognizer): void;
 }
 
 /**
@@ -138,18 +134,8 @@ export abstract class GestureRecognizer {
   prepareForDown(_event: MotionEvent): void {}
 
   /** @internal */
-  shouldResetOnDown(_event: MotionEvent): boolean {
+  shouldResetOnDown(): boolean {
     return this.currentState !== 'pending';
-  }
-
-  /** @internal */
-  canRearmOnPointerDown(_event: MotionEvent): boolean {
-    return false;
-  }
-
-  /** @internal */
-  canSustainPendingBegan(activePointerCount: number): boolean {
-    return activePointerCount >= 1;
   }
 
   /** @internal */
@@ -219,10 +205,10 @@ export abstract class GestureRecognizer {
     this.clearTimer();
     this.currentState = 'failed';
     this.onFail();
-    this.arena?.notifyStateChanged(this, 'failed');
+    this.arena?.notifyStateChanged(this);
   }
 
-  protected cancel(yieldedForMultiTouch = false): void {
+  protected cancel(): void {
     if (
       this.currentState === 'cancelled' ||
       this.currentState === 'ended' ||
@@ -236,7 +222,7 @@ export abstract class GestureRecognizer {
     if (wasActive) {
       this.onCancel();
     }
-    this.arena?.notifyStateChanged(this, 'cancelled', yieldedForMultiTouch);
+    this.arena?.notifyStateChanged(this);
   }
 
   protected setTimer(delayMs: number, callback: () => void): void {

@@ -7,6 +7,7 @@ import {
 } from './recognizers/long_press_recognizer.js';
 import {type PanCallbacks, PanRecognizer, type PanOptions} from './recognizers/pan_recognizer.js';
 import {
+  DEFAULT_QUICK_SCALE_SLOP,
   QuickScaleRecognizer,
   type QuickScaleOptions,
 } from './recognizers/quick_scale_recognizer.js';
@@ -45,6 +46,17 @@ export interface HammerOptions
   rotate?: Partial<RotateOptions>;
 }
 
+function resolveQuickScaleOptions(
+  options: HammerOptions,
+  hasPan: boolean
+): Partial<QuickScaleOptions> | undefined {
+  const qsOpts = typeof options.quickScale === 'object' ? options.quickScale : undefined;
+  if (hasPan && options.pan?.slop !== undefined && qsOpts?.slop === undefined) {
+    return {...qsOpts, slop: Math.min(DEFAULT_QUICK_SCALE_SLOP, options.pan.slop)};
+  }
+  return qsOpts;
+}
+
 function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   const recognizers: GestureRecognizer[] = [];
 
@@ -59,13 +71,17 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
   const hasScale = Boolean(
     options.onScaleStart || options.onScale || options.onScaleEnd || options.onScaleCancel
   );
+  const hasPan = Boolean(
+    options.onPanStart ||
+    options.onPan ||
+    options.onPanEnd ||
+    options.onPanCancel ||
+    options.onSwipe
+  );
 
   const quickScale =
     hasScale && options.quickScale
-      ? new QuickScaleRecognizer(
-          options,
-          typeof options.quickScale === 'object' ? options.quickScale : undefined
-        )
+      ? new QuickScaleRecognizer(options, resolveQuickScaleOptions(options, hasPan))
       : null;
 
   if (singleTap) {
@@ -95,13 +111,6 @@ function buildRecognizers(options: HammerOptions): GestureRecognizer[] {
     recognizers.push(new LongPressRecognizer(options, options.longPress));
   }
 
-  const hasPan = Boolean(
-    options.onPanStart ||
-    options.onPan ||
-    options.onPanEnd ||
-    options.onPanCancel ||
-    options.onSwipe
-  );
   const pan = hasPan ? new PanRecognizer(options, options.pan) : null;
   if (pan) {
     recognizers.push(pan);

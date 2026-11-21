@@ -54,16 +54,6 @@ export class ScaleRecognizer extends GestureRecognizer {
     return true;
   }
 
-  /** @internal */
-  override canRearmOnPointerDown(event: MotionEvent): boolean {
-    return event.activePointerCount >= 2;
-  }
-
-  /** @internal */
-  override canSustainPendingBegan(activePointerCount: number): boolean {
-    return activePointerCount >= 2;
-  }
-
   onMotionEvent(event: MotionEvent): void {
     switch (event.action) {
       case 'down': {

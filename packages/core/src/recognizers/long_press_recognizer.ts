@@ -55,16 +55,6 @@ export class LongPressRecognizer extends GestureRecognizer {
     return this.numPointers >= 2;
   }
 
-  /** @internal */
-  override canRearmOnPointerDown(event: MotionEvent): boolean {
-    return this.numPointers >= 2 && event.activePointerCount >= this.numPointers;
-  }
-
-  /** @internal */
-  override canSustainPendingBegan(activePointerCount: number): boolean {
-    return activePointerCount === this.numPointers;
-  }
-
   onMotionEvent(event: MotionEvent): void {
     this.lastEvent = event;
 
@@ -94,7 +84,7 @@ export class LongPressRecognizer extends GestureRecognizer {
           this.fail();
           return;
         }
-        // Seed any untracked pointers (e.g. after multi-touch handoff rearmed this recognizer).
+        // Record any pointers not yet tracked on `down`.
         for (const ptr of event.pointers) {
           if (!this.downPositions.has(ptr.pointerId)) {
             this.downPositions.set(ptr.pointerId, ptr);

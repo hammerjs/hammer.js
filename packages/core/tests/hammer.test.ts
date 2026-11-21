@@ -255,7 +255,7 @@ describe('Hammer', () => {
     }
   });
 
-  it('supports explicit quickScale options, honors quickScale: false, and avoids pending tap claims when onTap is omitted', () => {
+  it('caps default quickScale slop to pan.slop, honors quickScale: false, and avoids pending tap claims when onTap is omitted', () => {
     const onPan = vi.fn();
     const onPanCancel = vi.fn();
     const onScale = vi.fn();
@@ -265,7 +265,7 @@ describe('Hammer', () => {
       onScale,
       pan: {slop: 4},
       scale: {spanSlop: 4, minSpan: 10},
-      quickScale: {slop: 4},
+      quickScale: true,
     });
 
     element.dispatchEvent(
@@ -324,19 +324,10 @@ describe('Hammer', () => {
       })
     );
     document.dispatchEvent(
-      pointerEvent('pointermove', {
-        pointerId: 4,
-        isPrimary: false,
-        clientX: 180,
-        clientY: 50,
-        timeStamp: 660,
-      })
-    );
-    document.dispatchEvent(
       pointerEvent('pointerup', {
         pointerId: 4,
         isPrimary: false,
-        clientX: 180,
+        clientX: 120,
         clientY: 50,
         timeStamp: 680,
       })
@@ -351,7 +342,6 @@ describe('Hammer', () => {
       })
     );
     expect(onPanCancel).toHaveBeenCalledTimes(1);
-    expect(onScale).toHaveBeenCalledWith(expect.objectContaining({isQuickScale: false}));
     hammer.destroy();
 
     const onTap = vi.fn();

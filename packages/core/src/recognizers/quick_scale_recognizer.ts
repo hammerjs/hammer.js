@@ -9,7 +9,8 @@ import {
   MAX_TAP_DURATION_MS,
 } from './tap_recognizer.js';
 
-const DEFAULT_SLOP = 8;
+/** @internal */
+export const DEFAULT_QUICK_SCALE_SLOP = 8;
 const DEFAULT_SENSITIVITY = 200;
 
 export interface QuickScaleOptions {
@@ -46,7 +47,7 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   constructor(callbacks: ScaleCallbacks, options: Partial<QuickScaleOptions> = {}) {
     super();
     this.callbacks = callbacks;
-    this.slop = Math.max(0, options.slop ?? DEFAULT_SLOP);
+    this.slop = Math.max(0, options.slop ?? DEFAULT_QUICK_SCALE_SLOP);
     this.sensitivity =
       options.sensitivity !== undefined && options.sensitivity > 0
         ? options.sensitivity
@@ -75,11 +76,6 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   }
 
   /** @internal */
-  override canSustainPendingBegan(activePointerCount: number): boolean {
-    return activePointerCount === 1;
-  }
-
-  /** @internal */
   override prepareForDown(event: MotionEvent): void {
     if (this.phase !== 1) {
       return;
@@ -100,8 +96,8 @@ export class QuickScaleRecognizer extends GestureRecognizer {
   }
 
   /** @internal */
-  override shouldResetOnDown(event: MotionEvent): boolean {
-    return this.phase === 2 ? false : super.shouldResetOnDown(event);
+  override shouldResetOnDown(): boolean {
+    return this.phase === 2 ? false : super.shouldResetOnDown();
   }
 
   onMotionEvent(event: MotionEvent): void {

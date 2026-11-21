@@ -92,55 +92,13 @@ type WebkitStyle = CSSStyleDeclaration & {
   webkitTouchCallout?: string;
 };
 
-/**
- * Applies computed CSS `touch-action` and (when non-tap gestures are present)
- * selection, iOS callout (`-webkit-touch-callout: none`), and HTML5 `dragstart`
- * guards, returning a cleanup callback that restores the element's prior state.
- */
-export function applySurfaceBehavior(
-  element: GestureTargetElement,
-  touchAction: TouchActionValue | null,
-  preventSelectionAndDrag: boolean,
-  shouldIgnoreEvent?: (e: Event) => boolean
-): () => void {
-  const style = element.style as WebkitStyle;
-  const prevTouchAction = style.touchAction ?? '';
-  if (touchAction !== null) {
-    style.touchAction = touchAction;
-  }
-
-  if (!preventSelectionAndDrag) {
-    return () => {
-      if (touchAction !== null) {
-        style.touchAction = prevTouchAction;
-      }
-    };
-  }
-
-  const prevWebkitUserSelect = style.webkitUserSelect ?? '';
-  const prevUserSelect = style.userSelect ?? '';
-  const prevTouchCallout = style.webkitTouchCallout ?? '';
-
-  style.webkitUserSelect = 'none';
-  style.userSelect = 'none';
-  style.webkitTouchCallout = 'none';
-
-  const onDragStart = (e: Event) => {
-    if (!shouldIgnoreEvent?.(e)) {
-      e.preventDefault();
-    }
-  };
-  element.addEventListener('dragstart', onDragStart);
-
-  return () => {
-    element.removeEventListener('dragstart', onDragStart);
-    style.webkitTouchCallout = prevTouchCallout;
-    style.userSelect = prevUserSelect;
-    style.webkitUserSelect = prevWebkitUserSelect;
-    if (touchAction !== null) {
-      style.touchAction = prevTouchAction;
-    }
-  };
+interface SavedSurfaceStyles {
+  readonly touchAction: string | null;
+  readonly selection: {
+    readonly userSelect: string;
+    readonly webkitUserSelect: string;
+    readonly webkitTouchCallout: string;
+  } | null;
 }
 
 export interface SurfaceGuardOptions {
@@ -168,7 +126,10 @@ export class SurfaceGuard {
   private readonly getActivePointerType: () => string | null;
   private readonly onAbortActiveStream: (e: Event) => void;
 
-  private unsetSurface: (() => void) | null = null;
+  private savedStyles: SavedSurfaceStyles | null = null;
+  private boundNonTapGuards = false;
+  private boundTouchMove = false;
+  private boundSafariGestures = false;
   private preventsPinchZoom = false;
   private suppressesTouchContextMenu = false;
   private activeTracking = false;
@@ -215,36 +176,33 @@ export class SurfaceGuard {
     this.suppressesTouchContextMenu = hasNonTapRecognizer && supportsTouchOrPen;
 
     const el = this.element;
-    const restoreStyles = applySurfaceBehavior(
-      el,
-      resolvedAction,
-      hasNonTapRecognizer,
-      this.shouldIgnoreEvent
-    );
-    const bindTouchMove =
+    const style = el.style as WebkitStyle;
+    const prevTouchAction = resolvedAction !== null ? (style.touchAction ?? '') : null;
+    if (resolvedAction !== null) {
+      style.touchAction = resolvedAction;
+    }
+
+    let prevSelection: SavedSurfaceStyles['selection'] = null;
+    if (hasNonTapRecognizer) {
+      prevSelection = {
+        userSelect: style.userSelect ?? '',
+        webkitUserSelect: style.webkitUserSelect ?? '',
+        webkitTouchCallout: style.webkitTouchCallout ?? '',
+      };
+      style.webkitUserSelect = 'none';
+      style.userSelect = 'none';
+      style.webkitTouchCallout = 'none';
+    }
+    this.savedStyles = {touchAction: prevTouchAction, selection: prevSelection};
+
+    this.boundNonTapGuards = hasNonTapRecognizer;
+    this.boundTouchMove =
       supportsTouch && hasNonTapRecognizer && resolvedAction !== null && resolvedAction !== 'none';
-    const bindSafariGestures =
+    this.boundSafariGestures =
       preventsPinchZoom &&
       actions.length > 0 &&
       supportsGestureEvents(el.ownerDocument.defaultView);
-
-    const toggleSurfaceListeners = (add: boolean) => {
-      if (hasNonTapRecognizer) {
-        toggleListener(el, 'contextmenu', this, add);
-        if (bindTouchMove) {
-          toggleListener(el, 'touchmove', this, add, NON_PASSIVE);
-        }
-      }
-      if (bindSafariGestures) {
-        toggleSafariGestures(el, this, add);
-      }
-    };
-
-    toggleSurfaceListeners(true);
-    this.unsetSurface = () => {
-      toggleSurfaceListeners(false);
-      restoreStyles();
-    };
+    this.toggleSurfaceListeners(true);
   }
 
   /** Mirrors `contextmenu` and pinch-zoom guards on `ownerDocument` while a stream is active. */
@@ -295,12 +253,47 @@ export class SurfaceGuard {
       case 'contextmenu':
         this.onContextMenu(ev);
         break;
+      case 'dragstart':
+        if (!this.shouldIgnoreEvent(ev)) {
+          ev.preventDefault();
+        }
+        break;
+    }
+  }
+
+  private toggleSurfaceListeners(add: boolean): void {
+    const el = this.element;
+    if (this.boundNonTapGuards) {
+      toggleListener(el, 'dragstart', this, add);
+      toggleListener(el, 'contextmenu', this, add);
+    }
+    if (this.boundTouchMove) {
+      toggleListener(el, 'touchmove', this, add, NON_PASSIVE);
+    }
+    if (this.boundSafariGestures) {
+      toggleSafariGestures(el, this, add);
     }
   }
 
   private clearSurface(): void {
-    this.unsetSurface?.();
-    this.unsetSurface = null;
+    this.toggleSurfaceListeners(false);
+    this.boundNonTapGuards = false;
+    this.boundTouchMove = false;
+    this.boundSafariGestures = false;
+
+    if (this.savedStyles) {
+      const style = this.element.style as WebkitStyle;
+      if (this.savedStyles.selection) {
+        style.webkitTouchCallout = this.savedStyles.selection.webkitTouchCallout;
+        style.userSelect = this.savedStyles.selection.userSelect;
+        style.webkitUserSelect = this.savedStyles.selection.webkitUserSelect;
+      }
+      if (this.savedStyles.touchAction !== null) {
+        style.touchAction = this.savedStyles.touchAction;
+      }
+      this.savedStyles = null;
+    }
+
     this.preventsPinchZoom = false;
     this.suppressesTouchContextMenu = false;
   }

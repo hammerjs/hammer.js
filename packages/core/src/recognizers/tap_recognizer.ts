@@ -121,8 +121,8 @@ export class TapRecognizer extends GestureRecognizer {
   }
 
   /** @internal */
-  override shouldResetOnDown(event: MotionEvent): boolean {
-    return this.completedTaps > 0 ? false : super.shouldResetOnDown(event);
+  override shouldResetOnDown(): boolean {
+    return this.completedTaps > 0 ? false : super.shouldResetOnDown();
   }
 
   onMotionEvent(event: MotionEvent): void {

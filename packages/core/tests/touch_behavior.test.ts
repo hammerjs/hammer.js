@@ -1,7 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
 import {
   allowsPinchZoom,
-  applySurfaceBehavior,
   mergeTouchActions,
   resolveSupportedTouchAction,
   SurfaceGuard,
@@ -60,7 +59,19 @@ describe('TouchBehavior', () => {
   });
 
   it('applies touch-action without blocking selection on tap-only surfaces, and restores prior inline styles cleanly', () => {
-    const cleanupPassive = applySurfaceBehavior(element, 'manipulation', false);
+    const createGuard = (touchAction: 'compute' | 'pan-y' = 'compute') =>
+      new SurfaceGuard({
+        element,
+        touchAction,
+        supportedPointerTypes: ['touch', 'mouse'],
+        shouldIgnoreEvent: () => false,
+        shouldPreventTouchMove: () => false,
+        getActivePointerType: () => null,
+        onAbortActiveStream: () => {},
+      });
+
+    const passiveGuard = createGuard();
+    passiveGuard.sync(['manipulation'], false);
     expect(element.style.touchAction).toBe('manipulation');
     expect(element.style.userSelect || '').toBe('');
 
@@ -68,12 +79,13 @@ describe('TouchBehavior', () => {
     const passiveSpy = vi.spyOn(passiveDrag, 'preventDefault');
     element.dispatchEvent(passiveDrag);
     expect(passiveSpy).not.toHaveBeenCalled();
-    cleanupPassive();
+    passiveGuard.destroy();
     expect(element.style.touchAction || '').toBe('');
 
     element.style.touchAction = 'pan-x';
     element.style.userSelect = 'text';
-    const cleanupActive = applySurfaceBehavior(element, 'pan-y', true);
+    const activeGuard = createGuard('pan-y');
+    activeGuard.sync(['pan-y'], true);
     expect(element.style.touchAction).toBe('pan-y');
     expect(element.style.userSelect).toBe('none');
     expect((element.style as unknown as Record<string, string>).webkitUserSelect).toBe('none');
@@ -84,7 +96,7 @@ describe('TouchBehavior', () => {
     element.dispatchEvent(activeDrag);
     expect(activeSpy).toHaveBeenCalledTimes(1);
 
-    cleanupActive();
+    activeGuard.destroy();
     expect(element.style.touchAction).toBe('pan-x');
     expect(element.style.userSelect).toBe('text');
     expect((element.style as unknown as Record<string, string>).webkitTouchCallout || '').toBe('');
