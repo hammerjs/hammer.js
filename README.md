@@ -82,7 +82,7 @@ hammer.destroy();
 
 ### Classic `<script>` Drop-in (`window.Hammer`)
 
-Prefer no bundler or ES modules? Load `dist/hammer.min.js` directly — it exposes `window.Hammer` (plus `Hammer.GestureManager`, `Hammer.tap`, `Hammer.pan`, etc.) as a compact, property-mangled IIFE build:
+Prefer no bundler or ES modules? Load `dist/hammer.min.js` directly — it exposes `window.Hammer` (plus `Hammer.GestureManager`, `Hammer.tap`, `Hammer.pan`, etc.) as a compact, minified IIFE build:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@hammerjs/core/dist/hammer.min.js"></script>

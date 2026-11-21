@@ -18,29 +18,7 @@ import {rotate, RotateRecognizer} from './recognizers/rotate_recognizer.js';
 import {scale, ScaleRecognizer} from './recognizers/scale_recognizer.js';
 import {doubleTap, tap, TapRecognizer} from './recognizers/tap_recognizer.js';
 
-/** @public */
-export interface HammerGlobalStatics {
-  readonly Hammer: typeof Hammer;
-  readonly GestureManager: typeof GestureManager;
-  readonly gesture: typeof gesture;
-  readonly GestureRecognizer: typeof GestureRecognizer;
-  readonly tap: typeof tap;
-  readonly doubleTap: typeof doubleTap;
-  readonly longPress: typeof longPress;
-  readonly pan: typeof pan;
-  readonly swipe: typeof swipe;
-  readonly scale: typeof scale;
-  readonly quickScale: typeof quickScale;
-  readonly rotate: typeof rotate;
-  readonly TapRecognizer: typeof TapRecognizer;
-  readonly LongPressRecognizer: typeof LongPressRecognizer;
-  readonly PanRecognizer: typeof PanRecognizer;
-  readonly ScaleRecognizer: typeof ScaleRecognizer;
-  readonly QuickScaleRecognizer: typeof QuickScaleRecognizer;
-  readonly RotateRecognizer: typeof RotateRecognizer;
-}
-
-const statics: HammerGlobalStatics = {
+const HammerGlobal = Object.assign(Hammer, {
   Hammer,
   GestureManager,
   gesture,
@@ -59,13 +37,10 @@ const statics: HammerGlobalStatics = {
   ScaleRecognizer,
   QuickScaleRecognizer,
   RotateRecognizer,
-};
-
-const HammerGlobal = Object.assign(Hammer, statics);
+});
 
 declare global {
   interface Window {
-    /** @public */
     Hammer?: typeof HammerGlobal;
   }
 }

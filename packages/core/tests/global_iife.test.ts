@@ -28,11 +28,9 @@ describe('Classic browser drop-in bundle (dist/hammer.min.js)', () => {
     vi.useRealTimers();
   });
 
-  it('emits classic IIFE output without ESM syntax or leftover internal prefixes', () => {
+  it('emits classic IIFE output without ESM syntax and exposes window.Hammer', () => {
     expect(code).not.toMatch(/\bexport\s+/);
     expect(code).not.toMatch(/\bimport\s+/);
-    expect(code).not.toContain('_private_');
-    expect(code).not.toContain('_internal_');
 
     expect(typeof HammerCtor).toBe('function');
     expect(HammerCtor.Hammer).toBe(HammerCtor);
@@ -50,7 +48,7 @@ describe('Classic browser drop-in bundle (dist/hammer.min.js)', () => {
     expect(typeof HammerCtor.rotate).toBe('function');
   });
 
-  it('recognizes tap, doubleTap, longPress, pan, swipe, scale, rotate, and quickScale after property mangling', () => {
+  it('recognizes tap, doubleTap, longPress, pan, swipe, scale, rotate, and quickScale', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
 

@@ -52,7 +52,7 @@ export interface SurfaceGuardOptions {
  * touch/pen `contextmenu` suppression, iOS Safari `gesture*` guards (including
  * document-level mirrors while a stream is active), and trailing ghost-click suppression.
  */
-export class SurfaceGuard implements EventListenerObject {
+export class SurfaceGuard {
   private readonly element: GestureTargetElement;
   private readonly supportedPointerTypes: readonly string[];
   private readonly shouldIgnoreEvent: (e: Event) => boolean;
