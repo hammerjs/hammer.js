@@ -29,7 +29,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         var direction = this.options.direction;
         var velocity;
 
-        if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+        if (direction & DIRECTION_HORIZONTAL && direction & DIRECTION_VERTICAL) {
             velocity = input.overallVelocity;
         } else if (direction & DIRECTION_HORIZONTAL) {
             velocity = input.overallVelocityX;

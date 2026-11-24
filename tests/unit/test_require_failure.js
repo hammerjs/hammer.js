@@ -109,3 +109,23 @@ asyncTest('When pan recognizes the gesture, a press gesture cannot be fired', fu
         equal(pressCount, 0, 'press gesture should not be recognized because pan gesture is recognizing');
     }, pressPeriod + 100);
 });
+
+test('recognizeWith and requireFailure methods ignore unknown recognizer names', function() {
+    expect(5);
+
+    var pan = hammer.get('pan');
+    var initialSimultaneous = Object.keys(pan.simultaneous).length;
+    var initialRequireFail = pan.requireFail.length;
+
+    equal(pan.recognizeWith('nonexistent'), pan, 'recognizeWith returns recognizer for unknown name');
+    equal(pan.dropRecognizeWith('nonexistent'), pan, 'dropRecognizeWith returns recognizer for unknown name');
+    equal(pan.requireFailure('nonexistent'), pan, 'requireFailure returns recognizer for unknown name');
+    equal(pan.dropRequireFailure('nonexistent'), pan, 'dropRequireFailure returns recognizer for unknown name');
+
+    ok(
+        Object.keys(pan.simultaneous).length === initialSimultaneous &&
+        pan.requireFail.length === initialRequireFail &&
+        pan.canEmit(),
+        'simultaneous and requireFail are unchanged and canEmit does not throw'
+    );
+});
