@@ -64,6 +64,8 @@ test('inArray', function() {
 
 test('splitStr', function() {
     deepEqual($H.splitStr(' a  b  c d   '), ['a', 'b', 'c', 'd'], 'str split valid');
+    deepEqual($H.splitStr(''), [], 'empty string returns empty array');
+    deepEqual($H.splitStr('   '), [], 'whitespace string returns empty array');
 });
 
 test('uniqueArray', function() {
