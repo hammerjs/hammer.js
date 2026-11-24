@@ -219,6 +219,34 @@ module.exports = function(grunt) {
         });
     });
 
+    grunt.registerTask('test-ssr', 'Verify hammer.js loads cleanly in Node.js without window or document', function() {
+        var vm = require('vm');
+        var files = grunt.file.expand(['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']));
+        var code = files.map(function(filepath) {
+            return grunt.file.read(filepath);
+        }).join('\n');
+
+        // 1. CommonJS / Node.js SSR without window, document, navigator, or self
+        var cjsModule = {exports: {}};
+        vm.runInNewContext(code, {
+            module: cjsModule,
+            exports: cjsModule.exports,
+            setTimeout: setTimeout,
+            clearTimeout: clearTimeout
+        });
+        if (typeof cjsModule.exports !== 'function' || typeof cjsModule.exports.Manager !== 'function') {
+            grunt.fail.fatal('SSR CommonJS load failed to export Hammer');
+        }
+
+        // 2. Bare runtime without window, document, navigator, or module
+        vm.runInNewContext(code, {
+            setTimeout: setTimeout,
+            clearTimeout: clearTimeout
+        });
+
+        grunt.log.ok('SSR load passed (CommonJS and bare runtime without window/document).');
+    });
+
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
@@ -226,6 +254,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['connect:server:keepalive']);
     grunt.registerTask('build', ['concat', 'string-replace', 'uglify:min', 'usebanner', 'test']);
-    grunt.registerTask('test', ['lint', 'build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('test', ['lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
 };

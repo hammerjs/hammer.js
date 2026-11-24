@@ -1,5 +1,5 @@
 var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
-var TEST_ELEMENT = document.createElement('div');
+var TEST_ELEMENT = document && document.createElement ? document.createElement('div') : {style: {}};
 
 var TYPE_FUNCTION = 'function';
 
