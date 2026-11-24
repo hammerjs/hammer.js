@@ -1,51 +1,84 @@
-# Hammer.js 2.0.8
+# Hammer.js
 
 [![CI](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml/badge.svg)](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/hammerjs.svg)](https://www.npmjs.com/package/hammerjs)
 
-## Support, Questions, and Collaboration
+A JavaScript library for multi-touch gestures.
 
-[![Slack Status](https://hammerjs.herokuapp.com/badge.svg)](https://hammerjs.herokuapp.com/)
+Visit [hammerjs.github.io](https://hammerjs.github.io) for detailed documentation.
 
-## Documentation
+## Installation
 
-Visit [hammerjs.github.io](http://hammerjs.github.io) for detailed documentation.
+```bash
+npm install hammerjs
+```
+
+Or include the pre-built script directly in your page:
+
+```html
+<script src="hammer.min.js"></script>
+```
+
+## Usage
+
+Create a `Hammer` instance on a DOM element to listen for the default gestures (`pan`, `swipe`, `tap`, `doubletap`, and `press`):
 
 ```js
-// get a reference to an element
-var stage = document.getElementById('stage');
+import Hammer from 'hammerjs';
 
-// create a manager for that element
-var mc = new Hammer.Manager(stage);
+const element = document.getElementById('my-element');
+const mc = new Hammer(element);
 
-// create a recognizer
-var Rotate = new Hammer.Rotate();
-
-// add the recognizer
-mc.add(Rotate);
-
-// subscribe to events
-mc.on('rotate', function(e) {
-    // do something cool
-    var rotation = Math.round(e.rotation);    
-    stage.style.transform = 'rotate('+rotation+'deg)';
+mc.on('panleft panright tap press', (ev) => {
+    console.log(ev.type + ' gesture detected.');
 });
 ```
 
-An advanced demo is available here: [http://codepen.io/runspired/full/ZQBGWd/](http://codepen.io/runspired/full/ZQBGWd/)
+For full control over recognizers and how they interact (such as simultaneous gestures or requiring another gesture to fail), use `Hammer.Manager`:
 
+```js
+const mc = new Hammer.Manager(element);
+
+mc.add(new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 }));
+mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+mc.add(new Hammer.Tap());
+
+mc.get('doubletap').recognizeWith('tap');
+mc.get('tap').requireFailure('doubletap');
+
+mc.on('doubletap', (ev) => {
+    console.log('doubletap', ev);
+});
+
+mc.on('tap', (ev) => {
+    console.log('tap', ev);
+});
+```
+
+## Building & Testing
+
+Requires **Node.js >= 22**.
+
+```bash
+npm install
+npm test       # runs ESLint and the QUnit suite in headless Chrome
+npm run lint   # runs ESLint only
+npm run build  # builds hammer.js, hammer.min.js, sourcemaps, and runs tests
+```
 
 ## Contributing
 
-Read the [contributing guidelines](./CONTRIBUTING.md).
+Read the [contributing guidelines](./CONTRIBUTING.md) before opening an issue or pull request.
 
-For PRs.
+For pull requests:
 
-- Use [Angular Style commit messages](https://github.com/angular/angular.js/blob/v1.4.8/CONTRIBUTING.md#commit)
-- Rebase your PR branch when necessary
-- If you add a feature or fix a bug, please add or fix any necessary tests.
-- If a new feature, open a docs PR to go with.
+- Use [Angular-style commit messages](https://github.com/angular/angular.js/blob/v1.4.8/CONTRIBUTING.md#commit)
+- Make changes in `src/` and `tests/` (do not commit rebuilt `hammer.js` / `hammer.min.js` bundles)
+- Add or update unit tests for any bug fix or behavior change
+- Run `npm test` to verify linting and all unit tests pass
 
-## Building
+For maintainers cutting a release, see [RELEASING.md](./RELEASING.md).
 
-You can get the pre-build versions from the Hammer.js website, or do this by yourself running 
-`npm install -g grunt-cli && npm install && grunt build`
+## License
+
+Licensed under the [MIT License](./LICENSE.md).
