@@ -287,11 +287,13 @@ function toggleCssProps(manager, add) {
     var prop;
     each(manager.options.cssProps, function(value, name) {
         prop = prefixed(element.style, name);
-        if (add) {
-            manager.oldCssProps[prop] = element.style[prop];
-            element.style[prop] = value;
-        } else {
-            element.style[prop] = manager.oldCssProps[prop] || '';
+        if (prop) {
+            if (add) {
+                manager.oldCssProps[prop] = element.style[prop];
+                element.style[prop] = value;
+            } else {
+                element.style[prop] = manager.oldCssProps[prop] || '';
+            }
         }
     });
     if (!add) {
