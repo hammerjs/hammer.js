@@ -257,3 +257,21 @@ test('TouchAction skips preventDefault on non-cancelable events', function() {
     });
     equal(preventCalls, 2, 'preventSrc still calls preventDefault when cancelable is undefined');
 });
+
+test('toggleCssProps does not write undefined property for unsupported cssProps', function() {
+    expect(3);
+
+    hammer = Hammer(el, {
+        cssProps: {
+            unsupportedFakeCssProp: 'none'
+        }
+    });
+
+    ok(!('undefined' in el.style), 'element.style does not get an "undefined" property');
+    ok(!('undefined' in hammer.oldCssProps), 'oldCssProps does not store an "undefined" key');
+
+    hammer.destroy();
+    hammer = null;
+
+    ok(!('undefined' in el.style), 'element.style still has no "undefined" property after destroy');
+});
