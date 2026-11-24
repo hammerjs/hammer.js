@@ -183,3 +183,15 @@ test('test add/removeEventListener', function() {
     utils.triggerDomEvent(window, 'testEvent1');
     utils.triggerDomEvent(window, 'testEvent2');
 });
+
+test('getDirection', function() {
+    expect(7);
+
+    equal($H.getDirection(0, 0), Hammer.DIRECTION_NONE, 'zero movement returns DIRECTION_NONE');
+    equal($H.getDirection(50, 50), Hammer.DIRECTION_RIGHT, 'positive 45-degree diagonal is not DIRECTION_NONE');
+    equal($H.getDirection(-50, -50), Hammer.DIRECTION_LEFT, 'negative 45-degree diagonal is not DIRECTION_NONE');
+    equal($H.getDirection(50, -50), Hammer.DIRECTION_RIGHT, 'positive x / negative y diagonal returns DIRECTION_RIGHT');
+    equal($H.getDirection(-50, 50), Hammer.DIRECTION_LEFT, 'negative x / positive y diagonal returns DIRECTION_LEFT');
+    equal($H.getDirection(10, 50), Hammer.DIRECTION_DOWN, 'mostly downward movement returns DIRECTION_DOWN');
+    equal($H.getDirection(10, -50), Hammer.DIRECTION_UP, 'mostly upward movement returns DIRECTION_UP');
+});
