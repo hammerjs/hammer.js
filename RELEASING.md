@@ -4,7 +4,7 @@ This guide documents how to cut and publish a release of `hammerjs` from `master
 
 ## Prerequisites
 
-- **Node.js >= 22** (required for running the headless Chrome QUnit suite via Puppeteer)
+- **Node.js >= 22** (Node 24 is used in CI; required for ESLint and running the headless Chrome QUnit suite via Puppeteer)
 - Push access to `hammerjs/hammer.js` on GitHub
 - Publish access to [`hammerjs` on npm](https://www.npmjs.com/package/hammerjs) with **2FA enabled** (enforced by npm for high-impact packages)
 
@@ -19,7 +19,7 @@ This guide documents how to cut and publish a release of `hammerjs` from `master
 
 ## 1. Prepare `master`
 
-Make sure all intended PRs are merged into `master`, then sync locally and verify a clean install and test run:
+Make sure all intended PRs are merged into `master` and the [GitHub Actions CI workflow](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml) is green on `master`, then sync locally and verify a clean install, lint, and test run:
 
 ```bash
 git checkout master
@@ -29,7 +29,7 @@ git status # must be clean
 rm -rf node_modules
 npm install
 npm audit  # verify 0 vulnerabilities
-npm test   # runs the full QUnit suite in headless Chrome — must report 0 failed
+npm test   # runs ESLint (grunt lint) and the full QUnit suite in headless Chrome — must report 0 errors/failed
 ```
 
 ---
@@ -49,7 +49,7 @@ npm test   # runs the full QUnit suite in headless Chrome — must report 0 fail
 
 ## 3. Build and Verify Release Artifacts
 
-Run the full build (concatenates `src/`, injects `Hammer.VERSION`, minifies + generates sourcemaps, prepends the license banner, and runs the headless Chrome QUnit suite):
+Run the full build (concatenates `src/`, injects `Hammer.VERSION`, minifies + generates sourcemaps, prepends the license banner, runs ESLint via `grunt lint`, and runs the headless Chrome QUnit suite):
 
 ```bash
 npm run build
@@ -92,6 +92,8 @@ git commit -m "X.Y.Z"
 git tag -a vX.Y.Z -m "vX.Y.Z"
 git push origin master --follow-tags
 ```
+
+Wait for the [GitHub Actions CI workflow](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml) to pass on `master` before publishing to npm.
 
 ---
 
