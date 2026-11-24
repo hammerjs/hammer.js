@@ -269,7 +269,7 @@ function splitStr(str) {
  * @param {Array} src
  * @param {String} find
  * @param {String} [findByKey]
- * @return {Boolean|Number} false when not found, or the index
+ * @return {number} -1 when not found, or the index
  */
 function inArray(src, find, findByKey) {
     if (src.indexOf && !findByKey) {
