@@ -74,7 +74,26 @@ test('uniqueArray', function() {
     ], 'id'), [
         {id: 1},
         {id: 2}
-    ], 'remove duplicate ids')
+    ], 'remove duplicate ids');
+
+    deepEqual($H.uniqueArray([
+        {id: 3},
+        {id: 1},
+        {id: 2},
+        {id: 1}
+    ], 'id', true), [
+        {id: 1},
+        {id: 2},
+        {id: 3}
+    ], 'remove duplicate ids and sort ascending by key');
+
+    deepEqual($H.uniqueArray([
+        {id: 2},
+        {id: 1}
+    ], 'id', true), [
+        {id: 1},
+        {id: 2}
+    ], 'sort two reversed items ascending by key');
 });
 
 test('boolOrFn', function() {

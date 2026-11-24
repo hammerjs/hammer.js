@@ -320,7 +320,7 @@ function uniqueArray(src, key, sort) {
             results = results.sort();
         } else {
             results = results.sort(function sortUniqueArray(a, b) {
-                return a[key] > b[key];
+                return a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
             });
         }
     }
