@@ -185,3 +185,32 @@ test('check whether Hammer.defaults.cssProps is restored', function() {
         }
     });
 });
+
+test('TouchMouseInput ignores mouse events with srcEvent.sourceCapabilities.firesTouchEvents', function() {
+    expect(2);
+
+    hammer = new Hammer(el, {inputClass: Hammer.TouchMouseInput});
+    var tapCount = 0;
+    hammer.on('tap', function() {
+        tapCount++;
+    });
+
+    function dispatchMouse(type, x, y, which, firesTouchEvents) {
+        var ev = document.createEvent('Event');
+        ev.initEvent(type, true, true);
+        ev.clientX = x;
+        ev.clientY = y;
+        ev.button = 0;
+        ev.which = which;
+        ev.sourceCapabilities = {firesTouchEvents: firesTouchEvents};
+        (type === 'mousedown' ? el : window).dispatchEvent(ev);
+    }
+
+    dispatchMouse('mousedown', 50, 50, 1, true);
+    dispatchMouse('mouseup', 50, 50, 0, true);
+    equal(tapCount, 0, 'mouse event with firesTouchEvents=true is ignored');
+
+    dispatchMouse('mousedown', 100, 100, 1, false);
+    dispatchMouse('mouseup', 100, 100, 0, false);
+    equal(tapCount, 1, 'mouse event with firesTouchEvents=false is still recognized');
+});
