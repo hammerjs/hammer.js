@@ -1,4 +1,4 @@
-# Hammer.js 2.0.6
+# Hammer.js 2.0.8
 
 [![Build Status](https://travis-ci.org/hammerjs/hammer.js.svg)](https://travis-ci.org/hammerjs/hammer.js)
 
