@@ -22,11 +22,16 @@ module('Tests', {
 test('hammer shortcut', function() {
     expect(2);
 
+    var origTouchAction = Hammer.defaults.touchAction;
     Hammer.defaults.touchAction = 'pan-y';
-    hammer = Hammer(el);
+    try {
+        hammer = Hammer(el);
 
-    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
-    ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
+        ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+        ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
+    } finally {
+        Hammer.defaults.touchAction = origTouchAction;
+    }
 });
 
 test('hammer shortcut with options', function() {
