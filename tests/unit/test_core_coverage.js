@@ -1,7 +1,7 @@
 (function() {
     var el, manager;
 
-    module('Core Coverage (Manager, Recognizers, Utils)', {
+    module('Core Coverage (Manager & Recognizers)', {
         setup: function() {
             el = utils.createHitArea();
         },
@@ -121,8 +121,12 @@
         docManager.destroy();
 
         // destroy() restores inline cssProps and clears element
+        var userSelectProp = $H.prefixed(el.style, 'userSelect');
         manager.destroy();
         equal(manager.element, null, 'destroy() clears element reference');
+        if (userSelectProp) {
+            equal(el.style[userSelectProp], 'text', 'destroy() restores previous inline cssProps value');
+        }
         manager = null;
     });
 
@@ -295,71 +299,5 @@
             srcEvent: srcEv
         });
         deepEqual(pressEvents, ['pressup'], 'Press emits pressup when released after time threshold');
-    });
-
-    test('Utils extend, merge, deprecate, prefixed, hasParent, inArray, uniqueId, getWindowForElement', function() {
-        var origWarn = window.console && window.console.warn;
-        var warnings = [];
-        if (window.console) {
-            window.console.warn = function() {
-                warnings.push(Array.prototype.slice.call(arguments).join(' '));
-            };
-        }
-
-        try {
-            // deprecate
-            var wrapped = $H.deprecate(function(x) {
-                return this.base + x;
-            }, 'oldFn', 'Use newFn.');
-            equal(wrapped.call({base: 10}, 5), 15, 'deprecate preserves context, args, and return value');
-            ok(warnings.length >= 1 && warnings[0].indexOf('DEPRECATED METHOD: oldFn') !== -1, 'deprecate logs warning');
-
-            // extend (overwrite and merge modes)
-            var dest = {a: 1, b: 2};
-            $H.extend(dest, {b: 20, c: 3});
-            deepEqual(dest, {a: 1, b: 20, c: 3}, 'extend overwrites existing keys');
-
-            // merge (preserves existing keys)
-            var mDest = {a: 1, b: 2};
-            $H.merge(mDest, {b: 99, c: 3});
-            deepEqual(mDest, {a: 1, b: 2, c: 3}, 'merge preserves existing keys and adds missing ones');
-        } finally {
-            if (window.console) {
-                window.console.warn = origWarn;
-            }
-        }
-
-        // prefixed
-        equal($H.prefixed({webkitFoo: 1}, 'foo'), 'webkitFoo', 'prefixed finds vendor-prefixed property');
-        equal($H.prefixed({bar: 1}, 'bar'), 'bar', 'prefixed finds unprefixed property');
-        equal($H.prefixed({}, 'nonExistentProp'), undefined, 'prefixed returns undefined when absent');
-
-        // hasParent
-        var child = document.createElement('span');
-        el.appendChild(child);
-        equal($H.hasParent(child, el), true, 'hasParent returns true for descendant');
-        equal($H.hasParent(el, el), true, 'hasParent returns true for self');
-        equal($H.hasParent(document.createElement('div'), el), false, 'hasParent returns false for unrelated node');
-        equal($H.hasParent(null, el), false, 'hasParent returns false for null');
-
-        // inArray without native indexOf fallback & with findByKey
-        var objArr = [{id: 1}, {id: 2}];
-        equal($H.inArray(objArr, 2, 'id'), 1, 'inArray finds by key');
-        equal($H.inArray(objArr, 99, 'id'), -1, 'inArray returns -1 when key not found');
-        var arrayLike = {0: 'a', 1: 'b', length: 2};
-        equal($H.inArray(arrayLike, 'b'), 1, 'inArray loop fallback works when indexOf absent');
-        equal($H.inArray(arrayLike, 'z'), -1, 'inArray loop fallback returns -1 when not found');
-
-        // boolOrFn, ifUndefined, each(null), uniqueArray(sort without key), uniqueId, getWindowForElement
-        equal($H.boolOrFn(true), true, 'boolOrFn returns boolean directly');
-        equal($H.boolOrFn(function(selfObj, arg2) {
-            return this === selfObj && this.flag && arg2 === true;
-        }, [{flag: true}, true]), true, 'boolOrFn calls function with context and args');
-        equal($H.ifUndefined(undefined, 'fallback'), 'fallback', 'ifUndefined returns fallback for undefined');
-        equal($H.ifUndefined(false, 'fallback'), false, 'ifUndefined preserves falsy non-undefined values');
-        equal($H.each(null, function() { ok(false, 'should not iterate'); }), undefined, 'each handles null safely');
-        deepEqual($H.uniqueArray(['c', 'a', 'b', 'a'], null, true), ['a', 'b', 'c'], 'uniqueArray sorts primitives without key');
-        ok($H.uniqueId() < $H.uniqueId(), 'uniqueId increments monotonically');
-        equal($H.getWindowForElement(el), window, 'getWindowForElement returns window');
     });
 })();

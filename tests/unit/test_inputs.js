@@ -166,18 +166,34 @@
         }
     });
 
-    test('TouchInput ignores touchend for untracked touch identifiers', function() {
+    test('TouchInput isolates multi-user touches by target and ignores untracked touchend', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});
         var input = new $H.TouchInput(manager, function(mgr, type, data) {
-            calls.push({type: type, data: data});
+            calls.push({type: type, pointers: data.pointers, changed: data.changedPointers});
         });
 
         try {
             var otherEl = document.createElement('div');
+            var childEl = document.createElement('span');
+            el.appendChild(childEl);
+
+            // Foreign touchend ignored
             var foreignTouch = {identifier: 999, clientX: 5, clientY: 5, target: otherEl};
             input.handler({type: 'touchend', touches: [], changedTouches: [foreignTouch]});
             equal(calls.length, 0, 'touchend for untracked identifier does not invoke callback');
+
+            // Multi-touch with one touch on child of target and one on unrelated element
+            var ownTouch = {identifier: 1, clientX: 20, clientY: 20, target: childEl};
+            var otherTouch = {identifier: 2, clientX: 80, clientY: 80, target: otherEl};
+            input.handler({
+                type: 'touchstart',
+                touches: [ownTouch, otherTouch],
+                changedTouches: [ownTouch, otherTouch]
+            });
+            equal(calls.length, 1, 'touchstart dispatches for touch on target subtree');
+            equal(calls[0].pointers.length, 1, 'only target touch included in pointers');
+            equal(calls[0].pointers[0].identifier, 1, 'foreign element touch filtered out');
         } finally {
             input.destroy();
         }
