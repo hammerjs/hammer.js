@@ -47,6 +47,8 @@ inherit(AttrRecognizer, Recognizer, {
         // on cancel input and we've recognized before, return STATE_CANCELLED
         if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
             return state | STATE_CANCELLED;
+        } else if (eventType & INPUT_CANCEL) {
+            return STATE_FAILED;
         } else if (isRecognized || isValid) {
             if (eventType & INPUT_END) {
                 return state | STATE_ENDED;
