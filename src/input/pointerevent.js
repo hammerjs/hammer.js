@@ -72,17 +72,18 @@ inherit(PointerEventInput, Input, {
 
         // update the event in the store
         store[storeIndex] = ev;
-
-        this.callback(this.manager, eventType, {
-            pointers: store,
-            changedPointers: [ev],
-            pointerType: pointerType,
-            srcEvent: ev
-        });
+        var pointers = store.slice();
 
         if (removePointer) {
             // remove from the store
             store.splice(storeIndex, 1);
         }
+
+        this.callback(this.manager, eventType, {
+            pointers: pointers,
+            changedPointers: [ev],
+            pointerType: pointerType,
+            srcEvent: ev
+        });
     }
 });

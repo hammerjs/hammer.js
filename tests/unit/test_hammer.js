@@ -185,3 +185,49 @@ test('check whether Hammer.defaults.cssProps is restored', function() {
         }
     });
 });
+
+test('PointerEventInput snapshots pointers and removes ended pointer before callback', function() {
+    expect(3);
+
+    hammer = new Hammer(el, {inputClass: Hammer.PointerEventInput});
+    var capturedPointers = null;
+    var shouldThrow = false;
+    var tapCount = 0;
+
+    hammer.on('tap', function(ev) {
+        capturedPointers = ev.pointers;
+        tapCount++;
+        if (shouldThrow) {
+            throw new Error('listener failure');
+        }
+    });
+
+    function dispatchPointer(type, id) {
+        var ev = document.createEvent('Event');
+        ev.initEvent(type, true, true);
+        ev.clientX = 50;
+        ev.clientY = 50;
+        ev.pointerId = id;
+        ev.pointerType = 'mouse';
+        ev.button = 0;
+        (type === 'pointerdown' ? el : window).dispatchEvent(ev);
+    }
+
+    dispatchPointer('pointerdown', 1);
+    dispatchPointer('pointerup', 1);
+    equal(capturedPointers && capturedPointers.length, 1, 'ev.pointers snapshot is not mutated after pointerup');
+
+    shouldThrow = true;
+    dispatchPointer('pointerdown', 2);
+    try {
+        dispatchPointer('pointerup', 2);
+    } catch (err) {
+        // expected listener throw
+    }
+    equal(hammer.input.store.length, 0, 'store is cleaned up even when a listener throws');
+
+    shouldThrow = false;
+    dispatchPointer('pointerdown', 3);
+    dispatchPointer('pointerup', 3);
+    equal(tapCount, 3, 'subsequent gestures still recognize after listener throw');
+});
