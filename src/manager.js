@@ -224,8 +224,11 @@ Manager.prototype = {
         each(splitStr(events), function(event) {
             if (!handler) {
                 delete handlers[event];
-            } else {
-                handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+            } else if (handlers[event]) {
+                var index = inArray(handlers[event], handler);
+                if (index > -1) {
+                    handlers[event].splice(index, 1);
+                }
             }
         });
         return this;
@@ -287,11 +290,13 @@ function toggleCssProps(manager, add) {
     var prop;
     each(manager.options.cssProps, function(value, name) {
         prop = prefixed(element.style, name);
-        if (add) {
-            manager.oldCssProps[prop] = element.style[prop];
-            element.style[prop] = value;
-        } else {
-            element.style[prop] = manager.oldCssProps[prop] || '';
+        if (prop) {
+            if (add) {
+                manager.oldCssProps[prop] = element.style[prop];
+                element.style[prop] = value;
+            } else {
+                element.style[prop] = manager.oldCssProps[prop] || '';
+            }
         }
     });
     if (!add) {

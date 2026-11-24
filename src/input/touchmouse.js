@@ -33,7 +33,8 @@ inherit(TouchMouseInput, Input, {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
-        if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+        if (isMouse && inputData.srcEvent && inputData.srcEvent.sourceCapabilities &&
+            inputData.srcEvent.sourceCapabilities.firesTouchEvents) {
             return;
         }
 

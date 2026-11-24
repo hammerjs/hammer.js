@@ -3,7 +3,7 @@ module('utils');
 // for the tests, all hammer properties and methods of Hammer are exposed to window.$H
 
 test('get/set prefixed util', function() {
-    ok(_.isUndefined($H.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+    ok($H.prefixed(window, 'FakeProperty') === undefined, 'non existent property returns undefined');
 
     window.webkitFakeProperty = 1337;
     ok($H.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
@@ -45,8 +45,8 @@ test('Inherit objects', function() {
 });
 
 test('toArray', function() {
-    ok(_.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray($H.toArray([true, true])), 'array stays an array');
+    ok(Array.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
+    ok(Array.isArray($H.toArray([true, true])), 'array stays an array');
 });
 
 test('inArray', function() {
@@ -64,6 +64,8 @@ test('inArray', function() {
 
 test('splitStr', function() {
     deepEqual($H.splitStr(' a  b  c d   '), ['a', 'b', 'c', 'd'], 'str split valid');
+    deepEqual($H.splitStr(''), [], 'empty string returns empty array');
+    deepEqual($H.splitStr('   '), [], 'whitespace string returns empty array');
 });
 
 test('uniqueArray', function() {
@@ -74,7 +76,26 @@ test('uniqueArray', function() {
     ], 'id'), [
         {id: 1},
         {id: 2}
-    ], 'remove duplicate ids')
+    ], 'remove duplicate ids');
+
+    deepEqual($H.uniqueArray([
+        {id: 3},
+        {id: 1},
+        {id: 2},
+        {id: 1}
+    ], 'id', true), [
+        {id: 1},
+        {id: 2},
+        {id: 3}
+    ], 'remove duplicate ids and sort ascending by key');
+
+    deepEqual($H.uniqueArray([
+        {id: 2},
+        {id: 1}
+    ], 'id', true), [
+        {id: 1},
+        {id: 2}
+    ], 'sort two reversed items ascending by key');
 });
 
 test('boolOrFn', function() {
@@ -161,4 +182,16 @@ test('test add/removeEventListener', function() {
     $H.removeEventListeners(window, ' testEvent1 testEvent2 ', handleEvent);
     utils.triggerDomEvent(window, 'testEvent1');
     utils.triggerDomEvent(window, 'testEvent2');
+});
+
+test('getDirection', function() {
+    expect(7);
+
+    equal($H.getDirection(0, 0), Hammer.DIRECTION_NONE, 'zero movement returns DIRECTION_NONE');
+    equal($H.getDirection(50, 50), Hammer.DIRECTION_RIGHT, 'positive 45-degree diagonal is not DIRECTION_NONE');
+    equal($H.getDirection(-50, -50), Hammer.DIRECTION_LEFT, 'negative 45-degree diagonal is not DIRECTION_NONE');
+    equal($H.getDirection(50, -50), Hammer.DIRECTION_RIGHT, 'positive x / negative y diagonal returns DIRECTION_RIGHT');
+    equal($H.getDirection(-50, 50), Hammer.DIRECTION_LEFT, 'negative x / positive y diagonal returns DIRECTION_LEFT');
+    equal($H.getDirection(10, 50), Hammer.DIRECTION_DOWN, 'mostly downward movement returns DIRECTION_DOWN');
+    equal($H.getDirection(10, -50), Hammer.DIRECTION_UP, 'mostly upward movement returns DIRECTION_UP');
 });
