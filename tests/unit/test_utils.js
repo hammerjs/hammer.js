@@ -466,3 +466,8 @@ test('getWindowForElement resolves window for elements, document, and parentWind
     var fakeWin = {fake: true};
     strictEqual($H.getWindowForElement({ownerDocument: {parentWindow: fakeWin}}), fakeWin, 'falls back to doc.parentWindow');
 });
+
+test('prefixed returns undefined safely when target object is null or undefined', function() {
+    strictEqual($H.prefixed(null, 'touchAction'), undefined, 'returns undefined for null');
+    strictEqual($H.prefixed(undefined, 'touchAction'), undefined, 'returns undefined for undefined');
+});
