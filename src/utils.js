@@ -260,7 +260,8 @@ function inStr(str, find) {
  * @returns {Array} words
  */
 function splitStr(str) {
-    return str.trim().split(/\s+/g);
+    var trimmed = str.trim();
+    return trimmed ? trimmed.split(/\s+/g) : [];
 }
 
 /**
