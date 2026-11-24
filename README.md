@@ -1,6 +1,6 @@
 # Hammer.js 2.0.8
 
-[![Build Status](https://travis-ci.org/hammerjs/hammer.js.svg)](https://travis-ci.org/hammerjs/hammer.js)
+[![CI](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml/badge.svg)](https://github.com/hammerjs/hammer.js/actions/workflows/ci.yml)
 
 ## Support, Questions, and Collaboration
 
