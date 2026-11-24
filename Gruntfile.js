@@ -1,5 +1,6 @@
+'use strict';
+
 module.exports = function(grunt) {
-    'use strict';
 
     var srcCore = [
         'src/utils.js',
@@ -103,7 +104,10 @@ module.exports = function(grunt) {
         var puppeteer = require('puppeteer');
         var url = 'http://127.0.0.1:8000/tests/unit/index.html';
 
-        puppeteer.launch({headless: true, args: ['--no-sandbox']}).then(function(browser) {
+        puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        }).then(function(browser) {
             return browser.newPage().then(function(page) {
                 var failures = [];
 
@@ -187,6 +191,34 @@ module.exports = function(grunt) {
         });
     });
 
+    grunt.registerTask('lint', 'Lint source and build files with ESLint', function() {
+        var done = this.async();
+        var ESLint = require('eslint').ESLint;
+        var eslint = new ESLint();
+
+        eslint.lintFiles(['hammer.js', 'src', 'Gruntfile.js', 'eslint.config.js']).then(function(results) {
+            return eslint.loadFormatter('stylish').then(function(formatter) {
+                var output = formatter.format(results);
+                if (output) {
+                    grunt.log.writeln(output);
+                }
+                var errorCount = results.reduce(function(sum, r) {
+                    return sum + r.errorCount;
+                }, 0);
+                if (errorCount > 0) {
+                    grunt.log.error('ESLint found ' + errorCount + ' error(s).');
+                    done(false);
+                } else {
+                    grunt.log.ok('ESLint passed (' + results.length + ' files checked).');
+                    done();
+                }
+            });
+        }).catch(function(err) {
+            grunt.log.error(err.stack || err.message);
+            done(false);
+        });
+    });
+
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
@@ -194,6 +226,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['connect:server:keepalive']);
     grunt.registerTask('build', ['concat', 'string-replace', 'uglify:min', 'usebanner', 'test']);
-    grunt.registerTask('test', ['build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('test', ['lint', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
 };

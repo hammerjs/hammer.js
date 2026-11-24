@@ -32,6 +32,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "eslint": "^10.0.0",
     "grunt": "^1.6.3",
     "grunt-banner": "^0.6.0",
     "grunt-contrib-concat": "^2.1.0",
@@ -50,6 +51,7 @@
   },
   "scripts": {
     "build": "grunt build",
+    "lint": "grunt lint",
     "test": "grunt test"
   }
 }
