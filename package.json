@@ -25,27 +25,25 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/hammerjs/hammer.js.git"
+    "url": "https://github.com/hammerjs/hammer.js.git"
   },
   "bugs": {
     "url": "https://github.com/hammerjs/hammer.js/issues"
   },
   "dependencies": {},
   "devDependencies": {
-    "changelogplease": "^1.2.0",
-    "git-tags": "^0.2.4",
-    "grunt": "0.4.x",
-    "grunt-banner": "^0.2.3",
-    "grunt-contrib-concat": "0.4.x",
-    "grunt-contrib-connect": "0.7.x",
-    "grunt-contrib-jshint": "0.10.x",
-    "grunt-contrib-qunit": "^0.5.1",
-    "grunt-contrib-uglify": "0.7.x",
-    "grunt-contrib-watch": "0.6.x",
-    "grunt-jscs": "^0.8.0",
-    "grunt-string-replace": "^0.2.7",
-    "hammer-simulator": "git://github.com/hammerjs/simulator#master",
-    "jquery-hammerjs": "2.0.x"
+    "eslint": "^10.0.0",
+    "grunt": "^1.6.3",
+    "grunt-banner": "^0.6.0",
+    "grunt-contrib-concat": "^2.1.0",
+    "grunt-contrib-connect": "^5.0.1",
+    "grunt-contrib-uglify": "^5.2.2",
+    "hammer-simulator": "github:hammerjs/simulator#master",
+    "jquery-hammerjs": "2.0.x",
+    "puppeteer": "^25.0.0"
+  },
+  "overrides": {
+    "jquery": "^3.7.1"
   },
   "main": "hammer.js",
   "files": [
@@ -60,6 +58,8 @@
     "node": ">=0.8.0"
   },
   "scripts": {
+    "build": "grunt build",
+    "lint": "grunt lint",
     "test": "grunt test"
   }
 }
