@@ -328,3 +328,18 @@ test('PointerEventInput snapshots pointers and removes ended pointer before call
     hammer.input.handler(createPointerEvent('pointerup', 3));
     equal(tapCount, 3, 'subsequent gestures still recognize after listener throw');
 });
+
+test('Manager.destroy clears DOM references and is safe to call twice', function() {
+    expect(4);
+
+    hammer = new Hammer(el, {inputTarget: el2});
+    hammer.destroy();
+
+    strictEqual(hammer.element, null, 'destroy clears manager.element');
+    strictEqual(hammer.input, null, 'destroy clears manager.input');
+    strictEqual(hammer.options.inputTarget, null, 'destroy clears manager.options.inputTarget');
+
+    hammer.destroy();
+    ok(true, 'calling destroy a second time does not throw');
+    hammer = null;
+});

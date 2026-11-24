@@ -272,8 +272,10 @@ Manager.prototype = {
 
         this.handlers = {};
         this.session = {};
-        this.input.destroy();
+        this.input && this.input.destroy();
+        this.input = null;
         this.element = null;
+        this.options.inputTarget = null;
     }
 };
 
