@@ -70,7 +70,9 @@ TouchAction.prototype = {
 
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {
-            srcEvent.preventDefault();
+            if (srcEvent.cancelable !== false) {
+                srcEvent.preventDefault();
+            }
             return;
         }
 
@@ -108,8 +110,10 @@ TouchAction.prototype = {
      * @param {Object} srcEvent
      */
     preventSrc: function(srcEvent) {
-        this.manager.session.prevented = true;
-        srcEvent.preventDefault();
+        if (srcEvent.cancelable !== false) {
+            this.manager.session.prevented = true;
+            srcEvent.preventDefault();
+        }
     }
 };
 

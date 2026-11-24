@@ -185,3 +185,46 @@ test('check whether Hammer.defaults.cssProps is restored', function() {
         }
     });
 });
+
+test('TouchAction skips preventDefault on non-cancelable events', function() {
+    expect(5);
+
+    hammer = new Hammer(el, {touchAction: 'none'});
+    var preventCalls = 0;
+    var nonCancelableEvent = {
+        cancelable: false,
+        preventDefault: function() {
+            preventCalls++;
+        }
+    };
+
+    hammer.touchAction.preventSrc(nonCancelableEvent);
+    equal(preventCalls, 0, 'preventSrc skips preventDefault when cancelable is false');
+    ok(!hammer.session.prevented, 'session.prevented is not set when event is non-cancelable');
+
+    hammer.session.prevented = true;
+    hammer.touchAction.preventDefaults({
+        pointers: [{clientX: 80, clientY: 50}],
+        distance: 30,
+        deltaTime: 300,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        srcEvent: nonCancelableEvent
+    });
+    equal(preventCalls, 0, 'preventDefaults skips preventDefault when cancelable is false');
+
+    hammer.session.prevented = false;
+    hammer.touchAction.preventSrc({
+        cancelable: true,
+        preventDefault: function() {
+            preventCalls++;
+        }
+    });
+    equal(preventCalls, 1, 'preventSrc calls preventDefault when cancelable is true');
+
+    hammer.touchAction.preventSrc({
+        preventDefault: function() {
+            preventCalls++;
+        }
+    });
+    equal(preventCalls, 2, 'preventSrc still calls preventDefault when cancelable is undefined');
+});
