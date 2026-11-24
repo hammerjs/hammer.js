@@ -300,4 +300,27 @@
         });
         deepEqual(pressEvents, ['pressup'], 'Press emits pressup when released after time threshold');
     });
+
+    test('AttrRecognizer does not emit start or move when INPUT_CANCEL arrives before recognition', function() {
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var pan = manager.add(new Hammer.Pan({threshold: 1}));
+        var emitted = [];
+        manager.on('panstart panmove panend pancancel', function(ev) {
+            emitted.push(ev.type);
+        });
+
+        var srcEv = {cancelable: true, preventDefault: function() {}};
+        pan.recognize({
+            eventType: $H.INPUT_CANCEL,
+            isFinal: true,
+            pointers: [{}],
+            distance: 20,
+            deltaX: 20,
+            deltaY: 0,
+            direction: Hammer.DIRECTION_RIGHT,
+            srcEvent: srcEv
+        });
+        deepEqual(emitted, [], 'INPUT_CANCEL before recognition emits no pan events');
+        equal(pan.state, $H.STATE_FAILED, 'recognizer transitions to STATE_FAILED');
+    });
 })();
