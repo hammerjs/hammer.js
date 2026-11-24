@@ -275,3 +275,51 @@ test('toggleCssProps does not write undefined property for unsupported cssProps'
 
     ok(!('undefined' in el.style), 'element.style still has no "undefined" property after destroy');
 });
+
+test('PointerEventInput snapshots pointers and removes ended pointer before callback', function() {
+    expect(4);
+
+    hammer = new Hammer(el, {inputClass: Hammer.PointerEventInput});
+    var capturedPointers = null;
+    var shouldThrow = false;
+    var tapCount = 0;
+
+    hammer.on('tap', function(ev) {
+        capturedPointers = ev.pointers;
+        tapCount++;
+        if (shouldThrow) {
+            throw new Error('listener failure');
+        }
+    });
+
+    function createPointerEvent(type, id) {
+        var ev = document.createEvent('Event');
+        ev.initEvent(type, true, true);
+        ev.clientX = 50;
+        ev.clientY = 50;
+        ev.pointerId = id;
+        ev.pointerType = 'mouse';
+        ev.button = 0;
+        return ev;
+    }
+
+    hammer.input.handler(createPointerEvent('pointerdown', 1));
+    hammer.input.handler(createPointerEvent('pointerup', 1));
+    equal(capturedPointers && capturedPointers.length, 1, 'ev.pointers snapshot is not mutated after pointerup');
+
+    shouldThrow = true;
+    var caught = false;
+    hammer.input.handler(createPointerEvent('pointerdown', 2));
+    try {
+        hammer.input.handler(createPointerEvent('pointerup', 2));
+    } catch (err) {
+        caught = true;
+    }
+    ok(caught, 'listener error propagated synchronously');
+    equal(hammer.input.store.length, 0, 'store is cleaned up even when a listener throws');
+
+    shouldThrow = false;
+    hammer.input.handler(createPointerEvent('pointerdown', 3));
+    hammer.input.handler(createPointerEvent('pointerup', 3));
+    equal(tapCount, 3, 'subsequent gestures still recognize after listener throw');
+});
