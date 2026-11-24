@@ -58,4 +58,39 @@ test("When Hammer.Manager didn't attach an event, 'off' method is ignored", func
         count++;
     });
     ok(true, "nothing");
+    hammer.destroy();
+});
+
+test("'off' with an unregistered handler should not remove existing handlers", function() {
+    expect(2);
+
+    var ee = new Hammer.Manager(utils.createHitArea());
+    var count1 = 0;
+    var count2 = 0;
+    var inputData = {
+        target: document.body,
+        srcEvent: {
+            preventDefault: function() {},
+            target: document.body
+        }
+    };
+
+    function handler1() {
+        count1++;
+    }
+    function handler2() {
+        count2++;
+    }
+    function unregisteredHandler() {}
+
+    ee.on('tap', handler1);
+    ee.on('tap', handler2);
+    ee.off('tap', unregisteredHandler);
+
+    ee.emit('tap', inputData);
+
+    equal(count1, 1, 'first handler still called');
+    equal(count2, 1, 'last handler was not mistakenly spliced out');
+
+    ee.destroy();
 });

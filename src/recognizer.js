@@ -87,7 +87,7 @@ Recognizer.prototype = {
 
         var simultaneous = this.simultaneous;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (!simultaneous[otherRecognizer.id]) {
+        if (otherRecognizer && !simultaneous[otherRecognizer.id]) {
             simultaneous[otherRecognizer.id] = otherRecognizer;
             otherRecognizer.recognizeWith(this);
         }
@@ -105,7 +105,9 @@ Recognizer.prototype = {
         }
 
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        delete this.simultaneous[otherRecognizer.id];
+        if (otherRecognizer) {
+            delete this.simultaneous[otherRecognizer.id];
+        }
         return this;
     },
 
@@ -121,7 +123,7 @@ Recognizer.prototype = {
 
         var requireFail = this.requireFail;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (inArray(requireFail, otherRecognizer) === -1) {
+        if (otherRecognizer && inArray(requireFail, otherRecognizer) === -1) {
             requireFail.push(otherRecognizer);
             otherRecognizer.requireFailure(this);
         }
@@ -139,9 +141,11 @@ Recognizer.prototype = {
         }
 
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        var index = inArray(this.requireFail, otherRecognizer);
-        if (index > -1) {
-            this.requireFail.splice(index, 1);
+        if (otherRecognizer) {
+            var index = inArray(this.requireFail, otherRecognizer);
+            if (index > -1) {
+                this.requireFail.splice(index, 1);
+            }
         }
         return this;
     },

@@ -260,7 +260,8 @@ function inStr(str, find) {
  * @returns {Array} words
  */
 function splitStr(str) {
-    return str.trim().split(/\s+/g);
+    var trimmed = str.trim();
+    return trimmed ? trimmed.split(/\s+/g) : [];
 }
 
 /**
@@ -320,7 +321,7 @@ function uniqueArray(src, key, sort) {
             results = results.sort();
         } else {
             results = results.sort(function sortUniqueArray(a, b) {
-                return a[key] > b[key];
+                return a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
             });
         }
     }
