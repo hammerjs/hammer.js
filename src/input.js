@@ -329,7 +329,7 @@ function getVelocity(deltaTime, x, y) {
  * @return {Number} direction
  */
 function getDirection(x, y) {
-    if (x === y) {
+    if (x === 0 && y === 0) {
         return DIRECTION_NONE;
     }
 
