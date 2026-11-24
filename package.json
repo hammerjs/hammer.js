@@ -48,6 +48,14 @@
     "jquery-hammerjs": "2.0.x"
   },
   "main": "hammer.js",
+  "files": [
+    "CHANGELOG.md",
+    "hammer.js",
+    "hammer.min.js",
+    "hammer.min.js.map",
+    "hammer.min.map",
+    "src/"
+  ],
   "engines": {
     "node": ">=0.8.0"
   },

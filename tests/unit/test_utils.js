@@ -3,7 +3,7 @@ module('utils');
 // for the tests, all hammer properties and methods of Hammer are exposed to window.$H
 
 test('get/set prefixed util', function() {
-    ok(_.isUndefined($H.prefixed(window, 'FakeProperty')), 'non existent property returns undefined');
+    ok($H.prefixed(window, 'FakeProperty') === undefined, 'non existent property returns undefined');
 
     window.webkitFakeProperty = 1337;
     ok($H.prefixed(window, 'FakeProperty') == 'webkitFakeProperty', 'existent prefixed property returns the prefixed name');
@@ -45,8 +45,8 @@ test('Inherit objects', function() {
 });
 
 test('toArray', function() {
-    ok(_.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
-    ok(_.isArray($H.toArray([true, true])), 'array stays an array');
+    ok(Array.isArray($H.toArray({ 0: true, 1: 'second', length: 2 })), 'converted an array-like object to an array');
+    ok(Array.isArray($H.toArray([true, true])), 'array stays an array');
 });
 
 test('inArray', function() {
