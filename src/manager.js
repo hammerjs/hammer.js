@@ -250,6 +250,10 @@ Manager.prototype = {
     emit: function(event, data) {
         // we also want to trigger dom events
         if (this.options.domEvents) {
+            data.type = event;
+            data.preventDefault = function() {
+                data.srcEvent.preventDefault();
+            };
             triggerDomEvent(event, data);
         }
 
