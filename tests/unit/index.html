@@ -12,6 +12,8 @@
 
     <script src="../../node_modules/hammer-simulator/index.js"></script>
     <script>
+        // Match touch-event harness used by Hammer Simulator and utils.dispatchTouchEvent
+        delete window.PointerEvent;
         Simulator.setType('touch');
         Simulator.events.touch.fakeSupport();
     </script>
