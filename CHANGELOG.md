@@ -1,5 +1,58 @@
 # Changelog
 
+### 2.0.9-rc.1, 2026-11-25
+
+> **Note:** [#1328](https://github.com/hammerjs/hammer.js/pull/1328) fixes a long-standing sign bug in `getRotation()` (`endAngle - startAngle` instead of `endAngle + startAngle`) so initial two-finger rotation starts at `0°` rather than `2 * startAngle`. If your application previously worked around the old offset, please verify rotation handling with this release candidate.
+
+##### Manager
+- Guard index before splicing in `Manager.off()` when removing an unregistered handler ([#1308](https://github.com/hammerjs/hammer.js/pull/1308))
+- Skip unsupported `cssProps` in `toggleCssProps()` instead of writing `element.style[undefined]` ([#1312](https://github.com/hammerjs/hammer.js/pull/1312))
+- Clear `input` and `options.inputTarget` DOM references on `Manager.destroy()` ([#1325](https://github.com/hammerjs/hammer.js/pull/1325))
+- Reset recognizers and clear `recognizer.manager` in `Manager.remove()`, halt active `recognize()` cycles and cancel pending timers in `Manager.destroy()`, and guard `TouchAction.set()` after `destroy()` ([#1330](https://github.com/hammerjs/hammer.js/pull/1330))
+- Restore previous inline styles and apply updated `cssProps` when changed via `Manager.set({ cssProps })` ([#1333](https://github.com/hammerjs/hammer.js/pull/1333), fixes [#1286](https://github.com/hammerjs/hammer.js/issues/1286))
+- Populate `data.type` and `data.preventDefault` before dispatching DOM events when `domEvents: true` ([#1335](https://github.com/hammerjs/hammer.js/pull/1335))
+- Stop the active session and reset recognizers when disabling a manager mid-gesture via `Manager.set({ enable: false })` ([#1343](https://github.com/hammerjs/hammer.js/pull/1343))
+
+##### Input
+- Check `srcEvent.sourceCapabilities.firesTouchEvents` in `TouchMouseInput` to suppress synthetic mouse events ([#1310](https://github.com/hammerjs/hammer.js/pull/1310))
+- Return `DIRECTION_NONE` only when both `x` and `y` are zero in `getDirection()` ([#1313](https://github.com/hammerjs/hammer.js/pull/1313))
+- Snapshot `PointerEventInput` `pointers` array and remove ended/cancelled pointers from `store` before invoking the callback ([#1316](https://github.com/hammerjs/hammer.js/pull/1316), fixes [#1213](https://github.com/hammerjs/hammer.js/issues/1213))
+- Fix `getRotation()` to subtract the start angle instead of adding ([#1328](https://github.com/hammerjs/hammer.js/pull/1328), fixes [#914](https://github.com/hammerjs/hammer.js/issues/914), [#791](https://github.com/hammerjs/hammer.js/issues/791), [#1208](https://github.com/hammerjs/hammer.js/issues/1208))
+- Rebind child `TouchInput` and `MouseInput` targets and listeners in `TouchMouseInput.init()` on `Manager.set({ inputTarget })` ([#1329](https://github.com/hammerjs/hammer.js/pull/1329))
+- Reset recognizers (including `PanRecognizer.pX`/`pY`) on the next session after `Manager.stop()` so `panstart` is not skipped ([#1332](https://github.com/hammerjs/hammer.js/pull/1332), fixes [#811](https://github.com/hammerjs/hammer.js/issues/811))
+- Guard zero initial pointer distance in `getScale()` to return `1` instead of `NaN`/`Infinity` ([#1334](https://github.com/hammerjs/hammer.js/pull/1334))
+- Support standard `MouseEvent.buttons` bitmask alongside legacy `ev.which` on `mousemove` in `MouseInput` ([#1336](https://github.com/hammerjs/hammer.js/pull/1336), fixes [#976](https://github.com/hammerjs/hammer.js/issues/976))
+- End stuck mouse pointers in `PointerEventInput` when `pointermove` arrives with `ev.buttons === 0`, and clear `this.store` on `destroy()` ([#1337](https://github.com/hammerjs/hammer.js/pull/1337))
+- Avoid re-attaching `manager.session.prevInput` in `inputHandler()` after `Manager.destroy()` ([#1341](https://github.com/hammerjs/hammer.js/pull/1341))
+- Ignore `Input.domHandler` events if the manager was already destroyed during the same dispatch ([#1342](https://github.com/hammerjs/hammer.js/pull/1342), fixes [#1016](https://github.com/hammerjs/hammer.js/issues/1016))
+- Keep already-tracked touches in `TouchInput` `targetTouches` if their child target element is detached from the DOM mid-gesture ([#1345](https://github.com/hammerjs/hammer.js/pull/1345))
+
+##### Recognizers
+- Check axis-specific velocity (`overallVelocityX` / `overallVelocityY`) in `SwipeRecognizer` when only one axis is configured ([#1314](https://github.com/hammerjs/hammer.js/pull/1314))
+- Guard null lookups in `Recognizer.recognizeWith()`, `dropRecognizeWith()`, `requireFailure()`, and `dropRequireFailure()` ([#1315](https://github.com/hammerjs/hammer.js/pull/1315))
+- Return `STATE_FAILED` in `AttrRecognizer.process()` when `INPUT_CANCEL` arrives before recognition ([#1327](https://github.com/hammerjs/hammer.js/pull/1327), fixes [#1050](https://github.com/hammerjs/hammer.js/issues/1050), [#1132](https://github.com/hammerjs/hammer.js/issues/1132))
+- Always clear `PressRecognizer._timer` on `INPUT_END` and `INPUT_CANCEL` regardless of `deltaTime` ([#1331](https://github.com/hammerjs/hammer.js/pull/1331), fixes [#1129](https://github.com/hammerjs/hammer.js/issues/1129))
+- Do not recognize pans when `PanRecognizer` `direction` is set to `Hammer.DIRECTION_NONE` ([#1338](https://github.com/hammerjs/hammer.js/pull/1338), fixes [#1257](https://github.com/hammerjs/hammer.js/issues/1257))
+
+##### Touch-action
+- Skip `preventDefault()` on non-cancelable events (`srcEvent.cancelable === false`) ([#1311](https://github.com/hammerjs/hammer.js/pull/1311))
+- Normalize whitespace and casing in `TouchAction.set()` before `compute` and native CSS `touch-action` lookup ([#1344](https://github.com/hammerjs/hammer.js/pull/1344))
+
+##### Core & Utils
+- Return numeric `-1`/`0`/`1` comparator in `uniqueArray()` sort for stable cross-engine pointer ordering ([#1307](https://github.com/hammerjs/hammer.js/pull/1307), fixes [#985](https://github.com/hammerjs/hammer.js/issues/985))
+- Return an empty array for empty or whitespace-only strings in `splitStr()` ([#1309](https://github.com/hammerjs/hammer.js/pull/1309))
+- Guard `window`, `document`, and `navigator` on module load for SSR / Node.js compatibility ([#1324](https://github.com/hammerjs/hammer.js/pull/1324), fixes [#1060](https://github.com/hammerjs/hammer.js/issues/1060), [#930](https://github.com/hammerjs/hammer.js/issues/930), [#1245](https://github.com/hammerjs/hammer.js/issues/1245), [#1296](https://github.com/hammerjs/hammer.js/issues/1296), [#1290](https://github.com/hammerjs/hammer.js/issues/1290))
+- Guard `prefixed()` against `null` or `undefined` target objects ([#1326](https://github.com/hammerjs/hammer.js/pull/1326))
+- Shallow-clone caller `options` in `Hammer()` so caller objects are not mutated and `Object.freeze()` options work ([#1339](https://github.com/hammerjs/hammer.js/pull/1339))
+- Restore `.constructor` property on `Recognizer`, `Manager`, `Input`, and `TouchAction` prototypes ([#1340](https://github.com/hammerjs/hammer.js/pull/1340), fixes [#881](https://github.com/hammerjs/hammer.js/issues/881))
+
+##### Packaging, Build, Tests & CI
+- Add npm `"files"` allowlist (excluding `tests/` from published tarball), update vendored test jQuery to `3.7.1`, and drop unused Lo-Dash `2.4.1` ([#1317](https://github.com/hammerjs/hammer.js/pull/1317))
+- Modernize `devDependencies` (0 `npm audit` vulnerabilities), replace JSHint/JSCS with ESLint v10, and run QUnit in headless Chrome via Puppeteer ([#1318](https://github.com/hammerjs/hammer.js/pull/1318))
+- Add GitHub Actions CI (`ci.yml`), automated GitHub Release + npm OIDC Trusted Publishing workflow (`release.yml`), untrack compiled `hammer.js` / `hammer.min.js` / `hammer.min.js.map` from git, and add Dependabot config ([#1321](https://github.com/hammerjs/hammer.js/pull/1321), [#1347](https://github.com/hammerjs/hammer.js/pull/1347), [#1350](https://github.com/hammerjs/hammer.js/pull/1350))
+- Expand unit test suite coverage and add SSR smoke test ([#1322](https://github.com/hammerjs/hammer.js/pull/1322))
+- Add `RELEASING.md`, modernize `README.md`, update `package.json` metadata (`https` homepage, `jsdelivr`/`unpkg`, keywords), and remove obsolete legacy files (`component.json`, `.bowerrc`, `bower.json`, `hammer.min.map`, `changelog.js`) ([#1319](https://github.com/hammerjs/hammer.js/pull/1319), [#1323](https://github.com/hammerjs/hammer.js/pull/1323), [#1346](https://github.com/hammerjs/hammer.js/pull/1346), [#1348](https://github.com/hammerjs/hammer.js/pull/1348), [#1349](https://github.com/hammerjs/hammer.js/pull/1349), [#1351](https://github.com/hammerjs/hammer.js/pull/1351))
+
 ### 2.0.8, 2016-04-22
 
 ##### Manager
