@@ -392,4 +392,78 @@
             el.removeEventListener('custom', onDomCustom, false);
         }
     });
+
+    test('PressRecognizer with time: 0 fires press synchronously on INPUT_START and pressup on immediate INPUT_END', function() {
+        var events = [];
+        manager = new Hammer.Manager(el, {
+            recognizers: [[Hammer.Press, {time: 0}]]
+        });
+        manager.on('press pressup', function(ev) {
+            events.push(ev.type);
+        });
+
+        var srcEv = {preventDefault: function() {}, target: el};
+        manager.recognize({
+            eventType: $H.INPUT_START,
+            pointers: [{clientX: 20, clientY: 20}],
+            distance: 0,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        deepEqual(events, ['press'], 'press fires synchronously on INPUT_START when time is 0');
+
+        // Small move within threshold does not re-emit press
+        manager.recognize({
+            eventType: $H.INPUT_MOVE,
+            pointers: [{clientX: 22, clientY: 20}],
+            distance: 2,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        deepEqual(events, ['press'], 'INPUT_MOVE within threshold does not re-emit press');
+
+        // Immediate INPUT_END (deltaTime === 0) emits pressup
+        manager.recognize({
+            eventType: $H.INPUT_END,
+            pointers: [{clientX: 22, clientY: 20}],
+            distance: 2,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        deepEqual(events, ['press', 'pressup'], 'pressup fires on immediate INPUT_END when time is 0');
+
+        // Moving past threshold before INPUT_END suppresses pressup
+        events = [];
+        manager.recognize({
+            eventType: $H.INPUT_START,
+            pointers: [{clientX: 20, clientY: 20}],
+            distance: 0,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        manager.recognize({
+            eventType: $H.INPUT_END,
+            pointers: [{clientX: 60, clientY: 20}],
+            distance: 40,
+            deltaTime: 10,
+            srcEvent: srcEv
+        });
+        deepEqual(events, ['press'], 'moving beyond threshold cancels pressup');
+
+        // Default non-zero time still waits asynchronously
+        var delayedEvents = [];
+        manager.remove('press');
+        manager.add(new Hammer.Press({time: 251}));
+        manager.on('press', function(ev) {
+            delayedEvents.push(ev.type);
+        });
+        manager.recognize({
+            eventType: $H.INPUT_START,
+            pointers: [{clientX: 20, clientY: 20}],
+            distance: 0,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        deepEqual(delayedEvents, [], 'non-zero time press does not fire synchronously');
+    });
 })();
