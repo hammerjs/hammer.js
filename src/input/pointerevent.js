@@ -63,6 +63,9 @@ inherit(PointerEventInput, Input, {
             }
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
+        } else if (eventType & INPUT_MOVE && pointerType === INPUT_TYPE_MOUSE && ev.buttons === 0) {
+            eventType = INPUT_END;
+            removePointer = true;
         }
 
         // it not found, so the pointer hasn't been down (so it's probably a hover)
@@ -85,5 +88,10 @@ inherit(PointerEventInput, Input, {
             pointerType: pointerType,
             srcEvent: ev
         });
+    },
+
+    destroy: function() {
+        this.store.length = 0;
+        Input.prototype.destroy.call(this);
     }
 });

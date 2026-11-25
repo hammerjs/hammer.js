@@ -120,6 +120,37 @@
         }
     });
 
+    test('PointerEventInput ends stuck mouse pointer when ev.buttons === 0 and clears store on destroy', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.PointerEventInput(manager, function(mgr, type) {
+            calls.push(type);
+        });
+
+        try {
+            // Mouse released outside window/iframe -> subsequent pointermove arrives with buttons === 0
+            input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 25, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 40, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 60, clientY: 10});
+
+            deepEqual(
+                calls,
+                [$H.INPUT_START, $H.INPUT_MOVE, $H.INPUT_END],
+                'mouse pointermove with buttons === 0 converts to INPUT_END and stops subsequent hover events'
+            );
+            equal(input.store.length, 0, 'stuck mouse pointer removed from store');
+
+            // destroy() clears active pointers from store
+            input.handler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', button: 0, clientX: 15, clientY: 15});
+            equal(input.store.length, 1, 'touch pointer stored while active');
+            input.destroy();
+            equal(input.store.length, 0, 'destroy() clears pointer store');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('SingleTouchInput handles start, move, multi-touch end, cancel, and pre-start ignore', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});
