@@ -28,6 +28,8 @@ TouchAction.prototype = {
      * @param {String} value
      */
     set: function(value) {
+        value = value.toLowerCase().trim();
+
         // find out the touch-action by the event handlers
         if (value == TOUCH_ACTION_COMPUTE) {
             value = this.compute();
@@ -36,7 +38,7 @@ TouchAction.prototype = {
         if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
-        this.actions = value.toLowerCase().trim();
+        this.actions = value;
     },
 
     /**

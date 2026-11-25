@@ -183,4 +183,18 @@
             }
         }
     });
+
+    test('TouchAction.set normalizes whitespace and case before compute and native style lookup', function() {
+        manager = new Hammer.Manager(el, {
+            recognizers: [[Hammer.Pan, {direction: Hammer.DIRECTION_HORIZONTAL}]],
+            touchAction: ' COMPUTE '
+        });
+        equal(manager.touchAction.actions, 'pan-y', 'padded uppercase COMPUTE triggers touchAction.compute()');
+
+        manager.set({touchAction: ' PAN-X '});
+        equal(manager.touchAction.actions, 'pan-x', 'actions stored normalized');
+        if ($H.NATIVE_TOUCH_ACTION) {
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-x', 'native CSS touch-action applied for uppercase/padded value');
+        }
+    });
 })();
