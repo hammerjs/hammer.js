@@ -141,7 +141,9 @@ function inputHandler(manager, eventType, input) {
     manager.emit('hammer.input', input);
 
     manager.recognize(input);
-    manager.session.prevInput = input;
+    if (manager.element) {
+        manager.session.prevInput = input;
+    }
 }
 
 /**

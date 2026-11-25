@@ -188,3 +188,18 @@ test('Manager.set updates cssProps on element and restores previous styles clean
         ok(true, 'userSelect style not supported in environment');
     }
 });
+
+test('destroying manager inside a gesture handler does not re-attach session.prevInput', function() {
+    expect(2);
+
+    hammer.add(new Hammer.Tap());
+    hammer.on('tap', function() {
+        hammer.destroy();
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+
+    strictEqual(hammer.element, null, 'manager.element is cleared after destroy');
+    strictEqual(hammer.session.prevInput, undefined, 'manager.session.prevInput is not re-attached after destroy');
+});
