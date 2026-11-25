@@ -272,4 +272,23 @@
         utils.dispatchTouchEvent(newTarget, 'end', 50, 50);
         equal(tapCount, 1, 'new inputTarget triggers tap after set({inputTarget})');
     });
+
+    test('Input domHandler ignores events if manager was destroyed during the same dispatch', function() {
+        expect(1);
+
+        manager = new Hammer.Manager(el, {
+            domEvents: true,
+            inputClass: Hammer.MouseInput,
+            recognizers: [[Hammer.Tap]]
+        });
+
+        var domHandler = manager.input.domHandler;
+        domHandler({type: 'mousedown', button: 0, which: 1, clientX: 10, clientY: 10, target: el, preventDefault: function() {}});
+        manager.destroy();
+
+        // Simulate a browser invoking a snapshotted listener after destroy()
+        domHandler({type: 'mouseup', button: 0, which: 1, clientX: 10, clientY: 10, target: el, preventDefault: function() {}});
+        ok(true, 'domHandler does not throw after manager.destroy()');
+        manager = null;
+    });
 })();
