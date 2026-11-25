@@ -91,6 +91,18 @@ module.exports = [
         })
     },
     {
+        files: ['hammer.mjs'],
+        languageOptions: {
+            ecmaVersion: 2015,
+            sourceType: 'module',
+            globals: browserGlobals
+        },
+        rules: Object.assign({}, commonRules, {
+            'no-undef': 'error',
+            'no-unused-vars': ['error', {args: 'none', caughtErrors: 'none'}]
+        })
+    },
+    {
         files: ['src/**/*.js'],
         languageOptions: {
             ecmaVersion: 5,

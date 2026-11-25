@@ -69,10 +69,12 @@ jobs:
         run: |
           PKG_VERSION="$(node -p "require('./package.json').version")"
           test -s hammer.js
+          test -s hammer.mjs
           test -s hammer.min.js
           test -s hammer.min.js.map
           grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.js
-          ls -lh hammer.js hammer.min.js hammer.min.js.map
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.mjs
+          ls -lh hammer.js hammer.mjs hammer.min.js hammer.min.js.map
           npm pack --dry-run
 
       - name: Upload build assets to GitHub Release
@@ -82,6 +84,7 @@ jobs:
         run: |
           gh release upload "${RELEASE_TAG}" \
             hammer.js \
+            hammer.mjs \
             hammer.min.js \
             hammer.min.js.map \
             --clobber
