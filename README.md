@@ -13,10 +13,10 @@ Visit [hammerjs.github.io](https://hammerjs.github.io) for detailed documentatio
 npm install hammerjs
 ```
 
-Or include the pre-built script directly in your page:
+Or download the pre-built bundle from [GitHub Releases](https://github.com/hammerjs/hammer.js/releases) or load it from a CDN:
 
 ```html
-<script src="hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs/hammer.min.js"></script>
 ```
 
 ## Usage
