@@ -39,6 +39,10 @@ module.exports = function(grunt) {
             build: {
                 src: ['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']),
                 dest: 'hammer.js'
+            },
+            esm: {
+                src: ['src/hammer.esm.prefix.js'].concat(srcCore, ['src/hammer.esm.suffix.js']),
+                dest: 'hammer.mjs'
             }
         },
 
@@ -65,49 +69,14 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('string-replace', 'Replace {{PKG_VERSION}} in hammer.js', function() {
+    grunt.registerTask('string-replace', 'Replace {{PKG_VERSION}} in built bundles', function() {
         var pkg = grunt.config('pkg');
-        var content = grunt.file.read('hammer.js');
-        grunt.file.write('hammer.js', content.replace(/\{\{PKG_VERSION\}\}/g, pkg.version));
-    });
-
-    grunt.registerTask('build-esm', 'Build native ES module bundle hammer.mjs', function() {
-        var pkg = grunt.config('pkg');
-        var files = grunt.file.expand(srcCore);
-        var exportNames = ['VERSION', 'defaults'];
-        var parts = files.map(function(filepath) {
-            var content = grunt.file.read(filepath);
-            if (filepath === 'src/expose.js') {
-                var umdIdx = content.indexOf('var freeGlobal');
-                if (umdIdx === -1) {
-                    grunt.fail.fatal('build-esm: expected UMD marker in src/expose.js');
-                }
-                var assignSection = content.slice(0, umdIdx).replace(/\s*\/\/[^\n]*\n?$/g, '');
-                var keyRe = /^\s+([A-Za-z_$][A-Za-z0-9_$]*):/gm;
-                var match;
-                while ((match = keyRe.exec(assignSection)) !== null) {
-                    exportNames.push(match[1]);
-                }
-                return assignSection.trimEnd();
+        ['hammer.js', 'hammer.mjs'].forEach(function(filepath) {
+            if (grunt.file.exists(filepath)) {
+                var content = grunt.file.read(filepath);
+                grunt.file.write(filepath, content.replace(/\{\{PKG_VERSION\}\}/g, pkg.version));
             }
-            return content;
         });
-
-        var body = parts.join('\n').replace(/\{\{PKG_VERSION\}\}/g, pkg.version);
-        var namedExports = exportNames.map(function(name) {
-            return 'export var ' + name + ' = Hammer.' + name + ';';
-        }).join('\n');
-
-        var esm =
-            'var Hammer = (function(window, document, exportName, undefined) {\n' +
-            body + '\n' +
-            'return Hammer;\n' +
-            '})(typeof window !== \'undefined\' ? window : {}, typeof document !== \'undefined\' ? document : {}, \'Hammer\');\n\n' +
-            'export default Hammer;\n' +
-            namedExports + '\n';
-
-        grunt.file.write('hammer.mjs', esm);
-        grunt.log.ok('Built hammer.mjs (' + exportNames.length + ' named exports + default).');
     });
 
     grunt.registerTask('build-test', 'Build tests/build.js exposing internal symbols on window.$H', function() {
@@ -132,6 +101,7 @@ module.exports = function(grunt) {
             '\'use strict\';\n' +
             'var $H = window.$H = {};\n' +
             body + '\n' +
+            'window[exportName] = Hammer;\n' +
             exportsCode + '\n' +
             '})(window, document, \'Hammer\');\n';
 
@@ -308,14 +278,14 @@ module.exports = function(grunt) {
 
         var esmUrl = url.pathToFileURL(path.resolve('hammer.mjs')).href + '?t=' + Date.now();
         import(esmUrl).then(function(mod) {
-            if (typeof mod.default !== 'function' ||
-                typeof mod.Manager !== 'function' ||
-                typeof mod.Pan !== 'function' ||
-                typeof mod.Swipe !== 'function' ||
-                mod.VERSION !== pkg.version ||
-                mod.DIRECTION_HORIZONTAL !== mod.default.DIRECTION_HORIZONTAL) {
-                grunt.fail.fatal('SSR ESM load failed to expose default and named Hammer exports');
+            if (typeof mod.default !== 'function' || mod.VERSION !== pkg.version) {
+                grunt.fail.fatal('SSR ESM load failed to expose default Hammer export');
             }
+            Object.keys(mod.default).forEach(function(key) {
+                if (mod[key] !== mod.default[key]) {
+                    grunt.fail.fatal('hammer.mjs missing or mismatched named export: ' + key);
+                }
+            });
             grunt.log.ok('SSR load passed (CommonJS, bare runtime, and native ESM without window/document).');
             done();
         }).catch(function(err) {
@@ -330,8 +300,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-banner');
 
     grunt.registerTask('default', ['connect:server:keepalive']);
-    grunt.registerTask('dist', ['concat', 'string-replace', 'build-esm', 'uglify:min', 'usebanner']);
+    grunt.registerTask('dist', ['concat', 'string-replace', 'uglify:min', 'usebanner']);
     grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
-    grunt.registerTask('test', ['concat', 'string-replace', 'build-esm', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('test', ['concat', 'string-replace', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
 };
