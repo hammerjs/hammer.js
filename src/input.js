@@ -390,5 +390,6 @@ function getRotation(start, end) {
  * @return {Number} scale
  */
 function getScale(start, end) {
-    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
+    var startDist = getDistance(start[0], start[1], PROPS_CLIENT_XY);
+    return startDist ? getDistance(end[0], end[1], PROPS_CLIENT_XY) / startDist : 1;
 }
