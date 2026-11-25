@@ -61,3 +61,35 @@ asyncTest('Pan event flow should be start -> left -> end', function() {
         start();
     });
 });
+
+test('calling manager.stop() inside panstart does not skip panstart on the next gesture', function() {
+    expect(2);
+
+    var pan = new Hammer.Pan({threshold: 5});
+    hammer.add(pan);
+
+    var events = [];
+    var shouldStop = true;
+
+    hammer.on('panstart panmove panend', function(ev) {
+        events.push(ev.type);
+        if (ev.type === 'panstart' && shouldStop) {
+            hammer.stop();
+        }
+    });
+
+    // Gesture 1: triggers panstart and stops the session mid-gesture
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 30, 10);
+    utils.dispatchTouchEvent(el, 'move', 50, 10);
+    utils.dispatchTouchEvent(el, 'end', 50, 10);
+    deepEqual(events, ['panstart'], 'first gesture stops after panstart');
+
+    // Gesture 2: fresh session must reset recognizer state and emit panstart again
+    events = [];
+    shouldStop = false;
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 30, 10);
+    utils.dispatchTouchEvent(el, 'end', 30, 10);
+    deepEqual(events, ['panstart', 'panend'], 'next gesture after stop() properly emits panstart');
+});
