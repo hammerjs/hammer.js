@@ -230,6 +230,35 @@
         }
     });
 
+    test('TouchInput retains already-tracked touches when their child target is detached mid-gesture', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.TouchInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointers: data.pointers});
+        });
+
+        try {
+            var childEl = document.createElement('span');
+            el.appendChild(childEl);
+
+            var t1 = {identifier: 1, clientX: 20, clientY: 20, target: childEl};
+            var t2 = {identifier: 2, clientX: 60, clientY: 60, target: el};
+
+            // Both touches start inside target
+            input.handler({type: 'touchstart', touches: [t1, t2], changedTouches: [t1, t2]});
+            equal(calls[0].pointers.length, 2, 'both touches tracked on touchstart');
+
+            // Remove childEl from DOM while both touches remain active
+            el.removeChild(childEl);
+
+            // Second finger moves; first finger (whose target is now detached) must stay in pointers
+            input.handler({type: 'touchmove', touches: [t1, t2], changedTouches: [t2]});
+            equal(calls[1].pointers.length, 2, 'tracked touch on detached child stays in pointers during touchmove');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('TouchMouseInput deduplicates synthetic mouse events near recent touches and forwards distant mouse events', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});
