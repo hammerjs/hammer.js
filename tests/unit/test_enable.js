@@ -49,6 +49,48 @@ test('should disable recognizing when the manager is disabled.', function() {
     }, 100);
 });
 
+asyncTest('disabling manager mid-gesture cancels pending timers and resets active recognizers', function() {
+    expect(3);
+
+    var pressCount = 0;
+    var panEvents = [];
+    hammer.add([
+        new Hammer.Pan({threshold: 5}),
+        new Hammer.Press({time: 30})
+    ]);
+    hammer.on('press', function() {
+        pressCount++;
+    });
+    hammer.on('panstart panmove panend', function(ev) {
+        panEvents.push(ev.type);
+    });
+
+    // 1. Start press timer, then disable manager before timer fires
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    hammer.set({enable: false});
+
+    // 2. Re-enable, begin a pan, disable mid-pan (swallowing touchend), then re-enable and pan again
+    setTimeout(function() {
+        equal(pressCount, 0, 'pending press timer cancelled when manager is disabled via set({enable: false})');
+
+        hammer.set({enable: true});
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        utils.dispatchTouchEvent(el, 'move', 30, 10);
+        deepEqual(panEvents, ['panstart'], 'first pan starts normally');
+
+        hammer.set({enable: false});
+        utils.dispatchTouchEvent(el, 'end', 30, 10);
+
+        panEvents = [];
+        hammer.set({enable: true});
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        utils.dispatchTouchEvent(el, 'move', 30, 10);
+        utils.dispatchTouchEvent(el, 'end', 30, 10);
+        deepEqual(panEvents, ['panstart', 'panend'], 'pan recognizer resets cleanly so next gesture emits panstart');
+        start();
+    }, 60);
+});
+
 test('should toggle a recognizer using the `set` call to the recognizer enable property', function() {
     expect(2);
 
