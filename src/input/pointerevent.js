@@ -50,6 +50,10 @@ inherit(PointerEventInput, Input, {
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
         var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
+        if (!isAllowedPointerType(this.manager, pointerType)) {
+            return;
+        }
+
         var isTouch = (pointerType == INPUT_TYPE_TOUCH);
 
         // get index of the event in the store

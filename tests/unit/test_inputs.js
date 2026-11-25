@@ -376,4 +376,80 @@
         ok(true, 'domHandler does not throw after manager.destroy()');
         manager = null;
     });
+
+    test('Manager options.pointerTypes filters disallowed pointer types across input drivers', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {
+            recognizers: [],
+            pointerTypes: ['touch']
+        });
+
+        var pe = new $H.PointerEventInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+        var mi = new $H.MouseInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+        var ti = new $H.TouchInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+        var sti = new $H.SingleTouchInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+
+        try {
+            // Mouse events are ignored and never pollute store/pressed
+            pe.handler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 0, clientX: 10, clientY: 10});
+            pe.handler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, clientX: 20, clientY: 10});
+            mi.handler({type: 'mousedown', button: 0, which: 1, clientX: 10, clientY: 10});
+            equal(calls.length, 0, 'mouse events ignored when pointerTypes is ["touch"]');
+            equal(pe.store.length, 0, 'ignored mouse pointer never enters PointerEventInput.store');
+            equal(mi.pressed, false, 'ignored mouse event never sets MouseInput.pressed');
+
+            // Touch events are accepted
+            pe.handler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', button: 0, clientX: 10, clientY: 10});
+            pe.handler({type: 'pointerup', pointerId: 2, pointerType: 'touch', button: 0, clientX: 10, clientY: 10});
+            equal(calls.length, 2, 'touch events accepted when pointerTypes is ["touch"]');
+
+            // Space-separated string syntax works without regex/split allocations
+            calls = [];
+            manager.set({pointerTypes: 'touch pen'});
+            pe.handler({type: 'pointerdown', pointerId: 3, pointerType: 'pen', button: 0, clientX: 10, clientY: 10});
+            pe.handler({type: 'pointerup', pointerId: 3, pointerType: 'pen', button: 0, clientX: 10, clientY: 10});
+            pe.handler({type: 'pointerdown', pointerId: 4, pointerType: 'mouse', button: 0, clientX: 10, clientY: 10});
+            equal(calls.length, 2, 'pen accepted and mouse rejected with pointerTypes: "touch pen"');
+            equal(calls[0].pointerType, $H.INPUT_TYPE_PEN, 'pen pointerType preserved');
+
+            // Empty string / empty pointerType never falsely matches
+            equal($H.isAllowedPointerType(manager, ''), false, 'empty pointerType rejected');
+
+            // TouchInput and SingleTouchInput short-circuit before mutating state when touch is disallowed
+            calls = [];
+            manager.set({pointerTypes: ['mouse']});
+            var touchObj = {identifier: 7, clientX: 10, clientY: 10, target: el};
+            ti.handler({type: 'touchstart', touches: [touchObj], changedTouches: [touchObj], target: el});
+            sti.handler({type: 'touchstart', touches: [touchObj], changedTouches: [touchObj], target: el});
+            equal(calls.length, 0, 'TouchInput and SingleTouchInput ignore touch when pointerTypes is ["mouse"]');
+            equal(ti.targetIds[7], undefined, 'TouchInput does not record targetIds for disallowed touch');
+            equal(sti.started, false, 'SingleTouchInput does not set started for disallowed touch');
+
+            // inputHandler catch-all filters custom/direct input
+            var inputEvents = [];
+            manager.on('hammer.input', function(ev) {
+                inputEvents.push(ev.pointerType);
+            });
+            $H.inputHandler(manager, $H.INPUT_START, {
+                pointers: [{clientX: 10, clientY: 10}],
+                changedPointers: [{clientX: 10, clientY: 10}],
+                pointerType: $H.INPUT_TYPE_TOUCH,
+                srcEvent: {target: el}
+            });
+            equal(inputEvents.length, 0, 'inputHandler drops disallowed pointerType');
+        } finally {
+            pe.destroy();
+            mi.destroy();
+            ti.destroy();
+            sti.destroy();
+        }
+    });
 })();
