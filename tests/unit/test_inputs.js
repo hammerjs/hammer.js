@@ -245,4 +245,31 @@
             input.destroy();
         }
     });
+
+    test('TouchMouseInput rebinds touch and mouse listeners when Manager.set updates inputTarget', function() {
+        var newTarget = utils.createHitArea();
+        var tapCount = 0;
+
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchMouseInput,
+            recognizers: [[Hammer.Tap]]
+        });
+        manager.on('tap', function() {
+            tapCount++;
+        });
+
+        manager.set({inputTarget: newTarget});
+        strictEqual(manager.input.touch.target, newTarget, 'child TouchInput target updated');
+        strictEqual(manager.input.mouse.target, newTarget, 'child MouseInput target updated');
+
+        // Old target no longer triggers tap
+        utils.dispatchTouchEvent(el, 'start', 50, 50);
+        utils.dispatchTouchEvent(el, 'end', 50, 50);
+        equal(tapCount, 0, 'old inputTarget no longer triggers tap');
+
+        // New target triggers tap
+        utils.dispatchTouchEvent(newTarget, 'start', 50, 50);
+        utils.dispatchTouchEvent(newTarget, 'end', 50, 50);
+        equal(tapCount, 1, 'new inputTarget triggers tap after set({inputTarget})');
+    });
 })();
