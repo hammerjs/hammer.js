@@ -323,4 +323,31 @@
         deepEqual(emitted, [], 'INPUT_CANCEL before recognition emits no pan events');
         equal(pan.state, $H.STATE_FAILED, 'recognizer transitions to STATE_FAILED');
     });
+
+    asyncTest('PressRecognizer clears timer on INPUT_END and INPUT_CANCEL even when deltaTime exceeds time', function() {
+        expect(2);
+
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var press = manager.add(new Hammer.Press({time: 20}));
+        var events = [];
+        manager.on('press pressup', function(ev) {
+            events.push(ev.type);
+        });
+
+        var srcEv = {cancelable: true, preventDefault: function() {}};
+
+        // Case 1: INPUT_END arrives with deltaTime > time before timer callback runs
+        press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
+        deepEqual(events, ['pressup'], 'pressup emitted on valid end');
+
+        // Case 2: INPUT_CANCEL arrives with deltaTime > time before timer callback runs
+        press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_CANCEL, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
+
+        setTimeout(function() {
+            deepEqual(events, ['pressup'], 'no stale press event fires after end or cancel');
+            start();
+        }, 60);
+    });
 })();
