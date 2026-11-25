@@ -30,11 +30,11 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         var velocity;
 
         if (direction & DIRECTION_HORIZONTAL && direction & DIRECTION_VERTICAL) {
-            velocity = input.overallVelocity;
+            velocity = input.velocity;
         } else if (direction & DIRECTION_HORIZONTAL) {
-            velocity = input.overallVelocityX;
+            velocity = input.velocityX;
         } else if (direction & DIRECTION_VERTICAL) {
-            velocity = input.overallVelocityY;
+            velocity = input.velocityY;
         }
 
         return this._super.attrTest.call(this, input) &&

@@ -9,7 +9,10 @@ var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
 var INPUT_TYPE_KINECT = 'kinect';
 
-var COMPUTE_INTERVAL = 25;
+var VELOCITY_HISTORY_CAPACITY = 20;
+var VELOCITY_HORIZON_MS = 100;
+var VELOCITY_ASSUME_STOPPED_MS = 40;
+var VELOCITY_SINGULAR_EPSILON = 1e-12;
 
 var INPUT_START = 1;
 var INPUT_MOVE = 2;
@@ -228,38 +231,132 @@ function computeDeltaXY(session, input) {
 }
 
 /**
- * velocity is calculated every x ms
+ * track recent samples on the session and compute recency-weighted linear velocity (px/ms)
  * @param {Object} session
  * @param {Object} input
  */
 function computeIntervalInputData(session, input) {
-    var last = session.lastInterval || input,
-        deltaTime = input.timeStamp - last.timeStamp,
-        velocity, velocityX, velocityY, direction;
+    var samples = session.velocitySamples || (session.velocitySamples = []);
+    var eventType = input.eventType;
+    var timeStamp = input.timeStamp;
+    var x = input.deltaX;
+    var y = input.deltaY;
+    var lastSample, dt;
 
-    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
-        var deltaX = input.deltaX - last.deltaX;
-        var deltaY = input.deltaY - last.deltaY;
-
-        var v = getVelocity(deltaTime, deltaX, deltaY);
-        velocityX = v.x;
-        velocityY = v.y;
-        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
-        direction = getDirection(deltaX, deltaY);
-
-        session.lastInterval = input;
-    } else {
-        // use latest velocity info if it doesn't overtake a minimum period
-        velocity = last.velocity;
-        velocityX = last.velocityX;
-        velocityY = last.velocityY;
-        direction = last.direction;
+    if (eventType === INPUT_CANCEL) {
+        samples.length = 0;
+        input.velocity = 0;
+        input.velocityX = 0;
+        input.velocityY = 0;
+        input.direction = (session.prevInput && session.prevInput.direction) || DIRECTION_NONE;
+        return;
     }
 
-    input.velocity = velocity;
-    input.velocityX = velocityX;
-    input.velocityY = velocityY;
-    input.direction = direction;
+    if (eventType === INPUT_END) {
+        if (samples.length > 0) {
+            lastSample = samples[samples.length - 1];
+            dt = timeStamp - lastSample.t;
+            if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
+                samples.length = 0;
+            } else if (samples.length < 2 && dt > 0 && (x !== lastSample.x || y !== lastSample.y)) {
+                samples.push({t: timeStamp, x: x, y: y});
+            }
+        }
+    } else {
+        var merged = false;
+        if (samples.length > 0) {
+            lastSample = samples[samples.length - 1];
+            dt = timeStamp - lastSample.t;
+            if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
+                samples.length = 0;
+            } else if (dt === 0) {
+                lastSample.x = x;
+                lastSample.y = y;
+                merged = true;
+            }
+        }
+
+        if (!merged) {
+            samples.push({t: timeStamp, x: x, y: y});
+            if (samples.length > VELOCITY_HISTORY_CAPACITY) {
+                samples.shift();
+            }
+        }
+    }
+
+    var v = computeWeightedVelocity(samples);
+    input.velocityX = v.x;
+    input.velocityY = v.y;
+    input.velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
+    input.direction = getDirection(v.x, v.y);
+}
+
+/**
+ * compute recency-weighted 1st-order least-squares velocity (px/ms) over samples within VELOCITY_HORIZON_MS
+ * @param {Array} samples
+ * @returns {Object} velocity `x` and `y`
+ */
+function computeWeightedVelocity(samples) {
+    var len = samples.length;
+    if (len < 2) {
+        return {x: 0, y: 0};
+    }
+
+    var newest = samples[len - 1];
+    var newestTime = newest.t;
+    var startIdx = len - 1;
+    while (startIdx > 0 && (newestTime - samples[startIdx - 1].t) <= VELOCITY_HORIZON_MS) {
+        startIdx--;
+    }
+
+    var count = len - startIdx;
+    var oldest = samples[startIdx];
+    var span = newestTime - oldest.t;
+    if (count < 2 || span <= 0) {
+        return {x: 0, y: 0};
+    }
+
+    if (count === 2) {
+        return {
+            x: (newest.x - oldest.x) / span,
+            y: (newest.y - oldest.y) / span
+        };
+    }
+
+    var sw = 0, st = 0, stt = 0;
+    var sx = 0, stx = 0;
+    var sy = 0, sty = 0;
+    var i, s, u, w, tau, dx, dy;
+
+    for (i = startIdx; i < len; i++) {
+        s = samples[i];
+        u = (s.t - oldest.t) / span;
+        w = 0.1 + 0.9 * u * u;
+        tau = s.t - newestTime;
+        dx = s.x - newest.x;
+        dy = s.y - newest.y;
+
+        sw += w;
+        st += w * tau;
+        stt += w * tau * tau;
+        sx += w * dx;
+        stx += w * tau * dx;
+        sy += w * dy;
+        sty += w * tau * dy;
+    }
+
+    var denom = sw * stt - st * st;
+    if (abs(denom) <= VELOCITY_SINGULAR_EPSILON) {
+        return {
+            x: (newest.x - oldest.x) / span,
+            y: (newest.y - oldest.y) / span
+        };
+    }
+
+    return {
+        x: (sw * stx - st * sx) / denom,
+        y: (sw * sty - st * sy) / denom
+    };
 }
 
 /**

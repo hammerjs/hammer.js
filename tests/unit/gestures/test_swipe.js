@@ -48,13 +48,13 @@ test('single-axis swipe checks velocity along configured axis', function() {
         maxPointers: 1,
         distance: 20,
         offsetDirection: Hammer.DIRECTION_RIGHT,
-        overallVelocity: 0.9,
-        overallVelocityX: 0.1,
-        overallVelocityY: 0.9,
+        velocity: 0.9,
+        velocityX: 0.1,
+        velocityY: 0.9,
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 0, 'horizontal swipe rejected when overallVelocityX is below threshold');
+    equal(swipeCount, 0, 'horizontal swipe rejected when velocityX is below threshold');
 
     hammer.recognize({
         pointers: [{clientX: 120, clientY: 50}],
@@ -63,13 +63,13 @@ test('single-axis swipe checks velocity along configured axis', function() {
         maxPointers: 1,
         distance: 70,
         offsetDirection: Hammer.DIRECTION_RIGHT,
-        overallVelocity: 0.6,
-        overallVelocityX: 0.6,
-        overallVelocityY: 0,
+        velocity: 0.6,
+        velocityX: 0.6,
+        velocityY: 0,
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'horizontal swipe accepted when overallVelocityX exceeds threshold');
+    equal(swipeCount, 1, 'horizontal swipe accepted when velocityX exceeds threshold');
 
     hammer.add(new Hammer.Swipe({
         direction: Hammer.DIRECTION_VERTICAL,
@@ -84,13 +84,13 @@ test('single-axis swipe checks velocity along configured axis', function() {
         maxPointers: 1,
         distance: 20,
         offsetDirection: Hammer.DIRECTION_DOWN,
-        overallVelocity: 0.9,
-        overallVelocityX: 0.9,
-        overallVelocityY: 0.1,
+        velocity: 0.9,
+        velocityX: 0.9,
+        velocityY: 0.1,
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'vertical swipe rejected when overallVelocityY is below threshold');
+    equal(swipeCount, 1, 'vertical swipe rejected when velocityY is below threshold');
 
     hammer.recognize({
         pointers: [{clientX: 50, clientY: 120}],
@@ -99,11 +99,131 @@ test('single-axis swipe checks velocity along configured axis', function() {
         maxPointers: 1,
         distance: 70,
         offsetDirection: Hammer.DIRECTION_DOWN,
-        overallVelocity: 0.6,
-        overallVelocityX: 0,
-        overallVelocityY: 0.6,
+        velocity: 0.6,
+        velocityX: 0,
+        velocityY: 0.6,
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 2, 'vertical swipe accepted when overallVelocityY exceeds threshold');
+    equal(swipeCount, 2, 'vertical swipe accepted when velocityY exceeds threshold');
+});
+
+test('weighted velocity tracker: constant speed, jitter smoothing, late flick, pause stop, peel-off, and 1-frame flick', function() {
+    function feed(session, eventType, timeStamp, deltaX, deltaY) {
+        var inp = {
+            eventType: eventType,
+            timeStamp: timeStamp,
+            deltaX: deltaX,
+            deltaY: deltaY
+        };
+        $H.computeIntervalInputData(session, inp);
+        session.prevInput = inp;
+        return inp;
+    }
+
+    // 1. Constant velocity (0.8 px/ms X, -0.4 px/ms Y) with uneven intervals -> exact slope
+    var s1 = {};
+    var times = [0, 8, 21, 33, 50, 66, 85, 100];
+    var out;
+    for (var i = 0; i < times.length; i++) {
+        out = feed(s1, i === 0 ? Hammer.INPUT_START : Hammer.INPUT_MOVE, times[i], times[i] * 0.8, times[i] * -0.4);
+    }
+    ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'exact velocityX (0.8 px/ms) on uneven intervals');
+    ok(Math.abs(out.velocityY - (-0.4)) < 1e-6, 'exact velocityY (-0.4 px/ms) on uneven intervals');
+    ok(Math.abs(out.velocity - 0.8) < 1e-6, 'dominant axis velocity matches velocityX');
+    equal(out.direction, Hammer.DIRECTION_RIGHT, 'direction derived from weighted velocity');
+
+    // 2. Liftoff peel-off shift on INPUT_END is ignored when >= 2 move samples exist
+    out = feed(s1, Hammer.INPUT_END, 108, 72, -35);
+    ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'capacitive peel-off shift on INPUT_END does not corrupt release velocity');
+
+    // 3. Pausing > 40ms before INPUT_END zeroes velocity cleanly (no phantom swipe after stop)
+    var s2 = {};
+    feed(s2, Hammer.INPUT_START, 0, 0, 0);
+    feed(s2, Hammer.INPUT_MOVE, 10, 15, 0);
+    feed(s2, Hammer.INPUT_MOVE, 20, 30, 0);
+    out = feed(s2, Hammer.INPUT_END, 80, 30, 0);
+    equal(out.velocityX, 0, 'velocityX resets to 0 when pointer pauses > 40ms before lift');
+    equal(out.velocity, 0, 'velocity resets to 0 after pause');
+
+    // 4. Slow drag followed by fast late flick (> 100ms total) reflects recent flick velocity
+    var s3 = {};
+    feed(s3, Hammer.INPUT_START, 0, 0, 0);
+    feed(s3, Hammer.INPUT_MOVE, 20, 2, 0);
+    feed(s3, Hammer.INPUT_MOVE, 40, 4, 0);
+    feed(s3, Hammer.INPUT_MOVE, 60, 6, 0);
+    feed(s3, Hammer.INPUT_MOVE, 80, 8, 0);
+    feed(s3, Hammer.INPUT_MOVE, 100, 10, 0);
+    feed(s3, Hammer.INPUT_MOVE, 120, 12, 0);
+    feed(s3, Hammer.INPUT_MOVE, 130, 22, 0);
+    feed(s3, Hammer.INPUT_MOVE, 140, 32, 0);
+    feed(s3, Hammer.INPUT_MOVE, 150, 42, 0);
+    out = feed(s3, Hammer.INPUT_END, 155, 42, 0);
+    ok(out.velocityX > 0.5, 'recency-weighted LSQ1 captures late flick velocity (' + out.velocityX.toFixed(3) + ' px/ms)');
+
+    // 5. Fast 1-frame flick (INPUT_START -> INPUT_END with no INPUT_MOVE) still computes velocity
+    var s4 = {};
+    feed(s4, Hammer.INPUT_START, 0, 0, 0);
+    out = feed(s4, Hammer.INPUT_END, 20, 40, 0);
+    ok(Math.abs(out.velocityX - 2.0) < 1e-6, '1-frame flick computes exact velocity');
+
+    // 6. INPUT_CANCEL clears samples and zeroes velocity
+    var s5 = {};
+    feed(s5, Hammer.INPUT_START, 0, 0, 0);
+    feed(s5, Hammer.INPUT_MOVE, 15, 30, 0);
+    out = feed(s5, Hammer.INPUT_CANCEL, 25, 30, 0);
+    equal(out.velocity, 0, 'INPUT_CANCEL zeroes velocity');
+    equal(s5.velocitySamples.length, 0, 'INPUT_CANCEL clears velocity sample buffer');
+});
+
+test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using weighted velocity', function() {
+    expect(2);
+
+    var swipe = new Hammer.Swipe({
+        direction: Hammer.DIRECTION_HORIZONTAL,
+        threshold: 10,
+        velocity: 0.3
+    });
+    hammer.add(swipe);
+    hammer.on('swiperight', function() {
+        swipeCount++;
+    });
+
+    // Case 1: Slow drag then fast flick at the end (overallVelocityX = 0.25 < 0.3, weighted velocityX = 0.85 > 0.3)
+    hammer.recognize({
+        pointers: [{clientX: 100, clientY: 50}],
+        changedPointers: [{clientX: 100, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 50,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        overallVelocity: 0.25,
+        overallVelocityX: 0.25,
+        overallVelocityY: 0,
+        velocity: 0.85,
+        velocityX: 0.85,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    equal(swipeCount, 1, 'late flick triggers swipe even when overallVelocityX is below threshold');
+
+    // Case 2: Fast drag followed by pause before lift (overallVelocityX = 0.8 > 0.3, weighted velocityX = 0)
+    hammer.recognize({
+        pointers: [{clientX: 150, clientY: 50}],
+        changedPointers: [{clientX: 150, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 100,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        overallVelocity: 0.8,
+        overallVelocityX: 0.8,
+        overallVelocityY: 0,
+        velocity: 0,
+        velocityX: 0,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    equal(swipeCount, 1, 'drag followed by pause before lift does not trigger swipe');
 });
