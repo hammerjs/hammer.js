@@ -55,6 +55,13 @@ Manager.prototype = {
             this.input.target = options.inputTarget;
             this.input.init();
         }
+        if (options.enable !== undefined && !boolOrFn(this.options.enable, [this])) {
+            this.stop(true);
+            each(this.recognizers, function(recognizer) {
+                recognizer.reset();
+                recognizer.state = STATE_POSSIBLE;
+            });
+        }
         return this;
     },
 
