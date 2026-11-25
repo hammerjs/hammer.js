@@ -9,10 +9,10 @@ var INPUT_TYPE_PEN = 'pen';
 var INPUT_TYPE_MOUSE = 'mouse';
 var INPUT_TYPE_KINECT = 'kinect';
 
-var VELOCITY_HISTORY_CAPACITY = 20;
+var VELOCITY_HISTORY_CAPACITY = 32;
 var VELOCITY_HORIZON_MS = 100;
 var VELOCITY_ASSUME_STOPPED_MS = 40;
-var VELOCITY_SINGULAR_EPSILON = 1e-12;
+var VELOCITY_MIN_COALESCED_INTERVAL_MS = 4;
 
 var INPUT_START = 1;
 var INPUT_MOVE = 2;
@@ -266,27 +266,19 @@ function computeIntervalInputData(session, input) {
         var srcEvent = input.srcEvent;
         if (eventType === INPUT_MOVE && srcEvent && typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
             var coalesced = srcEvent.getCoalescedEvents();
-            if (coalesced && coalesced.length > 1 &&
-                typeof srcEvent.timeStamp === 'number' &&
-                typeof srcEvent.clientX === 'number' &&
-                typeof srcEvent.clientY === 'number') {
-                var pointersLen = (input.pointers && input.pointers.length) || 1;
+            if (coalesced && coalesced.length > 1 && srcEvent.clientX != null && srcEvent.clientY != null) {
+                var invPointersLen = 1 / ((input.pointers && input.pointers.length) || 1);
                 for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
                     var c = coalesced[cIdx];
-                    if (typeof c.timeStamp !== 'number' ||
-                        typeof c.clientX !== 'number' ||
-                        typeof c.clientY !== 'number') {
-                        continue;
-                    }
                     var offset = c.timeStamp - srcEvent.timeStamp;
-                    if (offset <= 0 && offset >= -VELOCITY_HORIZON_MS) {
+                    if (offset < 0 && offset >= -VELOCITY_HORIZON_MS && c.clientX != null && c.clientY != null) {
                         var sampleTime = timeStamp + offset;
-                        if (samples.length === 0 || sampleTime > samples[samples.length - 1].t) {
+                        if (samples.length === 0 || (sampleTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS) {
                             recordVelocitySample(
                                 samples,
                                 sampleTime,
-                                x + (c.clientX - srcEvent.clientX) / pointersLen,
-                                y + (c.clientY - srcEvent.clientY) / pointersLen
+                                x + (c.clientX - srcEvent.clientX) * invPointersLen,
+                                y + (c.clientY - srcEvent.clientY) * invPointersLen
                             );
                         }
                     }
@@ -296,11 +288,7 @@ function computeIntervalInputData(session, input) {
         recordVelocitySample(samples, timeStamp, x, y);
     }
 
-    var v = computeWeightedVelocity(samples);
-    input.velocityX = v.x;
-    input.velocityY = v.y;
-    input.velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
-    input.direction = getDirection(v.x, v.y);
+    computeWeightedVelocity(samples, input);
 }
 
 /**
@@ -332,69 +320,66 @@ function recordVelocitySample(samples, timeStamp, x, y) {
 /**
  * compute recency-weighted 1st-order least-squares velocity (px/ms) over samples within VELOCITY_HORIZON_MS
  * @param {Array} samples
- * @returns {Object} velocity `x` and `y`
+ * @param {Object} input
  */
-function computeWeightedVelocity(samples) {
+function computeWeightedVelocity(samples, input) {
     var len = samples.length;
-    if (len < 2) {
-        return {x: 0, y: 0};
+    var vx = 0;
+    var vy = 0;
+
+    if (len >= 2) {
+        var newest = samples[len - 1];
+        var newestTime = newest.t;
+        var startIdx = len - 1;
+        while (startIdx > 0 && (newestTime - samples[startIdx - 1].t) <= VELOCITY_HORIZON_MS) {
+            startIdx--;
+        }
+
+        var oldest = samples[startIdx];
+        var span = newestTime - oldest.t;
+        if (span > 0) {
+            var invSpan = 1 / span;
+            vx = (newest.x - oldest.x) * invSpan;
+            vy = (newest.y - oldest.y) * invSpan;
+
+            if (len - startIdx > 2) {
+                var sw = 1, st = 0, stt = 0;
+                var sx = 0, stx = 0;
+                var sy = 0, sty = 0;
+                var i, s, tau, u, w, wt, dx, dy;
+
+                for (i = startIdx; i < len - 1; i++) {
+                    s = samples[i];
+                    tau = (s.t - newestTime) * invSpan;
+                    u = 1 + tau;
+                    w = 0.1 + 0.9 * u * u;
+                    wt = w * tau;
+                    dx = s.x - newest.x;
+                    dy = s.y - newest.y;
+
+                    sw += w;
+                    st += wt;
+                    stt += wt * tau;
+                    sx += w * dx;
+                    stx += wt * dx;
+                    sy += w * dy;
+                    sty += wt * dy;
+                }
+
+                var denom = sw * stt - st * st;
+                if (denom > 1e-12) {
+                    denom = invSpan / denom;
+                    vx = (sw * stx - st * sx) * denom;
+                    vy = (sw * sty - st * sy) * denom;
+                }
+            }
+        }
     }
 
-    var newest = samples[len - 1];
-    var newestTime = newest.t;
-    var startIdx = len - 1;
-    while (startIdx > 0 && (newestTime - samples[startIdx - 1].t) <= VELOCITY_HORIZON_MS) {
-        startIdx--;
-    }
-
-    var count = len - startIdx;
-    var oldest = samples[startIdx];
-    var span = newestTime - oldest.t;
-    if (count < 2 || span <= 0) {
-        return {x: 0, y: 0};
-    }
-
-    if (count === 2) {
-        return {
-            x: (newest.x - oldest.x) / span,
-            y: (newest.y - oldest.y) / span
-        };
-    }
-
-    var sw = 0, st = 0, stt = 0;
-    var sx = 0, stx = 0;
-    var sy = 0, sty = 0;
-    var i, s, u, w, tau, dx, dy;
-
-    for (i = startIdx; i < len; i++) {
-        s = samples[i];
-        u = (s.t - oldest.t) / span;
-        w = 0.1 + 0.9 * u * u;
-        tau = s.t - newestTime;
-        dx = s.x - newest.x;
-        dy = s.y - newest.y;
-
-        sw += w;
-        st += w * tau;
-        stt += w * tau * tau;
-        sx += w * dx;
-        stx += w * tau * dx;
-        sy += w * dy;
-        sty += w * tau * dy;
-    }
-
-    var denom = sw * stt - st * st;
-    if (abs(denom) <= VELOCITY_SINGULAR_EPSILON) {
-        return {
-            x: (newest.x - oldest.x) / span,
-            y: (newest.y - oldest.y) / span
-        };
-    }
-
-    return {
-        x: (sw * stx - st * sx) / denom,
-        y: (sw * sty - st * sy) / denom
-    };
+    input.velocityX = vx;
+    input.velocityY = vy;
+    input.velocity = (abs(vx) > abs(vy)) ? vx : vy;
+    input.direction = getDirection(vx, vy);
 }
 
 /**

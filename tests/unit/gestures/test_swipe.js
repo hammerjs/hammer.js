@@ -327,3 +327,58 @@ test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame sa
     $H.computeIntervalInputData(multiSession, mMove);
     ok(Math.abs(mMove.velocityX - 1.0) < 1e-6, '2-pointer coalesced centroid velocity is 1.0 px/ms');
 });
+
+test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and skip malformed entries', function() {
+    var session = {};
+    var t0 = 3000;
+    var domT0 = 7000;
+
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: t0,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: domT0, clientX: 0, clientY: 0}
+    });
+
+    // 5 frames at 60Hz (80ms total), each carrying 16 coalesced 1000Hz (1ms) samples at (1.5, -0.5) px/ms
+    var out;
+    for (var frame = 1; frame <= 5; frame++) {
+        var frameEnd = frame * 16;
+        var coalesced = [];
+        for (var dt = (frame - 1) * 16 + 1; dt <= frameEnd; dt++) {
+            coalesced.push({
+                timeStamp: domT0 + dt,
+                clientX: dt * 1.5,
+                clientY: dt * -0.5
+            });
+        }
+        // inject a malformed entry (missing clientX) on frame 3 to verify NaN-safe skipping
+        if (frame === 3) {
+            coalesced.splice(4, 0, {timeStamp: domT0 + frameEnd - 8});
+        }
+        out = {
+            eventType: Hammer.INPUT_MOVE,
+            timeStamp: t0 + frameEnd,
+            deltaX: frameEnd * 1.5,
+            deltaY: frameEnd * -0.5,
+            pointers: [{clientX: frameEnd * 1.5, clientY: frameEnd * -0.5}],
+            srcEvent: {
+                timeStamp: domT0 + frameEnd,
+                clientX: frameEnd * 1.5,
+                clientY: frameEnd * -0.5,
+                getCoalescedEvents: function() {
+                    return coalesced;
+                }
+            }
+        };
+        $H.computeIntervalInputData(session, out);
+    }
+
+    var samples = session.velocitySamples;
+    var span = samples[samples.length - 1].t - samples[0].t;
+    ok(span >= 70, '1000Hz coalesced input preserves full window span instead of overflowing in 20ms (span=' + span + 'ms)');
+    ok(Math.abs(out.velocityX - 1.5) < 1e-6, 'exact 1.5 px/ms velocityX preserved under 1000Hz decimation');
+    ok(Math.abs(out.velocityY - (-0.5)) < 1e-6, 'exact -0.5 px/ms velocityY preserved under 1000Hz decimation');
+});
