@@ -33,7 +33,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+        if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value.toLowerCase().trim();
