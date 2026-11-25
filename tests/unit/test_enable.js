@@ -169,3 +169,22 @@ test('should toggle based on other object method', function() {
     utils.dispatchTouchEvent(el, 'end', 50, 50);
     equal(counter, 1);
 });
+
+test('Manager.set updates cssProps on element and restores previous styles cleanly', function() {
+    var userSelectProp = $H.prefixed(el.style, 'userSelect');
+    var origUserSelect = 'text';
+    if (userSelectProp) {
+        hammer.destroy();
+        el.style[userSelectProp] = origUserSelect;
+        hammer = new Hammer.Manager(el, {recognizers: []});
+        equal(el.style[userSelectProp], 'none', 'initial cssProps applies userSelect: none');
+
+        hammer.set({cssProps: {userSelect: 'auto'}});
+        equal(el.style[userSelectProp], 'auto', 'set({cssProps}) applies new userSelect value');
+
+        hammer.set({cssProps: {}});
+        equal(el.style[userSelectProp], origUserSelect, 'set({cssProps: {}}) restores original userSelect value');
+    } else {
+        ok(true, 'userSelect style not supported in environment');
+    }
+});
