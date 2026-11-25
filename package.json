@@ -51,7 +51,6 @@
     "hammer.js",
     "hammer.min.js",
     "hammer.min.js.map",
-    "hammer.min.map",
     "src/"
   ],
   "engines": {
