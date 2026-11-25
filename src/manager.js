@@ -31,6 +31,8 @@ function Manager(element, options) {
 }
 
 Manager.prototype = {
+    constructor: Manager,
+
     /**
      * set options
      * @param {Object} options

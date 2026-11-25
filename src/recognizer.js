@@ -56,6 +56,8 @@ function Recognizer(options) {
 }
 
 Recognizer.prototype = {
+    constructor: Recognizer,
+
     /**
      * @virtual
      * @type {Object}

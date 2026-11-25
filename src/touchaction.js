@@ -23,6 +23,8 @@ function TouchAction(manager, value) {
 }
 
 TouchAction.prototype = {
+    constructor: TouchAction,
+
     /**
      * set the touchAction value on the element or enable the polyfill
      * @param {String} value

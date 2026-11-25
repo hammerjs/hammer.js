@@ -56,6 +56,8 @@ function Input(manager, callback) {
 }
 
 Input.prototype = {
+    constructor: Input,
+
     /**
      * should handle the inputEvent data and trigger the callback
      * @virtual
