@@ -93,3 +93,22 @@ test('calling manager.stop() inside panstart does not skip panstart on the next 
     utils.dispatchTouchEvent(el, 'end', 30, 10);
     deepEqual(events, ['panstart', 'panend'], 'next gesture after stop() properly emits panstart');
 });
+
+test('PanRecognizer with DIRECTION_NONE does not recognize pans', function() {
+    expect(1);
+
+    var panCount = 0;
+    var pan = new Hammer.Pan({direction: Hammer.DIRECTION_NONE, threshold: 5});
+    hammer.add(pan);
+    hammer.on('pan panstart panmove panend', function() {
+        panCount++;
+    });
+
+    // Synchronous moves have input.direction === DIRECTION_NONE within COMPUTE_INTERVAL
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 40, 10);
+    utils.dispatchTouchEvent(el, 'move', 40, 40);
+    utils.dispatchTouchEvent(el, 'end', 40, 40);
+
+    equal(panCount, 0, 'no pan events fired when direction is DIRECTION_NONE');
+});

@@ -37,6 +37,9 @@ inherit(PanRecognizer, AttrRecognizer, {
 
     directionTest: function(input) {
         var options = this.options;
+        if (!(options.direction & DIRECTION_ALL)) {
+            return false;
+        }
         var hasMoved = true;
         var distance = input.distance;
         var direction = input.direction;
