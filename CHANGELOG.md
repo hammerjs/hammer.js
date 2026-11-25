@@ -1,8 +1,8 @@
 # Changelog
 
-### 2.0.9-rc.1, 2026-11-25
+### 2.0.9, 2026-11-25
 
-> **Note:** [#1328](https://github.com/hammerjs/hammer.js/pull/1328) fixes a long-standing sign bug in `getRotation()` (`endAngle - startAngle` instead of `endAngle + startAngle`) so initial two-finger rotation starts at `0°` rather than `2 * startAngle`. If your application previously worked around the old offset, please verify rotation handling with this release candidate.
+> **Note:** [#1328](https://github.com/hammerjs/hammer.js/pull/1328) fixes a long-standing sign bug in `getRotation()` (`endAngle - startAngle` instead of `endAngle + startAngle`) so initial two-finger rotation starts at `0°` rather than `2 * startAngle`. If your application previously worked around the old offset, please verify rotation handling when upgrading.
 
 ##### Manager
 - Guard index before splicing in `Manager.off()` when removing an unregistered handler ([#1308](https://github.com/hammerjs/hammer.js/pull/1308))
@@ -50,7 +50,7 @@
 - Add npm `"files"` allowlist (excluding `tests/` from published tarball), update vendored test jQuery to `3.7.1`, and drop unused Lo-Dash `2.4.1` ([#1317](https://github.com/hammerjs/hammer.js/pull/1317))
 - Modernize `devDependencies` (0 `npm audit` vulnerabilities), replace JSHint/JSCS with ESLint v10, and run QUnit in headless Chrome via Puppeteer ([#1318](https://github.com/hammerjs/hammer.js/pull/1318))
 - Add GitHub Actions CI (`ci.yml`), automated GitHub Release + npm OIDC Trusted Publishing workflow (`release.yml`), untrack compiled `hammer.js` / `hammer.min.js` / `hammer.min.js.map` from git, and add Dependabot config ([#1321](https://github.com/hammerjs/hammer.js/pull/1321), [#1347](https://github.com/hammerjs/hammer.js/pull/1347), [#1350](https://github.com/hammerjs/hammer.js/pull/1350))
-- Expand unit test suite coverage and add SSR smoke test ([#1322](https://github.com/hammerjs/hammer.js/pull/1322))
+- Expand unit test suite coverage, add SSR smoke test, and disable `window.PointerEvent` in `tests/unit/index.html` for direct browser test runs ([#1322](https://github.com/hammerjs/hammer.js/pull/1322), [#1353](https://github.com/hammerjs/hammer.js/pull/1353))
 - Add `RELEASING.md`, modernize `README.md`, update `package.json` metadata (`https` homepage, `jsdelivr`/`unpkg`, keywords), and remove obsolete legacy files (`component.json`, `.bowerrc`, `bower.json`, `hammer.min.map`, `changelog.js`) ([#1319](https://github.com/hammerjs/hammer.js/pull/1319), [#1323](https://github.com/hammerjs/hammer.js/pull/1323), [#1346](https://github.com/hammerjs/hammer.js/pull/1346), [#1348](https://github.com/hammerjs/hammer.js/pull/1348), [#1349](https://github.com/hammerjs/hammer.js/pull/1349), [#1351](https://github.com/hammerjs/hammer.js/pull/1351))
 
 ### 2.0.8, 2016-04-22
