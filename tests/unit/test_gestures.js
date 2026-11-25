@@ -206,3 +206,16 @@ asyncTest('don\'t recognize tap if duration is too long.', function() {
         deepEqual(events, { press: true }, 'Press gesture has been recognized.');
     }, 275);
 });
+
+test('getRotation computes angle difference and returns 0 for stationary pointers', function() {
+    expect(3);
+
+    var startDiag = [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 100}];
+    equal($H.getRotation(startDiag, startDiag), 0, 'stationary diagonal pointers have 0 rotation');
+
+    var startVert = [{clientX: 0, clientY: 0}, {clientX: 0, clientY: -100}];
+    var endCW = [{clientX: 0, clientY: 0}, {clientX: 100, clientY: -100}];
+    var endCCW = [{clientX: 0, clientY: 0}, {clientX: -100, clientY: -100}];
+    equal(Math.round($H.getRotation(startVert, endCW)), 45, 'clockwise 45-degree rotation returns 45');
+    equal(Math.round($H.getRotation(startVert, endCCW)), -45, 'counter-clockwise 45-degree rotation returns -45');
+});
