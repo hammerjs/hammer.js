@@ -479,3 +479,26 @@ test('base prototypes preserve their own constructor property', function() {
     strictEqual(Hammer.Input.prototype.constructor, Hammer.Input, 'Input.prototype.constructor is Hammer.Input');
     strictEqual(Hammer.TouchAction.prototype.constructor, Hammer.TouchAction, 'TouchAction.prototype.constructor is Hammer.TouchAction');
 });
+
+test('getCenter and simpleCloneInputData preserve sub-pixel pointer positions', function() {
+    var singleCenter = $H.getCenter([{clientX: 10.25, clientY: 20.75}]);
+    strictEqual(singleCenter.x, 10.25, 'single-pointer center.x preserves sub-pixel precision');
+    strictEqual(singleCenter.y, 20.75, 'single-pointer center.y preserves sub-pixel precision');
+
+    var multiCenter = $H.getCenter([
+        {clientX: 10.5, clientY: 20.25},
+        {clientX: 11.0, clientY: 21.25}
+    ]);
+    strictEqual(multiCenter.x, 10.75, 'multi-pointer center.x preserves sub-pixel precision');
+    strictEqual(multiCenter.y, 20.75, 'multi-pointer center.y preserves sub-pixel precision');
+
+    var cloned = $H.simpleCloneInputData({
+        pointers: [{clientX: 12.4, clientY: 34.6}],
+        deltaX: 0,
+        deltaY: 0
+    });
+    strictEqual(cloned.pointers[0].clientX, 12.4, 'simpleCloneInputData preserves fractional clientX');
+    strictEqual(cloned.pointers[0].clientY, 34.6, 'simpleCloneInputData preserves fractional clientY');
+    strictEqual(cloned.center.x, 12.4, 'cloned center.x preserves fractional clientX');
+    strictEqual(cloned.center.y, 34.6, 'cloned center.y preserves fractional clientY');
+});

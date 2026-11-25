@@ -3,7 +3,6 @@ var TEST_ELEMENT = document && document.createElement ? document.createElement('
 
 var TYPE_FUNCTION = 'function';
 
-var round = Math.round;
 var abs = Math.abs;
 var now = Date.now;
 
