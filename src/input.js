@@ -238,7 +238,8 @@ function computeDeltaXY(session, input) {
 function computeIntervalInputData(session, input) {
     var samples = session.velocitySamples || (session.velocitySamples = []);
     var eventType = input.eventType;
-    var timeStamp = input.timeStamp;
+    var srcEvent = input.srcEvent;
+    var timeStamp = (srcEvent && srcEvent.timeStamp > 0) ? srcEvent.timeStamp : input.timeStamp;
     var x = input.deltaX;
     var y = input.deltaY;
     var lastSample, dt;
@@ -263,20 +264,20 @@ function computeIntervalInputData(session, input) {
             }
         }
     } else {
-        var srcEvent = input.srcEvent;
-        if (eventType === INPUT_MOVE && srcEvent && typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
+        if (eventType === INPUT_MOVE && srcEvent && srcEvent.timeStamp > 0 &&
+            typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
             var coalesced = srcEvent.getCoalescedEvents();
             if (coalesced && coalesced.length > 1 && srcEvent.clientX != null && srcEvent.clientY != null) {
                 var invPointersLen = 1 / ((input.pointers && input.pointers.length) || 1);
                 for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
                     var c = coalesced[cIdx];
-                    var offset = c.timeStamp - srcEvent.timeStamp;
-                    if (offset < 0 && offset >= -VELOCITY_HORIZON_MS && c.clientX != null && c.clientY != null) {
-                        var sampleTime = timeStamp + offset;
-                        if (samples.length === 0 || (sampleTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS) {
+                    var cTime = c.timeStamp;
+                    if (cTime > 0 && cTime < timeStamp && (timeStamp - cTime) <= VELOCITY_HORIZON_MS &&
+                        c.clientX != null && c.clientY != null) {
+                        if (samples.length === 0 || (cTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS) {
                             recordVelocitySample(
                                 samples,
-                                sampleTime,
+                                cTime,
                                 x + (c.clientX - srcEvent.clientX) * invPointersLen,
                                 y + (c.clientY - srcEvent.clientY) * invPointersLen
                             );

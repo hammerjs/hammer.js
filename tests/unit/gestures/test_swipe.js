@@ -382,3 +382,134 @@ test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and sk
     ok(Math.abs(out.velocityX - 1.5) < 1e-6, 'exact 1.5 px/ms velocityX preserved under 1000Hz decimation');
     ok(Math.abs(out.velocityY - (-0.5)) < 1e-6, 'exact -0.5 px/ms velocityY preserved under 1000Hz decimation');
 });
+
+test('velocity tracker uses hardware srcEvent.timeStamp so main-thread frame jitter does not skew velocity', function() {
+    var session = {};
+
+    // Hardware moves at constant 1.0 px/ms (5000 -> 5016 -> 5032 -> 5048),
+    // but frame 2 is delayed 10ms on the main thread (Date.now() = 1042 instead of 1032)
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 1000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: 5000, clientX: 0, clientY: 0}
+    });
+
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1016,
+        deltaX: 16,
+        deltaY: 0,
+        pointers: [{clientX: 16, clientY: 0}],
+        srcEvent: {
+            timeStamp: 5016,
+            clientX: 16,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 5004, clientX: 4, clientY: 0},
+                    {timeStamp: 5008, clientX: 8, clientY: 0},
+                    {timeStamp: 5012, clientX: 12, clientY: 0},
+                    {timeStamp: 5016, clientX: 16, clientY: 0}
+                ];
+            }
+        }
+    });
+
+    // Frame 2 delayed 10ms on main thread (input.timeStamp=1042 vs hardware 5032)
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1042,
+        deltaX: 32,
+        deltaY: 0,
+        pointers: [{clientX: 32, clientY: 0}],
+        srcEvent: {
+            timeStamp: 5032,
+            clientX: 32,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 5020, clientX: 20, clientY: 0},
+                    {timeStamp: 5024, clientX: 24, clientY: 0},
+                    {timeStamp: 5028, clientX: 28, clientY: 0},
+                    {timeStamp: 5032, clientX: 32, clientY: 0}
+                ];
+            }
+        }
+    });
+
+    // Frame 3 arrives on time (input.timeStamp=1048, hardware 5048)
+    var frame3 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1048,
+        deltaX: 48,
+        deltaY: 0,
+        pointers: [{clientX: 48, clientY: 0}],
+        srcEvent: {
+            timeStamp: 5048,
+            clientX: 48,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 5036, clientX: 36, clientY: 0},
+                    {timeStamp: 5040, clientX: 40, clientY: 0},
+                    {timeStamp: 5044, clientX: 44, clientY: 0},
+                    {timeStamp: 5048, clientX: 48, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, frame3);
+
+    ok(Math.abs(frame3.velocityX - 1.0) < 1e-6, 'main-thread stall does not spike velocity (' + frame3.velocityX.toFixed(3) + ' px/ms)');
+});
+
+test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function() {
+    expect(2);
+
+    var events = [];
+    hammer.add(new Hammer.Swipe({
+        direction: Hammer.DIRECTION_HORIZONTAL,
+        threshold: 10,
+        velocity: 0.3
+    }));
+    hammer.on('swipeleft swiperight', function(ev) {
+        events.push(ev.type);
+    });
+
+    // Dragged right +100px then flicked back left -40px (ends at +60px: offsetDirection=RIGHT, direction=LEFT)
+    hammer.recognize({
+        pointers: [{clientX: 110, clientY: 50}],
+        changedPointers: [{clientX: 110, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 60,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        direction: Hammer.DIRECTION_LEFT,
+        velocity: -1.2,
+        velocityX: -1.2,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    deepEqual(events, [], 'reverse leftward flick does not falsely emit swiperight');
+
+    // Dragged right and flicked right -> emits swiperight
+    hammer.recognize({
+        pointers: [{clientX: 140, clientY: 50}],
+        changedPointers: [{clientX: 140, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 90,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        direction: Hammer.DIRECTION_RIGHT,
+        velocity: 1.2,
+        velocityX: 1.2,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    deepEqual(events, ['swiperight'], 'matching rightward flick still emits swiperight');
+});
