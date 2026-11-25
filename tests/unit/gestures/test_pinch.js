@@ -41,3 +41,18 @@ asyncTest('Pinch event flow should be start -> in -> end', function() {
     });
 });
 
+test('getScale returns 1 instead of NaN or Infinity when initial pointers overlap', function() {
+    expect(3);
+
+    var overlapping = [{clientX: 50, clientY: 50}, {clientX: 50, clientY: 50}];
+    var spread = [{clientX: 20, clientY: 50}, {clientX: 80, clientY: 50}];
+
+    strictEqual($H.getScale(overlapping, overlapping), 1, 'identical overlapping pointers return scale 1 (not NaN)');
+    strictEqual($H.getScale(overlapping, spread), 1, 'moving apart from zero initial distance returns scale 1 (not Infinity)');
+    strictEqual(
+        $H.getScale([{clientX: 0, clientY: 0}, {clientX: 10, clientY: 0}], [{clientX: 0, clientY: 0}, {clientX: 20, clientY: 0}]),
+        2,
+        'normal scale calculation preserved'
+    );
+});
+
