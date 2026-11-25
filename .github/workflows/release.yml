@@ -80,11 +80,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          gh release upload "${RELEASE_TAG}" \
-            hammer.js \
-            hammer.min.js \
-            hammer.min.js.map \
-            --clobber
+          for attempt in 1 2 3; do
+            if gh release upload "${RELEASE_TAG}" \
+              hammer.js \
+              hammer.min.js \
+              hammer.min.js.map \
+              --clobber; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              echo "Upload attempt ${attempt} failed; retrying in 5s..."
+              sleep 5
+            fi
+          done
+          echo "::error::Failed to upload release assets after 3 attempts."
+          exit 1
 
       - name: Publish to npm via OIDC Trusted Publishing
         env:
