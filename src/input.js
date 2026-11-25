@@ -263,25 +263,37 @@ function computeIntervalInputData(session, input) {
             }
         }
     } else {
-        var merged = false;
-        if (samples.length > 0) {
-            lastSample = samples[samples.length - 1];
-            dt = timeStamp - lastSample.t;
-            if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
-                samples.length = 0;
-            } else if (dt === 0) {
-                lastSample.x = x;
-                lastSample.y = y;
-                merged = true;
+        var srcEvent = input.srcEvent;
+        if (eventType === INPUT_MOVE && srcEvent && typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
+            var coalesced = srcEvent.getCoalescedEvents();
+            if (coalesced && coalesced.length > 1 &&
+                typeof srcEvent.timeStamp === 'number' &&
+                typeof srcEvent.clientX === 'number' &&
+                typeof srcEvent.clientY === 'number') {
+                var pointersLen = (input.pointers && input.pointers.length) || 1;
+                for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
+                    var c = coalesced[cIdx];
+                    if (typeof c.timeStamp !== 'number' ||
+                        typeof c.clientX !== 'number' ||
+                        typeof c.clientY !== 'number') {
+                        continue;
+                    }
+                    var offset = c.timeStamp - srcEvent.timeStamp;
+                    if (offset <= 0 && offset >= -VELOCITY_HORIZON_MS) {
+                        var sampleTime = timeStamp + offset;
+                        if (samples.length === 0 || sampleTime > samples[samples.length - 1].t) {
+                            recordVelocitySample(
+                                samples,
+                                sampleTime,
+                                x + (c.clientX - srcEvent.clientX) / pointersLen,
+                                y + (c.clientY - srcEvent.clientY) / pointersLen
+                            );
+                        }
+                    }
+                }
             }
         }
-
-        if (!merged) {
-            samples.push({t: timeStamp, x: x, y: y});
-            if (samples.length > VELOCITY_HISTORY_CAPACITY) {
-                samples.shift();
-            }
-        }
+        recordVelocitySample(samples, timeStamp, x, y);
     }
 
     var v = computeWeightedVelocity(samples);
@@ -289,6 +301,32 @@ function computeIntervalInputData(session, input) {
     input.velocityY = v.y;
     input.velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
     input.direction = getDirection(v.x, v.y);
+}
+
+/**
+ * append a velocity sample to the bounded session buffer with pause-reset and same-timestamp dedupe
+ * @param {Array} samples
+ * @param {Number} timeStamp
+ * @param {Number} x
+ * @param {Number} y
+ */
+function recordVelocitySample(samples, timeStamp, x, y) {
+    if (samples.length > 0) {
+        var lastSample = samples[samples.length - 1];
+        var dt = timeStamp - lastSample.t;
+        if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
+            samples.length = 0;
+        } else if (dt === 0) {
+            lastSample.x = x;
+            lastSample.y = y;
+            return;
+        }
+    }
+
+    samples.push({t: timeStamp, x: x, y: y});
+    if (samples.length > VELOCITY_HISTORY_CAPACITY) {
+        samples.shift();
+    }
 }
 
 /**

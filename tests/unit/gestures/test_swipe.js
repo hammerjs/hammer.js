@@ -227,3 +227,103 @@ test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using w
     });
     equal(swipeCount, 1, 'drag followed by pause before lift does not trigger swipe');
 });
+
+test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame samples when supported', function() {
+    var session = {};
+
+    // Start at t=1000 (Date.now() clock domain, whereas DOMHighResTimeStamp is ~5000ms)
+    var startInput = {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 1000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 100, clientY: 100}],
+        srcEvent: {timeStamp: 5000, clientX: 100, clientY: 100}
+    };
+    $H.computeIntervalInputData(session, startInput);
+    session.prevInput = startInput;
+
+    // Pause > 40ms, then a single 60Hz pointermove frame carries 3 coalesced sub-frame flick samples
+    // moving at 2.0 px/ms (clientX: 100 -> 108 -> 116 over 5060 -> 5064 -> 5068)
+    var coalescedEvents = [
+        {timeStamp: 5060, clientX: 100, clientY: 100},
+        {timeStamp: 5064, clientX: 108, clientY: 100},
+        {timeStamp: 5068, clientX: 116, clientY: 100}
+    ];
+    var moveInput = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1068,
+        deltaX: 16,
+        deltaY: 0,
+        pointers: [{clientX: 116, clientY: 100}],
+        srcEvent: {
+            timeStamp: 5068,
+            clientX: 116,
+            clientY: 100,
+            getCoalescedEvents: function() {
+                return coalescedEvents;
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, moveInput);
+
+    equal(session.velocitySamples.length, 3, 'all 3 sub-frame coalesced samples recorded after pause reset');
+    ok(Math.abs(moveInput.velocityX - 2.0) < 1e-6, 'exact 2.0 px/ms flick velocity recovered from coalesced events');
+
+    // Out-of-order coalesced sample (e.g. 1ms Date.now rounding before last sample) does not wipe buffer
+    var moveInput2 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1076,
+        deltaX: 32,
+        deltaY: 0,
+        pointers: [{clientX: 132, clientY: 100}],
+        srcEvent: {
+            timeStamp: 5076,
+            clientX: 132,
+            clientY: 100,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 5067, clientX: 114, clientY: 100}, // maps to 1067 <= 1068, must be skipped
+                    {timeStamp: 5072, clientX: 124, clientY: 100},
+                    {timeStamp: 5076, clientX: 132, clientY: 100}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, moveInput2);
+
+    equal(session.velocitySamples.length, 5, 'older coalesced sample skipped without wiping prior samples');
+    ok(Math.abs(moveInput2.velocityX - 2.0) < 1e-6, 'velocity remains exact across frames with coalesced events');
+
+    // Multi-pointer coalesced move scales delta by 1 / pointers.length (centroid velocity)
+    var multiSession = {};
+    var mStart = {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 2000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 0}],
+        srcEvent: {timeStamp: 6000, clientX: 0, clientY: 0}
+    };
+    $H.computeIntervalInputData(multiSession, mStart);
+    var mMove = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 2010,
+        deltaX: 10, // single pointer moved +20px -> 2-pointer centroid moved +10px
+        deltaY: 0,
+        pointers: [{clientX: 20, clientY: 0}, {clientX: 100, clientY: 0}],
+        srcEvent: {
+            timeStamp: 6010,
+            clientX: 20,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 6005, clientX: 10, clientY: 0},
+                    {timeStamp: 6010, clientX: 20, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(multiSession, mMove);
+    ok(Math.abs(mMove.velocityX - 1.0) < 1e-6, '2-pointer coalesced centroid velocity is 1.0 px/ms');
+});
