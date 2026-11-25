@@ -75,5 +75,10 @@ inherit(PanRecognizer, AttrRecognizer, {
             input.additionalEvent = this.options.event + direction;
         }
         this._super.emit.call(this, input);
+    },
+
+    reset: function() {
+        this.pX = null;
+        this.pY = null;
     }
 });

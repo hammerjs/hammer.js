@@ -121,6 +121,12 @@ function inputHandler(manager, eventType, input) {
     input.isFinal = !!isFinal;
 
     if (isFirst) {
+        if (manager.session.stopped) {
+            each(manager.recognizers, function(recognizer) {
+                recognizer.reset();
+                recognizer.state = STATE_POSSIBLE;
+            });
+        }
         manager.session = {};
     }
 
