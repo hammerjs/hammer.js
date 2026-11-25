@@ -417,3 +417,18 @@ asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active 
         start();
     }, 60);
 });
+
+test('Hammer() does not mutate caller options and accepts frozen options objects', function() {
+    expect(3);
+
+    var sharedOptions = {touchAction: 'pan-y'};
+    var h1 = new Hammer(el, sharedOptions);
+    strictEqual(sharedOptions.recognizers, undefined, 'caller options object is not mutated with default recognizers');
+    h1.destroy();
+
+    var frozenOptions = Object.freeze({touchAction: 'pan-y'});
+    var h2 = new Hammer(el, frozenOptions);
+    ok(h2.recognizers.length > 0, 'frozen options object works and still attaches default preset recognizers');
+    equal(h2.options.touchAction, 'pan-y', 'frozen option values are preserved');
+    h2.destroy();
+});
