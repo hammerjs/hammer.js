@@ -37,9 +37,15 @@ Manager.prototype = {
      * @returns {Manager}
      */
     set: function(options) {
+        if (options.cssProps) {
+            this.element && toggleCssProps(this, false);
+        }
         assign(this.options, options);
 
         // Options that need a little more setup
+        if (options.cssProps) {
+            this.element && toggleCssProps(this, true);
+        }
         if (options.touchAction) {
             this.touchAction.update();
         }
