@@ -195,8 +195,12 @@ module.exports = function(grunt) {
         var done = this.async();
         var ESLint = require('eslint').ESLint;
         var eslint = new ESLint();
+        var targets = ['src', 'Gruntfile.js', 'eslint.config.js'];
+        if (grunt.file.exists('hammer.js')) {
+            targets.unshift('hammer.js');
+        }
 
-        eslint.lintFiles(['hammer.js', 'src', 'Gruntfile.js', 'eslint.config.js']).then(function(results) {
+        eslint.lintFiles(targets).then(function(results) {
             return eslint.loadFormatter('stylish').then(function(formatter) {
                 var output = formatter.format(results);
                 if (output) {
@@ -253,7 +257,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-banner');
 
     grunt.registerTask('default', ['connect:server:keepalive']);
-    grunt.registerTask('build', ['concat', 'string-replace', 'uglify:min', 'usebanner', 'test']);
-    grunt.registerTask('test', ['lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('dist', ['concat', 'string-replace', 'uglify:min', 'usebanner']);
+    grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('test', ['concat', 'string-replace', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
 };

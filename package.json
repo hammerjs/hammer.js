@@ -58,7 +58,9 @@
   },
   "scripts": {
     "build": "grunt build",
+    "dist": "grunt dist",
     "lint": "grunt lint",
+    "prepack": "grunt dist",
     "test": "grunt test"
   }
 }

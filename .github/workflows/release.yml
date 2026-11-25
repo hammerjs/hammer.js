@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, upload release assets & publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify release tag matches package.json version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          TAG_VERSION="${RELEASE_TAG#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          echo "Release tag: ${RELEASE_TAG} (version: ${TAG_VERSION})"
+          echo "package.json version: ${PKG_VERSION}"
+          if [ "${TAG_VERSION}" != "${PKG_VERSION}" ]; then
+            echo "::error::Release tag ${RELEASE_TAG} does not match package.json version ${PKG_VERSION}."
+            exit 1
+          fi
+
+      - name: Verify npm version supports OIDC Trusted Publishing
+        run: |
+          npm --version
+          node -e '
+            const [maj, min, pat] = require("child_process")
+              .execSync("npm --version", { encoding: "utf8" })
+              .trim()
+              .split(".")
+              .map(Number);
+            if (maj < 11 || (maj === 11 && (min < 5 || (min === 5 && pat < 1)))) {
+              console.error("npm >= 11.5.1 is required for OIDC Trusted Publishing");
+              process.exit(1);
+            }
+          '
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Build, lint, and run tests
+        run: npm run build
+
+      - name: Verify release artifacts and package contents
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          test -s hammer.js
+          test -s hammer.min.js
+          test -s hammer.min.js.map
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.js
+          ls -lh hammer.js hammer.min.js hammer.min.js.map
+          npm pack --dry-run
+
+      - name: Upload build assets to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "${RELEASE_TAG}" \
+            hammer.js \
+            hammer.min.js \
+            hammer.min.js.map \
+            --clobber
+
+      - name: Publish to npm via OIDC Trusted Publishing
+        env:
+          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ "${IS_PRERELEASE}" = "true" ] || [[ "${RELEASE_TAG}" == *-* ]]; then
+            npm publish --provenance --access public --tag next
+          else
+            npm publish --provenance --access public
+          fi
