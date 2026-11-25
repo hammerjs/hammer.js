@@ -343,3 +343,77 @@ test('Manager.destroy clears DOM references and is safe to call twice', function
     ok(true, 'calling destroy a second time does not throw');
     hammer = null;
 });
+
+asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active recognition, and guard touchAction', function() {
+    expect(5);
+
+    hammer = new Hammer.Manager(el, {
+        domEvents: true,
+        recognizers: [
+            [Hammer.Press, {time: 20}],
+            [Hammer.Pan, {event: 'pan1', threshold: 1}],
+            [Hammer.Pan, {event: 'pan2', threshold: 1}, ['pan1']]
+        ]
+    });
+
+    var press = hammer.get('press');
+    var pressFired = 0;
+    el.addEventListener('press', function() {
+        pressFired++;
+    }, false);
+
+    // 1. Removing a recognizer resets its timer and clears recognizer.manager
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    hammer.remove(press);
+    strictEqual(press.manager, null, 'remove() clears recognizer.manager');
+
+    // 2. Re-add press, trigger timer, then destroy inside pan1start -> pan2 must not run and press timer must be cancelled
+    var press2 = hammer.add(new Hammer.Press({event: 'press', time: 20}));
+    var pan2Fired = 0;
+    hammer.on('pan1start', function() {
+        hammer.destroy();
+    });
+    hammer.on('pan2start', function() {
+        pan2Fired++;
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    hammer.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{clientX: 70, clientY: 50}],
+        changedPointers: [{clientX: 70, clientY: 50}],
+        maxPointers: 1,
+        distance: 20,
+        deltaX: 20,
+        deltaY: 0,
+        deltaTime: 10,
+        direction: Hammer.DIRECTION_RIGHT,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        target: el,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+
+    equal(pan2Fired, 0, 'destroy() inside a listener halts remaining recognizers in the active cycle');
+
+    // 3. Updating touchAction / recognizer options after destroy does not throw
+    press2.set({enable: false});
+    ok(true, 'recognizer.set() -> touchAction.update() after destroy() does not throw');
+
+    // 4. Subsequent recognize() after destroy is a no-op
+    hammer.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{clientX: 90, clientY: 50}],
+        distance: 40,
+        deltaX: 40,
+        deltaY: 0,
+        direction: Hammer.DIRECTION_RIGHT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    equal(pan2Fired, 0, 'recognize() after destroy() is ignored');
+
+    hammer = null;
+    setTimeout(function() {
+        equal(pressFired, 0, 'pending press timers were cancelled by remove() and destroy()');
+        start();
+    }, 60);
+});

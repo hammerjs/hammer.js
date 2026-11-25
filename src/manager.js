@@ -70,7 +70,7 @@ Manager.prototype = {
      */
     recognize: function(inputData) {
         var session = this.session;
-        if (session.stopped) {
+        if (session.stopped || !this.element) {
             return;
         }
 
@@ -180,6 +180,8 @@ Manager.prototype = {
 
             if (index !== -1) {
                 recognizers.splice(index, 1);
+                recognizer.reset();
+                recognizer.manager = null;
                 this.touchAction.update();
             }
         }
@@ -270,6 +272,10 @@ Manager.prototype = {
     destroy: function() {
         this.element && toggleCssProps(this, false);
 
+        this.stop(true);
+        each(this.recognizers, function(recognizer) {
+            recognizer.reset();
+        });
         this.handlers = {};
         this.session = {};
         this.input && this.input.destroy();
