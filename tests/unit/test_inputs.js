@@ -54,6 +54,31 @@
         }
     });
 
+    test('MouseInput accepts standard MouseEvent buttons bitmask when ev.which is 0', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.MouseInput(manager, function(mgr, type) {
+            calls.push(type);
+        });
+
+        try {
+            // Standard W3C MouseEvent('mousemove', { buttons: 1 }) leaves legacy ev.which === 0
+            input.handler({type: 'mousedown', button: 0, buttons: 1, which: 0, clientX: 10, clientY: 10});
+            input.handler({type: 'mousemove', button: 0, buttons: 1, which: 0, clientX: 25, clientY: 10});
+            input.handler({type: 'mousemove', button: 0, buttons: 3, which: 0, clientX: 40, clientY: 10});
+            input.handler({type: 'mousemove', button: 0, buttons: 0, which: 0, clientX: 50, clientY: 10});
+
+            deepEqual(
+                calls,
+                [$H.INPUT_START, $H.INPUT_MOVE, $H.INPUT_MOVE, $H.INPUT_END],
+                'mousemove with primary button bit in ev.buttons stays INPUT_MOVE and buttons === 0 ends gesture'
+            );
+            equal(input.pressed, false, 'pressed reset once ev.buttons drops primary button');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('Manager options.inputClass uses custom input class', function() {
         manager = new Hammer.Manager(el, {
             inputClass: Hammer.MouseInput,
