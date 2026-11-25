@@ -471,3 +471,11 @@ test('prefixed returns undefined safely when target object is null or undefined'
     strictEqual($H.prefixed(null, 'touchAction'), undefined, 'returns undefined for null');
     strictEqual($H.prefixed(undefined, 'touchAction'), undefined, 'returns undefined for undefined');
 });
+
+test('base prototypes preserve their own constructor property', function() {
+    strictEqual(Hammer.Recognizer.prototype.constructor, Hammer.Recognizer, 'Recognizer.prototype.constructor is Hammer.Recognizer');
+    strictEqual((new Hammer.Recognizer()).constructor, Hammer.Recognizer, 'Recognizer instance constructor is Hammer.Recognizer');
+    strictEqual(Hammer.Manager.prototype.constructor, Hammer.Manager, 'Manager.prototype.constructor is Hammer.Manager');
+    strictEqual(Hammer.Input.prototype.constructor, Hammer.Input, 'Input.prototype.constructor is Hammer.Input');
+    strictEqual(Hammer.TouchAction.prototype.constructor, Hammer.TouchAction, 'TouchAction.prototype.constructor is Hammer.TouchAction');
+});
