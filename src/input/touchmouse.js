@@ -49,6 +49,20 @@ inherit(TouchMouseInput, Input, {
     },
 
     /**
+     * bind the event listeners (used when inputTarget changes via Manager.set)
+     */
+    init: function init() {
+        if (this.touch) {
+            this.touch.target = this.target;
+            this.touch.init();
+        }
+        if (this.mouse) {
+            this.mouse.target = this.target;
+            this.mouse.init();
+        }
+    },
+
+    /**
      * remove the event listeners
      */
     destroy: function destroy() {
