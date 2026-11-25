@@ -43,7 +43,7 @@ npm test   # runs ESLint (grunt lint) and the full QUnit suite in headless Chrom
    npm version X.Y.Z --no-git-tag-version
    ```
 2. Add a new `### X.Y.Z, YYYY-MM-DD` section at the top of `CHANGELOG.md` summarizing the changes and linking relevant PRs/commits.
-3. *(Optional)* Update version headers in `README.md` or `component.json` if needed.
+3. *(Optional)* Update version headers in `README.md` if needed.
 
 ---
 
@@ -86,7 +86,7 @@ rm -rf /tmp/hammer-smoke hammerjs-X.Y.Z.tgz
 ```bash
 git status
 git add package.json CHANGELOG.md hammer.js hammer.min.js hammer.min.js.map
-# Include README.md / component.json if updated
+# Include README.md if updated
 
 git commit -m "X.Y.Z"
 git tag -a vX.Y.Z -m "vX.Y.Z"
