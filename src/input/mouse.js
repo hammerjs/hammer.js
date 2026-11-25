@@ -4,8 +4,39 @@ var MOUSE_INPUT_MAP = {
     mouseup: INPUT_END
 };
 
+var MOUSE_BUTTON_MASKS = [1, 4, 2, 8, 16];
+
 var MOUSE_ELEMENT_EVENTS = 'mousedown';
 var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+
+/**
+ * convert a MouseEvent/PointerEvent button code (0=left, 1=middle, 2=right) to its W3C buttons bitmask
+ * @param {Number} button
+ * @returns {Number}
+ */
+function mouseButtonMask(button) {
+    return (button >= 0 && button < 31) ? (MOUSE_BUTTON_MASKS[button] || (1 << button)) : 0;
+}
+
+/**
+ * compute the W3C buttons bitmask of mouse buttons allowed by manager.options.mouseButtons
+ * @param {Manager} manager
+ * @returns {Number}
+ */
+function getMouseButtonsMask(manager) {
+    var allowed = manager.options.mouseButtons;
+    if (allowed == null) {
+        return 1;
+    }
+    if (typeof allowed === 'number') {
+        return mouseButtonMask(allowed);
+    }
+    var mask = 0;
+    for (var i = 0; i < allowed.length; i++) {
+        mask |= mouseButtonMask(allowed[i]);
+    }
+    return mask;
+}
 
 /**
  * Mouse events input
@@ -17,6 +48,7 @@ function MouseInput() {
     this.evWin = MOUSE_WINDOW_EVENTS;
 
     this.pressed = false; // mousedown state
+    this.activeButton = 0;
 
     Input.apply(this, arguments);
 }
@@ -29,13 +61,13 @@ inherit(MouseInput, Input, {
     handler: function MEhandler(ev) {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
-        // on start we want to have the left mouse button down
-        if (eventType & INPUT_START && ev.button === 0) {
+        // on start we want an allowed mouse button down (ignore chorded mousedown while pressed)
+        if (eventType & INPUT_START) {
+            if (this.pressed || !(getMouseButtonsMask(this.manager) & mouseButtonMask(ev.button))) {
+                return;
+            }
             this.pressed = true;
-        }
-
-        if (eventType & INPUT_MOVE && ev.which !== 1 && !(ev.buttons & 1)) {
-            eventType = INPUT_END;
+            this.activeButton = ev.button;
         }
 
         // mouse must be down
@@ -43,7 +75,16 @@ inherit(MouseInput, Input, {
             return;
         }
 
+        if (eventType & INPUT_MOVE &&
+            ev.which !== (this.activeButton + 1) &&
+            !(ev.buttons & mouseButtonMask(this.activeButton))) {
+            eventType = INPUT_END;
+        }
+
         if (eventType & INPUT_END) {
+            if (ev.type === 'mouseup' && ev.button != null && ev.button !== this.activeButton) {
+                return;
+            }
             this.pressed = false;
         }
 

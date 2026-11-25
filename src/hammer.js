@@ -59,6 +59,13 @@ Hammer.defaults = {
     inputClass: null,
 
     /**
+     * optional allowed MouseEvent/PointerEvent button code or array of button codes (0=left, 1=middle, 2=right)
+     * @type {Null|Number|Array}
+     * @default null
+     */
+    mouseButtons: null,
+
+    /**
      * Default recognizer setup when calling `Hammer()`
      * When creating a new Manager these will be skipped.
      * @type {Array}

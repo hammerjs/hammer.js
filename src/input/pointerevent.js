@@ -55,15 +55,17 @@ inherit(PointerEventInput, Input, {
         // get index of the event in the store
         var storeIndex = inArray(store, ev.pointerId, 'pointerId');
 
-        // start and mouse must be down
-        if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+        // start and mouse must have an allowed button down
+        if (eventType & INPUT_START && (isTouch ||
+            (pointerType === INPUT_TYPE_MOUSE ? (getMouseButtonsMask(this.manager) & mouseButtonMask(ev.button)) : ev.button === 0))) {
             if (storeIndex < 0) {
                 store.push(ev);
                 storeIndex = store.length - 1;
             }
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
-        } else if (eventType & INPUT_MOVE && pointerType === INPUT_TYPE_MOUSE && ev.buttons === 0) {
+        } else if (eventType & INPUT_MOVE && pointerType === INPUT_TYPE_MOUSE &&
+            ev.buttons != null && !(ev.buttons & getMouseButtonsMask(this.manager))) {
             eventType = INPUT_END;
             removePointer = true;
         }
