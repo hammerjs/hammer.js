@@ -31,7 +31,7 @@ inherit(PressRecognizer, Recognizer, {
         var options = this.options;
         var validPointers = input.pointers.length === options.pointers;
         var validMovement = input.distance < options.threshold;
-        var validTime = input.deltaTime > options.time;
+        var validTime = options.time <= 0 || input.deltaTime > options.time;
 
         this._input = input;
 
@@ -42,6 +42,9 @@ inherit(PressRecognizer, Recognizer, {
             this.reset();
         } else if (input.eventType & INPUT_START) {
             this.reset();
+            if (options.time <= 0) {
+                return STATE_RECOGNIZED;
+            }
             this._timer = setTimeoutContext(function() {
                 this.state = STATE_RECOGNIZED;
                 this.tryEmit();
