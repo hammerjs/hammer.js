@@ -274,8 +274,8 @@ function simpleCloneInputData(input) {
     var i = 0;
     while (i < input.pointers.length) {
         pointers[i] = {
-            clientX: round(input.pointers[i].clientX),
-            clientY: round(input.pointers[i].clientY)
+            clientX: input.pointers[i].clientX,
+            clientY: input.pointers[i].clientY
         };
         i++;
     }
@@ -300,8 +300,8 @@ function getCenter(pointers) {
     // no need to loop when only one touch
     if (pointersLength === 1) {
         return {
-            x: round(pointers[0].clientX),
-            y: round(pointers[0].clientY)
+            x: pointers[0].clientX,
+            y: pointers[0].clientY
         };
     }
 
@@ -313,8 +313,8 @@ function getCenter(pointers) {
     }
 
     return {
-        x: round(x / pointersLength),
-        y: round(y / pointersLength)
+        x: x / pointersLength,
+        y: y / pointersLength
     };
 }
 
