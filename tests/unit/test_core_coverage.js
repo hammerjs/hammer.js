@@ -350,4 +350,46 @@
             start();
         }, 60);
     });
+
+    test('Manager.emit populates data.type and data.preventDefault before dispatching DOM events', function() {
+        expect(3);
+
+        manager = new Hammer.Manager(el, {
+            domEvents: true,
+            recognizers: []
+        });
+
+        var prevented = false;
+        var seenTypes = [];
+        var onDomTap = function(ev) {
+            seenTypes.push(ev.gesture.type);
+            equal(typeof ev.gesture.preventDefault, 'function', 'ev.gesture.preventDefault is defined on DOM event');
+            ev.gesture.preventDefault();
+        };
+        var onDomCustom = function(ev) {
+            seenTypes.push(ev.gesture.type);
+        };
+
+        el.addEventListener('tap', onDomTap, false);
+        el.addEventListener('custom', onDomCustom, false);
+
+        try {
+            var payload = {
+                target: el,
+                srcEvent: {
+                    preventDefault: function() {
+                        prevented = true;
+                    }
+                }
+            };
+            manager.emit('tap', payload);
+            manager.emit('custom', payload);
+
+            deepEqual(seenTypes, ['tap', 'custom'], 'ev.gesture.type matches each dispatched DOM event');
+            equal(prevented, true, 'ev.gesture.preventDefault invokes srcEvent.preventDefault');
+        } finally {
+            el.removeEventListener('tap', onDomTap, false);
+            el.removeEventListener('custom', onDomCustom, false);
+        }
+    });
 })();
