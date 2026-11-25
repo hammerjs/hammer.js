@@ -25,7 +25,7 @@ module.exports = function(grunt) {
                         '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
                         ' * <%= pkg.homepage %>\n' +
                         ' *\n' +
-                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n' +
+                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> Hammer.js contributors;\n' +
                         ' * Licensed under the <%= pkg.license %> license */',
                     linebreak: true
                 },

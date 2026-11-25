@@ -3,25 +3,21 @@
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
   "version": "2.0.8",
-  "homepage": "http://hammerjs.github.io/",
+  "homepage": "https://hammerjs.github.io/",
   "license": "MIT",
   "keywords": [
     "touch",
-    "gestures"
-  ],
-  "author": {
-    "name": "Jorik Tangelder",
-    "email": "j.tangelder@gmail.com"
-  },
-  "contributors": [
-    {
-      "name": "Alexander Schmitz",
-      "email": "arschmitz@gmail.com"
-    },
-    {
-      "name": "Chris Thoburn",
-      "email": ""
-    }
+    "gestures",
+    "multi-touch",
+    "multitouch",
+    "pointer",
+    "swipe",
+    "pinch",
+    "pan",
+    "tap",
+    "rotate",
+    "press",
+    "mobile"
   ],
   "repository": {
     "type": "git",
@@ -46,6 +42,8 @@
     "jquery": "^3.7.1"
   },
   "main": "hammer.js",
+  "jsdelivr": "hammer.min.js",
+  "unpkg": "hammer.min.js",
   "files": [
     "CHANGELOG.md",
     "hammer.js",
