@@ -5,6 +5,7 @@ var TYPE_FUNCTION = 'function';
 
 var abs = Math.abs;
 var now = Date.now;
+var hasOwn = Object.prototype.hasOwnProperty;
 
 /**
  * set a timeout with a given scope
@@ -57,7 +58,7 @@ function each(obj, iterator, context) {
         }
     } else {
         for (i in obj) {
-            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+            hasOwn.call(obj, i) && iterator.call(context, obj[i], i, obj);
         }
     }
 }
@@ -104,7 +105,7 @@ if (typeof Object.assign !== 'function') {
             var source = arguments[index];
             if (source !== undefined && source !== null) {
                 for (var nextKey in source) {
-                    if (source.hasOwnProperty(nextKey)) {
+                    if (hasOwn.call(source, nextKey)) {
                         output[nextKey] = source[nextKey];
                     }
                 }
