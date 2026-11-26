@@ -326,6 +326,19 @@
             });
             equal(calls.length, 3, 'distant mouse event forwarded');
             equal(calls[2].pointerType, $H.INPUT_TYPE_MOUSE, 'forwarded event keeps mouse pointerType');
+
+            // Expired touch records are pruned by timestamp without timers
+            input.lastTouches.forEach(function(entry) {
+                entry.t -= $H.DEDUP_TIMEOUT + 1;
+            });
+            input.handler(manager, $H.INPUT_START, {
+                pointerType: $H.INPUT_TYPE_MOUSE,
+                pointers: [{clientX: 110, clientY: 110}],
+                changedPointers: [{clientX: 110, clientY: 110}],
+                srcEvent: {clientX: 110, clientY: 110}
+            });
+            equal(calls.length, 4, 'mouse event passes once dedup timestamp expires');
+            equal(input.lastTouches.length, 0, 'expired lastTouches entries pruned');
         } finally {
             input.destroy();
         }
