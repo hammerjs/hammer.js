@@ -44,12 +44,14 @@
   "main": "hammer.js",
   "jsdelivr": "hammer.min.js",
   "unpkg": "hammer.min.js",
+  "types": "hammer.d.ts",
   "files": [
     "CHANGELOG.md",
     "hammer.js",
     "hammer.min.js",
     "hammer.min.js.map",
-    "src/"
+    "src/",
+    "hammer.d.ts"
   ],
   "engines": {
     "node": ">=0.8.0"
