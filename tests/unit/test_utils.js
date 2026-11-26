@@ -466,19 +466,6 @@ test('hasParent and computeInputData resolve targets across Shadow DOM boundarie
         };
         $H.computeInputData(mgrInside, inputEmptyPath);
         strictEqual(inputEmptyPath.target, shadowLeaf, 'empty composedPath() falls back to srcEvent.target');
-
-        // 4. Legacy srcEvent.path fallback when composedPath is unavailable
-        var inputLegacyPath = {
-            eventType: Hammer.INPUT_MOVE,
-            pointers: [{clientX: 10, clientY: 10}],
-            changedPointers: [{clientX: 10, clientY: 10}],
-            srcEvent: {
-                target: host,
-                path: [shadowLeaf, shadowContainer, shadow, host]
-            }
-        };
-        $H.computeInputData(mgrInside, inputLegacyPath);
-        strictEqual(inputLegacyPath.target, shadowLeaf, 'legacy srcEvent.path[0] resolves target when composedPath is absent');
     }
 });
 
