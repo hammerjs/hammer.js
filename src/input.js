@@ -230,7 +230,7 @@ function computeDeltaXY(session, input) {
     var prevDelta = session.prevDelta || {};
     var prevInput = session.prevInput || {};
 
-    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+    if (!session.offsetDelta || input.eventType === INPUT_START || prevInput.eventType & (INPUT_END | INPUT_CANCEL)) {
         prevDelta = session.prevDelta = {
             x: prevInput.deltaX || 0,
             y: prevInput.deltaY || 0
