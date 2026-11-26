@@ -112,3 +112,34 @@ test('PanRecognizer with DIRECTION_NONE does not recognize pans', function() {
 
     equal(panCount, 0, 'no pan events fired when direction is DIRECTION_NONE');
 });
+
+test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans are not blocked', function() {
+    expect(3);
+
+    var pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 5});
+    hammer.add(pan);
+
+    var panStarts = 0;
+    hammer.on('panstart', function() {
+        panStarts++;
+    });
+
+    // Gesture 1 ends with deltaX = 30
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 40, 10);
+    utils.dispatchTouchEvent(el, 'end', 40, 10);
+    equal(panStarts, 1, 'first pan recognized');
+    strictEqual(pan.pX, null, 'pX cleared after panend');
+
+    // Gesture 2 arrives directly at deltaX = 30 with predominantly vertical direction (triggers axis lock check)
+    pan.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 50,
+        deltaX: 30,
+        deltaY: 40,
+        direction: Hammer.DIRECTION_DOWN,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    equal(panStarts, 2, 'second axis-locked pan at same deltaX is not blocked by stale pX');
+});

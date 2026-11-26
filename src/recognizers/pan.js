@@ -68,9 +68,12 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     emit: function(input) {
-
-        this.pX = input.deltaX;
-        this.pY = input.deltaY;
+        if (this.state & (STATE_ENDED | STATE_CANCELLED)) {
+            this.reset();
+        } else {
+            this.pX = input.deltaX;
+            this.pY = input.deltaY;
+        }
 
         var direction = directionStr(input.direction);
 
