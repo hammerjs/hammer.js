@@ -36,6 +36,10 @@ inherit(TouchInput, Input, {
             pointerType: INPUT_TYPE_TOUCH,
             srcEvent: ev
         });
+    },
+
+    reset: function() {
+        this.targetIds = {};
     }
 });
 

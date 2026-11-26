@@ -51,7 +51,7 @@ Manager.prototype = {
         if (options.touchAction) {
             this.touchAction.update();
         }
-        if (options.inputTarget) {
+        if (options.inputTarget && this.input) {
             // Clean up existing event listeners and reinitialize
             this.input.destroy();
             this.input.target = options.inputTarget;
@@ -59,6 +59,7 @@ Manager.prototype = {
         }
         if (options.enable !== undefined && !boolOrFn(this.options.enable, [this])) {
             this.stop(true);
+            this.input && this.input.reset();
             each(this.recognizers, function(recognizer) {
                 recognizer.reset();
                 recognizer.state = STATE_POSSIBLE;

@@ -49,8 +49,13 @@ function Input(manager, callback) {
     // smaller wrapper around the handler, for the scope and the enabled state of the manager,
     // so when disabled the input events are completely bypassed.
     this.domHandler = function(ev) {
-        if (manager.element && boolOrFn(manager.options.enable, [manager])) {
+        if (!manager.element) {
+            return;
+        }
+        if (boolOrFn(manager.options.enable, [manager])) {
             self.handler(ev);
+        } else {
+            self.reset();
         }
     };
 
@@ -66,6 +71,12 @@ Input.prototype = {
      * @virtual
      */
     handler: function() { },
+
+    /**
+     * clear any tracked active pointer state
+     * @virtual
+     */
+    reset: function() { },
 
     /**
      * bind the events

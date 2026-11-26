@@ -50,6 +50,10 @@ inherit(SingleTouchInput, Input, {
             pointerType: INPUT_TYPE_TOUCH,
             srcEvent: ev
         });
+    },
+
+    reset: function() {
+        this.started = false;
     }
 });
 
