@@ -589,4 +589,29 @@
             ti.destroy();
         }
     });
+
+    test('fresh primary pointerdown resets active Pan state after a leaked pointer', function() {
+        var events = [];
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.PointerEventInput,
+            recognizers: [
+                [Hammer.Pan, {threshold: 5}],
+                [Hammer.Tap]
+            ]
+        });
+        manager.on('panstart panmove panend tap', function(ev) {
+            events.push(ev.type);
+        });
+
+        // Start a pan whose pointerup/pointercancel is dropped without blur
+        manager.input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10, target: el});
+        manager.input.handler({type: 'pointermove', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 40, clientY: 10, target: el});
+        deepEqual(events, ['panstart'], 'pan started on first pointer');
+
+        // Fresh primary tap must reset stuck Pan state instead of firing panmove on pointerdown
+        events = [];
+        manager.input.handler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10, target: el});
+        manager.input.handler({type: 'pointerup', pointerId: 2, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10, target: el});
+        deepEqual(events, ['tap'], 'subsequent tap succeeds without bogus panmove');
+    });
 })();
