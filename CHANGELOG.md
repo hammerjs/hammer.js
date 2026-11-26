@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.0.10, 2026-11-26
+
+##### Build
+- Disable ES6 arrow-function compression in `uglify:min` so `hammer.min.js` remains strictly ES5-compatible, and lint `hammer.min.js` as ES5 in `grunt lint` ([#1398](https://github.com/hammerjs/hammer.js/pull/1398))
+
 ### 2.0.9, 2026-11-25
 
 > **Note:** [#1328](https://github.com/hammerjs/hammer.js/pull/1328) fixes a long-standing sign bug in `getRotation()` (`endAngle - startAngle` instead of `endAngle + startAngle`) so initial two-finger rotation starts at `0°` rather than `2 * startAngle`. If your application previously worked around the old offset, please verify rotation handling when upgrading.
