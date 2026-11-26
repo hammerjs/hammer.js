@@ -219,3 +219,16 @@ test('getRotation computes angle difference and returns 0 for stationary pointer
     equal(Math.round($H.getRotation(startVert, endCW)), 45, 'clockwise 45-degree rotation returns 45');
     equal(Math.round($H.getRotation(startVert, endCCW)), -45, 'counter-clockwise 45-degree rotation returns -45');
 });
+
+test('TapRecognizer does not arm a timer on pointer start or move', function() {
+    expect(3);
+
+    var tap = hammer.get('tap');
+    strictEqual(tap._timer, null, 'initial tap timer is null');
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    strictEqual(tap._timer, null, 'no timer armed on touchstart');
+
+    utils.dispatchTouchEvent(el, 'move', 52, 50);
+    strictEqual(tap._timer, null, 'no timer armed on touchmove');
+});

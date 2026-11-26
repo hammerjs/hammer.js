@@ -49,17 +49,9 @@ inherit(TapRecognizer, Recognizer, {
 
         this.reset();
 
-        if ((input.eventType & INPUT_START) && (this.count === 0)) {
-            return this.failTimeout();
-        }
-
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
-        if (validMovement && validTouchTime && validPointers) {
-            if (input.eventType != INPUT_END) {
-                return this.failTimeout();
-            }
-
+        if (input.eventType === INPUT_END && validMovement && validTouchTime && validPointers) {
             var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
             var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
 
@@ -91,13 +83,6 @@ inherit(TapRecognizer, Recognizer, {
                 }
             }
         }
-        return STATE_FAILED;
-    },
-
-    failTimeout: function() {
-        this._timer = setTimeoutContext(function() {
-            this.state = STATE_FAILED;
-        }, this.options.interval, this);
         return STATE_FAILED;
     },
 
