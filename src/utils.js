@@ -239,7 +239,7 @@ function hasParent(node, parent) {
         if (node == parent) {
             return true;
         }
-        node = node.parentNode || (typeof Node !== 'undefined' && node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.host);
+        node = node.parentNode || (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ && node.host);
     }
     return false;
 }
