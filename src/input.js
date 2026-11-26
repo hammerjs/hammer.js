@@ -91,6 +91,7 @@ Input.prototype = {
      * unbind the events
      */
     destroy: function() {
+        this.reset();
         this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
         this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
         this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);

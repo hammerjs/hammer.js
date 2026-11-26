@@ -120,10 +120,5 @@ inherit(PointerEventInput, Input, {
 
     reset: function() {
         this.store.length = 0;
-    },
-
-    destroy: function() {
-        this.reset();
-        Input.prototype.destroy.call(this);
     }
 });
