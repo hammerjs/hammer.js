@@ -88,3 +88,26 @@ asyncTest('When a tap is fired, tripleTap and doubleTap should not be recognized
         equal(tapCount, 1);
     }, 350);
 });
+
+test('tryEmit resets failing recognizer timer when requireFailure blocks emission', function() {
+    expect(2);
+
+    var tap = hammer.get('tap');
+    var resetCalls = 0;
+    var origReset = tap.reset;
+    tap.reset = function() {
+        resetCalls++;
+        return origReset.apply(this, arguments);
+    };
+
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+    resetCalls = 0;
+
+    // Second tap causes doubleTap to enter STATE_BEGAN, so tap.tryEmit() must fail and reset its timer
+    utils.dispatchTouchEvent(el, 'start', 50, 50);
+    utils.dispatchTouchEvent(el, 'end', 50, 50);
+
+    equal(tap.state, $H.STATE_FAILED, 'tap transitions to STATE_FAILED when doubleTap blocks tryEmit');
+    ok(resetCalls >= 3, 'tap.reset() called inside tryEmit() to cancel orphaned timer');
+});
