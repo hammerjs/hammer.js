@@ -51,11 +51,11 @@ inherit(PanRecognizer, AttrRecognizer, {
             if (options.direction & DIRECTION_HORIZONTAL) {
                 direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
                 hasMoved = x != this.pX;
-                distance = Math.abs(input.deltaX);
+                distance = abs(input.deltaX);
             } else {
                 direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
                 hasMoved = y != this.pY;
-                distance = Math.abs(input.deltaY);
+                distance = abs(input.deltaY);
             }
         }
         input.direction = direction;
@@ -63,8 +63,8 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     attrTest: function(input) {
-        return AttrRecognizer.prototype.attrTest.call(this, input) &&
-            (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
+        return this._super.attrTest.call(this, input) &&
+            (this.state & STATE_BEGAN || this.directionTest(input));
     },
 
     emit: function(input) {
