@@ -88,24 +88,25 @@ function recordTouches(eventType, eventData) {
     }
 }
 
+function pruneLastTouches(lts) {
+    var cutoff = now() - DEDUP_TIMEOUT;
+    while (lts.length && lts[0].t < cutoff) {
+        lts.shift();
+    }
+}
+
 function setLastTouch(eventData) {
     var touch = eventData.changedPointers[0];
 
     if (touch.identifier === this.primaryTouch) {
-        var lastTouch = {x: touch.clientX, y: touch.clientY};
-        this.lastTouches.push(lastTouch);
         var lts = this.lastTouches;
-        var removeLastTouch = function() {
-            var i = lts.indexOf(lastTouch);
-            if (i > -1) {
-                lts.splice(i, 1);
-            }
-        };
-        setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+        pruneLastTouches(lts);
+        lts.push({x: touch.clientX, y: touch.clientY, t: now()});
     }
 }
 
 function isSyntheticEvent(eventData) {
+    pruneLastTouches(this.lastTouches);
     var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
     for (var i = 0; i < this.lastTouches.length; i++) {
         var t = this.lastTouches[i];
