@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                     linebreak: true
                 },
                 files: {
-                    src: ['./hammer.js', './hammer.min.js', './hammer.mjs']
+                    src: ['./hammer.js', './hammer.mjs']
                 }
             }
         },
@@ -50,6 +50,9 @@ module.exports = function(grunt) {
             min: {
                 options: {
                     report: 'gzip',
+                    output: {
+                        comments: /^!/
+                    },
                     sourceMap: true,
                     sourceMapName: 'hammer.min.js.map'
                 },
@@ -245,7 +248,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-banner');
 
     grunt.registerTask('default', ['connect:server:keepalive']);
-    grunt.registerTask('dist', ['concat', 'string-replace', 'uglify:min', 'usebanner']);
+    grunt.registerTask('dist', ['concat', 'string-replace', 'usebanner', 'uglify:min']);
     grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test', ['concat', 'string-replace', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
