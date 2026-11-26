@@ -234,11 +234,18 @@ Recognizer.prototype = {
      * @param {Object} inputData
      */
     recognize: function(inputData) {
+        // avoid cloning inputData when statically disabled
+        if (!this.options.enable) {
+            this.reset();
+            this.state = STATE_FAILED;
+            return;
+        }
+
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
         var inputDataClone = assign({}, inputData);
 
-        // is is enabled and allow recognizing?
+        // is it enabled and allow recognizing?
         if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
             this.reset();
             this.state = STATE_FAILED;

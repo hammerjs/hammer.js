@@ -245,3 +245,24 @@ test('destroying manager inside a gesture handler does not re-attach session.pre
     strictEqual(hammer.element, null, 'manager.element is cleared after destroy');
     strictEqual(hammer.session.prevInput, undefined, 'manager.session.prevInput is not re-attached after destroy');
 });
+
+test('statically disabled recognizer exits without reading or cloning inputData properties', function() {
+    expect(2);
+
+    var getterReads = 0;
+    var input = {};
+    Object.defineProperty(input, 'distance', {
+        enumerable: true,
+        get: function() {
+            getterReads++;
+            return 20;
+        }
+    });
+
+    var pan = new Hammer.Pan({enable: false});
+    hammer.add(pan);
+    pan.recognize(input);
+
+    equal(pan.state, $H.STATE_FAILED, 'disabled recognizer transitions to STATE_FAILED');
+    equal(getterReads, 0, 'inputData was not cloned while enable is false');
+});
