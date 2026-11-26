@@ -254,4 +254,27 @@
             }
         }
     });
+
+    test('TouchAction.preventDefaults exits early when native touch-action supports current value', function() {
+        manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'none'});
+        if ($H.TOUCH_ACTION_MAP && $H.TOUCH_ACTION_MAP.none) {
+            var directionReads = 0;
+            var input = {
+                srcEvent: {cancelable: true, preventDefault: function() {}},
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            };
+            Object.defineProperty(input, 'offsetDirection', {
+                get: function() {
+                    directionReads++;
+                    return Hammer.DIRECTION_RIGHT;
+                }
+            });
+            manager.touchAction.preventDefaults(input);
+            equal(directionReads, 0, 'skips polyfill checks when native touch-action supports value');
+        } else {
+            ok(true, 'native touch-action not supported in environment');
+        }
+    });
 })();

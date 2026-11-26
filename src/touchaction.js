@@ -71,7 +71,6 @@ TouchAction.prototype = {
      */
     preventDefaults: function(input) {
         var srcEvent = input.srcEvent;
-        var direction = input.offsetDirection;
 
         // if the touch action did prevented once this session
         if (this.manager.session.prevented) {
@@ -82,6 +81,11 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
+        if (TOUCH_ACTION_MAP && TOUCH_ACTION_MAP[actions]) {
+            return;
+        }
+
+        var direction = input.offsetDirection;
         var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
         var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
         var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
