@@ -235,51 +235,9 @@ module.exports = function(grunt) {
         });
     });
 
-    // Note: Gruntfile.js is a bit of an odd place to run runtime tests,
-    // but for now this is the easiest way to test importing Hammer in a Node environment
-    // (CJS, bare VM, and native ESM via tests/grunt/test_hammer_esm.js) without window/document.
-    grunt.registerTask('test-ssr', 'Verify hammer.js and hammer.mjs load cleanly in Node.js without window or document', function() {
-        var done = this.async();
-        var vm = require('vm');
-        var pkg = grunt.config('pkg');
-        var files = grunt.file.expand(['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']));
-        var code = files.map(function(filepath) {
-            return grunt.file.read(filepath);
-        }).join('\n');
-
-        // 1. CommonJS / Node.js SSR without window, document, navigator, or self
-        var cjsModule = {exports: {}};
-        vm.runInNewContext(code, {
-            module: cjsModule,
-            exports: cjsModule.exports,
-            setTimeout: setTimeout,
-            clearTimeout: clearTimeout
-        });
-        if (typeof cjsModule.exports !== 'function' || typeof cjsModule.exports.Manager !== 'function') {
-            grunt.fail.fatal('SSR CommonJS load failed to export Hammer');
-        }
-
-        // 2. Bare runtime without window, document, navigator, or module
-        vm.runInNewContext(code, {
-            setTimeout: setTimeout,
-            clearTimeout: clearTimeout
-        });
-
-        // 3. Native ES module load in Node.js without window/document (when hammer.mjs is built)
-        if (!grunt.file.exists('hammer.mjs')) {
-            grunt.log.ok('SSR load passed (CommonJS and bare runtime without window/document).');
-            done();
-            return;
-        }
-
-        require('./tests/grunt/test_hammer_esm')('hammer.mjs', pkg.version).then(function() {
-            grunt.log.ok('SSR load passed (CommonJS, bare runtime, and native ESM without window/document).');
-            done();
-        }).catch(function(err) {
-            grunt.log.error(err.stack || err.message);
-            done(false);
-        });
-    });
+    // Load Node/SSR/ESM load tests (slightly odd place to run tests via Grunt,
+    // but for now the easiest way to test importing Hammer in a Node environment)
+    grunt.loadTasks('tests/grunt');
 
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
