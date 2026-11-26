@@ -299,6 +299,7 @@ Manager.prototype = {
      */
     destroy: function() {
         this.element && toggleCssProps(this, false);
+        this.touchAction && this.touchAction.destroy();
 
         this.stop(true);
         each(this.recognizers, function(recognizer) {

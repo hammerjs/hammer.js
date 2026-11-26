@@ -71,6 +71,32 @@
         equal(manager.touchAction.actions, 'none', 'enabled pinch recognizer computes none');
     });
 
+    test('Manager.destroy restores original inline touch-action style', function() {
+        if ($H.NATIVE_TOUCH_ACTION) {
+            // 1. No initial inline touch-action -> restored to empty string after multiple updates
+            el.style[$H.PREFIXED_TOUCH_ACTION] = '';
+            manager = new Hammer(el);
+            ok(el.style[$H.PREFIXED_TOUCH_ACTION] !== '', 'Hammer sets inline touch-action');
+            manager.set({touchAction: 'none'});
+            manager.destroy();
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'destroy() clears inline touch-action when originally unset');
+            manager.destroy();
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'calling destroy() twice remains safe');
+
+            // 2. Existing inline touch-action -> restored to original value
+            el.style[$H.PREFIXED_TOUCH_ACTION] = 'manipulation';
+            manager = new Hammer.Manager(el, {
+                recognizers: [[Hammer.Pan, {direction: Hammer.DIRECTION_ALL}]]
+            });
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'none', 'Hammer overrides inline touch-action while active');
+            manager.destroy();
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'manipulation', 'destroy() restores previous inline touch-action');
+            manager = null;
+        } else {
+            ok(true, 'native touch-action not supported in environment');
+        }
+    });
+
     test('TouchAction.preventDefaults enforces polyfill rules when native touch-action is unavailable', function() {
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'none'});
 
