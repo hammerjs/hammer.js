@@ -202,10 +202,11 @@ function computeInputData(manager, input) {
     computeDeltaXY(session, input);
     input.offsetDirection = getDirection(input.deltaX, input.deltaY);
 
-    var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
-    input.overallVelocityX = overallVelocity.x;
-    input.overallVelocityY = overallVelocity.y;
-    input.overallVelocity = (abs(overallVelocity.x) > abs(overallVelocity.y)) ? overallVelocity.x : overallVelocity.y;
+    var overallVelocityX = input.deltaX / input.deltaTime || 0;
+    var overallVelocityY = input.deltaY / input.deltaTime || 0;
+    input.overallVelocityX = overallVelocityX;
+    input.overallVelocityY = overallVelocityY;
+    input.overallVelocity = (abs(overallVelocityX) > abs(overallVelocityY)) ? overallVelocityX : overallVelocityY;
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
@@ -453,20 +454,6 @@ function getCenter(pointers) {
     return {
         x: x / pointersLength,
         y: y / pointersLength
-    };
-}
-
-/**
- * calculate the velocity between two points. unit is in px per ms.
- * @param {Number} deltaTime
- * @param {Number} x
- * @param {Number} y
- * @return {Object} velocity `x` and `y`
- */
-function getVelocity(deltaTime, x, y) {
-    return {
-        x: x / deltaTime || 0,
-        y: y / deltaTime || 0
     };
 }
 
