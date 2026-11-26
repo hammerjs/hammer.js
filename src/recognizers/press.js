@@ -36,12 +36,10 @@ inherit(PressRecognizer, Recognizer, {
 
         this._input = input;
 
-        // we only allow little movement
-        // and we've reached an end event, so a tap is possible
         if (!validMovement || !validPointers || (input.eventType & INPUT_CANCEL) ||
             (input.eventType & INPUT_END && (!validTime || this._invalidated))) {
             this.reset();
-            if (!(input.eventType & INPUT_END)) {
+            if (input.isFinal === false || !(input.eventType & INPUT_END)) {
                 this._invalidated = true;
             }
         } else if (input.eventType & INPUT_START) {

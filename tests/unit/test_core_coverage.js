@@ -370,6 +370,14 @@
         press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 2, deltaTime: 40, srcEvent: srcEv});
 
         deepEqual(events, [], 'pressup is not emitted after movement invalidated the press');
+
+        // Second finger cancels pending press; lifting second finger (isFinal: false) must keep press invalidated
+        press.recognize({eventType: $H.INPUT_START, isFirst: true, isFinal: false, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_START, isFirst: false, isFinal: false, pointers: [{}, {}], distance: 2, deltaTime: 5, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_END, isFirst: false, isFinal: false, pointers: [{}, {}], distance: 2, deltaTime: 10, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_END, isFirst: false, isFinal: true, pointers: [{}], distance: 0, deltaTime: 40, srcEvent: srcEv});
+
+        deepEqual(events, [], 'pressup is not emitted after a second pointer invalidated the press');
     });
 
     test('Manager.emit populates data.type and data.preventDefault before dispatching DOM events', function() {
