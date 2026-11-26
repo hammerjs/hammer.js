@@ -1,7 +1,5 @@
-// this prevents errors when Hammer is loaded in the presence of an AMD
-//  style loader but by script tag, not by the loader.
-var freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
-freeGlobal.Hammer = Hammer;
+// Expose on global even when loaded via script tag alongside an AMD loader
+window[exportName] = Hammer;
 
 if (typeof define === 'function' && define.amd) {
     define(function() {
@@ -9,7 +7,5 @@ if (typeof define === 'function' && define.amd) {
     });
 } else if (typeof module != 'undefined' && module.exports) {
     module.exports = Hammer;
-} else {
-    window[exportName] = Hammer;
 }
 })(typeof window !== 'undefined' ? window : {}, typeof document !== 'undefined' ? document : {}, 'Hammer');
