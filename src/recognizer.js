@@ -210,6 +210,7 @@ Recognizer.prototype = {
             return this.emit(input);
         }
         // it's failing anyway
+        this.reset();
         this.state = STATE_FAILED;
     },
 
