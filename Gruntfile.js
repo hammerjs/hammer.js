@@ -235,10 +235,11 @@ module.exports = function(grunt) {
         });
     });
 
+    // Note: Gruntfile.js is a bit of an odd place to run runtime tests,
+    // but for now this is the easiest way to test importing Hammer in a Node environment
+    // (CJS, bare VM, and native ESM via tests/grunt/test_hammer_esm.js) without window/document.
     grunt.registerTask('test-ssr', 'Verify hammer.js and hammer.mjs load cleanly in Node.js without window or document', function() {
         var done = this.async();
-        var path = require('path');
-        var url = require('url');
         var vm = require('vm');
         var pkg = grunt.config('pkg');
         var files = grunt.file.expand(['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']));
@@ -271,21 +272,7 @@ module.exports = function(grunt) {
             return;
         }
 
-        var esmSource = grunt.file.read('hammer.mjs');
-        if (esmSource.indexOf('module.exports') !== -1 || esmSource.indexOf('define.amd') !== -1) {
-            grunt.fail.fatal('hammer.mjs must not contain CommonJS or AMD UMD wrapper code');
-        }
-
-        var esmUrl = url.pathToFileURL(path.resolve('hammer.mjs')).href + '?t=' + Date.now();
-        import(esmUrl).then(function(mod) {
-            if (typeof mod.default !== 'function' || mod.VERSION !== pkg.version) {
-                grunt.fail.fatal('SSR ESM load failed to expose default Hammer export');
-            }
-            Object.keys(mod.default).forEach(function(key) {
-                if (mod[key] !== mod.default[key]) {
-                    grunt.fail.fatal('hammer.mjs missing or mismatched named export: ' + key);
-                }
-            });
+        require('./tests/grunt/test_hammer_esm')('hammer.mjs', pkg.version).then(function() {
             grunt.log.ok('SSR load passed (CommonJS, bare runtime, and native ESM without window/document).');
             done();
         }).catch(function(err) {
