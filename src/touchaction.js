@@ -38,7 +38,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style && supportsTouchAction(value)) {
+        if (this.manager.element && this.manager.element.style && supportsTouchAction(value)) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value;
@@ -169,8 +169,7 @@ function supportsTouchAction(value) {
         return false;
     }
     if (TOUCH_ACTION_MAP[value] === undefined) {
-        var cssSupports = window.CSS && window.CSS.supports;
-        TOUCH_ACTION_MAP[value] = cssSupports ? window.CSS.supports('touch-action', value) : false;
+        TOUCH_ACTION_MAP[value] = !!(window.CSS && window.CSS.supports && window.CSS.supports('touch-action', value));
     }
     return TOUCH_ACTION_MAP[value];
 }
