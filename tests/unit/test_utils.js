@@ -572,3 +572,15 @@ test('getCenter and simpleCloneInputData preserve sub-pixel pointer positions', 
     strictEqual(cloned.center.x, 12.4, 'cloned center.x preserves fractional clientX');
     strictEqual(cloned.center.y, 34.6, 'cloned center.y preserves fractional clientY');
 });
+
+test('each handles null-prototype objects without throwing', function() {
+    var obj = Object.create(null);
+    obj.a = 1;
+    obj.b = 2;
+
+    var pairs = [];
+    Hammer.each(obj, function(val, key) {
+        pairs.push(key + ':' + val);
+    });
+    deepEqual(pairs.sort(), ['a:1', 'b:2'], 'Hammer.each iterates Object.create(null) safely');
+});
