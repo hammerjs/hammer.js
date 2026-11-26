@@ -354,6 +354,24 @@
         }, 60);
     });
 
+    test('PressRecognizer does not emit pressup if movement invalidated the press before release', function() {
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var press = manager.add(new Hammer.Press({time: 20, threshold: 9}));
+        var events = [];
+        manager.on('press pressup', function(ev) {
+            events.push(ev.type);
+        });
+
+        var srcEv = {cancelable: true, preventDefault: function() {}};
+        press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        // Move past threshold (cancels pending press), then return within threshold after time elapsed
+        press.recognize({eventType: $H.INPUT_MOVE, pointers: [{}], distance: 25, deltaTime: 10, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_MOVE, pointers: [{}], distance: 2, deltaTime: 30, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 2, deltaTime: 40, srcEvent: srcEv});
+
+        deepEqual(events, [], 'pressup is not emitted after movement invalidated the press');
+    });
+
     test('Manager.emit populates data.type and data.preventDefault before dispatching DOM events', function() {
         expect(3);
 

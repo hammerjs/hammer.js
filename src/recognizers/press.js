@@ -9,6 +9,7 @@ function PressRecognizer() {
 
     this._timer = null;
     this._input = null;
+    this._invalidated = false;
 }
 
 inherit(PressRecognizer, Recognizer, {
@@ -38,8 +39,11 @@ inherit(PressRecognizer, Recognizer, {
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
         if (!validMovement || !validPointers || (input.eventType & INPUT_CANCEL) ||
-            (input.eventType & INPUT_END && !validTime)) {
+            (input.eventType & INPUT_END && (!validTime || this._invalidated))) {
             this.reset();
+            if (!(input.eventType & INPUT_END)) {
+                this._invalidated = true;
+            }
         } else if (input.eventType & INPUT_START) {
             this.reset();
             if (options.time <= 0) {
@@ -58,6 +62,7 @@ inherit(PressRecognizer, Recognizer, {
 
     reset: function() {
         clearTimeout(this._timer);
+        this._invalidated = false;
     },
 
     emit: function(input) {
