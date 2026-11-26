@@ -10,30 +10,18 @@ var MOUSE_ELEMENT_EVENTS = 'mousedown';
 var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
 
 /**
- * convert a MouseEvent/PointerEvent button code (0=left, 1=middle, 2=right) to its W3C buttons bitmask
- * @param {Number} button
- * @returns {Number}
- */
-function mouseButtonMask(button) {
-    return (button >= 0 && button < 31) ? (MOUSE_BUTTON_MASKS[button] || (1 << button)) : 0;
-}
-
-/**
  * compute the W3C buttons bitmask of mouse buttons allowed by manager.options.mouseButtons
  * @param {Manager} manager
  * @returns {Number}
  */
 function getMouseButtonsMask(manager) {
     var allowed = manager.options.mouseButtons;
-    if (allowed == null) {
+    if (!allowed) {
         return 1;
-    }
-    if (typeof allowed === 'number') {
-        return mouseButtonMask(allowed);
     }
     var mask = 0;
     for (var i = 0; i < allowed.length; i++) {
-        mask |= mouseButtonMask(allowed[i]);
+        mask |= MOUSE_BUTTON_MASKS[allowed[i]];
     }
     return mask;
 }
@@ -63,7 +51,7 @@ inherit(MouseInput, Input, {
 
         // on start we want an allowed mouse button down (ignore chorded mousedown while pressed)
         if (eventType & INPUT_START) {
-            if (this.pressed || !(getMouseButtonsMask(this.manager) & mouseButtonMask(ev.button))) {
+            if (this.pressed || !(getMouseButtonsMask(this.manager) & MOUSE_BUTTON_MASKS[ev.button])) {
                 return;
             }
             this.pressed = true;
@@ -77,7 +65,7 @@ inherit(MouseInput, Input, {
 
         if (eventType & INPUT_MOVE &&
             ev.which !== (this.activeButton + 1) &&
-            !(ev.buttons & mouseButtonMask(this.activeButton))) {
+            !(ev.buttons & MOUSE_BUTTON_MASKS[this.activeButton])) {
             eventType = INPUT_END;
         }
 

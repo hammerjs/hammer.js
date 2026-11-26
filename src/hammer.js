@@ -59,8 +59,8 @@ Hammer.defaults = {
     inputClass: null,
 
     /**
-     * optional allowed MouseEvent/PointerEvent button code or array of button codes (0=left, 1=middle, 2=right)
-     * @type {Null|Number|Array}
+     * optional array of allowed MouseEvent/PointerEvent button codes (0=left, 1=middle, 2=right)
+     * @type {Null|Array}
      * @default null
      */
     mouseButtons: null,

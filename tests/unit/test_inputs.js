@@ -192,9 +192,10 @@
         });
 
         try {
-            // Invalid/negative button codes map to mask 0
-            equal($H.mouseButtonMask(-1), 0, 'negative button code maps to mask 0');
-            equal($H.mouseButtonMask(undefined), 0, 'undefined button code maps to mask 0');
+            // Invalid/negative button codes safely produce mask 0
+            manager.set({mouseButtons: [-1, undefined]});
+            equal($H.getMouseButtonsMask(manager), 0, 'invalid/negative button codes map to mask 0');
+            manager.set({mouseButtons: [1, 2]});
 
             // Left button (0) rejected when mouseButtons is [1, 2]
             mi.handler({type: 'mousedown', button: 0, buttons: 1, which: 1, clientX: 10, clientY: 10});
@@ -227,20 +228,20 @@
 
             // Chorded release in PointerEventInput ends drag once no allowed button remains held
             peCalls = [];
-            manager.set({mouseButtons: 1});
+            manager.set({mouseButtons: [1]});
             pe.handler({type: 'pointerdown', pointerId: 2, pointerType: 'mouse', button: 1, buttons: 4, clientX: 10, clientY: 10});
             pe.handler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: -1, buttons: 5, clientX: 20, clientY: 10});
             pe.handler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: -1, buttons: 1, clientX: 30, clientY: 10});
             deepEqual(peCalls, [$H.INPUT_START, $H.INPUT_MOVE, $H.INPUT_END], 'PointerEventInput ends gesture when allowed middle button is released while disallowed left stays held');
             equal(pe.store.length, 0, 'pointer removed from store after chorded release of allowed button');
 
-            // Single numeric shorthand (mouseButtons: 2)
+            // Single-element array (mouseButtons: [2])
             peCalls = [];
-            manager.set({mouseButtons: 2});
+            manager.set({mouseButtons: [2]});
             pe.handler({type: 'pointerdown', pointerId: 3, pointerType: 'mouse', button: 1, buttons: 4, clientX: 10, clientY: 10});
             pe.handler({type: 'pointerdown', pointerId: 4, pointerType: 'mouse', button: 2, buttons: 2, clientX: 10, clientY: 10});
             pe.handler({type: 'pointerup', pointerId: 4, pointerType: 'mouse', button: 2, buttons: 0, clientX: 10, clientY: 10});
-            deepEqual(peCalls, [$H.INPUT_START, $H.INPUT_END], 'single numeric mouseButtons: 2 accepts only right button');
+            deepEqual(peCalls, [$H.INPUT_START, $H.INPUT_END], 'mouseButtons: [2] accepts only right button');
         } finally {
             mi.destroy();
             pe.destroy();

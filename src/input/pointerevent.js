@@ -57,7 +57,7 @@ inherit(PointerEventInput, Input, {
 
         // start and mouse must have an allowed button down
         if (eventType & INPUT_START && (isTouch ||
-            (pointerType === INPUT_TYPE_MOUSE ? (getMouseButtonsMask(this.manager) & mouseButtonMask(ev.button)) : ev.button === 0))) {
+            (pointerType === INPUT_TYPE_MOUSE ? (getMouseButtonsMask(this.manager) & MOUSE_BUTTON_MASKS[ev.button]) : ev.button === 0))) {
             if (storeIndex < 0) {
                 store.push(ev);
                 storeIndex = store.length - 1;
