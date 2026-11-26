@@ -23,6 +23,9 @@ function SingleTouchInput() {
 
 inherit(SingleTouchInput, Input, {
     handler: function TEhandler(ev) {
+        if (!isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
+            return;
+        }
         var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
         // should we handle the touch events?

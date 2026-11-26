@@ -27,6 +27,9 @@ inherit(MouseInput, Input, {
      * @param {Object} ev
      */
     handler: function MEhandler(ev) {
+        if (!isAllowedPointerType(this.manager, INPUT_TYPE_MOUSE)) {
+            return;
+        }
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
         // on start we want to have the left mouse button down

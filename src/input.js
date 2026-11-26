@@ -111,12 +111,26 @@ function createInputInstance(manager) {
 }
 
 /**
+ * check whether a pointerType is allowed by manager.options.pointerTypes
+ * @param {Manager} manager
+ * @param {String} pointerType
+ * @returns {Boolean}
+ */
+function isAllowedPointerType(manager, pointerType) {
+    var allowed = manager.options.pointerTypes;
+    return !allowed || inArray(allowed, pointerType) > -1;
+}
+
+/**
  * handle input events
  * @param {Manager} manager
  * @param {String} eventType
  * @param {Object} input
  */
 function inputHandler(manager, eventType, input) {
+    if (!isAllowedPointerType(manager, input.pointerType)) {
+        return;
+    }
     var pointersLen = input.pointers.length;
     var changedPointersLen = input.changedPointers.length;
     var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));

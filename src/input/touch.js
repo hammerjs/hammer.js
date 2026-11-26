@@ -21,6 +21,9 @@ function TouchInput() {
 
 inherit(TouchInput, Input, {
     handler: function MTEhandler(ev) {
+        if (!isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
+            return;
+        }
         var type = TOUCH_INPUT_MAP[ev.type];
         var touches = getTouches.call(this, ev, type);
         if (!touches) {

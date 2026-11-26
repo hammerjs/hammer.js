@@ -43,6 +43,13 @@ Hammer.defaults = {
     enable: true,
 
     /**
+     * optional array of allowed pointer types, e.g. ['touch', 'pen']
+     * @type {Null|Array}
+     * @default null
+     */
+    pointerTypes: null,
+
+    /**
      * EXPERIMENTAL FEATURE -- can be removed/changed
      * Change the parent input target element.
      * If Null, then it is being set the to main element.
