@@ -40,13 +40,13 @@ Manager.prototype = {
      */
     set: function(options) {
         if (options.cssProps) {
-            this.element && toggleCssProps(this, false);
+            toggleCssProps(this, false);
         }
         assign(this.options, options);
 
         // Options that need a little more setup
         if (options.cssProps) {
-            this.element && toggleCssProps(this, true);
+            toggleCssProps(this, true);
         }
         if (options.touchAction) {
             this.touchAction.update();
@@ -103,7 +103,7 @@ Manager.prototype = {
 
         // reset when the last recognizer is recognized
         // or when we're in a new session
-        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+        if (!curRecognizer || (curRecognizer.state & STATE_RECOGNIZED)) {
             curRecognizer = session.curRecognizer = null;
         }
 
@@ -127,10 +127,14 @@ Manager.prototype = {
 
             // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
             // current active recognizer. but only if we don't already have an active recognizer
-            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+            curRecognizer = session.curRecognizer;
+            if (!curRecognizer && recognizer.manager === this &&
+                recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
                 curRecognizer = session.curRecognizer = recognizer;
             }
-            i++;
+            if (recognizers[i] === recognizer) {
+                i++;
+            }
         }
     },
 
@@ -196,6 +200,9 @@ Manager.prototype = {
 
             if (index !== -1) {
                 recognizers.splice(index, 1);
+                if (this.session.curRecognizer === recognizer) {
+                    this.session.curRecognizer = null;
+                }
                 recognizer.reset();
                 recognizer.manager = null;
                 this.touchAction.update();
@@ -212,10 +219,7 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     on: function(events, handler) {
-        if (events === undefined) {
-            return;
-        }
-        if (handler === undefined) {
+        if (events === undefined || handler === undefined) {
             return;
         }
 
@@ -298,7 +302,7 @@ Manager.prototype = {
      * it doesn't unbind dom events, that is the user own responsibility
      */
     destroy: function() {
-        this.element && toggleCssProps(this, false);
+        toggleCssProps(this, false);
         this.touchAction && this.touchAction.destroy();
 
         this.stop(true);
@@ -321,7 +325,7 @@ Manager.prototype = {
  */
 function toggleCssProps(manager, add) {
     var element = manager.element;
-    if (!element.style) {
+    if (!element || !element.style) {
         return;
     }
     var prop;

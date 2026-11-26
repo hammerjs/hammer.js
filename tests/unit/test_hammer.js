@@ -473,3 +473,39 @@ test('disabling manager mid-gesture resets active input state and guards set(inp
     ok(true, 'set({inputTarget}) safely ignored after destroy');
     hammer = null;
 });
+
+test('Manager.remove clears session.curRecognizer when removing active recognizer mid-gesture', function() {
+    expect(5);
+
+    // 1. Removing inside pan1move (after pan1 is already stored in session.curRecognizer)
+    hammer = new Hammer.Manager(el, {
+        recognizers: [
+            [Hammer.Pan, {event: 'pan1', threshold: 5}],
+            [Hammer.Pan, {event: 'pan2', threshold: 5}]
+        ]
+    });
+
+    var pan2Started = 0;
+    hammer.on('pan1move', function() {
+        hammer.remove('pan1');
+    });
+    hammer.on('pan2start', function() {
+        pan2Started++;
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 25, 10);
+    strictEqual(hammer.session.curRecognizer.options.event, 'pan1', 'pan1 becomes curRecognizer on start');
+
+    utils.dispatchTouchEvent(el, 'move', 40, 10);
+    equal(pan2Started, 1, 'removing active pan1 on pan1move clears curRecognizer and lets pan2 recognize');
+    strictEqual(hammer.session.curRecognizer.options.event, 'pan2', 'pan2 becomes new curRecognizer');
+
+    // 2. toggleCssProps safely handles null element (e.g. set({cssProps}) after destroy)
+    hammer.destroy();
+    hammer.set({cssProps: {userSelect: 'text'}});
+    ok(true, 'set({cssProps}) after destroy() does not throw');
+    $H.toggleCssProps({element: null, options: {cssProps: {userSelect: 'none'}}, oldCssProps: {}}, true);
+    ok(true, 'toggleCssProps safely ignores null element');
+    hammer = null;
+});
