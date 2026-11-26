@@ -71,11 +71,21 @@ module.exports = [
     {
         ignores: [
             'node_modules/**',
-            'hammer.min.js',
             'src/hammer.prefix.js',
             'src/hammer.suffix.js',
             'tests/**'
         ]
+    },
+    {
+        files: ['hammer.min.js'],
+        languageOptions: {
+            ecmaVersion: 5,
+            sourceType: 'script',
+            globals: browserGlobals
+        },
+        rules: {
+            'no-undef': 'error'
+        }
     },
     {
         files: ['hammer.js'],
