@@ -208,6 +208,9 @@ function computeInputData(manager, input) {
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+    if (firstMultiple && session.prevInput && session.prevInput.pointers.length > 1) {
+        input.rotation = session.prevInput.rotation + normalizeAngle(input.rotation - session.prevInput.rotation);
+    }
 
     input.maxPointers = !session.prevInput ? input.pointers.length : ((input.pointers.length >
         session.prevInput.maxPointers) ? input.pointers.length : session.prevInput.maxPointers);
@@ -520,13 +523,28 @@ function getAngle(p1, p2, props) {
 }
 
 /**
+ * normalize an angle delta in degrees into [-180, 180]
+ * @param {Number} angle
+ * @return {Number}
+ */
+function normalizeAngle(angle) {
+    angle = angle % 360;
+    if (angle > 180) {
+        angle -= 360;
+    } else if (angle < -180) {
+        angle += 360;
+    }
+    return angle;
+}
+
+/**
  * calculate the rotation degrees between two pointersets
  * @param {Array} start array of pointers
  * @param {Array} end array of pointers
  * @return {Number} rotation
  */
 function getRotation(start, end) {
-    return getAngle(end[1], end[0], PROPS_CLIENT_XY) - getAngle(start[1], start[0], PROPS_CLIENT_XY);
+    return normalizeAngle(getAngle(end[1], end[0], PROPS_CLIENT_XY) - getAngle(start[1], start[0], PROPS_CLIENT_XY));
 }
 
 /**
