@@ -14,31 +14,46 @@
     });
 
     test('cleanTouchActions normalizes combined touch-action values', function() {
+        var supportsPanXPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
+            window.CSS.supports('touch-action', 'pan-x pinch-zoom');
+        var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
+            window.CSS.supports('touch-action', 'pan-y pinch-zoom');
+        var expectedPanX = supportsPanXPinch ? 'pan-x pinch-zoom' : 'pan-x';
+        var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
+
         equal($H.cleanTouchActions('none'), 'none', 'none stays none');
         equal($H.cleanTouchActions('pan-x none auto'), 'none', 'none takes precedence');
         equal($H.cleanTouchActions('pan-x pan-y'), 'none', 'pan-x + pan-y collapses to none');
-        equal($H.cleanTouchActions('pan-x auto'), 'pan-x', 'pan-x alone stays pan-x');
-        equal($H.cleanTouchActions('pan-y auto'), 'pan-y', 'pan-y alone stays pan-y');
+        equal($H.cleanTouchActions('pan-x auto'), expectedPanX, 'pan-x preserves pinch-zoom when supported');
+        equal($H.cleanTouchActions('pan-y auto'), expectedPanY, 'pan-y preserves pinch-zoom when supported');
         equal($H.cleanTouchActions('manipulation auto'), 'manipulation', 'manipulation preserved when no pan/none');
+        equal($H.cleanTouchActions('pinch-zoom auto'), 'pinch-zoom', 'pinch-zoom preserved when no pan/none/manipulation');
         equal($H.cleanTouchActions('auto'), 'auto', 'auto stays auto');
         equal($H.cleanTouchActions(''), 'auto', 'empty string defaults to auto');
     });
 
     test('TouchAction.compute calculates expected value from enabled recognizers', function() {
+        var supportsPanXPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
+            window.CSS.supports('touch-action', 'pan-x pinch-zoom');
+        var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
+            window.CSS.supports('touch-action', 'pan-y pinch-zoom');
+        var expectedPanX = supportsPanXPinch ? 'pan-x pinch-zoom' : 'pan-x';
+        var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
+
         manager = new Hammer.Manager(el, {recognizers: []});
         equal(manager.touchAction.actions, 'auto', 'no recognizers computes auto');
 
         manager.add(new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL}));
-        equal(manager.touchAction.actions, 'pan-y', 'horizontal pan computes pan-y');
+        equal(manager.touchAction.actions, expectedPanY, 'horizontal pan computes pan-y (+ pinch-zoom when supported)');
 
         manager.add(new Hammer.Pan({direction: Hammer.DIRECTION_VERTICAL}));
-        equal(manager.touchAction.actions, 'pan-x', 'vertical pan replaces horizontal and computes pan-x');
+        equal(manager.touchAction.actions, expectedPanX, 'vertical pan replaces horizontal and computes pan-x (+ pinch-zoom when supported)');
 
         manager.add(new Hammer.Swipe({direction: Hammer.DIRECTION_HORIZONTAL}));
         equal(manager.touchAction.actions, 'none', 'vertical pan + horizontal swipe computes none');
 
         manager.remove('pan');
-        equal(manager.touchAction.actions, 'pan-y', 'removing pan leaves horizontal swipe -> pan-y');
+        equal(manager.touchAction.actions, expectedPanY, 'removing pan leaves horizontal swipe -> pan-y (+ pinch-zoom when supported)');
 
         manager.remove('swipe');
         manager.add(new Hammer.Press());
@@ -185,16 +200,58 @@
     });
 
     test('TouchAction.set normalizes whitespace and case before compute and native style lookup', function() {
+        var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
+            window.CSS.supports('touch-action', 'pan-y pinch-zoom');
+        var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
+
         manager = new Hammer.Manager(el, {
             recognizers: [[Hammer.Pan, {direction: Hammer.DIRECTION_HORIZONTAL}]],
             touchAction: ' COMPUTE '
         });
-        equal(manager.touchAction.actions, 'pan-y', 'padded uppercase COMPUTE triggers touchAction.compute()');
+        equal(manager.touchAction.actions, expectedPanY, 'padded uppercase COMPUTE triggers touchAction.compute()');
 
         manager.set({touchAction: ' PAN-X '});
-        equal(manager.touchAction.actions, 'pan-x', 'actions stored normalized');
+        equal(manager.touchAction.actions, 'pan-x', 'explicit pan-x stored normalized without adding pinch-zoom');
         if ($H.NATIVE_TOUCH_ACTION) {
             equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-x', 'native CSS touch-action applied for uppercase/padded value');
+        }
+    });
+
+    test('TouchAction supports pinch-zoom and dynamic CSS.supports touch-action values with graceful fallback', function() {
+        manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'pinch-zoom'});
+        equal(manager.touchAction.actions, 'pinch-zoom', 'pinch-zoom action stored');
+        if ($H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports('touch-action', 'pinch-zoom')) {
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pinch-zoom', 'native CSS touch-action applied for pinch-zoom');
+        }
+
+        manager.set({touchAction: 'pan-y pinch-zoom'});
+        if ($H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports('touch-action', 'pan-y pinch-zoom')) {
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-y pinch-zoom', 'native CSS touch-action applied for pan-y pinch-zoom');
+        }
+
+        // Invalid touch-action value is ignored natively
+        var prevStyle = el.style[$H.PREFIXED_TOUCH_ACTION];
+        manager.set({touchAction: 'not-a-valid-touch-action'});
+        if ($H.NATIVE_TOUCH_ACTION) {
+            equal(el.style[$H.PREFIXED_TOUCH_ACTION], prevStyle, 'unsupported touch-action value does not overwrite style');
+        }
+
+        // Fallback to plain pan-y when browser lacks pan-y pinch-zoom support
+        var map = $H.TOUCH_ACTION_MAP;
+        var origVal = map ? map['pan-y pinch-zoom'] : undefined;
+        try {
+            if (map) {
+                map['pan-y pinch-zoom'] = false;
+            }
+            equal($H.cleanTouchActions('pan-y'), 'pan-y', 'cleanTouchActions falls back to pan-y when pan-y pinch-zoom is unsupported');
+        } finally {
+            if (map) {
+                if (origVal === undefined) {
+                    delete map['pan-y pinch-zoom'];
+                } else {
+                    map['pan-y pinch-zoom'] = origVal;
+                }
+            }
         }
     });
 })();

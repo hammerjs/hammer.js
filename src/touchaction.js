@@ -8,6 +8,7 @@ var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
 var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
+var TOUCH_ACTION_PINCH_ZOOM = 'pinch-zoom';
 var TOUCH_ACTION_MAP = getTouchActionProps();
 
 /**
@@ -37,7 +38,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+        if (this.manager.element && this.manager.element.style && supportsTouchAction(value)) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value;
@@ -143,9 +144,11 @@ function cleanTouchActions(actions) {
         return TOUCH_ACTION_NONE;
     }
 
-    // pan-x OR pan-y
+    // pan-x OR pan-y (preserve native pinch-zoom when supported and no multi-touch recognizer blocked it)
     if (hasPanX || hasPanY) {
-        return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+        var panAction = hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+        var withPinchZoom = panAction + ' ' + TOUCH_ACTION_PINCH_ZOOM;
+        return supportsTouchAction(withPinchZoom) ? withPinchZoom : panAction;
     }
 
     // manipulation
@@ -153,7 +156,22 @@ function cleanTouchActions(actions) {
         return TOUCH_ACTION_MANIPULATION;
     }
 
+    // pinch-zoom
+    if (inStr(actions, TOUCH_ACTION_PINCH_ZOOM)) {
+        return TOUCH_ACTION_PINCH_ZOOM;
+    }
+
     return TOUCH_ACTION_AUTO;
+}
+
+function supportsTouchAction(value) {
+    if (!TOUCH_ACTION_MAP) {
+        return false;
+    }
+    if (TOUCH_ACTION_MAP[value] === undefined) {
+        TOUCH_ACTION_MAP[value] = !!(window.CSS && window.CSS.supports && window.CSS.supports('touch-action', value));
+    }
+    return TOUCH_ACTION_MAP[value];
 }
 
 function getTouchActionProps() {
