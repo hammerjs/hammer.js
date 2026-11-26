@@ -2,7 +2,7 @@
 
 This guide documents how to cut and publish a release of `hammerjs` from `master` safely.
 
-Distribution artifacts (`hammer.js`, `hammer.min.js`, `hammer.min.js.map`) are **not** committed to git. Instead, publishing a GitHub Release automatically triggers [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds, verifies, attaches the distribution files as GitHub Release assets, and publishes the package to npm with provenance via OIDC Trusted Publishing.
+Distribution artifacts (`hammer.js`, `hammer.mjs`, `hammer.min.js`, `hammer.min.js.map`) are **not** committed to git. Instead, publishing a GitHub Release automatically triggers [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds, verifies, attaches the distribution files as GitHub Release assets, and publishes the package to npm with provenance via OIDC Trusted Publishing.
 
 ## Prerequisites
 
@@ -15,12 +15,12 @@ Distribution artifacts (`hammer.js`, `hammer.min.js`, `hammer.min.js.map`) are *
   - **Workflow filename:** `release.yml`
   - **Environment name:** *(leave blank)*
 
-## SemVer Policy (`2.0.x`)
+## SemVer Policy (`2.x`)
 
-`hammerjs` has millions of weekly installs running against the `2.0.x` API and ES5 distribution bundle:
+`hammerjs` has millions of weekly installs running against the `2.x` API and UMD/ESM distribution bundles:
 
-- **Patch releases (`2.0.x`)** must be strictly backwards-compatible: no breaking API changes, no behavioral regressions in recognizer semantics, no new runtime `dependencies`, and ES5 output in `hammer.js` / `hammer.min.js`.
-- The published npm tarball continues to ship `hammer.js`, `hammer.min.js`, `hammer.min.js.map`, and `src/` at the exact same paths (built automatically via `"prepack": "grunt dist"`).
+- **Minor & patch releases (`2.x`)** must be strictly backwards-compatible: no breaking API changes, no behavioral regressions in recognizer semantics, no new runtime `dependencies`, and ES5 output in `hammer.js`.
+- The published npm tarball ships `hammer.js`, `hammer.mjs`, `hammer.min.js`, `hammer.min.js.map`, and `src/` (built automatically via `"prepack": "grunt dist"`).
 
 ---
 
@@ -75,8 +75,8 @@ Click **Publish release**. GitHub Actions ([`release.yml`](.github/workflows/rel
 
 1. Verify `vX.Y.Z` matches `package.json`'s `"version"`.
 2. Run `npm install`, `npm audit --audit-level=moderate`, and `npm run build` (build, ESLint, SSR test, headless Chrome QUnit).
-3. Verify `hammer.js`, `hammer.min.js`, `hammer.min.js.map`, embedded `Hammer.VERSION`, and `npm pack --dry-run`.
-4. Upload `hammer.js`, `hammer.min.js`, and `hammer.min.js.map` directly to the GitHub Release as downloadable assets.
+3. Verify `hammer.js`, `hammer.mjs`, `hammer.min.js`, `hammer.min.js.map`, embedded `Hammer.VERSION`, and `npm pack --dry-run`.
+4. Upload `hammer.js`, `hammer.mjs`, `hammer.min.js`, and `hammer.min.js.map` directly to the GitHub Release as downloadable assets.
 5. Publish `hammerjs@X.Y.Z` to npm with `--provenance` via OIDC Trusted Publishing (`latest`, or `next` for prereleases).
 
 Confirm the live release after the workflow finishes:

@@ -63,7 +63,7 @@ Requires **Node.js >= 22**.
 npm install
 npm test       # runs ESLint and the QUnit suite in headless Chrome
 npm run lint   # runs ESLint only
-npm run build  # builds hammer.js, hammer.min.js, sourcemaps, and runs tests
+npm run build  # builds hammer.js, hammer.mjs, hammer.min.js, sourcemaps, and runs tests
 ```
 
 ## Contributing
@@ -73,7 +73,7 @@ Read the [contributing guidelines](./CONTRIBUTING.md) before opening an issue or
 For pull requests:
 
 - Use [Angular-style commit messages](https://github.com/angular/angular.js/blob/v1.4.8/CONTRIBUTING.md#commit)
-- Make changes in `src/` and `tests/` (do not commit rebuilt `hammer.js` / `hammer.min.js` bundles)
+- Make changes in `src/` and `tests/` (do not commit rebuilt `hammer.js` / `hammer.mjs` / `hammer.min.js` bundles)
 - Add or update unit tests for any bug fix or behavior change
 - Run `npm test` to verify linting and all unit tests pass
 
