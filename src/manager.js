@@ -247,6 +247,9 @@ Manager.prototype = {
                 var index = inArray(handlers[event], handler);
                 if (index > -1) {
                     handlers[event].splice(index, 1);
+                    if (!handlers[event].length) {
+                        delete handlers[event];
+                    }
                 }
             }
         });
@@ -259,26 +262,29 @@ Manager.prototype = {
      * @param {Object} data
      */
     emit: function(event, data) {
-        // we also want to trigger dom events
-        if (this.options.domEvents) {
-            data.type = event;
-            data.preventDefault = function() {
-                data.srcEvent.preventDefault();
-            };
-            triggerDomEvent(event, data);
-        }
-
-        // no handlers, so skip it all
-        var handlers = this.handlers[event] && this.handlers[event].slice();
-        if (!handlers || !handlers.length) {
+        var domEvents = this.options.domEvents;
+        var handlers = this.handlers[event];
+        if (!domEvents && (!handlers || !handlers.length)) {
             return;
         }
 
         data.type = event;
-        data.preventDefault = function() {
-            data.srcEvent.preventDefault();
-        };
+        if (!data.preventDefault) {
+            data.preventDefault = function() {
+                data.srcEvent.preventDefault();
+            };
+        }
 
+        // we also want to trigger dom events
+        if (domEvents) {
+            triggerDomEvent(event, data);
+            handlers = this.handlers[event];
+            if (!handlers || !handlers.length) {
+                return;
+            }
+        }
+
+        handlers = handlers.slice();
         var i = 0;
         while (i < handlers.length) {
             handlers[i](data);
