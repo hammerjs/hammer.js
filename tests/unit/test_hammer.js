@@ -432,3 +432,44 @@ test('Hammer() does not mutate caller options and accepts frozen options objects
     equal(h2.options.touchAction, 'pan-y', 'frozen option values are preserved');
     h2.destroy();
 });
+
+test('disabling manager mid-gesture resets active input state and guards set(inputTarget) after destroy', function() {
+    expect(5);
+
+    var enabled = true;
+    var tapCount = 0;
+    hammer = new Hammer.Manager(el, {
+        inputClass: Hammer.PointerEventInput,
+        enable: function() {
+            return enabled;
+        },
+        recognizers: [[Hammer.Tap]]
+    });
+    hammer.on('tap', function() {
+        tapCount++;
+    });
+
+    // Pointer down while enabled, then disabled before pointerup
+    hammer.input.domHandler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10, target: el});
+    equal(hammer.input.store.length, 1, 'pointer stored while enabled');
+
+    enabled = false;
+    hammer.input.domHandler({type: 'pointerup', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
+    equal(hammer.input.store.length, 0, 'store cleared when domHandler observes manager disabled');
+
+    // Re-enabling and hovering must not emit a ghost tap
+    enabled = true;
+    hammer.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
+    equal(tapCount, 0, 'hovering after re-enable does not emit a ghost tap');
+
+    // Static set({enable: false}) clears active store immediately
+    hammer.input.domHandler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', button: 0, clientX: 10, clientY: 10, target: el});
+    hammer.set({enable: false});
+    equal(hammer.input.store.length, 0, 'set({enable: false}) resets input store immediately');
+
+    // set({inputTarget}) after destroy does not throw
+    hammer.destroy();
+    hammer.set({inputTarget: el2});
+    ok(true, 'set({inputTarget}) safely ignored after destroy');
+    hammer = null;
+});

@@ -76,9 +76,13 @@ inherit(MouseInput, Input, {
         });
     },
 
-    destroy: function() {
+    reset: function() {
         this.pressed = false;
         this.lastEv = null;
+    },
+
+    destroy: function() {
+        this.reset();
         Input.prototype.destroy.call(this);
     }
 });

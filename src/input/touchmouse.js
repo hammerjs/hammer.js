@@ -63,6 +63,14 @@ inherit(TouchMouseInput, Input, {
     },
 
     /**
+     * clear tracked active pointer state on child inputs
+     */
+    reset: function reset() {
+        this.touch.reset();
+        this.mouse.reset();
+    },
+
+    /**
      * remove the event listeners
      */
     destroy: function destroy() {
