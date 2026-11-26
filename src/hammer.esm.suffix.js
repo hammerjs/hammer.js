@@ -1,6 +1,10 @@
 return Hammer;
 })(typeof window !== 'undefined' ? window : {}, typeof document !== 'undefined' ? document : {}, 'Hammer');
 
+if (typeof window !== 'undefined') {
+    window.Hammer = Hammer;
+}
+
 export default Hammer;
 export var VERSION = Hammer.VERSION;
 export var defaults = Hammer.defaults;
