@@ -197,10 +197,13 @@ function computeInputData(manager, input) {
 
     computeIntervalInputData(session, input);
 
-    // find the correct target
+    // find the correct target (use composedPath for Shadow DOM / window-bound listeners)
     var target = manager.element;
-    if (hasParent(input.srcEvent.target, target)) {
-        target = input.srcEvent.target;
+    var srcEvent = input.srcEvent;
+    var srcEventTarget = (srcEvent.composedPath && srcEvent.composedPath()[0]) ||
+        (srcEvent.path && srcEvent.path[0]) || srcEvent.target;
+    if (hasParent(srcEventTarget, target)) {
+        target = srcEventTarget;
     }
     input.target = target;
 }

@@ -399,6 +399,89 @@ test('hasParent handles self, deeply nested descendants, detached nodes, and nul
     equal($H.hasParent(null, root), false, 'returns false for null node');
 });
 
+test('hasParent and computeInputData resolve targets across Shadow DOM boundaries', function() {
+    var outer = document.createElement('div');
+    var host = document.createElement('div');
+    outer.appendChild(host);
+
+    // Detached <a> has a string .host property and must never falsely match
+    var detachedAnchor = document.createElement('a');
+    detachedAnchor.href = 'https://example.com/';
+    equal($H.hasParent(detachedAnchor, 'example.com'), false, 'detached anchor .host string does not falsely match');
+
+    if (host.attachShadow) {
+        var shadow = host.attachShadow({mode: 'open'});
+        var shadowContainer = document.createElement('div');
+        var shadowLeaf = document.createElement('button');
+        shadowContainer.appendChild(shadowLeaf);
+        shadow.appendChild(shadowContainer);
+
+        equal($H.hasParent(shadowLeaf, shadowContainer), true, 'hasParent finds ancestor inside same ShadowRoot');
+        equal($H.hasParent(shadowLeaf, host), true, 'hasParent crosses ShadowRoot to shadow host');
+        equal($H.hasParent(shadowLeaf, outer), true, 'hasParent crosses ShadowRoot to outer ancestor');
+
+        // 1. Manager attached inside ShadowRoot; window-level listener retargets srcEvent.target to host
+        var mgrInside = {element: shadowContainer, session: {}};
+        var inputInside = {
+            eventType: Hammer.INPUT_MOVE,
+            pointers: [{clientX: 10, clientY: 10}],
+            changedPointers: [{clientX: 10, clientY: 10}],
+            srcEvent: {
+                target: host,
+                composedPath: function() {
+                    return [shadowLeaf, shadowContainer, shadow, host, outer];
+                }
+            }
+        };
+        $H.computeInputData(mgrInside, inputInside);
+        strictEqual(inputInside.target, shadowLeaf, 'computeInputData uses composedPath()[0] for manager inside ShadowRoot');
+
+        // 2. Manager attached to shadow host; resolves inner shadow target across ShadowRoot
+        var mgrHost = {element: host, session: {}};
+        var inputHost = {
+            eventType: Hammer.INPUT_MOVE,
+            pointers: [{clientX: 10, clientY: 10}],
+            changedPointers: [{clientX: 10, clientY: 10}],
+            srcEvent: {
+                target: host,
+                composedPath: function() {
+                    return [shadowLeaf, shadowContainer, shadow, host, outer];
+                }
+            }
+        };
+        $H.computeInputData(mgrHost, inputHost);
+        strictEqual(inputHost.target, shadowLeaf, 'computeInputData resolves inner target for manager on shadow host');
+
+        // 3. Empty composedPath() falls back cleanly to srcEvent.target
+        var inputEmptyPath = {
+            eventType: Hammer.INPUT_MOVE,
+            pointers: [{clientX: 10, clientY: 10}],
+            changedPointers: [{clientX: 10, clientY: 10}],
+            srcEvent: {
+                target: shadowLeaf,
+                composedPath: function() {
+                    return [];
+                }
+            }
+        };
+        $H.computeInputData(mgrInside, inputEmptyPath);
+        strictEqual(inputEmptyPath.target, shadowLeaf, 'empty composedPath() falls back to srcEvent.target');
+
+        // 4. Legacy srcEvent.path fallback when composedPath is unavailable
+        var inputLegacyPath = {
+            eventType: Hammer.INPUT_MOVE,
+            pointers: [{clientX: 10, clientY: 10}],
+            changedPointers: [{clientX: 10, clientY: 10}],
+            srcEvent: {
+                target: host,
+                path: [shadowLeaf, shadowContainer, shadow, host]
+            }
+        };
+        $H.computeInputData(mgrInside, inputLegacyPath);
+        strictEqual(inputLegacyPath.target, shadowLeaf, 'legacy srcEvent.path[0] resolves target when composedPath is absent');
+    }
+});
+
 test('inStr detects substrings at start, middle, empty needle, and misses', function() {
     equal($H.inStr('pan-x pan-y', 'pan-x'), true, 'matches at index 0');
     equal($H.inStr('pan-x pan-y', 'pan-y'), true, 'matches later in string');

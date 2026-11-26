@@ -239,7 +239,7 @@ function hasParent(node, parent) {
         if (node == parent) {
             return true;
         }
-        node = node.parentNode;
+        node = node.parentNode || (node.nodeType === 11 && node.host);
     }
     return false;
 }
