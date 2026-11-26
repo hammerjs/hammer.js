@@ -5,7 +5,7 @@ var MOUSE_INPUT_MAP = {
 };
 
 var MOUSE_ELEMENT_EVENTS = 'mousedown';
-var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+var MOUSE_WINDOW_EVENTS = 'mousemove mouseup blur';
 
 /**
  * Mouse events input
@@ -17,6 +17,7 @@ function MouseInput() {
     this.evWin = MOUSE_WINDOW_EVENTS;
 
     this.pressed = false; // mousedown state
+    this.lastEv = null;
 
     Input.apply(this, arguments);
 }
@@ -27,6 +28,20 @@ inherit(MouseInput, Input, {
      * @param {Object} ev
      */
     handler: function MEhandler(ev) {
+        if (ev.type === 'blur') {
+            var lastEv = this.pressed && this.lastEv;
+            this.pressed = false;
+            this.lastEv = null;
+            if (lastEv) {
+                this.callback(this.manager, INPUT_CANCEL, {
+                    pointers: [lastEv],
+                    changedPointers: [lastEv],
+                    pointerType: INPUT_TYPE_MOUSE,
+                    srcEvent: ev
+                });
+            }
+            return;
+        }
         if (!isAllowedPointerType(this.manager, INPUT_TYPE_MOUSE)) {
             return;
         }
@@ -48,6 +63,9 @@ inherit(MouseInput, Input, {
 
         if (eventType & INPUT_END) {
             this.pressed = false;
+            this.lastEv = null;
+        } else {
+            this.lastEv = ev;
         }
 
         this.callback(this.manager, eventType, {
@@ -56,5 +74,11 @@ inherit(MouseInput, Input, {
             pointerType: INPUT_TYPE_MOUSE,
             srcEvent: ev
         });
+    },
+
+    destroy: function() {
+        this.pressed = false;
+        this.lastEv = null;
+        Input.prototype.destroy.call(this);
     }
 });
