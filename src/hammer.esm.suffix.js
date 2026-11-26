@@ -1,0 +1,18 @@
+return Hammer;
+})(typeof window !== 'undefined' ? window : {}, typeof document !== 'undefined' ? document : {}, 'Hammer');
+
+if (typeof window !== 'undefined') {
+    window.Hammer = Hammer;
+}
+
+export default Hammer;
+export var {
+    VERSION, defaults,
+    INPUT_START, INPUT_MOVE, INPUT_END, INPUT_CANCEL,
+    STATE_POSSIBLE, STATE_BEGAN, STATE_CHANGED, STATE_ENDED, STATE_RECOGNIZED, STATE_CANCELLED, STATE_FAILED,
+    DIRECTION_NONE, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_UP, DIRECTION_DOWN, DIRECTION_HORIZONTAL, DIRECTION_VERTICAL, DIRECTION_ALL,
+    Manager, Input, TouchAction,
+    TouchInput, MouseInput, PointerEventInput, TouchMouseInput, SingleTouchInput,
+    Recognizer, AttrRecognizer, Tap, Pan, Swipe, Pinch, Rotate, Press,
+    on, off, each, merge, extend, assign, inherit, bindFn, prefixed
+} = Hammer;

@@ -42,11 +42,26 @@
     "jquery": "^3.7.1"
   },
   "main": "hammer.js",
+  "module": "hammer.mjs",
+  "exports": {
+    ".": {
+      "import": "./hammer.mjs",
+      "require": "./hammer.js",
+      "default": "./hammer.js"
+    },
+    "./hammer": "./hammer.js",
+    "./hammer.js": "./hammer.js",
+    "./hammer.min": "./hammer.min.js",
+    "./hammer.min.js": "./hammer.min.js",
+    "./hammer.mjs": "./hammer.mjs",
+    "./package.json": "./package.json"
+  },
   "jsdelivr": "hammer.min.js",
   "unpkg": "hammer.min.js",
   "files": [
     "CHANGELOG.md",
     "hammer.js",
+    "hammer.mjs",
     "hammer.min.js",
     "hammer.min.js.map",
     "src/"

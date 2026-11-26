@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                     linebreak: true
                 },
                 files: {
-                    src: ['./hammer.js', './hammer.min.js']
+                    src: ['./hammer.js', './hammer.min.js', './hammer.mjs']
                 }
             }
         },
@@ -39,6 +39,10 @@ module.exports = function(grunt) {
             build: {
                 src: ['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']),
                 dest: 'hammer.js'
+            },
+            esm: {
+                src: ['src/hammer.esm.prefix.js'].concat(srcCore, ['src/hammer.esm.suffix.js']),
+                dest: 'hammer.mjs'
             }
         },
 
@@ -65,10 +69,14 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('string-replace', 'Replace {{PKG_VERSION}} in hammer.js', function() {
+    grunt.registerTask('string-replace', 'Replace {{PKG_VERSION}} in built bundles', function() {
         var pkg = grunt.config('pkg');
-        var content = grunt.file.read('hammer.js');
-        grunt.file.write('hammer.js', content.replace(/\{\{PKG_VERSION\}\}/g, pkg.version));
+        ['hammer.js', 'hammer.mjs'].forEach(function(filepath) {
+            if (grunt.file.exists(filepath)) {
+                var content = grunt.file.read(filepath);
+                grunt.file.write(filepath, content.replace(/\{\{PKG_VERSION\}\}/g, pkg.version));
+            }
+        });
     });
 
     grunt.registerTask('build-test', 'Build tests/build.js exposing internal symbols on window.$H', function() {
@@ -93,6 +101,7 @@ module.exports = function(grunt) {
             '\'use strict\';\n' +
             'var $H = window.$H = {};\n' +
             body + '\n' +
+            'window[exportName] = Hammer;\n' +
             exportsCode + '\n' +
             '})(window, document, \'Hammer\');\n';
 
@@ -196,6 +205,9 @@ module.exports = function(grunt) {
         var ESLint = require('eslint').ESLint;
         var eslint = new ESLint();
         var targets = ['src', 'Gruntfile.js', 'eslint.config.js'];
+        if (grunt.file.exists('hammer.mjs')) {
+            targets.unshift('hammer.mjs');
+        }
         if (grunt.file.exists('hammer.js')) {
             targets.unshift('hammer.js');
         }
@@ -223,33 +235,9 @@ module.exports = function(grunt) {
         });
     });
 
-    grunt.registerTask('test-ssr', 'Verify hammer.js loads cleanly in Node.js without window or document', function() {
-        var vm = require('vm');
-        var files = grunt.file.expand(['src/hammer.prefix.js'].concat(srcCore, ['src/hammer.suffix.js']));
-        var code = files.map(function(filepath) {
-            return grunt.file.read(filepath);
-        }).join('\n');
-
-        // 1. CommonJS / Node.js SSR without window, document, navigator, or self
-        var cjsModule = {exports: {}};
-        vm.runInNewContext(code, {
-            module: cjsModule,
-            exports: cjsModule.exports,
-            setTimeout: setTimeout,
-            clearTimeout: clearTimeout
-        });
-        if (typeof cjsModule.exports !== 'function' || typeof cjsModule.exports.Manager !== 'function') {
-            grunt.fail.fatal('SSR CommonJS load failed to export Hammer');
-        }
-
-        // 2. Bare runtime without window, document, navigator, or module
-        vm.runInNewContext(code, {
-            setTimeout: setTimeout,
-            clearTimeout: clearTimeout
-        });
-
-        grunt.log.ok('SSR load passed (CommonJS and bare runtime without window/document).');
-    });
+    // Load Node/SSR/ESM load tests (slightly odd place to run tests via Grunt,
+    // but for now the easiest way to test importing Hammer in a Node environment)
+    grunt.loadTasks('tests/grunt');
 
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');

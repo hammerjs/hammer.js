@@ -19,6 +19,7 @@ tests/build.js
 
 # build artifacts
 /hammer.js
+/hammer.mjs
 /hammer.min.js
 /hammer.min.js.map
 

@@ -74,6 +74,8 @@ module.exports = [
             'hammer.min.js',
             'src/hammer.prefix.js',
             'src/hammer.suffix.js',
+            'src/hammer.esm.prefix.js',
+            'src/hammer.esm.suffix.js',
             'tests/**'
         ]
     },
@@ -88,6 +90,18 @@ module.exports = [
             'no-undef': 'error',
             'no-unused-vars': ['error', {args: 'none', caughtErrors: 'none'}],
             'strict': ['error', 'function']
+        })
+    },
+    {
+        files: ['hammer.mjs'],
+        languageOptions: {
+            ecmaVersion: 2015,
+            sourceType: 'module',
+            globals: browserGlobals
+        },
+        rules: Object.assign({}, commonRules, {
+            'no-undef': 'error',
+            'no-unused-vars': ['error', {args: 'none', caughtErrors: 'none'}]
         })
     },
     {
