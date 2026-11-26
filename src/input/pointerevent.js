@@ -60,8 +60,8 @@ inherit(PointerEventInput, Input, {
             return;
         }
 
-        var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
-        var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+        var eventType = POINTER_INPUT_MAP[ev.type] ||
+            POINTER_INPUT_MAP[ev.type.toLowerCase().replace('ms', '')];
         var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
 
         if (!isAllowedPointerType(this.manager, pointerType)) {
