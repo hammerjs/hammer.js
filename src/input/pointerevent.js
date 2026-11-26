@@ -34,7 +34,7 @@ function PointerEventInput() {
 
     Input.apply(this, arguments);
 
-    this.store = (this.manager.session.pointerEvents = []);
+    this.store = [];
 }
 
 inherit(PointerEventInput, Input, {
