@@ -6,49 +6,13 @@ if (typeof window !== 'undefined') {
 }
 
 export default Hammer;
-export var VERSION = Hammer.VERSION;
-export var defaults = Hammer.defaults;
-export var INPUT_START = Hammer.INPUT_START;
-export var INPUT_MOVE = Hammer.INPUT_MOVE;
-export var INPUT_END = Hammer.INPUT_END;
-export var INPUT_CANCEL = Hammer.INPUT_CANCEL;
-export var STATE_POSSIBLE = Hammer.STATE_POSSIBLE;
-export var STATE_BEGAN = Hammer.STATE_BEGAN;
-export var STATE_CHANGED = Hammer.STATE_CHANGED;
-export var STATE_ENDED = Hammer.STATE_ENDED;
-export var STATE_RECOGNIZED = Hammer.STATE_RECOGNIZED;
-export var STATE_CANCELLED = Hammer.STATE_CANCELLED;
-export var STATE_FAILED = Hammer.STATE_FAILED;
-export var DIRECTION_NONE = Hammer.DIRECTION_NONE;
-export var DIRECTION_LEFT = Hammer.DIRECTION_LEFT;
-export var DIRECTION_RIGHT = Hammer.DIRECTION_RIGHT;
-export var DIRECTION_UP = Hammer.DIRECTION_UP;
-export var DIRECTION_DOWN = Hammer.DIRECTION_DOWN;
-export var DIRECTION_HORIZONTAL = Hammer.DIRECTION_HORIZONTAL;
-export var DIRECTION_VERTICAL = Hammer.DIRECTION_VERTICAL;
-export var DIRECTION_ALL = Hammer.DIRECTION_ALL;
-export var Manager = Hammer.Manager;
-export var Input = Hammer.Input;
-export var TouchAction = Hammer.TouchAction;
-export var TouchInput = Hammer.TouchInput;
-export var MouseInput = Hammer.MouseInput;
-export var PointerEventInput = Hammer.PointerEventInput;
-export var TouchMouseInput = Hammer.TouchMouseInput;
-export var SingleTouchInput = Hammer.SingleTouchInput;
-export var Recognizer = Hammer.Recognizer;
-export var AttrRecognizer = Hammer.AttrRecognizer;
-export var Tap = Hammer.Tap;
-export var Pan = Hammer.Pan;
-export var Swipe = Hammer.Swipe;
-export var Pinch = Hammer.Pinch;
-export var Rotate = Hammer.Rotate;
-export var Press = Hammer.Press;
-export var on = Hammer.on;
-export var off = Hammer.off;
-export var each = Hammer.each;
-export var merge = Hammer.merge;
-export var extend = Hammer.extend;
-export var assign = Hammer.assign;
-export var inherit = Hammer.inherit;
-export var bindFn = Hammer.bindFn;
-export var prefixed = Hammer.prefixed;
+export var {
+    VERSION, defaults,
+    INPUT_START, INPUT_MOVE, INPUT_END, INPUT_CANCEL,
+    STATE_POSSIBLE, STATE_BEGAN, STATE_CHANGED, STATE_ENDED, STATE_RECOGNIZED, STATE_CANCELLED, STATE_FAILED,
+    DIRECTION_NONE, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_UP, DIRECTION_DOWN, DIRECTION_HORIZONTAL, DIRECTION_VERTICAL, DIRECTION_ALL,
+    Manager, Input, TouchAction,
+    TouchInput, MouseInput, PointerEventInput, TouchMouseInput, SingleTouchInput,
+    Recognizer, AttrRecognizer, Tap, Pan, Swipe, Pinch, Rotate, Press,
+    on, off, each, merge, extend, assign, inherit, bindFn, prefixed
+} = Hammer;
