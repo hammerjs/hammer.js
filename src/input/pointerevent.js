@@ -15,12 +15,12 @@ var IE10_POINTER_TYPE_ENUM = {
 };
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown';
-var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
+var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel blur';
 
 // IE10 has prefixed support, and case-sensitive
 if (window.MSPointerEvent && !window.PointerEvent) {
     POINTER_ELEMENT_EVENTS = 'MSPointerDown';
-    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel blur';
 }
 
 /**
@@ -46,6 +46,20 @@ inherit(PointerEventInput, Input, {
         var store = this.store;
         var removePointer = false;
 
+        if (ev.type === 'blur') {
+            if (store.length) {
+                var cancelled = store.slice();
+                store.length = 0;
+                this.callback(this.manager, INPUT_CANCEL, {
+                    pointers: cancelled,
+                    changedPointers: cancelled,
+                    pointerType: IE10_POINTER_TYPE_ENUM[cancelled[0].pointerType] || cancelled[0].pointerType,
+                    srcEvent: ev
+                });
+            }
+            return;
+        }
+
         var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
         var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
         var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
@@ -61,6 +75,16 @@ inherit(PointerEventInput, Input, {
 
         // start and mouse must be down
         if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+            // Per W3C Pointer Events, a primary pointerdown only occurs when no other
+            // pointer of that type is active; purge any leaked pointers of the same type.
+            if (ev.isPrimary && store.length) {
+                for (var i = store.length - 1; i >= 0; i--) {
+                    if ((IE10_POINTER_TYPE_ENUM[store[i].pointerType] || store[i].pointerType) === pointerType) {
+                        store.splice(i, 1);
+                    }
+                }
+                storeIndex = inArray(store, ev.pointerId, 'pointerId');
+            }
             if (storeIndex < 0) {
                 store.push(ev);
                 storeIndex = store.length - 1;

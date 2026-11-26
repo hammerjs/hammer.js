@@ -452,4 +452,141 @@
             sti.destroy();
         }
     });
+
+    test('PointerEventInput prunes leaked pointers on primary pointerdown and cancels on blur', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {
+            recognizers: [],
+            pointerTypes: ['touch', 'pen']
+        });
+        var input = new $H.PointerEventInput(manager, function(mgr, type, data) {
+            calls.push({
+                type: type,
+                pointerType: data.pointerType,
+                pointersLen: data.pointers.length,
+                changedLen: data.changedPointers.length,
+                x: data.pointers[0].clientX
+            });
+        });
+
+        try {
+            // Simulate a leaked touch pointer (pointerup/pointercancel dropped) alongside an active pen
+            input.handler({type: 'pointerdown', pointerId: 10, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10});
+            input.handler({type: 'pointerdown', pointerId: 11, pointerType: 'touch', isPrimary: false, button: 0, clientX: 30, clientY: 30});
+            input.handler({type: 'pointerup', pointerId: 10, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10});
+            input.handler({type: 'pointerdown', pointerId: 20, pointerType: 'pen', isPrimary: true, button: 0, clientX: 50, clientY: 50});
+            equal(input.store.length, 2, 'leaked touch 11 and active pen 20 are in store');
+
+            // New primary touchstart evicts leaked touch 11 without touching pen 20
+            calls = [];
+            input.handler({type: 'pointerdown', pointerId: 12, pointerType: 'touch', isPrimary: true, button: 0, clientX: 70, clientY: 70});
+            equal(input.store.length, 2, 'leaked touch evicted, active pen preserved, new touch stored');
+            equal(input.store[0].pointerId, 20, 'pen pointer remains in store');
+            equal(input.store[1].pointerId, 12, 'new primary touch stored');
+
+            // Non-primary secondary touch does not evict existing touch
+            input.handler({type: 'pointerdown', pointerId: 13, pointerType: 'touch', isPrimary: false, button: 0, clientX: 90, clientY: 90});
+            equal(input.store.length, 3, 'secondary touch appends normally');
+
+            // Window blur cancels all active pointers even when pointerTypes is restricted
+            calls = [];
+            input.handler({type: 'blur'});
+            equal(input.store.length, 0, 'blur clears pointer store');
+            equal(calls.length, 1, 'blur emits one INPUT_CANCEL');
+            equal(calls[0].type, $H.INPUT_CANCEL, 'blur maps to INPUT_CANCEL');
+            equal(calls[0].pointersLen, 3, 'all cancelled pointers passed in pointers');
+            equal(calls[0].changedLen, 3, 'changedPointers matches pointers so isFinal is true');
+            equal(calls[0].x, 50, 'stored pointer coordinates preserved for cancel event');
+
+            // Subsequent blur with empty store is a no-op
+            calls = [];
+            input.handler({type: 'blur'});
+            equal(calls.length, 0, 'blur ignored when no pointers are active');
+        } finally {
+            input.destroy();
+        }
+    });
+
+    asyncTest('PointerEventInput blur cancels active Pan and pending Press without NaN coordinates', function() {
+        var events = [];
+        var pressCount = 0;
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.PointerEventInput,
+            recognizers: [
+                [Hammer.Pan, {threshold: 5}],
+                [Hammer.Press, {time: 30}]
+            ]
+        });
+        manager.on('panstart pancancel', function(ev) {
+            events.push({type: ev.type, isFinal: ev.isFinal, x: ev.center.x, y: ev.center.y});
+        });
+        manager.on('press', function() {
+            pressCount++;
+        });
+
+        // Active pan cancelled on blur with valid coordinates
+        manager.input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 20, target: el});
+        manager.input.handler({type: 'pointermove', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 30, clientY: 20, target: el});
+        manager.input.handler({type: 'blur', target: window});
+
+        equal(events.length, 2, 'panstart and pancancel fired');
+        equal(events[0].type, 'panstart', 'pan started');
+        equal(events[1].type, 'pancancel', 'blur emitted pancancel');
+        equal(events[1].isFinal, true, 'blur cancel marks session as isFinal');
+        equal(events[1].x, 30, 'cancel center.x stays finite from last pointer');
+        equal(events[1].y, 20, 'cancel center.y stays finite from last pointer');
+
+        // Pending press (without moving past threshold) is cancelled on blur
+        manager.input.handler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 20, target: el});
+        manager.input.handler({type: 'blur', target: window});
+
+        setTimeout(function() {
+            equal(pressCount, 0, 'blur cancelled pending press timer');
+            start();
+        }, 60);
+    });
+
+    test('MouseInput cancels active press on blur and TouchInput resets leaked targetIds on single touchstart', function() {
+        var mouseCalls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var mi = new $H.MouseInput(manager, function(mgr, type, data) {
+            mouseCalls.push({type: type, x: data.pointers[0].clientX});
+        });
+        var ti = new $H.TouchInput(manager, function() {});
+
+        try {
+            // Blur while not pressed does nothing
+            mi.handler({type: 'blur'});
+            equal(mouseCalls.length, 0, 'blur ignored when mouse not pressed');
+
+            // Active mouse drag cancelled on blur with last mouse coordinates
+            mi.handler({type: 'mousedown', button: 0, which: 1, clientX: 15, clientY: 25});
+            mi.handler({type: 'mousemove', button: 0, which: 1, clientX: 40, clientY: 25});
+            mi.handler({type: 'blur'});
+            equal(mi.pressed, false, 'MouseInput.pressed reset on blur');
+            equal(mi.lastEv, null, 'MouseInput.lastEv cleared on blur');
+            equal(mouseCalls[2].type, $H.INPUT_CANCEL, 'MouseInput emits INPUT_CANCEL on blur');
+            equal(mouseCalls[2].x, 40, 'MouseInput cancel preserves last pointer coordinates');
+
+            // TouchInput clears leaked targetIds when a fresh single-finger touchstart arrives
+            var t1 = {identifier: 1, clientX: 10, clientY: 10, target: el};
+            var t2 = {identifier: 2, clientX: 20, clientY: 20, target: el};
+            var t3 = {identifier: 3, clientX: 30, clientY: 30, target: el};
+            ti.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+            equal(ti.targetIds[1], true, 'initial touch id tracked');
+
+            // Finger 1 dropped without touchend; new single touchstart with finger 2 resets targetIds
+            ti.handler({type: 'touchstart', touches: [t2], changedTouches: [t2]});
+            equal(ti.targetIds[1], undefined, 'leaked touch id purged on fresh single touchstart');
+            equal(ti.targetIds[2], true, 'new touch id tracked');
+
+            // Adding a second simultaneous finger keeps existing targetIds
+            ti.handler({type: 'touchstart', touches: [t2, t3], changedTouches: [t3]});
+            equal(ti.targetIds[2], true, 'existing touch id retained during multi-touch start');
+            equal(ti.targetIds[3], true, 'second touch id tracked');
+        } finally {
+            mi.destroy();
+            ti.destroy();
+        }
+    });
 })();

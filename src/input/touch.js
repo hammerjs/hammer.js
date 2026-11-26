@@ -51,6 +51,9 @@ function getTouches(ev, type) {
 
     // when there is only one touch, the process can be simplified
     if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        if (type === INPUT_START) {
+            targetIds = this.targetIds = {};
+        }
         targetIds[allTouches[0].identifier] = true;
         return [allTouches, allTouches];
     }
