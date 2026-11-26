@@ -432,3 +432,13 @@ test('Hammer() does not mutate caller options and accepts frozen options objects
     equal(h2.options.touchAction, 'pan-y', 'frozen option values are preserved');
     h2.destroy();
 });
+
+test('input selection does not rely on UA sniffing (MOBILE_REGEX / SUPPORT_ONLY_TOUCH removed)', function() {
+    expect(3);
+
+    strictEqual($H.MOBILE_REGEX, undefined, 'MOBILE_REGEX is removed');
+    strictEqual($H.SUPPORT_ONLY_TOUCH, undefined, 'SUPPORT_ONLY_TOUCH is removed');
+
+    hammer = new Hammer.Manager(el, {recognizers: []});
+    ok(hammer.input instanceof Hammer.TouchMouseInput, 'touch fallback selects TouchMouseInput without UA sniffing');
+});

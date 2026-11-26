@@ -1,8 +1,5 @@
-var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
-
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
-var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && typeof navigator !== 'undefined' && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = 'touch';
 var INPUT_TYPE_PEN = 'pen';
@@ -100,8 +97,6 @@ function createInputInstance(manager) {
         Type = inputClass;
     } else if (SUPPORT_POINTER_EVENTS) {
         Type = PointerEventInput;
-    } else if (SUPPORT_ONLY_TOUCH) {
-        Type = TouchInput;
     } else if (!SUPPORT_TOUCH) {
         Type = MouseInput;
     } else {
