@@ -50,6 +50,9 @@ module.exports = function(grunt) {
             min: {
                 options: {
                     report: 'gzip',
+                    compress: {
+                        arrows: false
+                    },
                     output: {
                         comments: /^!/
                     },
@@ -208,6 +211,9 @@ module.exports = function(grunt) {
         var ESLint = require('eslint').ESLint;
         var eslint = new ESLint();
         var targets = ['src', 'Gruntfile.js', 'eslint.config.js'];
+        if (grunt.file.exists('hammer.min.js')) {
+            targets.unshift('hammer.min.js');
+        }
         if (grunt.file.exists('hammer.mjs')) {
             targets.unshift('hammer.mjs');
         }
