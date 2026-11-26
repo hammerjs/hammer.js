@@ -627,4 +627,30 @@
         manager.input.handler({type: 'pointerup', pointerId: 2, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10, target: el});
         deepEqual(events, ['tap'], 'subsequent tap succeeds without bogus panmove');
     });
+
+    test('Input.prototype.destroy resets active state on TouchInput and SingleTouchInput during set(inputTarget)', function() {
+        var newTarget = utils.createHitArea();
+
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.SingleTouchInput,
+            recognizers: []
+        });
+        var t1 = {identifier: 1, clientX: 10, clientY: 10, target: el};
+        manager.input.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+        equal(manager.input.started, true, 'SingleTouchInput started before inputTarget change');
+
+        manager.set({inputTarget: newTarget});
+        equal(manager.input.started, false, 'SingleTouchInput.started reset when inputTarget is updated');
+        manager.destroy();
+
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchInput,
+            recognizers: []
+        });
+        manager.input.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+        equal(manager.input.targetIds[1], true, 'TouchInput tracked touch before inputTarget change');
+
+        manager.set({inputTarget: newTarget});
+        equal(manager.input.targetIds[1], undefined, 'TouchInput.targetIds reset when inputTarget is updated');
+    });
 })();
