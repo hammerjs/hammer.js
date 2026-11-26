@@ -94,3 +94,44 @@ test("'off' with an unregistered handler should not remove existing handlers", f
 
     ee.destroy();
 });
+
+test("'on' ignores duplicate registrations of the same event and handler", function() {
+    expect(5);
+
+    var ee = new Hammer.Manager(utils.createHitArea());
+    var count1 = 0;
+    var count2 = 0;
+    var inputData = {
+        target: document.body,
+        srcEvent: {
+            preventDefault: function() {},
+            target: document.body
+        }
+    };
+
+    function handler1() {
+        count1++;
+    }
+    function handler2() {
+        count2++;
+    }
+
+    ee.on('tap', handler1);
+    ee.on('tap', handler1);
+    ee.on('tap tap press', handler1);
+    ee.on('tap', handler2);
+
+    ee.emit('tap', inputData);
+    equal(count1, 1, 'duplicate handler for tap only invoked once');
+    equal(count2, 1, 'distinct handler for tap still invoked');
+
+    ee.emit('press', inputData);
+    equal(count1, 2, 'same handler still registered on other event names');
+
+    ee.off('tap', handler1);
+    ee.emit('tap', inputData);
+    equal(count1, 2, 'single off() completely unregisters handler');
+    equal(count2, 2, 'other handler remains active');
+
+    ee.destroy();
+});
