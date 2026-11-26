@@ -177,7 +177,6 @@ export interface HammerOptions {
     inputTarget?: EventTarget | null;
     inputClass?: HammerInputConstructor | null;
     pointerTypes?: HammerPointerType[] | null;
-    mouseButtons?: number[] | null;
     preset?: RecognizerTuple[];
     recognizers?: RecognizerTuple[];
     cssProps?: CssProps;
@@ -190,7 +189,6 @@ export interface HammerDefaults extends HammerOptions {
     inputTarget: EventTarget | null;
     inputClass: HammerInputConstructor | null;
     pointerTypes: HammerPointerType[] | null;
-    mouseButtons: number[] | null;
     preset: RecognizerTuple[];
     cssProps: Required<Pick<CssProps, 'userSelect' | 'touchSelect' | 'touchCallout' | 'contentZooming' | 'userDrag' | 'tapHighlightColor'>> & CssProps;
 }
