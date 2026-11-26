@@ -469,4 +469,37 @@
         });
         deepEqual(delayedEvents, [], 'non-zero time press does not fire synchronously');
     });
+
+    test('computeDeltaXY rebases smoothly after partial INPUT_CANCEL and handles missing offsetDelta', function() {
+        var session = {};
+        var first = {eventType: $H.INPUT_START, center: {x: 50, y: 10}};
+        $H.computeDeltaXY(session, first);
+        session.prevInput = first;
+
+        var moved = {eventType: $H.INPUT_MOVE, center: {x: 70, y: 10}};
+        $H.computeDeltaXY(session, moved);
+        session.prevInput = moved;
+        equal(moved.deltaX, 20, 'initial two-finger move tracks +20px');
+
+        // One of two pointers is cancelled (e.g. palm rejection)
+        var cancelled = {eventType: $H.INPUT_CANCEL, center: {x: 70, y: 10}};
+        $H.computeDeltaXY(session, cancelled);
+        session.prevInput = cancelled;
+
+        // Remaining finger reports its own center (25, 10) -> must rebase without jumping to -25
+        var afterCancel = {eventType: $H.INPUT_MOVE, center: {x: 25, y: 10}};
+        $H.computeDeltaXY(session, afterCancel);
+        session.prevInput = afterCancel;
+        equal(afterCancel.deltaX, 20, 'deltaX stays continuous immediately after partial INPUT_CANCEL');
+
+        var continued = {eventType: $H.INPUT_MOVE, center: {x: 30, y: 10}};
+        $H.computeDeltaXY(session, continued);
+        equal(continued.deltaX, 25, 'subsequent move accumulates from rebased offset');
+
+        // Mid-stream move with empty session does not produce NaN
+        var midStream = {eventType: $H.INPUT_MOVE, center: {x: 40, y: 15}};
+        $H.computeDeltaXY({}, midStream);
+        equal(midStream.deltaX, 0, 'missing offsetDelta initializes cleanly instead of NaN');
+        equal(midStream.deltaY, 0, 'missing offsetDelta deltaY initializes cleanly');
+    });
 })();
