@@ -135,3 +135,36 @@ test("'on' ignores duplicate registrations of the same event and handler", funct
 
     ee.destroy();
 });
+
+test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapper", function() {
+    expect(3);
+
+    var ee = new Hammer.Manager(utils.createHitArea(), {domEvents: true});
+    var fn = function() {};
+    var prevented = 0;
+    var data = {
+        target: ee.element,
+        srcEvent: {
+            preventDefault: function() {
+                prevented++;
+            }
+        }
+    };
+
+    ee.on('tap', fn);
+    ee.off('tap', fn);
+    strictEqual(ee.handlers.tap, undefined, 'removing last handler deletes empty bucket');
+
+    var seenPreventDefault = null;
+    ee.on('tap', function(ev) {
+        seenPreventDefault = ev.preventDefault;
+        ev.preventDefault();
+    });
+    ee.emit('tap', data);
+    ee.emit('tap', data);
+
+    strictEqual(data.preventDefault, seenPreventDefault, 'preventDefault wrapper reused across emits on same data object');
+    equal(prevented, 2, 'preventDefault delegates to srcEvent on each call');
+
+    ee.destroy();
+});

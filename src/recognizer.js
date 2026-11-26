@@ -175,27 +175,24 @@ Recognizer.prototype = {
      * @param {Object} input
      */
     emit: function(input) {
-        var self = this;
+        var manager = this.manager;
+        var event = this.options.event;
         var state = this.state;
-
-        function emit(event) {
-            self.manager.emit(event, input);
-        }
 
         // 'panstart' and 'panmove'
         if (state < STATE_ENDED) {
-            emit(self.options.event + stateStr(state));
+            manager.emit(event + stateStr(state), input);
         }
 
-        emit(self.options.event); // simple 'eventName' events
+        manager.emit(event, input); // simple 'eventName' events
 
         if (input.additionalEvent) { // additional event(panleft, panright, pinchin, pinchout...)
-            emit(input.additionalEvent);
+            manager.emit(input.additionalEvent, input);
         }
 
         // panend and pancancel
         if (state >= STATE_ENDED) {
-            emit(self.options.event + stateStr(state));
+            manager.emit(event + stateStr(state), input);
         }
     },
 
