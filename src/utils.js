@@ -129,7 +129,7 @@ var extend = deprecate(function extend(dest, src, merge) {
     var keys = Object.keys(src);
     var i = 0;
     while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
+        if (!merge || dest[keys[i]] === undefined) {
             dest[keys[i]] = src[keys[i]];
         }
         i++;
@@ -317,13 +317,9 @@ function uniqueArray(src, key, sort) {
     }
 
     if (sort) {
-        if (!key) {
-            results = results.sort();
-        } else {
-            results = results.sort(function sortUniqueArray(a, b) {
-                return a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
-            });
-        }
+        results = key ? results.sort(function(a, b) {
+            return a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
+        }) : results.sort();
     }
 
     return results;

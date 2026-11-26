@@ -58,11 +58,7 @@ inherit(TapRecognizer, Recognizer, {
             this.pTime = input.timeStamp;
             this.pCenter = input.center;
 
-            if (!validMultiTap || !validInterval) {
-                this.count = 1;
-            } else {
-                this.count += 1;
-            }
+            this.count = (validMultiTap && validInterval) ? this.count + 1 : 1;
 
             this._input = input;
 
@@ -74,13 +70,12 @@ inherit(TapRecognizer, Recognizer, {
                 // or wait as long as the multitap interval to trigger
                 if (!this.hasRequireFailures()) {
                     return STATE_RECOGNIZED;
-                } else {
-                    this._timer = setTimeoutContext(function() {
-                        this.state = STATE_RECOGNIZED;
-                        this.tryEmit();
-                    }, options.interval, this);
-                    return STATE_BEGAN;
                 }
+                this._timer = setTimeoutContext(function() {
+                    this.state = STATE_RECOGNIZED;
+                    this.tryEmit();
+                }, options.interval, this);
+                return STATE_BEGAN;
             }
         }
         return STATE_FAILED;
