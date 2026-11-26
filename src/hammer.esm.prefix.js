@@ -1,1 +1,1 @@
-var Hammer = (function(window, document, exportName, undefined) {
+var Hammer = (function(window, document, undefined) {

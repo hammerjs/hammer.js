@@ -270,7 +270,7 @@ Recognizer.prototype = {
      * @param {Object} inputData
      * @returns {Const} STATE
      */
-    process: function(inputData) { }, // jshint ignore:line
+    process: function(inputData) { },
 
     /**
      * return the preferred touch-action
