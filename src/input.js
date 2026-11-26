@@ -420,9 +420,7 @@ function simpleCloneInputData(input) {
     return {
         timeStamp: now(),
         pointers: pointers,
-        center: getCenter(pointers),
-        deltaX: input.deltaX,
-        deltaY: input.deltaY
+        center: getCenter(pointers)
     };
 }
 
