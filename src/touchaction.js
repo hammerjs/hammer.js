@@ -38,8 +38,12 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (this.manager.element && this.manager.element.style && supportsTouchAction(value)) {
-            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+        var element = this.manager.element;
+        if (element && element.style && supportsTouchAction(value)) {
+            if (this.oldTouchAction === undefined) {
+                this.oldTouchAction = element.style[PREFIXED_TOUCH_ACTION];
+            }
+            element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value;
     },
@@ -49,6 +53,17 @@ TouchAction.prototype = {
      */
     update: function() {
         this.set(this.manager.options.touchAction);
+    },
+
+    /**
+     * restore the original inline touch-action style on the element
+     */
+    destroy: function() {
+        var element = this.manager.element;
+        if (this.oldTouchAction !== undefined && element && element.style) {
+            element.style[PREFIXED_TOUCH_ACTION] = this.oldTouchAction;
+            this.oldTouchAction = undefined;
+        }
     },
 
     /**
