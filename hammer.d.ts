@@ -147,49 +147,22 @@ export interface Recognizer {
     reset(): void;
 }
 
-export interface RecognizerStatic {
-    new (options?: RecognizerOptions): Recognizer;
+export interface RecognizerStatic<T extends Recognizer = Recognizer> {
+    new (options?: RecognizerOptions): T;
 }
 
 export interface AttrRecognizer extends Recognizer {
     attrTest(input: HammerInput): boolean;
 }
 
-export interface AttrRecognizerStatic {
-    new (options?: RecognizerOptions): AttrRecognizer;
-}
-
 export interface TapRecognizer extends Recognizer {}
-export interface TapRecognizerStatic {
-    new (options?: RecognizerOptions): TapRecognizer;
-}
-
 export interface PanRecognizer extends AttrRecognizer {
     directionTest(input: HammerInput): boolean;
 }
-export interface PanRecognizerStatic {
-    new (options?: RecognizerOptions): PanRecognizer;
-}
-
 export interface SwipeRecognizer extends AttrRecognizer {}
-export interface SwipeRecognizerStatic {
-    new (options?: RecognizerOptions): SwipeRecognizer;
-}
-
 export interface PinchRecognizer extends AttrRecognizer {}
-export interface PinchRecognizerStatic {
-    new (options?: RecognizerOptions): PinchRecognizer;
-}
-
 export interface RotateRecognizer extends AttrRecognizer {}
-export interface RotateRecognizerStatic {
-    new (options?: RecognizerOptions): RotateRecognizer;
-}
-
 export interface PressRecognizer extends Recognizer {}
-export interface PressRecognizerStatic {
-    new (options?: RecognizerOptions): PressRecognizer;
-}
 
 export type RecognizerTuple =
     | [RecognizerStatic]
@@ -203,8 +176,8 @@ export interface HammerOptions {
     enable?: boolean | ((manager: HammerManager) => boolean);
     inputTarget?: EventTarget | null;
     inputClass?: HammerInputConstructor | null;
-    pointerTypes?: HammerPointerType | HammerPointerType[] | null;
-    mouseButtons?: number | number[] | null;
+    pointerTypes?: HammerPointerType[] | null;
+    mouseButtons?: number[] | null;
     preset?: RecognizerTuple[];
     recognizers?: RecognizerTuple[];
     cssProps?: CssProps;
@@ -216,8 +189,8 @@ export interface HammerDefaults extends HammerOptions {
     enable: boolean;
     inputTarget: EventTarget | null;
     inputClass: HammerInputConstructor | null;
-    pointerTypes: HammerPointerType | HammerPointerType[] | null;
-    mouseButtons: number | number[] | null;
+    pointerTypes: HammerPointerType[] | null;
+    mouseButtons: number[] | null;
     preset: RecognizerTuple[];
     cssProps: Required<Pick<CssProps, 'userSelect' | 'touchSelect' | 'touchCallout' | 'contentZooming' | 'userDrag' | 'tapHighlightColor'>> & CssProps;
 }
@@ -287,13 +260,13 @@ export interface HammerStatic {
     SingleTouchInput: HammerInputConstructor;
 
     Recognizer: RecognizerStatic;
-    AttrRecognizer: AttrRecognizerStatic;
-    Tap: TapRecognizerStatic;
-    Pan: PanRecognizerStatic;
-    Swipe: SwipeRecognizerStatic;
-    Pinch: PinchRecognizerStatic;
-    Rotate: RotateRecognizerStatic;
-    Press: PressRecognizerStatic;
+    AttrRecognizer: RecognizerStatic<AttrRecognizer>;
+    Tap: RecognizerStatic<TapRecognizer>;
+    Pan: RecognizerStatic<PanRecognizer>;
+    Swipe: RecognizerStatic<SwipeRecognizer>;
+    Pinch: RecognizerStatic<PinchRecognizer>;
+    Rotate: RecognizerStatic<RotateRecognizer>;
+    Press: RecognizerStatic<PressRecognizer>;
 
     on(target: EventTarget, types: string, handler: EventListenerOrEventListenerObject): void;
     off(target: EventTarget, types: string, handler: EventListenerOrEventListenerObject): void;
