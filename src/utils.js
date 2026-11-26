@@ -310,8 +310,8 @@ function uniqueArray(src, key, sort) {
         var val = key ? src[i][key] : src[i];
         if (inArray(values, val) < 0) {
             results.push(src[i]);
+            values.push(val);
         }
-        values[i] = val;
         i++;
     }
 
