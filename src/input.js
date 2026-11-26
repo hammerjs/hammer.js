@@ -226,8 +226,7 @@ function computeInputData(manager, input) {
         input.rotation = session.prevInput.rotation + normalizeAngle(input.rotation - session.prevInput.rotation);
     }
 
-    input.maxPointers = !session.prevInput ? input.pointers.length : ((input.pointers.length >
-        session.prevInput.maxPointers) ? input.pointers.length : session.prevInput.maxPointers);
+    input.maxPointers = session.prevInput ? Math.max(pointersLength, session.prevInput.maxPointers) : pointersLength;
 
     computeIntervalInputData(session, input);
 
