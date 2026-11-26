@@ -63,7 +63,7 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     attrTest: function(input) {
-        return this._super.attrTest.call(this, input) &&
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
             (this.state & STATE_BEGAN || this.directionTest(input));
     },
 
@@ -80,7 +80,7 @@ inherit(PanRecognizer, AttrRecognizer, {
         if (direction) {
             input.additionalEvent = this.options.event + direction;
         }
-        this._super.emit.call(this, input);
+        AttrRecognizer.prototype.emit.call(this, input);
     },
 
     reset: function() {

@@ -24,7 +24,7 @@ inherit(PinchRecognizer, AttrRecognizer, {
     },
 
     attrTest: function(input) {
-        return this._super.attrTest.call(this, input) &&
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
             (abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
     },
 
@@ -33,6 +33,6 @@ inherit(PinchRecognizer, AttrRecognizer, {
             var inOut = input.scale < 1 ? 'in' : 'out';
             input.additionalEvent = this.options.event + inOut;
         }
-        this._super.emit.call(this, input);
+        AttrRecognizer.prototype.emit.call(this, input);
     }
 });

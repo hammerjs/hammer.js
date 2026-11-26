@@ -37,7 +37,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
             velocity = input.velocityY;
         }
 
-        return this._super.attrTest.call(this, input) &&
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
             direction & input.offsetDirection &&
             (!input.direction || (input.direction & input.offsetDirection)) &&
             input.distance > this.options.threshold &&

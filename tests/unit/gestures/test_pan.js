@@ -143,3 +143,67 @@ test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans
     });
     equal(panStarts, 2, 'second axis-locked pan at same deltaX is not blocked by stale pX');
 });
+
+test('subclassing Pan, Pinch, Rotate, and Swipe via Hammer.inherit does not recurse infinitely', function() {
+    expect(5);
+
+    function CustomPan() {
+        Hammer.Pan.apply(this, arguments);
+    }
+    Hammer.inherit(CustomPan, Hammer.Pan, {
+        attrTest: function(input) {
+            return this._super.attrTest.call(this, input);
+        },
+        emit: function(input) {
+            this._super.emit.call(this, input);
+        }
+    });
+
+    function CustomPinch() {
+        Hammer.Pinch.apply(this, arguments);
+    }
+    Hammer.inherit(CustomPinch, Hammer.Pinch);
+
+    function CustomRotate() {
+        Hammer.Rotate.apply(this, arguments);
+    }
+    Hammer.inherit(CustomRotate, Hammer.Rotate);
+
+    function CustomSwipe() {
+        Hammer.Swipe.apply(this, arguments);
+    }
+    Hammer.inherit(CustomSwipe, Hammer.Swipe);
+
+    var events = [];
+    var customPan = new CustomPan({event: 'custompan', threshold: 5});
+    hammer.add(customPan);
+    hammer.on('custompanstart custompanright custompanend', function(ev) {
+        events.push(ev.type);
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 30, 10);
+    utils.dispatchTouchEvent(el, 'end', 30, 10);
+    deepEqual(events, ['custompanstart', 'custompanright', 'custompanright', 'custompanend'], 'CustomPan recognizes and emits without stack overflow');
+
+    var srcEv = {cancelable: true, preventDefault: function() {}};
+    var pinchEvents = [];
+    var customPinch = hammer.add(new CustomPinch({event: 'custompinch', enable: true}));
+    hammer.on('custompinchstart custompinchout', function(ev) {
+        pinchEvents.push(ev.type);
+    });
+    customPinch.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], scale: 1.5, srcEvent: srcEv});
+    deepEqual(pinchEvents, ['custompinchstart', 'custompinchout'], 'CustomPinch attrTest and emit succeed without stack overflow');
+
+    equal(new CustomRotate({threshold: 5}).attrTest({pointers: [{}, {}], rotation: 15}), true, 'CustomRotate attrTest succeeds');
+    ok(new CustomSwipe({threshold: 5, velocity: 0.2}).attrTest({
+        eventType: $H.INPUT_END,
+        pointers: [{}],
+        maxPointers: 1,
+        distance: 20,
+        velocity: 0.5,
+        direction: Hammer.DIRECTION_RIGHT,
+        offsetDirection: Hammer.DIRECTION_RIGHT
+    }), 'CustomSwipe attrTest succeeds');
+    strictEqual(customPan._super, Hammer.Pan.prototype, 'subclass _super still points to immediate parent prototype');
+});
