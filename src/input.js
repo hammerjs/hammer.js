@@ -115,10 +115,7 @@ function createInputInstance(manager) {
  */
 function isAllowedPointerType(manager, pointerType) {
     var allowed = manager.options.pointerTypes;
-    if (allowed == null) {
-        return true;
-    }
-    return !!(pointerType && (typeof allowed === 'string' ? inStr(allowed, pointerType) : inArray(allowed, pointerType) > -1));
+    return !allowed || inArray(allowed, pointerType) > -1;
 }
 
 /**

@@ -411,16 +411,16 @@
             pe.handler({type: 'pointerup', pointerId: 2, pointerType: 'touch', button: 0, clientX: 10, clientY: 10});
             equal(calls.length, 2, 'touch events accepted when pointerTypes is ["touch"]');
 
-            // Space-separated string syntax works without regex/split allocations
+            // Updating pointerTypes via Manager.set()
             calls = [];
-            manager.set({pointerTypes: 'touch pen'});
+            manager.set({pointerTypes: ['touch', 'pen']});
             pe.handler({type: 'pointerdown', pointerId: 3, pointerType: 'pen', button: 0, clientX: 10, clientY: 10});
             pe.handler({type: 'pointerup', pointerId: 3, pointerType: 'pen', button: 0, clientX: 10, clientY: 10});
             pe.handler({type: 'pointerdown', pointerId: 4, pointerType: 'mouse', button: 0, clientX: 10, clientY: 10});
-            equal(calls.length, 2, 'pen accepted and mouse rejected with pointerTypes: "touch pen"');
+            equal(calls.length, 2, 'pen accepted and mouse rejected with pointerTypes: ["touch", "pen"]');
             equal(calls[0].pointerType, $H.INPUT_TYPE_PEN, 'pen pointerType preserved');
 
-            // Empty string / empty pointerType never falsely matches
+            // Empty pointerType never matches
             equal($H.isAllowedPointerType(manager, ''), false, 'empty pointerType rejected');
 
             // TouchInput and SingleTouchInput short-circuit before mutating state when touch is disallowed

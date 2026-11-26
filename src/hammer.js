@@ -43,8 +43,8 @@ Hammer.defaults = {
     enable: true,
 
     /**
-     * optional allowed pointer types (array or space-separated string), e.g. ['touch', 'pen'] or 'touch'
-     * @type {Null|Array|String}
+     * optional array of allowed pointer types, e.g. ['touch', 'pen']
+     * @type {Null|Array}
      * @default null
      */
     pointerTypes: null,
