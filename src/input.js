@@ -305,12 +305,12 @@ function computeIntervalInputData(session, input) {
             srcEvent && srcEvent.timeStamp > 0 &&
             typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
             var coalesced = srcEvent.getCoalescedEvents();
-            if (coalesced && coalesced.length > 1 && srcEvent.clientX != null && srcEvent.clientY != null) {
+            if (coalesced && coalesced.length > 1 && isFiniteNumber(srcEvent.clientX) && isFiniteNumber(srcEvent.clientY)) {
                 for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
                     var c = coalesced[cIdx];
                     var cTime = c.timeStamp;
                     if (cTime > 0 && cTime < timeStamp && (timeStamp - cTime) <= VELOCITY_HORIZON_MS &&
-                        c.clientX != null && c.clientY != null) {
+                        isFiniteNumber(c.clientX) && isFiniteNumber(c.clientY)) {
                         if (samples.length === 0 || (cTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS) {
                             recordVelocitySample(
                                 samples,
@@ -482,6 +482,10 @@ function getCenter(pointers) {
     };
 }
 
+function isFiniteNumber(val) {
+    return typeof val === 'number' && isFinite(val);
+}
+
 /**
  * get the direction between two points
  * @param {Number} x
@@ -489,7 +493,7 @@ function getCenter(pointers) {
  * @return {Number} direction
  */
 function getDirection(x, y) {
-    if (x === 0 && y === 0) {
+    if ((x === 0 && y === 0) || isNaN(x) || isNaN(y)) {
         return DIRECTION_NONE;
     }
 
