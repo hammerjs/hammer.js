@@ -35,6 +35,7 @@ inherit(TouchMouseInput, Input, {
 
         if (isMouse && inputData.srcEvent && inputData.srcEvent.sourceCapabilities &&
             inputData.srcEvent.sourceCapabilities.firesTouchEvents) {
+            this.mouse.reset();
             return;
         }
 
@@ -42,6 +43,7 @@ inherit(TouchMouseInput, Input, {
         if (isTouch) {
             recordTouches.call(this, inputEvent, inputData);
         } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+            this.mouse.reset();
             return;
         }
 
