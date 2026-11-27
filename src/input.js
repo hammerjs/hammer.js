@@ -219,8 +219,8 @@ function computeInputData(manager, input) {
     computeDeltaXY(session, input);
     input.offsetDirection = getDirection(input.deltaX, input.deltaY);
 
-    var overallVelocityX = input.deltaX / input.deltaTime || 0;
-    var overallVelocityY = input.deltaY / input.deltaTime || 0;
+    var overallVelocityX = input.deltaTime ? (input.deltaX / input.deltaTime) : 0;
+    var overallVelocityY = input.deltaTime ? (input.deltaY / input.deltaTime) : 0;
     input.overallVelocityX = overallVelocityX;
     input.overallVelocityY = overallVelocityY;
     input.overallVelocity = (abs(overallVelocityX) > abs(overallVelocityY)) ? overallVelocityX : overallVelocityY;
