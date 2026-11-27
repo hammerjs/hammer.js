@@ -328,6 +328,117 @@ test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame sa
     ok(Math.abs(mMove.velocityX - 1.0) < 1e-6, '2-pointer coalesced centroid velocity is 1.0 px/ms');
 });
 
+test('multi-pointer coalesced events do not distort velocity and staggered hardware timestamps do not wipe samples', function() {
+    // 1. Two fingers moving smoothly right at 1.0 px/ms across frames with per-finger coalesced events
+    var session = {};
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 100,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 100}],
+        srcEvent: {timeStamp: 100, clientX: 0, clientY: 0}
+    });
+
+    // Frame 1 at t=116: Finger 1 arrives with coalesced sub-frame samples, then Finger 2 arrives at t=116
+    var f1Frame1 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 116,
+        deltaX: 8,
+        deltaY: 0,
+        pointers: [{clientX: 16, clientY: 0}, {clientX: 0, clientY: 100}],
+        srcEvent: {
+            timeStamp: 116,
+            clientX: 16,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 104, clientX: 4, clientY: 0},
+                    {timeStamp: 108, clientX: 8, clientY: 0},
+                    {timeStamp: 112, clientX: 12, clientY: 0},
+                    {timeStamp: 116, clientX: 16, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, f1Frame1);
+
+    var f2Frame1 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 116,
+        deltaX: 16,
+        deltaY: 0,
+        pointers: [{clientX: 16, clientY: 0}, {clientX: 16, clientY: 100}],
+        srcEvent: {
+            timeStamp: 116,
+            clientX: 16,
+            clientY: 100,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 104, clientX: 4, clientY: 100},
+                    {timeStamp: 108, clientX: 8, clientY: 100},
+                    {timeStamp: 112, clientX: 12, clientY: 100},
+                    {timeStamp: 116, clientX: 16, clientY: 100}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, f2Frame1);
+    ok(Math.abs(f2Frame1.velocityX - 1.0) < 1e-6, '2-finger frame 1 velocityX stays exact 1.0 px/ms (got ' + f2Frame1.velocityX + ')');
+
+    // Frame 2: Finger 1 arrives at 132.0ms, Finger 2 arrives with staggered hardware timeStamp 131.5ms
+    var f1Frame2 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 132,
+        deltaX: 24,
+        deltaY: 0,
+        pointers: [{clientX: 32, clientY: 0}, {clientX: 16, clientY: 100}],
+        srcEvent: {timeStamp: 132.0, clientX: 32, clientY: 0}
+    };
+    $H.computeIntervalInputData(session, f1Frame2);
+
+    var f2Frame2 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 132,
+        deltaX: 32,
+        deltaY: 0,
+        pointers: [{clientX: 32, clientY: 0}, {clientX: 32, clientY: 100}],
+        srcEvent: {timeStamp: 131.5, clientX: 32, clientY: 100}
+    };
+    $H.computeIntervalInputData(session, f2Frame2);
+    ok(f2Frame2.velocityX > 0.5, 'small staggered negative dt skips sample without wiping velocity to 0 (got ' + f2Frame2.velocityX + ')');
+    ok(session.velocitySamples.length >= 2, 'velocity sample buffer preserved across staggered hardware timestamp');
+
+    // 2. INPUT_START + stationary 0px INPUT_MOVE + fast INPUT_END still computes flick velocity
+    var flickSession = {};
+    $H.computeIntervalInputData(flickSession, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 0,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: 1000, clientX: 0, clientY: 0}
+    });
+    $H.computeIntervalInputData(flickSession, {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 5,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: 1005, clientX: 0, clientY: 0}
+    });
+    var flickEnd = {
+        eventType: Hammer.INPUT_END,
+        timeStamp: 20,
+        deltaX: 60,
+        deltaY: 0,
+        pointers: [{clientX: 60, clientY: 0}],
+        srcEvent: {timeStamp: 1020, clientX: 60, clientY: 0}
+    };
+    $H.computeIntervalInputData(flickSession, flickEnd);
+    ok(flickEnd.velocityX > 1.0, 'fast flick on INPUT_END after single stationary move computes positive velocity (got ' + flickEnd.velocityX + ')');
+});
+
 test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and skip malformed entries', function() {
     var session = {};
     var t0 = 3000;
