@@ -6,9 +6,6 @@
  */
 function PanRecognizer() {
     AttrRecognizer.apply(this, arguments);
-
-    this.pX = null;
-    this.pY = null;
 }
 
 inherit(PanRecognizer, AttrRecognizer, {
@@ -37,32 +34,34 @@ inherit(PanRecognizer, AttrRecognizer, {
 
     directionTest: function(input) {
         var options = this.options;
-        if (!(options.direction & DIRECTION_ALL)) {
+        var optDirection = options.direction;
+        if (!(optDirection & DIRECTION_ALL)) {
             return false;
         }
-        var hasMoved = true;
         var distance = input.distance;
         var direction = input.direction;
         var x = input.deltaX;
         var y = input.deltaY;
+        var isHorizontal = !!(optDirection & DIRECTION_HORIZONTAL);
+        var isVertical = !!(optDirection & DIRECTION_VERTICAL);
 
         // lock to axis?
-        if (!(direction & options.direction)) {
-            if ((options.direction & DIRECTION_HORIZONTAL) && (options.direction & DIRECTION_VERTICAL)) {
-                direction = getDirection(x, y);
-                hasMoved = (x != this.pX) || (y != this.pY);
-            } else if (options.direction & DIRECTION_HORIZONTAL) {
+        if (isHorizontal && !isVertical) {
+            distance = abs(x);
+            if (!(direction & optDirection)) {
                 direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-                hasMoved = x != this.pX;
-                distance = abs(input.deltaX);
-            } else {
-                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
-                hasMoved = y != this.pY;
-                distance = abs(input.deltaY);
             }
+        } else if (isVertical && !isHorizontal) {
+            distance = abs(y);
+            if (!(direction & optDirection)) {
+                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+            }
+        } else if (!(direction & optDirection)) {
+            direction = getDirection(x, y);
         }
+
         input.direction = direction;
-        return hasMoved && distance > options.threshold && direction & options.direction;
+        return distance > options.threshold && direction & optDirection;
     },
 
     attrTest: function(input) {
@@ -71,23 +70,11 @@ inherit(PanRecognizer, AttrRecognizer, {
     },
 
     emit: function(input) {
-        if (this.state & (STATE_ENDED | STATE_CANCELLED)) {
-            this.reset();
-        } else {
-            this.pX = input.deltaX;
-            this.pY = input.deltaY;
-        }
-
         var direction = directionStr(input.direction);
 
         if (direction) {
             input.additionalEvent = this.options.event + direction;
         }
         this._super.emit.call(this, input);
-    },
-
-    reset: function() {
-        this.pX = null;
-        this.pY = null;
     }
 });
