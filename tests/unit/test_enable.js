@@ -266,3 +266,85 @@ test('statically disabled recognizer exits without reading or cloning inputData 
     equal(pan.state, $H.STATE_FAILED, 'disabled recognizer transitions to STATE_FAILED');
     equal(getterReads, 0, 'inputData was not cloned while enable is false');
 });
+
+asyncTest('dynamic enable: () => false and manager.stop(true) cancel Press/Tap timers and prevent TouchInput mid-gesture resume', function() {
+    expect(4);
+
+    // 1. Dynamic enable flipping false (with and without subsequent DOM event) cancels pending Press timer
+    var enabled = true;
+    var pressCount = 0;
+    var mgr1 = new Hammer.Manager(el, {
+        inputClass: Hammer.PointerEventInput,
+        enable: function() {
+            return enabled;
+        },
+        recognizers: [[Hammer.Press, {time: 20}]]
+    });
+    mgr1.on('press', function() {
+        pressCount++;
+    });
+    mgr1.input.domHandler({type: 'pointerdown', pointerId: 1, pointerType: 'touch', button: 0, clientX: 10, clientY: 10, target: el});
+    enabled = false;
+
+    // 2. manager.stop(true) cancels pending Press and delayed Tap timers
+    var stopPressCount = 0;
+    var stopTapCount = 0;
+    var elPress = utils.createHitArea();
+    var elTap = utils.createHitArea();
+    var mgr2Press = new Hammer.Manager(elPress, {
+        recognizers: [[Hammer.Press, {time: 20}]]
+    });
+    mgr2Press.on('press', function() {
+        stopPressCount++;
+    });
+    utils.dispatchTouchEvent(elPress, 'start', 20, 20);
+    mgr2Press.stop(true);
+
+    var mgr2Tap = new Hammer.Manager(elTap, {
+        recognizers: [
+            [Hammer.Tap, {event: 'doubletap', taps: 2, interval: 30}],
+            [Hammer.Tap, {event: 'tap', interval: 30}, ['doubletap'], ['doubletap']]
+        ]
+    });
+    mgr2Tap.on('tap', function() {
+        stopTapCount++;
+    });
+    utils.dispatchTouchEvent(elTap, 'start', 20, 20);
+    utils.dispatchTouchEvent(elTap, 'end', 20, 20);
+    mgr2Tap.stop(true);
+
+    // 3. TouchInput must not resume mid-gesture via single-touch fast path after dynamic disable reset
+    var touchEnabled = true;
+    var panEvents = [];
+    var mgr3 = new Hammer.Manager(el, {
+        inputClass: Hammer.TouchInput,
+        enable: function() {
+            return touchEnabled;
+        },
+        recognizers: [[Hammer.Pan, {threshold: 5}]]
+    });
+    mgr3.on('panstart panmove panend', function(ev) {
+        panEvents.push(ev.type);
+    });
+    var t1Start = {identifier: 1, clientX: 10, clientY: 10, target: el};
+    var t1Mid = {identifier: 1, clientX: 12, clientY: 10, target: el};
+    var t1Far = {identifier: 1, clientX: 50, clientY: 10, target: el};
+    mgr3.input.domHandler({type: 'touchstart', touches: [t1Start], changedTouches: [t1Start], target: el, preventDefault: function() {}});
+    touchEnabled = false;
+    mgr3.input.domHandler({type: 'touchmove', touches: [t1Mid], changedTouches: [t1Mid], target: el, preventDefault: function() {}});
+    touchEnabled = true;
+    mgr3.input.domHandler({type: 'touchmove', touches: [t1Far], changedTouches: [t1Far], target: el, preventDefault: function() {}});
+
+    deepEqual(panEvents, [], 'TouchInput does not resume mid-gesture after reset by dynamic enable');
+
+    setTimeout(function() {
+        equal(pressCount, 0, 'dynamic enable: () => false prevents pending Press timer from firing');
+        equal(stopPressCount, 0, 'manager.stop(true) cancels pending Press timer');
+        equal(stopTapCount, 0, 'manager.stop(true) cancels pending delayed Tap timer');
+        mgr1.destroy();
+        mgr2Press.destroy();
+        mgr2Tap.destroy();
+        mgr3.destroy();
+        start();
+    }, 60);
+});

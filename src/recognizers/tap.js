@@ -72,6 +72,11 @@ inherit(TapRecognizer, Recognizer, {
                     return STATE_RECOGNIZED;
                 }
                 this._timer = setTimeoutContext(function() {
+                    if (!this.manager || !this.manager.element || this.manager.session.stopped ||
+                        !boolOrFn(this.manager.options.enable, [this.manager])) {
+                        this.reset();
+                        return;
+                    }
                     this.state = STATE_RECOGNIZED;
                     this.tryEmit();
                 }, options.interval, this);
