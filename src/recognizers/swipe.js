@@ -54,13 +54,17 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     },
 
     emit: function(input) {
+        var manager = this.manager;
+        if (!manager || manager.session.stopped === FORCED_STOP) {
+            return;
+        }
         var direction = directionStr(input.offsetDirection);
-        if (direction && this.manager) {
-            this.manager.emit(this.options.event + direction, input);
+        if (direction) {
+            manager.emit(this.options.event + direction, input);
         }
 
-        if (this.manager) {
-            this.manager.emit(this.options.event, input);
+        if (this.manager && manager.session.stopped !== FORCED_STOP) {
+            manager.emit(this.options.event, input);
         }
     }
 });

@@ -18,7 +18,7 @@ function Manager(element, options) {
     this.handlers = Object.create(null);
     this.session = {};
     this.recognizers = [];
-    this.oldCssProps = {};
+    this.oldCssProps = Object.create(null);
 
     this.element = element;
     this.input = createInputInstance(this);
@@ -32,9 +32,11 @@ function Manager(element, options) {
     }, this);
     each(this.options.recognizers, function(item, i) {
         var recognizer = addedRecognizers[i];
-        item[2] && recognizer.recognizeWith(item[2]);
-        item[3] && recognizer.requireFailure(item[3]);
-    });
+        if (recognizer.manager === this) {
+            item[2] && recognizer.recognizeWith(item[2]);
+            item[3] && recognizer.requireFailure(item[3]);
+        }
+    }, this);
 }
 
 Manager.prototype = {
@@ -46,22 +48,25 @@ Manager.prototype = {
      * @returns {Manager}
      */
     set: function(options) {
-        if (options.cssProps) {
+        if (options.cssProps !== undefined) {
             toggleCssProps(this, false);
         }
         assign(this.options, options);
 
         // Options that need a little more setup
-        if (options.cssProps) {
+        if (options.cssProps !== undefined && this.options.cssProps) {
+            this.options.cssProps = assign({}, this.options.cssProps);
             toggleCssProps(this, true);
         }
         if (options.touchAction) {
             this.touchAction.update();
         }
-        if (options.inputTarget && this.input) {
+        if (options.inputTarget !== undefined && this.input) {
+            this.options.inputTarget = options.inputTarget || this.element;
+            this.stop(true);
             // Clean up existing event listeners and reinitialize
             this.input.destroy();
-            this.input.target = options.inputTarget;
+            this.input.target = this.options.inputTarget;
             this.input.init();
         }
         if ((options.enable !== undefined && !boolOrFn(this.options.enable, [this])) ||
@@ -308,7 +313,7 @@ Manager.prototype = {
 
         handlers = handlers.slice();
         var i = 0;
-        while (i < handlers.length) {
+        while (i < handlers.length && this.element) {
             handlers[i](data);
             i++;
         }
@@ -323,6 +328,10 @@ Manager.prototype = {
         this.touchAction && this.touchAction.destroy();
 
         this.stop(true);
+        each(this.recognizers, function(recognizer) {
+            recognizer.manager = null;
+        });
+        this.recognizers.length = 0;
         this.handlers = Object.create(null);
         this.session = {};
         this.input && this.input.destroy();
@@ -355,7 +364,7 @@ function toggleCssProps(manager, add) {
         }
     });
     if (!add) {
-        manager.oldCssProps = {};
+        manager.oldCssProps = Object.create(null);
     }
 }
 

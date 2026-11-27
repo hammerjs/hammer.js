@@ -252,3 +252,66 @@ asyncTest('TapRecognizer with requireFailure preserves tapCount across rapid tap
         start();
     }, 90);
 });
+
+asyncTest('Multi-pointer TapRecognizer handles sequential finger liftoff and clears _input after emit', function() {
+    expect(4);
+
+    var localEl = utils.createHitArea();
+    function feed(mgr, type, pointers, changed, t) {
+        $H.inputHandler(mgr, type, {
+            pointers: pointers,
+            changedPointers: changed,
+            pointerType: 'touch',
+            srcEvent: {target: localEl, timeStamp: t, cancelable: true, preventDefault: function() {}}
+        });
+    }
+
+    var f1 = {clientX: 50, clientY: 50};
+    var f2 = {clientX: 80, clientY: 50};
+
+    // 1. 2-finger double-tap with sequential liftoff on both taps
+    var mgr1 = new Hammer.Manager(localEl, {
+        recognizers: [[Hammer.Tap, {event: 'twofingerdouble', pointers: 2, taps: 2}]]
+    });
+    var twoFingerDoubleCount = 0;
+    mgr1.on('twofingerdouble', function() {
+        twoFingerDoubleCount++;
+    });
+
+    feed(mgr1, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr1, $H.INPUT_START, [f1, f2], [f2], 15);
+    feed(mgr1, $H.INPUT_END, [f1, f2], [f2], 25);
+    feed(mgr1, $H.INPUT_END, [f1], [f1], 35);
+
+    feed(mgr1, $H.INPUT_START, [f1], [f1], 110);
+    feed(mgr1, $H.INPUT_START, [f1, f2], [f2], 115);
+    feed(mgr1, $H.INPUT_END, [f1, f2], [f2], 125);
+    feed(mgr1, $H.INPUT_END, [f1], [f1], 135);
+
+    equal(twoFingerDoubleCount, 1, '2-finger double-tap recognizes despite sequential finger liftoff');
+    strictEqual(mgr1.get('twofingerdouble')._input, null, 'TapRecognizer._input is nulled after emitting');
+
+    // 2. 2-finger single-tap with requireFailure(doubletap) preserves timer across trailing liftoff
+    var mgr2 = new Hammer.Manager(localEl, {recognizers: []});
+    var dt2 = mgr2.add(new Hammer.Tap({event: 'doubletap', pointers: 2, taps: 2, interval: 40}));
+    var st2 = mgr2.add(new Hammer.Tap({event: 'tap', pointers: 2, taps: 1, interval: 40}));
+    st2.requireFailure(dt2);
+
+    var singleCounts = [];
+    mgr2.on('tap', function(ev) {
+        singleCounts.push(ev.tapCount);
+    });
+
+    feed(mgr2, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr2, $H.INPUT_START, [f1, f2], [f2], 15);
+    feed(mgr2, $H.INPUT_END, [f1, f2], [f2], 25);
+    feed(mgr2, $H.INPUT_END, [f1], [f1], 35);
+
+    setTimeout(function() {
+        deepEqual(singleCounts, [1], '2-finger tap with requireFailure emits after trailing finger liftoff');
+        strictEqual(st2._input, null, 'delayed TapRecognizer._input is nulled after emitting');
+        mgr1.destroy();
+        mgr2.destroy();
+        start();
+    }, 80);
+});

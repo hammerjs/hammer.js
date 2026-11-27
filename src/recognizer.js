@@ -51,7 +51,7 @@ function Recognizer(options) {
 
     this.state = STATE_POSSIBLE;
 
-    this.simultaneous = {};
+    this.simultaneous = Object.create(null);
     this.requireFail = [];
 }
 
@@ -71,6 +71,14 @@ Recognizer.prototype = {
      */
     set: function(options) {
         assign(this.options, options);
+
+        if (options.enable !== undefined && !boolOrFn(this.options.enable, [this, this._input])) {
+            this.reset();
+            this.state = STATE_FAILED;
+            if (this.manager && this.manager.session.curRecognizer === this) {
+                this.manager.session.curRecognizer = null;
+            }
+        }
 
         // also update the touchAction, in case something changed about the directions/enabled state
         this.manager && this.manager.touchAction.update();
@@ -176,7 +184,7 @@ Recognizer.prototype = {
      */
     emit: function(input) {
         var manager = this.manager;
-        if (!manager) {
+        if (!manager || manager.session.stopped === FORCED_STOP) {
             return;
         }
         var event = this.options.event;
@@ -187,17 +195,17 @@ Recognizer.prototype = {
             manager.emit(event + stateStr(state), input);
         }
 
-        if (!this.manager) {
+        if (!this.manager || manager.session.stopped === FORCED_STOP) {
             return;
         }
         manager.emit(event, input); // simple 'eventName' events
 
-        if (input.additionalEvent && this.manager) { // additional event(panleft, panright, pinchin, pinchout...)
+        if (input.additionalEvent && this.manager && manager.session.stopped !== FORCED_STOP) { // additional event(panleft, panright, pinchin, pinchout...)
             manager.emit(input.additionalEvent, input);
         }
 
         // panend and pancancel
-        if (state >= STATE_ENDED && this.manager) {
+        if (state >= STATE_ENDED && this.manager && manager.session.stopped !== FORCED_STOP) {
             manager.emit(event + stateStr(state), input);
         }
     },
@@ -340,16 +348,23 @@ function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
     if (manager) {
         return manager.get(otherRecognizer);
     }
-    return otherRecognizer;
+    return (otherRecognizer instanceof Recognizer) ? otherRecognizer : null;
 }
 
 /**
- * check whether a recognizer's manager is still mounted, active, and enabled (used by async timers)
+ * check whether a recognizer and its manager are still mounted, active, and enabled (used by async timers)
  * @param {Recognizer} recognizer
  * @returns {Boolean}
  */
 function isRecognizerActive(recognizer) {
     var manager = recognizer.manager;
-    return !!(manager && manager.element && !manager.session.stopped &&
-        boolOrFn(manager.options.enable, [manager]));
+    if (!manager || !manager.element || manager.session.stopped ||
+        !boolOrFn(manager.options.enable, [manager]) ||
+        !boolOrFn(recognizer.options.enable, [recognizer, recognizer._input])) {
+        return false;
+    }
+    var cur = manager.session.curRecognizer;
+    return !cur || cur === recognizer ||
+        !!(cur.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) ||
+        recognizer.canRecognizeWith(cur);
 }

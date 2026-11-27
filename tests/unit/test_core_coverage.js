@@ -765,4 +765,85 @@
         deepEqual(pan2Events, ['pan2start'], 'pan2 starts once curRecognizer is cleared from STATE_FAILED');
         strictEqual(manager.session.curRecognizer, manager.get('pan2'), 'pan2 becomes new curRecognizer');
     });
+
+    asyncTest('Recognizer.set({enable: false}), isRecognizerActive, emit FORCED_STOP, and Press/Tap _input cleanup', function() {
+        var pressAllowed = true;
+        var events = [];
+
+        manager = new Hammer.Manager(el, {
+            recognizers: [
+                [Hammer.Press, {
+                    time: 20,
+                    enable: function() {
+                        return pressAllowed;
+                    }
+                }],
+                [Hammer.Pan, {threshold: 5}],
+                [Hammer.Swipe, {threshold: 5, velocity: 0.1}]
+            ]
+        });
+
+        manager.on('press panstart pan panright swiperight swipe', function(ev) {
+            events.push(ev.type);
+            if (ev.type === 'panstart' || ev.type === 'swiperight') {
+                manager.stop(true);
+            }
+        });
+
+        // 1. Recognizer.emit and SwipeRecognizer.emit abort remaining emits on manager.stop(true)
+        var pan = manager.get('pan');
+        var swipe = manager.get('swipe');
+        var srcEv = {cancelable: true, preventDefault: function() {}};
+
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        utils.dispatchTouchEvent(el, 'move', 30, 10);
+        deepEqual(events, ['panstart'], 'Recognizer.emit stops emitting pan/panright after stop(true) in panstart');
+
+        events = [];
+        manager.session.stopped = false;
+        swipe.state = $H.STATE_RECOGNIZED;
+        swipe.emit({offsetDirection: Hammer.DIRECTION_RIGHT, srcEvent: srcEv});
+        deepEqual(events, ['swiperight'], 'SwipeRecognizer.emit stops emitting swipe after stop(true) in swiperight');
+
+        // 2. Press timer respects recognizer enable callback and exclusive curRecognizer
+        events = [];
+        manager.session.stopped = false;
+        var press = manager.get('press');
+        press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        pressAllowed = false;
+
+        // Also verify Press.set({enable: false}) clears pending timer & _input
+        var press2 = new Hammer.Press({time: 20});
+        manager.add(press2);
+        press2.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        ok(press2._input !== null, 'Press stores _input while pending');
+        press2.set({enable: false});
+        strictEqual(press2._input, null, 'Press.set({enable: false}) resets and clears _input');
+        equal(press2.state, $H.STATE_FAILED, 'Press.set({enable: false}) marks recognizer STATE_FAILED');
+
+        // 3. Active exclusive curRecognizer blocks pending Press timer
+        press2.set({enable: true});
+        press2.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        pan.state = $H.STATE_BEGAN;
+        manager.session.curRecognizer = pan;
+
+        setTimeout(function() {
+            deepEqual(events, [], 'pending Press timer does not fire when disabled or blocked by exclusive curRecognizer');
+
+            // 4. Detached emit() on Press and Tap does not throw and Press clears _input after emit
+            manager.session.curRecognizer = null;
+            press2.set({time: 0});
+            press2.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+            strictEqual(press2._input, null, 'Press._input is nulled after emitting press');
+
+            manager.remove(press2);
+            press2.state = $H.STATE_RECOGNIZED;
+            press2.emit();
+            var detachedTap = new Hammer.Tap();
+            detachedTap.state = $H.STATE_RECOGNIZED;
+            detachedTap.emit();
+            ok(true, 'calling emit() on detached Press or Tap does not throw');
+            start();
+        }, 50);
+    });
 })();
