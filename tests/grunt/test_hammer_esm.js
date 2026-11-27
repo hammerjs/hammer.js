@@ -46,7 +46,39 @@ module.exports = function(grunt) {
         if (typeof minModule.exports !== 'function' || minModule.exports.VERSION !== pkg.version) {
             grunt.fail.fatal('SSR CommonJS load of hammer.min.js failed');
         }
+        // Verify hammer.min.js retains strict mode (unbound constructor call throws TypeError instead of mutating global)
+        var strictThrew = false;
+        try {
+            var UnboundRecognizer = minModule.exports.Recognizer;
+            UnboundRecognizer();
+        } catch (err) {
+            strictThrew = !!(err && err.name === 'TypeError');
+        }
+        if (!strictThrew) {
+            grunt.fail.fatal('hammer.min.js must execute in strict mode');
+        }
         vm.runInNewContext(minCode, {
+            setTimeout: setTimeout,
+            clearTimeout: clearTimeout
+        });
+
+        // 2b2. Frozen window and null window/document globals load cleanly without throwing
+        var frozenWin = Object.freeze({});
+        var frozenMod = {exports: {}};
+        vm.runInNewContext(builtCode, {
+            window: frozenWin,
+            module: frozenMod,
+            exports: frozenMod.exports,
+            setTimeout: setTimeout,
+            clearTimeout: clearTimeout
+        });
+        if (typeof frozenMod.exports !== 'function') {
+            grunt.fail.fatal('hammer.js failed to load with frozen window global');
+        }
+        vm.runInNewContext(builtCode, {
+            window: null,
+            document: null,
+            navigator: null,
             setTimeout: setTimeout,
             clearTimeout: clearTimeout
         });
@@ -67,11 +99,9 @@ module.exports = function(grunt) {
             grunt.fail.fatal('package.json must explicitly set "sideEffects": true');
         }
 
-        // 3. Native ES module load in Node.js without window/document (when hammer.mjs is built)
+        // 3. Native ES module load in Node.js without window/document
         if (!grunt.file.exists('hammer.mjs')) {
-            grunt.log.ok('SSR load passed (CommonJS and bare runtime without window/document).');
-            done();
-            return;
+            grunt.fail.fatal('hammer.mjs must be built before test-ssr');
         }
 
         var esmSource = grunt.file.read('hammer.mjs');
@@ -103,8 +133,28 @@ module.exports = function(grunt) {
                 if (fakeWindow.Hammer !== winMod.default) {
                     grunt.fail.fatal('hammer.mjs failed to assign window.Hammer when window is defined');
                 }
-                grunt.log.ok('SSR load passed (CommonJS, minified, bare runtime, and native ESM with/without window).');
-                done();
+                // 5. Verify hammer.mjs handles frozen window cleanly without throwing
+                var frozenWindow = Object.freeze({});
+                global.window = frozenWindow;
+                return import(esmUrl + '&frozenWindow=1').then(function(frozenMod) {
+                    if (prevWindow === undefined) {
+                        delete global.window;
+                    } else {
+                        global.window = prevWindow;
+                    }
+                    if (typeof frozenMod.default !== 'function') {
+                        grunt.fail.fatal('hammer.mjs failed to load with frozen window');
+                    }
+                    grunt.log.ok('SSR load passed (CommonJS, minified, bare runtime, frozen window, and native ESM with/without window).');
+                    done();
+                }, function(err) {
+                    if (prevWindow === undefined) {
+                        delete global.window;
+                    } else {
+                        global.window = prevWindow;
+                    }
+                    throw err;
+                });
             }, function(err) {
                 if (prevWindow === undefined) {
                     delete global.window;
