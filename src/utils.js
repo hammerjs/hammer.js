@@ -24,14 +24,8 @@ var SUPPORT_PASSIVE_EVENTS = (function() {
     return supported;
 })();
 
-var TOUCH_EVENTS_LISTENER_OPTIONS = SUPPORT_PASSIVE_EVENTS ? {passive: false} : false;
-
-function getEventListenerOptions(type) {
-    if (SUPPORT_PASSIVE_EVENTS && (type === 'touchstart' || type === 'touchmove')) {
-        return TOUCH_EVENTS_LISTENER_OPTIONS;
-    }
-    return false;
-}
+var PASSIVE_LISTENER_OPTIONS = SUPPORT_PASSIVE_EVENTS ? {passive: true} : false;
+var NON_PASSIVE_LISTENER_OPTIONS = SUPPORT_PASSIVE_EVENTS ? {passive: false} : false;
 
 /**
  * set a timeout with a given scope
@@ -74,7 +68,7 @@ function each(obj, iterator, context) {
         return;
     }
 
-    if (obj.forEach) {
+    if (typeof obj.forEach === TYPE_FUNCTION) {
         obj.forEach(iterator, context);
     } else if (obj.length !== undefined) {
         i = 0;
@@ -234,10 +228,12 @@ function ifUndefined(val1, val2) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean|Object} [options=false]
  */
-function addEventListeners(target, types, handler) {
+function addEventListeners(target, types, handler, options) {
+    var listenerOptions = options === undefined ? false : options;
     each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, getEventListenerOptions(type));
+        target.addEventListener(type, handler, listenerOptions);
     });
 }
 
@@ -246,10 +242,12 @@ function addEventListeners(target, types, handler) {
  * @param {EventTarget} target
  * @param {String} types
  * @param {Function} handler
+ * @param {Boolean|Object} [options=false]
  */
-function removeEventListeners(target, types, handler) {
+function removeEventListeners(target, types, handler, options) {
+    var listenerOptions = options === undefined ? false : options;
     each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, getEventListenerOptions(type));
+        target.removeEventListener(type, handler, listenerOptions);
     });
 }
 
@@ -360,7 +358,7 @@ function uniqueArray(src, key, sort) {
  * @returns {String|Undefined} prefixed
  */
 function prefixed(obj, property) {
-    if (!obj) {
+    if (!obj || typeof property !== 'string' || !property) {
         return undefined;
     }
     var prefix, prop;
@@ -394,6 +392,9 @@ function uniqueId() {
  * @returns {DocumentView|Window}
  */
 function getWindowForElement(element) {
+    if (element && element.window === element) {
+        return element;
+    }
     var doc = element.ownerDocument || element;
     return (doc.defaultView || doc.parentWindow || window);
 }

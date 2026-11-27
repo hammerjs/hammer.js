@@ -1,9 +1,9 @@
-var SINGLE_TOUCH_INPUT_MAP = {
+var SINGLE_TOUCH_INPUT_MAP = assign(Object.create(null), {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
     touchend: INPUT_END,
     touchcancel: INPUT_CANCEL
-};
+});
 
 var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
 var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
@@ -27,18 +27,23 @@ inherit(SingleTouchInput, Input, {
         if (!isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
             return;
         }
-        if (ev === this._lastEv) {
+        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
+        if (!type) {
             return;
         }
-        this._lastEv = ev;
-        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
-        // should we handle the touch events?
+        // Dedupe a touchstart that fired on evTarget and then bubbled to evWin
         if (type === INPUT_START) {
-            this.started = true;
+            if (ev === this._lastEv) {
+                return;
+            }
+            this._lastEv = ev;
+        } else {
+            this._lastEv = null;
         }
 
-        if (!this.started) {
+        var isTargetStart = type === INPUT_START && (!ev.currentTarget || ev.currentTarget === this.target);
+        if (!this.started && !isTargetStart) {
             return;
         }
 
@@ -49,6 +54,10 @@ inherit(SingleTouchInput, Input, {
                 this.started = false;
             }
             return;
+        }
+
+        if (isTargetStart) {
+            this.started = true;
         }
 
         // when done, reset the started state
@@ -66,7 +75,11 @@ inherit(SingleTouchInput, Input, {
 
     reset: function() {
         this.started = false;
+    },
+
+    destroy: function() {
         this._lastEv = null;
+        this._super.destroy.call(this);
     }
 });
 

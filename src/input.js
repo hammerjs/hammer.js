@@ -2,7 +2,7 @@ var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
 var SUPPORT_TOUCH = ('ontouchstart' in window);
 var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
-var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && typeof navigator !== 'undefined' && MOBILE_REGEX.test(navigator.userAgent);
+var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && typeof navigator !== 'undefined' && navigator && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = 'touch';
 var INPUT_TYPE_PEN = 'pen';
@@ -59,7 +59,7 @@ function Input(manager, callback) {
         } else if (!wasDisabled) {
             wasDisabled = true;
             manager.stop(true);
-            self.reset();
+            (manager.input || self).reset();
         }
     };
 
@@ -86,9 +86,11 @@ Input.prototype = {
      * bind the events
      */
     init: function() {
+        this._evTargetOptions = this.evTarget ? getTouchListenerOptions(this.manager, this.target) : false;
+        this._evWinOptions = (this.evWin && inStr(this.evWin, 'touch')) ? PASSIVE_LISTENER_OPTIONS : false;
         this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
-        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
-        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler, this._evTargetOptions);
+        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler, this._evWinOptions);
     },
 
     /**
@@ -97,10 +99,33 @@ Input.prototype = {
     destroy: function() {
         this.reset();
         this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
-        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
-        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler, this._evTargetOptions);
+        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler, this._evWinOptions);
     }
 };
+
+/**
+ * select passive vs non-passive listener options for element-scoped touch targets
+ * @param {Manager} manager
+ * @param {EventTarget} target
+ * @returns {Boolean|Object}
+ */
+function getTouchListenerOptions(manager, target) {
+    if (!SUPPORT_PASSIVE_EVENTS) {
+        return false;
+    }
+    var touchAction = manager && manager.options && manager.options.touchAction;
+    var normalized = typeof touchAction === 'string' ? touchAction.toLowerCase().trim() : '';
+    if (normalized === 'auto' || normalized === 'manipulation') {
+        return PASSIVE_LISTENER_OPTIONS;
+    }
+    if (target && target.style && TOUCH_ACTION_MAP &&
+        TOUCH_ACTION_MAP.none && TOUCH_ACTION_MAP['pan-x'] && TOUCH_ACTION_MAP['pan-y'] &&
+        (!normalized || normalized === 'compute' || supportsTouchAction(normalized))) {
+        return PASSIVE_LISTENER_OPTIONS;
+    }
+    return NON_PASSIVE_LISTENER_OPTIONS;
+}
 
 /**
  * create new input type manager
@@ -240,10 +265,13 @@ function computeInputData(manager, input) {
 
     computeIntervalInputData(session, input);
 
-    // find the correct target (use composedPath for Shadow DOM / window-bound listeners)
+    // find the correct target (use composedPath when target is retargeted to a ShadowRoot host)
     var target = manager.element;
     var srcEvent = input.srcEvent;
-    var srcEventTarget = (srcEvent.composedPath && srcEvent.composedPath()[0]) || srcEvent.target;
+    var srcEventTarget = srcEvent.target;
+    if ((!srcEventTarget || srcEventTarget.shadowRoot) && srcEvent.composedPath) {
+        srcEventTarget = srcEvent.composedPath()[0] || srcEventTarget;
+    }
     if (hasParent(srcEventTarget, target)) {
         target = srcEventTarget;
     }
@@ -307,7 +335,8 @@ function computeIntervalInputData(session, input) {
             }
         }
     } else {
-        if (eventType === INPUT_MOVE) {
+        if (eventType === INPUT_MOVE &&
+            !(session.prevInput && (session.prevInput.eventType & (INPUT_END | INPUT_CANCEL)))) {
             ingestCoalescedSamples(samples, input, srcEvent, timeStamp, x, y);
         }
         recordVelocitySample(samples, timeStamp, x, y);

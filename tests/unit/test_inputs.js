@@ -861,4 +861,186 @@
             input.destroy();
         }
     });
+
+    test('Input touch listeners use passive listeners when native touch-action applies and never force non-passive on window evWin', function() {
+        var origWinAdd = window.addEventListener;
+        var origWinRemove = window.removeEventListener;
+        var winAdded = [];
+        window.addEventListener = function(type, fn, opts) {
+            winAdded.push({type: type, opts: opts});
+            return origWinAdd.call(this, type, fn, opts);
+        };
+        window.removeEventListener = function(type, fn, opts) {
+            return origWinRemove.call(this, type, fn, opts);
+        };
+
+        var elAdded = [];
+        var origElAdd = el.addEventListener;
+        el.addEventListener = function(type, fn, opts) {
+            elAdded.push({type: type, opts: opts});
+            return origElAdd.call(this, type, fn, opts);
+        };
+
+        var map = $H.TOUCH_ACTION_MAP;
+        var origNone = map ? map.none : undefined;
+        try {
+            // 1. SingleTouchInput never registers {passive: false} on window
+            manager = new Hammer.Manager(el, {inputClass: Hammer.SingleTouchInput, recognizers: []});
+            var winTouchMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            ok(winTouchMove, 'SingleTouchInput attaches touchmove on window');
+            deepEqual(winTouchMove.opts, {passive: true}, 'SingleTouchInput evWin touchmove is passive on window');
+            manager.destroy();
+
+            // 2. TouchInput on DOM element with native touch-action registers {passive: true}
+            elAdded = [];
+            manager = new Hammer.Manager(el, {inputClass: Hammer.TouchInput, recognizers: []});
+            var elTouchMove = elAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            deepEqual(elTouchMove.opts, {passive: true}, 'TouchInput on element with native touch-action uses {passive: true}');
+            manager.destroy();
+
+            // 3. TouchInput falls back to {passive: false} when native touch-action is unavailable
+            if (map) {
+                map.none = false;
+                elAdded = [];
+                manager = new Hammer.Manager(el, {inputClass: Hammer.TouchInput, recognizers: []});
+                var fallbackMove = elAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+                deepEqual(fallbackMove.opts, {passive: false}, 'TouchInput uses {passive: false} when native touch-action is unavailable');
+                manager.destroy();
+                map.none = origNone;
+            }
+
+            // 4. TouchInput attached directly to window uses {passive: false} for touchAction: none, {passive: true} for auto
+            winAdded = [];
+            manager = new Hammer.Manager(window, {inputClass: Hammer.TouchInput, touchAction: 'none', recognizers: []});
+            var winNoneMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            deepEqual(winNoneMove.opts, {passive: false}, 'TouchInput on window with touchAction: none uses {passive: false}');
+            manager.destroy();
+
+            winAdded = [];
+            manager = new Hammer.Manager(window, {inputClass: Hammer.TouchInput, touchAction: 'auto', recognizers: []});
+            var winAutoMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            deepEqual(winAutoMove.opts, {passive: true}, 'TouchInput on window with touchAction: auto uses {passive: true}');
+            manager.destroy();
+            manager = null;
+        } finally {
+            window.addEventListener = origWinAdd;
+            window.removeEventListener = origWinRemove;
+            el.addEventListener = origElAdd;
+            if (map) {
+                map.none = origNone;
+            }
+        }
+    });
+
+    test('TouchMouseInput preserves active mouse drag crossing recent touch, suppresses synthetic mouse under pointerTypes: [mouse], and resets both children when disabled', function() {
+        // 1. Active mouse drag crossing within 25px of a recent touch is not aborted
+        var panEvents = [];
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchMouseInput,
+            recognizers: [[Hammer.Pan, {threshold: 5}]]
+        });
+        manager.on('panstart panmove panend', function(ev) {
+            panEvents.push(ev.type);
+        });
+
+        var t = {identifier: 1, clientX: 100, clientY: 100, target: el};
+        manager.input.touch.handler({type: 'touchstart', touches: [t], changedTouches: [t], target: el});
+        manager.input.touch.handler({type: 'touchend', touches: [], changedTouches: [t], target: el});
+
+        // Start mouse drag far from (100, 100), then drag directly across (102, 100) and finish
+        manager.input.mouse.handler({type: 'mousedown', button: 0, buttons: 1, which: 1, clientX: 250, clientY: 100, target: el, preventDefault: function() {}});
+        manager.input.mouse.handler({type: 'mousemove', button: 0, buttons: 1, which: 1, clientX: 200, clientY: 100, target: el, preventDefault: function() {}});
+        manager.input.mouse.handler({type: 'mousemove', button: 0, buttons: 1, which: 1, clientX: 102, clientY: 100, target: el, preventDefault: function() {}});
+        manager.input.mouse.handler({type: 'mouseup', button: 0, buttons: 0, which: 1, clientX: 102, clientY: 100, target: el, preventDefault: function() {}});
+
+        deepEqual(panEvents, ['panstart', 'panmove', 'panend'], 'active mouse drag crossing recent touch coordinates is not aborted');
+        equal(manager.input._activeMouse, false, '_activeMouse resets after mouseup');
+        manager.destroy();
+
+        // 2. pointerTypes: ['mouse'] still records touch coords to suppress synthetic mouse events
+        var taps = 0;
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchMouseInput,
+            pointerTypes: ['mouse'],
+            recognizers: [[Hammer.Tap]]
+        });
+        manager.on('tap', function() {
+            taps++;
+        });
+        manager.input.touch.handler({type: 'touchstart', touches: [t], changedTouches: [t], target: el});
+        manager.input.touch.handler({type: 'touchend', touches: [], changedTouches: [t], target: el});
+        equal(taps, 0, 'touch tap blocked by pointerTypes: ["mouse"]');
+
+        manager.input.mouse.handler({type: 'mousedown', button: 0, buttons: 1, which: 1, clientX: 100, clientY: 100, target: el});
+        manager.input.mouse.handler({type: 'mouseup', button: 0, buttons: 0, which: 1, clientX: 100, clientY: 100, target: el});
+        equal(taps, 0, 'synthetic mouse event following filtered touch is still deduplicated');
+        manager.destroy();
+
+        // 3. Disabling manager via dynamic enable resets BOTH child touch and mouse inputs
+        var enabled = true;
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchMouseInput,
+            enable: function() {
+                return enabled;
+            },
+            recognizers: []
+        });
+        manager.input.touch.domHandler({type: 'touchstart', touches: [t], changedTouches: [t], target: el});
+        equal(manager.input.touch.targetIds[1], true, 'child touch tracked pointer');
+        enabled = false;
+        manager.input.mouse.domHandler({type: 'mousemove', button: 0, buttons: 0, which: 0, clientX: 20, clientY: 20, target: el});
+        equal(manager.input.touch.targetIds[1], undefined, 'disabling manager resets sibling child TouchInput via manager.input.reset()');
+    });
+
+    test('SingleTouchInput isolates sibling elements, resists stop(true) on touchstart, and ignores empty touchstart', function() {
+        var sibling = utils.createHitArea();
+        var calls = [];
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.SingleTouchInput,
+            recognizers: [[Hammer.Press, {time: 0}]]
+        });
+        manager.on('hammer.input', function(ev) {
+            calls.push(ev.eventType);
+            if (ev.eventType === Hammer.INPUT_START) {
+                manager.stop(true);
+            }
+        });
+
+        // 1. Touch on unrelated sibling element must not activate SingleTouchInput on el
+        utils.dispatchTouchEvent(sibling, 'start', 20, 20, 1);
+        equal(manager.input.started, false, 'touchstart on sibling does not activate SingleTouchInput');
+        equal(calls.length, 0, 'touchstart on sibling does not emit hammer.input on el');
+
+        // 2. Calling manager.stop(true) inside touchstart does not cause window bubble to re-dispatch
+        utils.dispatchTouchEvent(el, 'start', 20, 20, 2);
+        equal(calls.length, 1, 'bubbled touchstart is still deduplicated after stop(true) calls reset()');
+
+        // 3. Empty touchstart does not set started = true; non-start event clears _lastEv
+        manager.input.reset();
+        manager.input.handler({type: 'touchstart', touches: [], changedTouches: []});
+        equal(manager.input.started, false, 'empty touchstart does not set started = true');
+        manager.input.handler({type: 'touchend', touches: [], changedTouches: []});
+        strictEqual(manager.input._lastEv, null, 'non-start event clears _lastEv reference');
+    });
+
+    test('PointerEventInput ignores secondary-button pointerdown on tracked pointerId and prototype keys', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.PointerEventInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+
+        try {
+            input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10});
+            input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 2, buttons: 3, clientX: 10, clientY: 10});
+            equal(calls.length, 1, 'secondary-button pointerdown on already-tracked pointerId does not emit bogus INPUT_START');
+
+            // Prototype property names do not collide with IE10_POINTER_TYPE_ENUM or POINTER_INPUT_MAP
+            input.handler({type: 'toString', pointerId: 2, pointerType: 'toString', button: 0, clientX: 10, clientY: 10});
+            equal(calls.length, 1, 'prototype method name as ev.type is safely ignored');
+            strictEqual($H.normalizePointerType('toString'), 'toString', 'normalizePointerType does not match Object.prototype.toString');
+        } finally {
+            input.destroy();
+        }
+    });
 })();

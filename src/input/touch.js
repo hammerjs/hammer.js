@@ -1,9 +1,9 @@
-var TOUCH_INPUT_MAP = {
+var TOUCH_INPUT_MAP = assign(Object.create(null), {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
     touchend: INPUT_END,
     touchcancel: INPUT_CANCEL
-};
+});
 
 var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
@@ -14,14 +14,14 @@ var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
  */
 function TouchInput() {
     this.evTarget = TOUCH_TARGET_EVENTS;
-    this.targetIds = {};
+    this.targetIds = Object.create(null);
 
     Input.apply(this, arguments);
 }
 
 inherit(TouchInput, Input, {
     handler: function MTEhandler(ev) {
-        if (!isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
+        if (!this._skipPointerTypeFilter && !isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
             return;
         }
         var type = TOUCH_INPUT_MAP[ev.type];
@@ -39,7 +39,7 @@ inherit(TouchInput, Input, {
     },
 
     reset: function() {
-        this.targetIds = {};
+        this.targetIds = Object.create(null);
     }
 });
 
@@ -56,7 +56,7 @@ function getTouches(ev, type) {
     // when there is only one touch, the process can be simplified
     if (allTouches.length === 1) {
         if (type === INPUT_START) {
-            targetIds = this.targetIds = {};
+            targetIds = this.targetIds = Object.create(null);
             targetIds[allTouches[0].identifier] = true;
             return [allTouches, allTouches];
         }
@@ -73,7 +73,7 @@ function getTouches(ev, type) {
 
     // get target touches from touches
     targetTouches = allTouches.filter(function(touch) {
-        return hasParent(touch.target, target) || targetIds[touch.identifier];
+        return targetIds[touch.identifier] || hasParent(touch.target, target);
     });
 
     // collect touches

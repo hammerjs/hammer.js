@@ -1,18 +1,18 @@
-var POINTER_INPUT_MAP = {
+var POINTER_INPUT_MAP = assign(Object.create(null), {
     pointerdown: INPUT_START,
     pointermove: INPUT_MOVE,
     pointerup: INPUT_END,
     pointercancel: INPUT_CANCEL,
     pointerout: INPUT_CANCEL
-};
+});
 
 // in IE10 the pointer types is defined as an enum
-var IE10_POINTER_TYPE_ENUM = {
+var IE10_POINTER_TYPE_ENUM = assign(Object.create(null), {
     2: INPUT_TYPE_TOUCH,
     3: INPUT_TYPE_PEN,
     4: INPUT_TYPE_MOUSE,
     5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
-};
+});
 
 var POINTER_ELEMENT_EVENTS = 'pointerdown';
 var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel blur';
@@ -93,6 +93,8 @@ inherit(PointerEventInput, Input, {
                 store.push(ev);
                 storeIndex = store.length - 1;
             }
+        } else if (eventType & INPUT_START) {
+            return;
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
         } else if (eventType & INPUT_MOVE && typeof ev.buttons === 'number' && (

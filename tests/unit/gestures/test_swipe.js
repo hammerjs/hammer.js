@@ -874,3 +874,57 @@ test('velocity tracker ignores stale coalesced samples beyond horizon and resets
     equal(jumpSession.velocitySamples.length, 2, 'large backward timestamp jump resets buffer and tracks new samples');
     ok(Math.abs(afterJump.velocityX - 2.0) < 1e-6, 'velocityX reflects new clock domain (2.0 px/ms) after backward jump');
 });
+
+test('coalesced PointerEvents are skipped on rebase INPUT_MOVE immediately after partial liftoff', function() {
+    expect(2);
+
+    var session = {};
+    // Stationary 2-finger hold, then finger 2 lifts (partial INPUT_END)
+    var sStart = {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 1000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 0}],
+        srcEvent: {timeStamp: 5000, clientX: 0, clientY: 0}
+    };
+    $H.computeIntervalInputData(session, sStart);
+    session.prevInput = sStart;
+
+    var partialEnd = {
+        eventType: Hammer.INPUT_END,
+        timeStamp: 1016,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 0}],
+        srcEvent: {timeStamp: 5016, clientX: 100, clientY: 0}
+    };
+    $H.computeIntervalInputData(session, partialEnd);
+    session.prevInput = partialEnd;
+
+    // First 1-finger move after rebase carries pre-liftoff coalesced samples from finger 1
+    var coalescedCalled = 0;
+    var rebasedMove = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1032,
+        deltaX: 0, // computeDeltaXY rebased so deltaX stays continuous at 0
+        deltaY: 0,
+        pointers: [{clientX: 12, clientY: 0}],
+        srcEvent: {
+            timeStamp: 5032,
+            clientX: 12,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                coalescedCalled++;
+                return [
+                    {timeStamp: 5020, clientX: 0, clientY: 0},
+                    {timeStamp: 5026, clientX: 6, clientY: 0},
+                    {timeStamp: 5032, clientX: 12, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, rebasedMove);
+    equal(coalescedCalled, 0, 'getCoalescedEvents is skipped on rebase frame after INPUT_END');
+    ok(Math.abs(rebasedMove.velocityX) < 1e-6, 'rebased move does not inject false velocity from coalesced pre-liftoff samples');
+});
