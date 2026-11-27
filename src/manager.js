@@ -68,10 +68,6 @@ Manager.prototype = {
             options.pointerTypes !== undefined) {
             this.stop(true);
             this.input && this.input.reset();
-            each(this.recognizers, function(recognizer) {
-                recognizer.reset();
-                recognizer.state = STATE_POSSIBLE;
-            });
         }
         return this;
     },
@@ -87,6 +83,7 @@ Manager.prototype = {
         if (force) {
             each(this.recognizers, function(recognizer) {
                 recognizer.reset();
+                recognizer.state = STATE_POSSIBLE;
             });
         }
     },
@@ -326,9 +323,6 @@ Manager.prototype = {
         this.touchAction && this.touchAction.destroy();
 
         this.stop(true);
-        each(this.recognizers, function(recognizer) {
-            recognizer.reset();
-        });
         this.handlers = Object.create(null);
         this.session = {};
         this.input && this.input.destroy();

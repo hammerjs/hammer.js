@@ -19,7 +19,7 @@ Distribution artifacts (`hammer.js`, `hammer.mjs`, `hammer.min.js`, `hammer.min.
 
 `hammerjs` has millions of weekly installs running against the `2.x` API and UMD/ESM distribution bundles:
 
-- **Minor & patch releases (`2.x`)** must be strictly backwards-compatible: no breaking API changes, no behavioral regressions in recognizer semantics, no new runtime `dependencies`, and ES5 output in `hammer.js`.
+- **Minor & patch releases (`2.x`)** must be strictly backwards-compatible: no breaking API changes, no behavioral regressions in recognizer semantics, no new runtime `dependencies`, and ES5 output in `hammer.js` / `hammer.min.js`.
 - The published npm tarball ships `hammer.js`, `hammer.mjs`, `hammer.min.js`, `hammer.min.js.map`, and `src/` (built automatically via `"prepack": "grunt dist"`).
 
 ---

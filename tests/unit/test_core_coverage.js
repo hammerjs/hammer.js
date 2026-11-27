@@ -55,9 +55,10 @@
             srcEvent: {cancelable: true, preventDefault: function() {}}
         };
 
-        // Forced stop inside pan1start stops pan2 in the same recognize() cycle
+        // Forced stop inside pan1start stops pan2 in the same recognize() cycle and resets state
         manager.recognize(baseInput);
         deepEqual(events, ['pan1start'], 'stop(true) halts remaining recognizers immediately');
+        equal(manager.get('pan1').state, $H.STATE_POSSIBLE, 'stop(true) resets active recognizer state to STATE_POSSIBLE');
 
         // Subsequent recognize() calls are ignored while session.stopped is set
         manager.recognize(baseInput);

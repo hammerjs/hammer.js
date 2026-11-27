@@ -348,3 +348,44 @@ asyncTest('dynamic enable: () => false and manager.stop(true) cancel Press/Tap t
         start();
     }, 60);
 });
+
+test('Input.domHandler resets only once while disabled and re-arms after re-enabling', function() {
+    expect(4);
+
+    var enabled = false;
+    var resetCalls = 0;
+    var mgr = new Hammer.Manager(el, {
+        inputClass: Hammer.PointerEventInput,
+        enable: function() {
+            return enabled;
+        },
+        recognizers: [[Hammer.Pan]]
+    });
+
+    var origReset = mgr.input.reset;
+    mgr.input.reset = function() {
+        resetCalls++;
+        return origReset.apply(this, arguments);
+    };
+
+    try {
+        // Repeated hover moves while disabled only trigger reset once
+        mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
+        mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 20, clientY: 10, target: el});
+        mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 30, clientY: 10, target: el});
+        equal(resetCalls, 1, 'repeated hover events while disabled reset input only once');
+
+        // Re-enabling, starting a pointer, and disabling again triggers a fresh reset
+        enabled = true;
+        mgr.input.domHandler({type: 'pointerdown', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10, target: el});
+        equal(mgr.input.store.length, 1, 'pointer tracked after re-enabling');
+
+        enabled = false;
+        mgr.input.domHandler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 20, clientY: 10, target: el});
+        mgr.input.domHandler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 30, clientY: 10, target: el});
+        equal(resetCalls, 2, 're-disabling resets active pointer once and ignores subsequent disabled moves');
+        equal(mgr.input.store.length, 0, 're-disabling clears the active pointer from store');
+    } finally {
+        mgr.destroy();
+    }
+});

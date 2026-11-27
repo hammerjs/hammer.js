@@ -44,8 +44,7 @@ inherit(PressRecognizer, Recognizer, {
                 return STATE_RECOGNIZED;
             }
             this._timer = setTimeoutContext(function() {
-                if (!this.manager || !this.manager.element || this.manager.session.stopped ||
-                    !boolOrFn(this.manager.options.enable, [this.manager])) {
+                if (!isRecognizerActive(this)) {
                     this.reset();
                     return;
                 }

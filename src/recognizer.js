@@ -342,3 +342,14 @@ function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
     }
     return otherRecognizer;
 }
+
+/**
+ * check whether a recognizer's manager is still mounted, active, and enabled (used by async timers)
+ * @param {Recognizer} recognizer
+ * @returns {Boolean}
+ */
+function isRecognizerActive(recognizer) {
+    var manager = recognizer.manager;
+    return !!(manager && manager.element && !manager.session.stopped &&
+        boolOrFn(manager.options.enable, [manager]));
+}

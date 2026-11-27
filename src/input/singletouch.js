@@ -42,16 +42,17 @@ inherit(SingleTouchInput, Input, {
             return;
         }
 
+        var isEndOrCancel = type & (INPUT_END | INPUT_CANCEL);
         var touches = normalizeSingleTouches.call(this, ev, type);
-        if (!touches[0].length || ((type & (INPUT_END | INPUT_CANCEL)) && !touches[1].length)) {
-            if ((type & (INPUT_END | INPUT_CANCEL)) && !touches[0].length) {
+        if (!touches[0].length || (isEndOrCancel && !touches[1].length)) {
+            if (isEndOrCancel && !touches[0].length) {
                 this.started = false;
             }
             return;
         }
 
         // when done, reset the started state
-        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+        if (isEndOrCancel && touches[0].length - touches[1].length === 0) {
             this.started = false;
         }
 
