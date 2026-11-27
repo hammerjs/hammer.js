@@ -91,7 +91,10 @@ inherit(PointerEventInput, Input, {
             }
         } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
             removePointer = true;
-        } else if (eventType & INPUT_MOVE && pointerType === INPUT_TYPE_MOUSE && ev.buttons === 0) {
+        } else if (eventType & INPUT_MOVE && typeof ev.buttons === 'number' && (
+            (pointerType === INPUT_TYPE_MOUSE && !(ev.buttons & 1)) ||
+            (pointerType === INPUT_TYPE_PEN && ev.buttons === 0)
+        )) {
             eventType = INPUT_END;
             removePointer = true;
         }
