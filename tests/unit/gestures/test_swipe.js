@@ -702,3 +702,36 @@ test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection a
     });
     deepEqual(events, [], 'vertical velocity below velocityX threshold does not trigger swiperight under DIRECTION_ALL');
 });
+
+test('computeInputData guards zero deltaTime so overallVelocity never outputs Infinity', function() {
+    expect(4);
+
+    var moveInput;
+    for (var attempt = 0; attempt < 10; attempt++) {
+        var mgr = {element: el, session: {}};
+        var startInput = {
+            eventType: $H.INPUT_START,
+            pointers: [{clientX: 10, clientY: 50}],
+            changedPointers: [{clientX: 10, clientY: 50}],
+            srcEvent: {target: el, timeStamp: 1000}
+        };
+        $H.computeInputData(mgr, startInput);
+        mgr.session.prevInput = startInput;
+
+        moveInput = {
+            eventType: $H.INPUT_MOVE,
+            pointers: [{clientX: 60, clientY: 20}],
+            changedPointers: [{clientX: 60, clientY: 20}],
+            srcEvent: {target: el, timeStamp: 1000}
+        };
+        $H.computeInputData(mgr, moveInput);
+        if (moveInput.deltaTime === 0) {
+            break;
+        }
+    }
+
+    strictEqual(moveInput.deltaTime, 0, 'same-ms move has deltaTime === 0');
+    strictEqual(moveInput.overallVelocityX, 0, 'overallVelocityX is 0 instead of Infinity when deltaTime is 0');
+    strictEqual(moveInput.overallVelocityY, 0, 'overallVelocityY is 0 instead of -Infinity when deltaTime is 0');
+    strictEqual(moveInput.overallVelocity, 0, 'overallVelocity is 0 instead of +-Infinity when deltaTime is 0');
+});
