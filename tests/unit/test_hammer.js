@@ -621,3 +621,83 @@ test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops 
     utils.dispatchTouchEvent(el, 'move', 30, 10);
     deepEqual(emitted, ['panstart'], 'Recognizer.emit stops emitting remaining events after manager.remove()');
 });
+
+test('Manager constructor skips displaced preset recognizers and unattached string refs are ignored', function() {
+    expect(5);
+
+    // 1. Displaced recognizer in options.recognizers must not wire recognizeWith/requireFailure
+    hammer = new Hammer.Manager(el, {
+        recognizers: [
+            [Hammer.Tap, {event: 'tap', time: 100}, ['pan'], ['press']],
+            [Hammer.Tap, {event: 'tap', time: 500}],
+            [Hammer.Pan],
+            [Hammer.Press]
+        ]
+    });
+    var tap = hammer.get('tap');
+    var pan = hammer.get('pan');
+    equal(tap.options.time, 500, 'later preset entry replaces earlier entry with same event name');
+    equal(Object.keys(pan.simultaneous).length, 0, 'displaced recognizer did not pollute pan.simultaneous');
+    equal(tap.requireFail.length, 0, 'replacement recognizer kept its own requireFail list');
+
+    // 2. Unattached recognizer ignores string recognizeWith / requireFailure
+    var orphan = new Hammer.Tap();
+    orphan.recognizeWith('pan');
+    orphan.requireFailure('press');
+    equal(Object.keys(orphan.simultaneous).length, 0, 'unattached recognizeWith(string) does not add undefined key');
+    equal(orphan.requireFail.length, 0, 'unattached requireFailure(string) does not push raw string');
+});
+
+test('Manager.set handles cssProps disabling/cloning, inputTarget reset, and destroy stops remaining handlers', function() {
+    expect(9);
+
+    var prop = Hammer.prefixed(el.style, 'userSelect');
+    if (prop) {
+        el.style[prop] = 'text';
+    }
+
+    var customCss = {userSelect: 'none'};
+    hammer = new Hammer.Manager(el, {
+        cssProps: customCss,
+        recognizers: [[Hammer.Press, {time: 20}], [Hammer.Tap]]
+    });
+
+    // 1. set({cssProps}) clones caller object and restores on false/null
+    var updatedCss = {userSelect: 'all'};
+    hammer.set({cssProps: updatedCss});
+    notStrictEqual(hammer.options.cssProps, updatedCss, 'set({cssProps}) clones caller object');
+    updatedCss.userSelect = 'auto';
+    equal(hammer.options.cssProps.userSelect, 'all', 'mutating caller cssProps object does not mutate manager.options.cssProps');
+
+    hammer.set({cssProps: false});
+    equal(hammer.options.cssProps, false, 'set({cssProps: false}) updates option');
+    if (prop) {
+        equal(el.style[prop], 'text', 'set({cssProps: false}) restores original CSS property');
+    } else {
+        ok(true, 'userSelect not prefixed in environment');
+    }
+
+    // 2. set({inputTarget}) stops active session and falsy inputTarget reverts to element
+    hammer.set({inputTarget: el2});
+    strictEqual(hammer.input.target, el2, 'set({inputTarget: el2}) rebinds input target');
+    hammer.set({inputTarget: null});
+    strictEqual(hammer.options.inputTarget, el, 'set({inputTarget: null}) reverts option to manager.element');
+    strictEqual(hammer.input.target, el, 'set({inputTarget: null}) rebinds input target to manager.element');
+
+    // 3. destroy() inside a JS listener halts remaining listeners and detaches recognizers
+    var tapRec = hammer.get('tap');
+    var secondCalled = 0;
+    hammer.on('tap', function() {
+        hammer.destroy();
+    });
+    hammer.on('tap', function() {
+        secondCalled++;
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 20, 20);
+    utils.dispatchTouchEvent(el, 'end', 20, 20);
+
+    equal(secondCalled, 0, 'Manager.emit stops invoking remaining JS listeners after destroy()');
+    strictEqual(tapRec.manager, null, 'Manager.destroy detaches recognizers and clears recognizer.manager');
+    hammer = null;
+});

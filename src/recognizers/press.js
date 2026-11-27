@@ -33,13 +33,12 @@ inherit(PressRecognizer, Recognizer, {
         var validPointers = input.pointers.length === options.pointers;
         var validMovement = input.distance < options.threshold;
 
-        this._input = input;
-
         if (!validMovement || !validPointers || (input.eventType & INPUT_CANCEL) ||
             (input.eventType & INPUT_END && !this._recognized)) {
             this.reset();
         } else if (input.eventType & INPUT_START) {
             this.reset();
+            this._input = input;
             if (options.time <= 0) {
                 return STATE_RECOGNIZED;
             }
@@ -54,6 +53,8 @@ inherit(PressRecognizer, Recognizer, {
         } else if (input.eventType & INPUT_END) {
             this.reset();
             return STATE_RECOGNIZED;
+        } else {
+            this._input = input;
         }
         return STATE_FAILED;
     },
@@ -61,19 +62,22 @@ inherit(PressRecognizer, Recognizer, {
     reset: function() {
         clearTimeout(this._timer);
         this._recognized = false;
+        this._input = null;
     },
 
     emit: function(input) {
-        if (this.state !== STATE_RECOGNIZED) {
+        if (this.state !== STATE_RECOGNIZED || !this.manager) {
             return;
         }
 
         if (input && (input.eventType & INPUT_END)) {
             this.manager.emit(this.options.event + 'up', input);
-        } else {
+        } else if (this._input) {
+            var pressInput = this._input;
+            this._input = null;
             this._recognized = true;
-            this._input.timeStamp = now();
-            this.manager.emit(this.options.event, this._input);
+            pressInput.timeStamp = now();
+            this.manager.emit(this.options.event, pressInput);
         }
     }
 });

@@ -48,15 +48,11 @@ inherit(PanRecognizer, AttrRecognizer, {
         // lock to axis?
         if (isHorizontal && !isVertical) {
             distance = abs(x);
-            if (!(direction & optDirection)) {
-                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-            }
+            direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
         } else if (isVertical && !isHorizontal) {
             distance = abs(y);
-            if (!(direction & optDirection)) {
-                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
-            }
-        } else if (!(direction & optDirection)) {
+            direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+        } else if (optDirection !== DIRECTION_ALL || !(direction & optDirection)) {
             direction = getDirection(x, y);
         }
 

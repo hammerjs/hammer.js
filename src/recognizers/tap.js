@@ -48,6 +48,12 @@ inherit(TapRecognizer, Recognizer, {
         var validMovement = input.distance < options.threshold;
         var validTouchTime = input.deltaTime < options.time;
 
+        // Trailing finger liftoff after a multi-pointer tap already matched
+        if (input.eventType === INPUT_END && validMovement && validTouchTime &&
+            input.pointers.length < options.pointers && input.maxPointers === options.pointers) {
+            return this.state === STATE_BEGAN ? STATE_BEGAN : STATE_FAILED;
+        }
+
         this.reset(true);
 
         // we only allow little movement
@@ -92,6 +98,7 @@ inherit(TapRecognizer, Recognizer, {
 
     reset: function(keepCount) {
         clearTimeout(this._timer);
+        this._input = null;
         if (!keepCount) {
             this.count = 0;
             this.pTime = false;
@@ -100,9 +107,11 @@ inherit(TapRecognizer, Recognizer, {
     },
 
     emit: function() {
-        if (this.state == STATE_RECOGNIZED) {
-            this._input.tapCount = this.count;
-            this.manager.emit(this.options.event, this._input);
+        if (this.state == STATE_RECOGNIZED && this.manager && this._input) {
+            var input = this._input;
+            this._input = null;
+            input.tapCount = this.count;
+            this.manager.emit(this.options.event, input);
         }
     }
 });

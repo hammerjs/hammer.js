@@ -277,3 +277,83 @@ test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and
     });
     equal(directStarts, 1, 'DIRECTION_ALL recognizes vertical displacement when input.direction is DIRECTION_NONE');
 });
+
+test('directional Pan rejects 1px opposite wiggle after dragging in disallowed direction', function() {
+    expect(5);
+
+    var events = [];
+    hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_RIGHT, threshold: 10}));
+    hammer.on('panstart panright', function(ev) {
+        events.push(ev.type);
+    });
+
+    // Drag -29px left, then 1px wiggle right (instantaneous direction === DIRECTION_RIGHT, cumulative deltaX === -29)
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 29,
+        deltaX: -29,
+        deltaY: 0,
+        direction: Hammer.DIRECTION_RIGHT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(events, [], 'DIRECTION_RIGHT rejects 1px rightward wiggle while cumulative deltaX is -29');
+
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 15,
+        deltaX: 15,
+        deltaY: 0,
+        direction: Hammer.DIRECTION_LEFT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(events, ['panstart', 'panright'], 'DIRECTION_RIGHT recognizes when cumulative deltaX > threshold');
+
+    // Vertical single-direction: DIRECTION_UP rejects +29px down with 1px upward wiggle
+    events = [];
+    hammer.off('panstart panright');
+    hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_UP, threshold: 10}));
+    hammer.on('panstart panup', function(ev) {
+        events.push(ev.type);
+    });
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 29,
+        deltaX: 0,
+        deltaY: 29,
+        direction: Hammer.DIRECTION_UP,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(events, [], 'DIRECTION_UP rejects 1px upward wiggle while cumulative deltaY is +29');
+
+    // Asymmetric multi-axis mask (RIGHT | DOWN) uses cumulative getDirection(x, y)
+    events = [];
+    hammer.off('panstart panup');
+    hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_DOWN, threshold: 10}));
+    hammer.on('panstart panright pandown', function(ev) {
+        events.push(ev.type);
+    });
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 29,
+        deltaX: -29,
+        deltaY: 0,
+        direction: Hammer.DIRECTION_RIGHT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(events, [], 'asymmetric RIGHT|DOWN mask rejects 1px right wiggle at deltaX = -29');
+
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 20,
+        deltaX: 0,
+        deltaY: 20,
+        direction: Hammer.DIRECTION_DOWN,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(events, ['panstart', 'pandown'], 'asymmetric RIGHT|DOWN mask recognizes downward drag');
+});
