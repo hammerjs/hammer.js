@@ -4,29 +4,30 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: write
-  id-token: write
+permissions: {}
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build, upload release assets & publish to npm
+  build:
+    name: Build, test & pack release artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Verify release tag matches package.json version
         env:
@@ -41,21 +42,6 @@ jobs:
             exit 1
           fi
 
-      - name: Verify npm version supports OIDC Trusted Publishing
-        run: |
-          npm --version
-          node -e '
-            const [maj, min, pat] = require("child_process")
-              .execSync("npm --version", { encoding: "utf8" })
-              .trim()
-              .split(".")
-              .map(Number);
-            if (maj < 11 || (maj === 11 && (min < 5 || (min === 5 && pat < 1)))) {
-              console.error("npm >= 11.5.1 is required for OIDC Trusted Publishing");
-              process.exit(1);
-            }
-          '
-
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -65,37 +51,160 @@ jobs:
       - name: Build, lint, and run tests
         run: npm run build
 
-      - name: Verify release artifacts and package contents
+      - name: Pack and verify npm tarball contents
         run: |
           PKG_VERSION="$(node -p "require('./package.json').version")"
-          test -s hammer.js
-          test -s hammer.mjs
-          test -s hammer.min.js
-          test -s hammer.min.js.map
-          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.js
-          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.mjs
-          ls -lh hammer.js hammer.mjs hammer.min.js hammer.min.js.map
-          npm pack --dry-run
+          mkdir -p release-pkg
+          TARBALL="$(npm pack --ignore-scripts --pack-destination release-pkg --silent | tail -n 1)"
+          TARBALL_PATH="release-pkg/${TARBALL}"
+          test -s "${TARBALL_PATH}"
+
+          VERIFY_DIR="$(mktemp -d)"
+          tar -xzf "${TARBALL_PATH}" -C "${VERIFY_DIR}"
+          for f in hammer.js hammer.mjs hammer.min.js hammer.min.js.map package.json README.md LICENSE.md; do
+            test -s "${VERIFY_DIR}/package/${f}"
+          done
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" "${VERIFY_DIR}/package/hammer.js"
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" "${VERIFY_DIR}/package/hammer.mjs"
+          cmp -s hammer.js "${VERIFY_DIR}/package/hammer.js"
+          cmp -s hammer.mjs "${VERIFY_DIR}/package/hammer.mjs"
+          cmp -s hammer.min.js "${VERIFY_DIR}/package/hammer.min.js"
+          cmp -s hammer.min.js.map "${VERIFY_DIR}/package/hammer.min.js.map"
+          rm -rf "${VERIFY_DIR}"
+
+          ls -lh hammer.js hammer.mjs hammer.min.js hammer.min.js.map "${TARBALL_PATH}"
+
+      - name: Upload GitHub Release assets
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-assets
+          path: |
+            hammer.js
+            hammer.mjs
+            hammer.min.js
+            hammer.min.js.map
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload verified npm tarball
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-tarball
+          path: release-pkg/*.tgz
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-release:
+    name: Upload assets to GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download GitHub Release assets
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: dist
 
       - name: Upload build assets to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          gh release upload "${RELEASE_TAG}" \
-            hammer.js \
-            hammer.mjs \
-            hammer.min.js \
-            hammer.min.js.map \
+          gh release upload -- "${RELEASE_TAG}" \
+            dist/hammer.js \
+            dist/hammer.mjs \
+            dist/hammer.min.js \
+            dist/hammer.min.js.map \
             --clobber
+
+  publish-npm:
+    name: Publish tarball to npm via OIDC
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm version supports OIDC Trusted Publishing
+        run: |
+          npm --version
+          node -e '
+            const raw = require("child_process")
+              .execSync("npm --version", { encoding: "utf8" })
+              .trim();
+            const match = /^(\d+)\.(\d+)\.(\d+)/.exec(raw);
+            if (!match) {
+              console.error("Unexpected npm version format: " + raw);
+              process.exit(1);
+            }
+            const [maj, min, pat] = match.slice(1).map(Number);
+            if (maj < 11 || (maj === 11 && (min < 5 || (min === 5 && pat < 1)))) {
+              console.error("npm >= 11.5.1 is required for OIDC Trusted Publishing");
+              process.exit(1);
+            }
+          '
+
+      - name: Download verified npm tarball
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-tarball
+          path: pkg
 
       - name: Publish to npm via OIDC Trusted Publishing
         env:
           IS_PRERELEASE: ${{ github.event.release.prerelease }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          if [ "${IS_PRERELEASE}" = "true" ] || [[ "${RELEASE_TAG}" == *-* ]]; then
-            npm publish --provenance --access public --tag next
-          else
-            npm publish --provenance --access public
-          fi
+          TARBALL="$(ls -1 pkg/*.tgz | head -n 1)"
+          test -s "${TARBALL}"
+
+          DIST_TAG="$(node -e '
+            const cp = require("child_process");
+            const isPre = process.env.IS_PRERELEASE === "true";
+            const tag = process.env.RELEASE_TAG || "";
+            const ver = tag.replace(/^v/, "");
+            if (isPre || ver.includes("-")) {
+              process.stdout.write("next");
+              process.exit(0);
+            }
+            const parse = (v) => {
+              const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(v);
+              return m ? m.slice(1).map(Number) : null;
+            };
+            const cur = parse(ver);
+            if (!cur) {
+              console.error("Invalid release version: " + ver);
+              process.exit(1);
+            }
+            let latest = "";
+            try {
+              latest = cp.execSync("npm view hammerjs dist-tags.latest", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+            } catch (e) {}
+            const lat = parse(latest);
+            if (lat) {
+              for (let i = 0; i < 3; i++) {
+                if (cur[i] < lat[i]) {
+                  process.stdout.write("legacy");
+                  process.exit(0);
+                }
+                if (cur[i] > lat[i]) {
+                  break;
+                }
+              }
+            }
+            process.stdout.write("latest");
+          ')"
+          echo "Publishing ${TARBALL} with dist-tag: ${DIST_TAG}"
+          npm publish "${TARBALL}" --provenance --access public --tag "${DIST_TAG}"
