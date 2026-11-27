@@ -79,6 +79,33 @@
         }
     });
 
+    test('MouseInput ignores non-primary mousedown/mouseup during an active left-button drag', function() {
+        var panEvents = [];
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.MouseInput,
+            recognizers: [[Hammer.Pan, {threshold: 5}]]
+        });
+        manager.on('panstart panmove panend pancancel', function(ev) {
+            panEvents.push(ev.type);
+        });
+
+        // Left button down + move -> panstart
+        manager.input.handler({type: 'mousedown', button: 0, buttons: 1, which: 1, clientX: 10, clientY: 10, target: el, preventDefault: function() {}});
+        manager.input.handler({type: 'mousemove', button: 0, buttons: 1, which: 1, clientX: 30, clientY: 10, target: el, preventDefault: function() {}});
+        deepEqual(panEvents, ['panstart'], 'left drag started pan');
+
+        // Right-click down & up while left button remains held must not abort or release drag
+        manager.input.handler({type: 'mousedown', button: 2, buttons: 3, which: 3, clientX: 30, clientY: 10, target: el, preventDefault: function() {}});
+        manager.input.handler({type: 'mouseup', button: 2, buttons: 1, which: 3, clientX: 30, clientY: 10, target: el, preventDefault: function() {}});
+        equal(manager.input.pressed, true, 'pressed remains true after right-button release');
+
+        // Left drag continues and finishes cleanly
+        manager.input.handler({type: 'mousemove', button: 0, buttons: 1, which: 1, clientX: 50, clientY: 10, target: el, preventDefault: function() {}});
+        manager.input.handler({type: 'mouseup', button: 0, buttons: 0, which: 1, clientX: 50, clientY: 10, target: el, preventDefault: function() {}});
+        deepEqual(panEvents, ['panstart', 'panmove', 'panend'], 'left drag completes with panmove and panend');
+        equal(manager.input.pressed, false, 'pressed clears on primary button release');
+    });
+
     test('Manager options.inputClass uses custom input class', function() {
         manager = new Hammer.Manager(el, {
             inputClass: Hammer.MouseInput,
