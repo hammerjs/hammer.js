@@ -203,7 +203,12 @@ Manager.prototype = {
                 if (this.session.curRecognizer === recognizer) {
                     this.session.curRecognizer = null;
                 }
+                each(recognizers, function(other) {
+                    other.dropRequireFailure(recognizer);
+                    other.dropRecognizeWith(recognizer);
+                });
                 recognizer.reset();
+                recognizer.state = STATE_POSSIBLE;
                 recognizer.manager = null;
                 this.touchAction.update();
             }

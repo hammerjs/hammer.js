@@ -129,3 +129,38 @@ test('recognizeWith and requireFailure methods ignore unknown recognizer names',
         'simultaneous and requireFail are unchanged and canEmit does not throw'
     );
 });
+
+test('Manager.remove resets removed recognizer state and drops dangling requireFail/simultaneous references', function() {
+    expect(5);
+
+    var localEl = utils.createHitArea();
+    var mgr = new Hammer.Manager(localEl, {recognizers: []});
+    var pan = mgr.add(new Hammer.Pan({threshold: 5}));
+    var tap = mgr.add(new Hammer.Tap());
+    tap.requireFailure(pan);
+    tap.recognizeWith(pan);
+
+    var tapCount = 0;
+    mgr.on('tap', function() {
+        tapCount++;
+    });
+
+    try {
+        // Put pan into STATE_BEGAN, then remove pan mid-gesture
+        utils.dispatchTouchEvent(localEl, 'start', 10, 10);
+        utils.dispatchTouchEvent(localEl, 'move', 30, 10);
+        mgr.remove('pan');
+
+        equal(pan.state, Hammer.STATE_POSSIBLE, 'removed recognizer state reset to STATE_POSSIBLE');
+        equal(tap.requireFail.length, 0, 'dangling requireFailure reference dropped from remaining recognizer');
+        equal(tap.canRecognizeWith(pan), false, 'dangling recognizeWith reference dropped from remaining recognizer');
+        equal(tap.canEmit(), true, 'remaining dependent recognizer is no longer permanently blocked');
+
+        // Subsequent tap must succeed
+        utils.dispatchTouchEvent(localEl, 'start', 20, 20);
+        utils.dispatchTouchEvent(localEl, 'end', 20, 20);
+        equal(tapCount, 1, 'dependent tap recognizes after active required recognizer is removed');
+    } finally {
+        mgr.destroy();
+    }
+});
