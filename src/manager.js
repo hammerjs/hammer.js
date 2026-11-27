@@ -94,7 +94,7 @@ Manager.prototype = {
         this.touchAction.preventDefaults(inputData);
 
         var recognizer;
-        var recognizers = this.recognizers;
+        var recognizers = this.recognizers.slice();
 
         // this holds the recognizer that is being recognized.
         // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
@@ -110,31 +110,30 @@ Manager.prototype = {
         var i = 0;
         while (i < recognizers.length) {
             recognizer = recognizers[i];
+            if (recognizer.manager === this) {
+                // find out if we are allowed try to recognize the input for this one.
+                // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+                // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+                //      that is being recognized.
+                // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+                //      this can be setup with the `recognizeWith()` method on the recognizer.
+                if (session.stopped !== FORCED_STOP && ( // 1
+                        !curRecognizer || recognizer == curRecognizer || // 2
+                        recognizer.canRecognizeWith(curRecognizer))) { // 3
+                    recognizer.recognize(inputData);
+                } else {
+                    recognizer.reset();
+                }
 
-            // find out if we are allowed try to recognize the input for this one.
-            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
-            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
-            //      that is being recognized.
-            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
-            //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (session.stopped !== FORCED_STOP && ( // 1
-                    !curRecognizer || recognizer == curRecognizer || // 2
-                    recognizer.canRecognizeWith(curRecognizer))) { // 3
-                recognizer.recognize(inputData);
-            } else {
-                recognizer.reset();
+                // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+                // current active recognizer. but only if we don't already have an active recognizer
+                curRecognizer = session.curRecognizer;
+                if (!curRecognizer && recognizer.manager === this &&
+                    recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+                    curRecognizer = session.curRecognizer = recognizer;
+                }
             }
-
-            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
-            // current active recognizer. but only if we don't already have an active recognizer
-            curRecognizer = session.curRecognizer;
-            if (!curRecognizer && recognizer.manager === this &&
-                recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
-                curRecognizer = session.curRecognizer = recognizer;
-            }
-            if (recognizers[i] === recognizer) {
-                i++;
-            }
+            i++;
         }
     },
 
