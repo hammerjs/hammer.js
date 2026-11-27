@@ -39,11 +39,13 @@ TouchAction.prototype = {
         }
 
         var element = this.manager.element;
+        this.appliedNative = false;
         if (element && element.style && supportsTouchAction(value)) {
             if (this.oldTouchAction === undefined) {
                 this.oldTouchAction = element.style[PREFIXED_TOUCH_ACTION];
             }
             element.style[PREFIXED_TOUCH_ACTION] = value;
+            this.appliedNative = true;
         }
         this.actions = value;
     },
@@ -96,7 +98,7 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
-        if (supportsTouchAction(actions)) {
+        if (this.appliedNative && supportsTouchAction(actions)) {
             return;
         }
 

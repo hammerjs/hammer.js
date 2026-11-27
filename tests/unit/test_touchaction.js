@@ -355,4 +355,51 @@
             ok(true, 'native touch-action not supported in environment');
         }
     });
+
+    test('TouchAction falls back to JS preventDefault when element has no style (document/window)', function() {
+        // 1. document with touchAction: 'none'
+        var docMgr = new Hammer.Manager(document, {recognizers: [], touchAction: 'none'});
+        var docEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+        try {
+            strictEqual(docMgr.touchAction.appliedNative, false, 'appliedNative is false for document target');
+            docMgr.touchAction.preventDefaults({
+                srcEvent: docEv,
+                offsetDirection: Hammer.DIRECTION_RIGHT,
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            });
+            equal(docEv.prevented, true, 'document target with touchAction "none" uses JS preventDefault polyfill');
+        } finally {
+            docMgr.destroy();
+        }
+
+        // 2. window with touchAction: 'pan-y'
+        var winMgr = new Hammer.Manager(window, {recognizers: [], touchAction: 'pan-y'});
+        var horizEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+        var vertEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+        try {
+            strictEqual(winMgr.touchAction.appliedNative, false, 'appliedNative is false for window target');
+            winMgr.touchAction.preventDefaults({
+                srcEvent: horizEv,
+                offsetDirection: Hammer.DIRECTION_RIGHT,
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            });
+            equal(horizEv.prevented, true, 'window target with touchAction "pan-y" prevents horizontal drag');
+
+            winMgr.session = {};
+            winMgr.touchAction.preventDefaults({
+                srcEvent: vertEv,
+                offsetDirection: Hammer.DIRECTION_DOWN,
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            });
+            equal(vertEv.prevented, false, 'window target with touchAction "pan-y" allows vertical drag');
+        } finally {
+            winMgr.destroy();
+        }
+    });
 })();
