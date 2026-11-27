@@ -6,7 +6,7 @@ if (typeof window !== 'undefined') {
 }
 
 export default Hammer;
-export var {
+export const {
     VERSION, defaults,
     INPUT_START, INPUT_MOVE, INPUT_END, INPUT_CANCEL,
     STATE_POSSIBLE, STATE_BEGAN, STATE_CHANGED, STATE_ENDED, STATE_RECOGNIZED, STATE_CANCELLED, STATE_FAILED,

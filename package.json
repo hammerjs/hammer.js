@@ -34,7 +34,7 @@
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-connect": "^5.0.1",
     "grunt-contrib-uglify": "^5.2.2",
-    "hammer-simulator": "github:hammerjs/simulator#master",
+    "hammer-simulator": "github:hammerjs/simulator#31a05ccd9314247d4e404e18e310b9e3b4642056",
     "jquery-hammerjs": "2.0.x",
     "puppeteer": "^25.0.0"
   },
