@@ -509,3 +509,43 @@ test('Manager.remove clears session.curRecognizer when removing active recognize
     ok(true, 'toggleCssProps safely ignores null element');
     hammer = null;
 });
+
+test('Manager.recognize does not loop infinitely when a handler replaces the active recognizer with add()', function() {
+    expect(2);
+
+    hammer = new Hammer.Manager(el, {
+        recognizers: [[Hammer.Tap]]
+    });
+
+    var tapCount = 0;
+    hammer.on('tap', function() {
+        tapCount++;
+        if (tapCount < 5) {
+            hammer.add(new Hammer.Tap());
+        }
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 20, 20);
+    utils.dispatchTouchEvent(el, 'end', 20, 20);
+    equal(tapCount, 1, 'replacing active recognizer via add() inside handler runs once without looping');
+
+    // Removing a subsequent recognizer inside an earlier recognizer callback skips the removed recognizer
+    hammer.destroy();
+    var secondFired = 0;
+    hammer = new Hammer.Manager(el, {
+        recognizers: [
+            [Hammer.Tap, {event: 'tap1'}],
+            [Hammer.Tap, {event: 'tap2'}, ['tap1']]
+        ]
+    });
+    hammer.on('tap1', function() {
+        hammer.remove('tap2');
+    });
+    hammer.on('tap2', function() {
+        secondFired++;
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 20, 20);
+    utils.dispatchTouchEvent(el, 'end', 20, 20);
+    equal(secondFired, 0, 'recognizer removed earlier in the same recognize() cycle is skipped');
+});
