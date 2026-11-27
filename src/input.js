@@ -289,18 +289,18 @@ function computeIntervalInputData(session, input) {
         if (samples.length > 0) {
             lastSample = samples[samples.length - 1];
             dt = timeStamp - lastSample.t;
-            if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
+            if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < -VELOCITY_HORIZON_MS) {
                 samples.length = 0;
-            } else if (samples.length < 2 && dt > 0 && (x !== lastSample.x || y !== lastSample.y)) {
+            } else if (samples.length < 3 && dt > 0 && (x !== lastSample.x || y !== lastSample.y)) {
                 samples.push({t: timeStamp, x: x, y: y});
             }
         }
     } else {
-        if (eventType === INPUT_MOVE && srcEvent && srcEvent.timeStamp > 0 &&
+        if (eventType === INPUT_MOVE && input.pointers && input.pointers.length === 1 &&
+            srcEvent && srcEvent.timeStamp > 0 &&
             typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
             var coalesced = srcEvent.getCoalescedEvents();
             if (coalesced && coalesced.length > 1 && srcEvent.clientX != null && srcEvent.clientY != null) {
-                var invPointersLen = 1 / ((input.pointers && input.pointers.length) || 1);
                 for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
                     var c = coalesced[cIdx];
                     var cTime = c.timeStamp;
@@ -310,8 +310,8 @@ function computeIntervalInputData(session, input) {
                             recordVelocitySample(
                                 samples,
                                 cTime,
-                                x + (c.clientX - srcEvent.clientX) * invPointersLen,
-                                y + (c.clientY - srcEvent.clientY) * invPointersLen
+                                x + (c.clientX - srcEvent.clientX),
+                                y + (c.clientY - srcEvent.clientY)
                             );
                         }
                     }
@@ -335,8 +335,10 @@ function recordVelocitySample(samples, timeStamp, x, y) {
     if (samples.length > 0) {
         var lastSample = samples[samples.length - 1];
         var dt = timeStamp - lastSample.t;
-        if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < 0) {
+        if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < -VELOCITY_HORIZON_MS) {
             samples.length = 0;
+        } else if (dt < 0) {
+            return;
         } else if (dt === 0) {
             lastSample.x = x;
             lastSample.y = y;
