@@ -15,8 +15,9 @@ inherit(SwipeRecognizer, AttrRecognizer, {
      */
     defaults: {
         event: 'swipe',
-        threshold: 10,
+        threshold: 30,
         velocity: 0.3,
+        maxVelocity: 80,
         direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
         pointers: 1
     },
@@ -28,6 +29,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
     attrTest: function(input) {
         var direction = this.options.direction;
         var offsetDirection = input.offsetDirection;
+        var maxVelocity = this.options.maxVelocity;
         var velocity;
 
         if (offsetDirection === DIRECTION_LEFT) {
@@ -46,7 +48,9 @@ inherit(SwipeRecognizer, AttrRecognizer, {
             direction & offsetDirection &&
             input.distance > this.options.threshold &&
             input.maxPointers == this.options.pointers &&
-            velocity > this.options.velocity && input.eventType & INPUT_END;
+            velocity > this.options.velocity &&
+            (!(maxVelocity > 0) || velocity <= maxVelocity) &&
+            input.eventType & INPUT_END;
     },
 
     process: function(input) {

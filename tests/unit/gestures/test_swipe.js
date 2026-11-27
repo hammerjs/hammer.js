@@ -928,3 +928,98 @@ test('coalesced PointerEvents are skipped on rebase INPUT_MOVE immediately after
     equal(coalescedCalled, 0, 'getCoalescedEvents is skipped on rebase frame after INPUT_END');
     ok(Math.abs(rebasedMove.velocityX) < 1e-6, 'rebased move does not inject false velocity from coalesced pre-liftoff samples');
 });
+
+test('SwipeRecognizer defaults to threshold 30 and rejects shorter swipes', function() {
+    expect(4);
+
+    var swipe = new Hammer.Swipe();
+    equal(swipe.options.threshold, 30, 'default swipe threshold is 30');
+
+    hammer.add(swipe);
+    hammer.on('swipe', function() {
+        swipeCount++;
+    });
+
+    function recognizeDistance(distance) {
+        hammer.recognize({
+            pointers: [{clientX: 50 + distance, clientY: 50}],
+            changedPointers: [{clientX: 50 + distance, clientY: 50}],
+            eventType: Hammer.INPUT_END,
+            maxPointers: 1,
+            distance: distance,
+            offsetDirection: Hammer.DIRECTION_RIGHT,
+            velocity: 1.0,
+            velocityX: 1.0,
+            velocityY: 0,
+            srcEvent: {preventDefault: function() {}, target: el},
+            target: el
+        });
+    }
+
+    recognizeDistance(25);
+    equal(swipeCount, 0, 'swipe with distance 25 is rejected under default threshold 30');
+
+    recognizeDistance(30);
+    equal(swipeCount, 0, 'swipe with distance equal to 30 is rejected (strictly > threshold)');
+
+    recognizeDistance(31);
+    equal(swipeCount, 1, 'swipe with distance 31 is accepted under default threshold 30');
+});
+
+test('SwipeRecognizer enforces default maxVelocity 80 and supports custom or disabled maxVelocity', function() {
+    expect(9);
+
+    var swipe = new Hammer.Swipe();
+    equal(swipe.options.maxVelocity, 80, 'default swipe maxVelocity is 80');
+
+    hammer.add(swipe);
+    hammer.on('swipe', function() {
+        swipeCount++;
+    });
+
+    function recognizeVelocity(offsetDirection, vx, vy) {
+        hammer.recognize({
+            pointers: [{clientX: 120, clientY: 50}],
+            changedPointers: [{clientX: 120, clientY: 50}],
+            eventType: Hammer.INPUT_END,
+            maxPointers: 1,
+            distance: 50,
+            offsetDirection: offsetDirection,
+            velocity: Math.abs(vx) > Math.abs(vy) ? vx : vy,
+            velocityX: vx,
+            velocityY: vy,
+            srcEvent: {preventDefault: function() {}, target: el},
+            target: el
+        });
+    }
+
+    // 1. Default maxVelocity: 80 accepts up to 80 and rejects weird peaks above 80
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 80, 0);
+    equal(swipeCount, 1, 'velocity equal to default maxVelocity (80) is accepted');
+
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 80.1, 0);
+    equal(swipeCount, 1, 'velocity peak above default maxVelocity (80.1) is rejected');
+
+    recognizeVelocity(Hammer.DIRECTION_LEFT, -85, 0);
+    equal(swipeCount, 1, 'leftward velocity peak (-85) exceeding default maxVelocity is rejected');
+
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, Infinity, 0);
+    equal(swipeCount, 1, 'Infinite velocity peak is rejected');
+
+    // 2. Custom maxVelocity option
+    swipe.set({maxVelocity: 5});
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 5, 0);
+    equal(swipeCount, 2, 'velocity equal to custom maxVelocity (5) is accepted');
+
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 5.1, 0);
+    equal(swipeCount, 2, 'velocity above custom maxVelocity (5.1) is rejected');
+
+    // 3. Disabling maxVelocity with 0 or null
+    swipe.set({maxVelocity: 0});
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 120, 0);
+    equal(swipeCount, 3, 'maxVelocity: 0 disables the upper velocity cap');
+
+    swipe.set({maxVelocity: null});
+    recognizeVelocity(Hammer.DIRECTION_RIGHT, 120, 0);
+    equal(swipeCount, 4, 'maxVelocity: null disables the upper velocity cap');
+});
