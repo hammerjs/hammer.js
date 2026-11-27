@@ -322,6 +322,12 @@ function computeIntervalInputData(session, input) {
     }
 
     computeWeightedVelocity(samples, input);
+
+    if (eventType === INPUT_MOVE && input.direction === DIRECTION_NONE && session.prevInput) {
+        var prev = session.prevInput;
+        var moveDir = getDirection(x - (prev.deltaX || 0), y - (prev.deltaY || 0));
+        input.direction = (moveDir !== DIRECTION_NONE) ? moveDir : (prev.direction || DIRECTION_NONE);
+    }
 }
 
 /**

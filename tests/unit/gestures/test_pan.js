@@ -143,3 +143,73 @@ test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans
     });
     equal(panStarts, 2, 'second axis-locked pan at same deltaX is not blocked by stale pX');
 });
+
+test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and keep emitting directional pan events', function() {
+    expect(3);
+
+    // 1. Slow vertical drag (>40ms between moves) with DIRECTION_ALL
+    var panAll = new Hammer.Pan({direction: Hammer.DIRECTION_ALL, threshold: 10});
+    hammer.add(panAll);
+
+    var verticalEvents = [];
+    hammer.on('panstart panmove pandown panend', function(ev) {
+        verticalEvents.push(ev.type);
+    });
+
+    function feedPointer(type, x, y, t) {
+        var ptr = {clientX: x, clientY: y};
+        $H.inputHandler(hammer, type, {
+            pointers: [ptr],
+            changedPointers: [ptr],
+            pointerType: 'touch',
+            srcEvent: {timeStamp: t, target: el, cancelable: true, preventDefault: function() {}}
+        });
+    }
+
+    feedPointer($H.INPUT_START, 10, 10, 1000);
+    feedPointer($H.INPUT_MOVE, 10, 25, 1050);
+    feedPointer($H.INPUT_MOVE, 10, 40, 1100);
+    feedPointer($H.INPUT_END, 10, 40, 1150);
+
+    deepEqual(
+        verticalEvents,
+        ['panstart', 'pandown', 'panmove', 'pandown', 'panend'],
+        'slow vertical drag with DIRECTION_ALL emits panstart, panmove, pandown, and panend'
+    );
+
+    // 2. Slow horizontal drag (>40ms between moves) keeps emitting panright on every panmove
+    hammer.off('panstart panmove pandown panend');
+    hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10}));
+
+    var panRightCount = 0;
+    hammer.on('panright', function() {
+        panRightCount++;
+    });
+
+    feedPointer($H.INPUT_START, 10, 10, 2000);
+    feedPointer($H.INPUT_MOVE, 25, 10, 2050);
+    feedPointer($H.INPUT_MOVE, 40, 10, 2100);
+    feedPointer($H.INPUT_MOVE, 55, 10, 2150);
+    feedPointer($H.INPUT_MOVE, 70, 10, 2200);
+    feedPointer($H.INPUT_END, 70, 10, 2250);
+
+    equal(panRightCount, 4, 'panright emitted on panstart and every subsequent slow panmove');
+
+    // 3. Direct DIRECTION_ALL pan recognition when input.direction is DIRECTION_NONE
+    var directStarts = 0;
+    hammer.off('panright');
+    hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_ALL, threshold: 10}));
+    hammer.on('panstart', function() {
+        directStarts++;
+    });
+    hammer.get('pan').recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 20,
+        deltaX: 0,
+        deltaY: 20,
+        direction: Hammer.DIRECTION_NONE,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    equal(directStarts, 1, 'DIRECTION_ALL recognizes vertical displacement when input.direction is DIRECTION_NONE');
+});
