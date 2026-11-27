@@ -48,8 +48,15 @@ inherit(MouseInput, Input, {
         var eventType = MOUSE_INPUT_MAP[ev.type];
 
         // on start we want to have the left mouse button down
-        if (eventType & INPUT_START && ev.button === 0) {
+        if (eventType & INPUT_START) {
+            if (ev.button !== 0) {
+                return;
+            }
             this.pressed = true;
+        }
+
+        if (eventType & INPUT_END && ev.button !== undefined && ev.button !== 0) {
+            return;
         }
 
         if (eventType & INPUT_MOVE && ev.which !== 1 && !(ev.buttons & 1)) {
