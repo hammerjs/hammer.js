@@ -284,6 +284,29 @@
         }
     });
 
+    test('TouchInput attached to window tracks 2+ finger touches on DOM elements', function() {
+        var calls = [];
+        manager = new Hammer.Manager(window, {recognizers: []});
+        var input = new $H.TouchInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointersLen: data.pointers.length});
+        });
+
+        try {
+            var t1 = {identifier: 1, clientX: 20, clientY: 20, target: el};
+            var t2 = {identifier: 2, clientX: 80, clientY: 80, target: el};
+
+            input.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+            input.handler({type: 'touchstart', touches: [t1, t2], changedTouches: [t2]});
+            input.handler({type: 'touchmove', touches: [t1, t2], changedTouches: [t1, t2]});
+
+            equal(calls.length, 3, 'all 1-finger and 2-finger events dispatched when TouchInput target is window');
+            equal(calls[1].pointersLen, 2, 'second finger tracked on window TouchInput');
+            equal(calls[2].pointersLen, 2, '2-finger touchmove retains both pointers on window TouchInput');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('TouchMouseInput deduplicates synthetic mouse events near recent touches and forwards distant mouse events', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});
