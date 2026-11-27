@@ -371,6 +371,51 @@
         equal(tapCount, 1, 'new inputTarget triggers tap after set({inputTarget})');
     });
 
+    test('TouchMouseInput resets child MouseInput on suppressed synthetic mousedown so blur emits no phantom cancel', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.TouchMouseInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointerType: data.pointerType});
+        });
+
+        try {
+            var touchObj = {identifier: 1, clientX: 50, clientY: 50, target: el};
+
+            // Case 1: Synthetic mousedown suppressed via sourceCapabilities.firesTouchEvents
+            input.touch.handler({type: 'touchstart', touches: [touchObj], changedTouches: [touchObj], target: el});
+            input.touch.handler({type: 'touchend', touches: [], changedTouches: [touchObj], target: el});
+            input.mouse.handler({
+                type: 'mousedown',
+                button: 0,
+                which: 1,
+                clientX: 50,
+                clientY: 50,
+                sourceCapabilities: {firesTouchEvents: true}
+            });
+            equal(input.mouse.pressed, false, 'child MouseInput.pressed reset when firesTouchEvents mousedown is suppressed');
+
+            calls = [];
+            input.mouse.handler({type: 'blur'});
+            equal(calls.length, 0, 'window blur after suppressed firesTouchEvents mousedown emits no phantom INPUT_CANCEL');
+
+            // Case 2: Synthetic mousedown suppressed via coordinate dedup without sourceCapabilities
+            input.mouse.handler({
+                type: 'mousedown',
+                button: 0,
+                which: 1,
+                clientX: 52,
+                clientY: 52
+            });
+            equal(input.mouse.pressed, false, 'child MouseInput.pressed reset when deduped mousedown is suppressed');
+
+            calls = [];
+            input.mouse.handler({type: 'blur'});
+            equal(calls.length, 0, 'window blur after coordinate-deduped mousedown emits no phantom INPUT_CANCEL');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('Input domHandler ignores events if manager was destroyed during the same dispatch', function() {
         expect(1);
 
