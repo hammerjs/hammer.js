@@ -184,6 +184,44 @@ test('test add/removeEventListener', function() {
     utils.triggerDomEvent(window, 'testEvent2');
 });
 
+test('addEventListeners/removeEventListeners pass {passive: false} for touchstart/touchmove so root targets can preventDefault', function() {
+    var added = [];
+    var removed = [];
+    var fakeTarget = {
+        addEventListener: function(type, handler, opts) {
+            added.push({type: type, opts: opts});
+        },
+        removeEventListener: function(type, handler, opts) {
+            removed.push({type: type, opts: opts});
+        }
+    };
+    var noop = function() {};
+
+    $H.addEventListeners(fakeTarget, 'touchstart touchmove touchend mousedown', noop);
+    $H.removeEventListeners(fakeTarget, 'touchstart touchmove touchend mousedown', noop);
+
+    deepEqual(added[0].opts, {passive: false}, 'touchstart registers with {passive: false}');
+    deepEqual(added[1].opts, {passive: false}, 'touchmove registers with {passive: false}');
+    strictEqual(added[2].opts, false, 'touchend registers with false');
+    strictEqual(added[3].opts, false, 'mousedown registers with false');
+    deepEqual(removed[0].opts, {passive: false}, 'removeEventListeners matches {passive: false} for touchstart');
+    deepEqual(removed[1].opts, {passive: false}, 'removeEventListeners matches {passive: false} for touchmove');
+
+    // Verify a real touchmove listener on window can call preventDefault() without passive rejection
+    var onWindowTouchMove = function(ev) {
+        ev.preventDefault();
+    };
+    $H.addEventListeners(window, 'touchmove', onWindowTouchMove);
+    try {
+        var ev = document.createEvent('Event');
+        ev.initEvent('touchmove', true, true);
+        window.dispatchEvent(ev);
+        strictEqual(ev.defaultPrevented, true, 'window touchmove listener successfully calls preventDefault()');
+    } finally {
+        $H.removeEventListeners(window, 'touchmove', onWindowTouchMove);
+    }
+});
+
 test('getDirection', function() {
     expect(7);
 

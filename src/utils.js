@@ -7,6 +7,32 @@ var abs = Math.abs;
 var now = Date.now;
 var hasOwn = Object.prototype.hasOwnProperty;
 
+var SUPPORT_PASSIVE_EVENTS = (function() {
+    var supported = false;
+    if (typeof window.addEventListener === TYPE_FUNCTION) {
+        try {
+            var opts = Object.defineProperty({}, 'passive', {
+                get: function() {
+                    supported = true;
+                    return false;
+                }
+            });
+            window.addEventListener('testpassive', null, opts);
+            window.removeEventListener('testpassive', null, opts);
+        } catch (e) {}
+    }
+    return supported;
+})();
+
+var TOUCH_EVENTS_LISTENER_OPTIONS = SUPPORT_PASSIVE_EVENTS ? {passive: false} : false;
+
+function getEventListenerOptions(type) {
+    if (SUPPORT_PASSIVE_EVENTS && (type === 'touchstart' || type === 'touchmove')) {
+        return TOUCH_EVENTS_LISTENER_OPTIONS;
+    }
+    return false;
+}
+
 /**
  * set a timeout with a given scope
  * @param {Function} fn
@@ -211,7 +237,7 @@ function ifUndefined(val1, val2) {
  */
 function addEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, false);
+        target.addEventListener(type, handler, getEventListenerOptions(type));
     });
 }
 
@@ -223,7 +249,7 @@ function addEventListeners(target, types, handler) {
  */
 function removeEventListeners(target, types, handler) {
     each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, false);
+        target.removeEventListener(type, handler, getEventListenerOptions(type));
     });
 }
 
