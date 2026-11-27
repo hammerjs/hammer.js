@@ -351,8 +351,17 @@ function toggleCssProps(manager, add) {
  * @param {Object} data
  */
 function triggerDomEvent(event, data) {
-    var gestureEvent = document.createEvent('Event');
-    gestureEvent.initEvent(event, true, true);
+    var gestureEvent;
+    if (typeof Event === TYPE_FUNCTION) {
+        gestureEvent = new Event(event, {
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+    } else {
+        gestureEvent = document.createEvent('Event');
+        gestureEvent.initEvent(event, true, true);
+    }
     gestureEvent.gesture = data;
     data.target.dispatchEvent(gestureEvent);
 }
