@@ -9,6 +9,18 @@ var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
 var TOUCH_ACTION_PINCH_ZOOM = 'pinch-zoom';
+var VALID_TOUCH_ACTION_TOKENS = assign(Object.create(null), {
+    auto: true,
+    none: true,
+    manipulation: true,
+    'pan-x': true,
+    'pan-left': true,
+    'pan-right': true,
+    'pan-y': true,
+    'pan-up': true,
+    'pan-down': true,
+    'pinch-zoom': true
+});
 var TOUCH_ACTION_MAP = getTouchActionProps();
 
 /**
@@ -31,7 +43,10 @@ TouchAction.prototype = {
      * @param {String} value
      */
     set: function(value) {
-        value = value.toLowerCase().trim();
+        if (typeof value !== 'string') {
+            return;
+        }
+        value = value.toLowerCase().trim().replace(/\s+/g, ' ');
 
         // find out the touch-action by the event handlers
         if (value == TOUCH_ACTION_COMPUTE) {
@@ -39,13 +54,21 @@ TouchAction.prototype = {
         }
 
         var element = this.manager.element;
-        this.appliedNative = false;
         if (element && element.style && supportsTouchAction(value)) {
-            if (this.oldTouchAction === undefined) {
-                this.oldTouchAction = element.style[PREFIXED_TOUCH_ACTION];
+            if (!this.appliedNative || this.actions !== value) {
+                if (this.oldTouchAction === undefined) {
+                    this.oldTouchAction = element.style[PREFIXED_TOUCH_ACTION];
+                }
+                element.style[PREFIXED_TOUCH_ACTION] = value;
             }
-            element.style[PREFIXED_TOUCH_ACTION] = value;
             this.appliedNative = true;
+        } else {
+            if (this.appliedNative && isValidTouchActionValue(value) &&
+                this.oldTouchAction !== undefined && element && element.style) {
+                element.style[PREFIXED_TOUCH_ACTION] = this.oldTouchAction;
+                this.oldTouchAction = undefined;
+            }
+            this.appliedNative = false;
         }
         this.actions = value;
     },
@@ -76,7 +99,10 @@ TouchAction.prototype = {
         var actions = [];
         each(this.manager.recognizers, function(recognizer) {
             if (boolOrFn(recognizer.options.enable, [recognizer])) {
-                actions = actions.concat(recognizer.getTouchAction());
+                var ta = recognizer.getTouchAction();
+                if (ta && ta.length) {
+                    actions.push.apply(actions, ta);
+                }
             }
         });
         return cleanTouchActions(actions.join(' '));
@@ -103,13 +129,14 @@ TouchAction.prototype = {
         }
 
         var direction = input.offsetDirection;
-        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
-        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
-        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+        var hasNone = hasTouchActionToken(actions, TOUCH_ACTION_NONE);
+        var hasPanY = hasTouchActionToken(actions, TOUCH_ACTION_PAN_Y);
+        var hasPanX = hasTouchActionToken(actions, TOUCH_ACTION_PAN_X);
+        var hasPinchZoom = hasTouchActionToken(actions, TOUCH_ACTION_PINCH_ZOOM);
 
-        if (hasNone) {
-            //do not prevent defaults if this is a tap gesture
-
+        var blocksSinglePointerPan = hasNone || (hasPinchZoom && !hasPanX && !hasPanY && input.pointers.length === 1);
+        if (blocksSinglePointerPan) {
+            // do not prevent defaults if this is a tap gesture
             var isTapPointer = input.pointers.length === 1;
             var isTapMovement = input.distance < 2;
             var isTapTouchTime = input.deltaTime < 250;
@@ -124,7 +151,7 @@ TouchAction.prototype = {
             return;
         }
 
-        if (hasNone ||
+        if (blocksSinglePointerPan ||
             (hasPanY && direction & DIRECTION_HORIZONTAL) ||
             (hasPanX && direction & DIRECTION_VERTICAL)) {
             return this.preventSrc(srcEvent);
@@ -148,14 +175,20 @@ TouchAction.prototype = {
  * @param {String} actions
  * @returns {*}
  */
+function hasTouchActionToken(actions, token) {
+    return inStr(' ' + actions + ' ', ' ' + token + ' ');
+}
+
 function cleanTouchActions(actions) {
+    var normalized = actions.replace(/\s+/g, ' ');
+
     // none
-    if (inStr(actions, TOUCH_ACTION_NONE)) {
+    if (hasTouchActionToken(normalized, TOUCH_ACTION_NONE)) {
         return TOUCH_ACTION_NONE;
     }
 
-    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
-    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+    var hasPanX = hasTouchActionToken(normalized, TOUCH_ACTION_PAN_X);
+    var hasPanY = hasTouchActionToken(normalized, TOUCH_ACTION_PAN_Y);
 
     // if both pan-x and pan-y are set (different recognizers
     // for different directions, e.g. horizontal pan but vertical swipe?)
@@ -173,24 +206,41 @@ function cleanTouchActions(actions) {
     }
 
     // pinch-zoom (more restrictive than manipulation: blocks panning while allowing pinch-zoom)
-    if (inStr(actions, TOUCH_ACTION_PINCH_ZOOM)) {
+    if (hasTouchActionToken(normalized, TOUCH_ACTION_PINCH_ZOOM)) {
         return TOUCH_ACTION_PINCH_ZOOM;
     }
 
     // manipulation
-    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+    if (hasTouchActionToken(normalized, TOUCH_ACTION_MANIPULATION)) {
         return TOUCH_ACTION_MANIPULATION;
     }
 
     return TOUCH_ACTION_AUTO;
 }
 
+function isValidTouchActionValue(value) {
+    if (typeof value !== 'string' || !value) {
+        return false;
+    }
+    var tokens = splitStr(value);
+    if (!tokens.length || tokens.length > 3) {
+        return false;
+    }
+    for (var i = 0; i < tokens.length; i++) {
+        if (!VALID_TOUCH_ACTION_TOKENS[tokens[i]]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function supportsTouchAction(value) {
-    if (!TOUCH_ACTION_MAP) {
+    if (!TOUCH_ACTION_MAP || !isValidTouchActionValue(value)) {
         return false;
     }
     if (!hasOwn.call(TOUCH_ACTION_MAP, value)) {
-        TOUCH_ACTION_MAP[value] = !!(window.CSS && window.CSS.supports && window.CSS.supports('touch-action', value));
+        TOUCH_ACTION_MAP[value] = !!(window.CSS && typeof window.CSS.supports === TYPE_FUNCTION &&
+            window.CSS.supports('touch-action', value));
     }
     return TOUCH_ACTION_MAP[value];
 }
@@ -200,7 +250,7 @@ function getTouchActionProps() {
         return false;
     }
     var touchMap = Object.create(null);
-    var cssSupports = window.CSS && window.CSS.supports;
+    var cssSupports = window.CSS && typeof window.CSS.supports === TYPE_FUNCTION;
     ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
 
         // If css.supports is not supported but there is native touch-action assume it supports
