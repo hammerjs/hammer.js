@@ -176,6 +176,33 @@
         }
     });
 
+    test('PointerEventInput ends hovering pen (buttons === 0) and chorded mouse after primary button release', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.PointerEventInput(manager, function(mgr, type) {
+            calls.push(type);
+        });
+
+        try {
+            // 1. Hovering stylus (pen) with buttons === 0 ends active pointer
+            input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'pen', button: 0, buttons: 1, clientX: 10, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 1, pointerType: 'pen', button: 0, buttons: 1, clientX: 25, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 1, pointerType: 'pen', button: 0, buttons: 0, clientX: 40, clientY: 10});
+            deepEqual(calls, [$H.INPUT_START, $H.INPUT_MOVE, $H.INPUT_END], 'hovering pen with buttons === 0 converts to INPUT_END');
+            equal(input.store.length, 0, 'hovering pen removed from store');
+
+            // 2. Chorded mouse buttons: left down (1) -> right also down (3) -> left released while right held (2)
+            calls = [];
+            input.handler({type: 'pointerdown', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 3, clientX: 25, clientY: 10});
+            input.handler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 2, clientX: 40, clientY: 10});
+            deepEqual(calls, [$H.INPUT_START, $H.INPUT_MOVE, $H.INPUT_END], 'mouse releasing primary button while right button held converts to INPUT_END');
+            equal(input.store.length, 0, 'chorded mouse removed from store when primary button released');
+        } finally {
+            input.destroy();
+        }
+    });
+
     test('SingleTouchInput handles start, move, multi-touch end, cancel, and pre-start ignore', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});
