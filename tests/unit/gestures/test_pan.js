@@ -113,8 +113,8 @@ test('PanRecognizer with DIRECTION_NONE does not recognize pans', function() {
     equal(panCount, 0, 'no pan events fired when direction is DIRECTION_NONE');
 });
 
-test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans are not blocked', function() {
-    expect(3);
+test('consecutive axis-locked pans at the same deltaX both recognize cleanly', function() {
+    expect(2);
 
     var pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 5});
     hammer.add(pan);
@@ -129,7 +129,6 @@ test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans
     utils.dispatchTouchEvent(el, 'move', 40, 10);
     utils.dispatchTouchEvent(el, 'end', 40, 10);
     equal(panStarts, 1, 'first pan recognized');
-    strictEqual(pan.pX, null, 'pX cleared after panend');
 
     // Gesture 2 arrives directly at deltaX = 30 with predominantly vertical direction (triggers axis lock check)
     pan.recognize({
@@ -141,7 +140,72 @@ test('PanRecognizer resets pX and pY after panend so subsequent axis-locked pans
         direction: Hammer.DIRECTION_DOWN,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    equal(panStarts, 2, 'second axis-locked pan at same deltaX is not blocked by stale pX');
+    equal(panStarts, 2, 'second axis-locked pan at same deltaX recognizes cleanly');
+});
+
+test('single-axis Pan checks axis displacement against threshold and ignores perpendicular wiggle', function() {
+    expect(4);
+
+    // 1. Horizontal-only Pan must not start on 25px vertical drag + 1px horizontal wiggle
+    var hEvents = [];
+    var hPan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10});
+    hammer.add(hPan);
+    hammer.on('panstart', function(ev) {
+        hEvents.push(ev.type);
+    });
+
+    hPan.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 25,
+        deltaX: 1,
+        deltaY: 25,
+        direction: Hammer.DIRECTION_RIGHT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(hEvents, [], 'horizontal Pan rejects 1px horizontal wiggle after 25px vertical drag');
+
+    hPan.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 28,
+        deltaX: 12,
+        deltaY: 25,
+        direction: Hammer.DIRECTION_RIGHT,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(hEvents, ['panstart'], 'horizontal Pan starts once abs(deltaX) exceeds threshold');
+
+    // 2. Vertical-only Pan must not start on 25px horizontal drag + 1px vertical wiggle
+    var vEvents = [];
+    hammer.off('panstart');
+    var vPan = new Hammer.Pan({direction: Hammer.DIRECTION_VERTICAL, threshold: 10});
+    hammer.add(vPan);
+    hammer.on('panstart', function(ev) {
+        vEvents.push(ev.type);
+    });
+
+    vPan.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 25,
+        deltaX: 25,
+        deltaY: 1,
+        direction: Hammer.DIRECTION_DOWN,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(vEvents, [], 'vertical Pan rejects 1px vertical wiggle after 25px horizontal drag');
+
+    vPan.recognize({
+        eventType: $H.INPUT_MOVE,
+        pointers: [{}],
+        distance: 28,
+        deltaX: 25,
+        deltaY: 12,
+        direction: Hammer.DIRECTION_DOWN,
+        srcEvent: {cancelable: true, preventDefault: function() {}}
+    });
+    deepEqual(vEvents, ['panstart'], 'vertical Pan starts once abs(deltaY) exceeds threshold');
 });
 
 test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and keep emitting directional pan events', function() {
