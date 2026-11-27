@@ -528,4 +528,58 @@
         equal(midStream.deltaX, 0, 'missing offsetDelta initializes cleanly instead of NaN');
         equal(midStream.deltaY, 0, 'missing offsetDelta deltaY initializes cleanly');
     });
+
+    test('domEvents: true dispatches composed DOM events that cross Shadow DOM boundaries to outer managers', function() {
+        var outer = document.createElement('div');
+        var host = document.createElement('div');
+        outer.appendChild(host);
+        el.appendChild(outer);
+
+        if (!host.attachShadow) {
+            ok(true, 'Shadow DOM not supported in environment');
+            return;
+        }
+
+        var shadow = host.attachShadow({mode: 'open'});
+        var shadowLeaf = document.createElement('button');
+        shadow.appendChild(shadowLeaf);
+
+        manager = new Hammer.Manager(outer, {
+            domEvents: true,
+            recognizers: [[Hammer.Tap]]
+        });
+
+        var hostEvents = [];
+        var outerEvents = [];
+        host.addEventListener('tap', function(ev) {
+            hostEvents.push({composed: ev.composed, target: ev.gesture && ev.gesture.target});
+        });
+        outer.addEventListener('tap', function(ev) {
+            outerEvents.push({composed: ev.composed, target: ev.gesture && ev.gesture.target});
+        });
+
+        function feedShadow(type) {
+            var ptr = {clientX: 20, clientY: 20};
+            $H.inputHandler(manager, type, {
+                pointers: [ptr],
+                changedPointers: [ptr],
+                pointerType: 'touch',
+                srcEvent: {
+                    target: host,
+                    composedPath: function() {
+                        return [shadowLeaf, shadow, host, outer];
+                    },
+                    preventDefault: function() {}
+                }
+            });
+        }
+
+        feedShadow($H.INPUT_START);
+        feedShadow($H.INPUT_END);
+
+        equal(hostEvents.length, 1, 'composed tap DOM event crosses ShadowRoot and reaches shadow host');
+        equal(outerEvents.length, 1, 'composed tap DOM event bubbles to outer manager element');
+        strictEqual(outerEvents[0] && outerEvents[0].composed, true, 'dispatched DOM event has composed: true');
+        strictEqual(outerEvents[0] && outerEvents[0].target, shadowLeaf, 'ev.gesture.target retains inner shadow leaf');
+    });
 })();
