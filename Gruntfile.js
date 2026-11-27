@@ -125,6 +125,18 @@ module.exports = function(grunt) {
         }).then(function(browser) {
             return browser.newPage().then(function(page) {
                 var failures = [];
+                var pageErrors = [];
+                var finished = false;
+
+                function finish(ok) {
+                    if (finished) {
+                        return;
+                    }
+                    finished = true;
+                    browser.close().catch(function() {}).then(function() {
+                        done(ok);
+                    });
+                }
 
                 return page.exposeFunction('__gruntQUnitLog', function(details) {
                     if (!details.result) {
@@ -132,31 +144,30 @@ module.exports = function(grunt) {
                     }
                 }).then(function() {
                     return page.exposeFunction('__gruntQUnitDone', function(details) {
-                        browser.close().then(function() {
-                            if (failures.length) {
-                                failures.forEach(function(f) {
-                                    grunt.log.error(
-                                        '[' + f.module + '] ' + f.name + ': ' +
-                                        (f.message || 'failed') +
-                                        ' (expected: ' + f.expected +
-                                        ', actual: ' + f.actual + ')'
-                                    );
-                                });
-                            }
-                            if (details.failed > 0 || details.total === 0) {
+                        if (failures.length) {
+                            failures.forEach(function(f) {
                                 grunt.log.error(
-                                    'QUnit: ' + details.passed + '/' + details.total +
-                                    ' assertions passed, ' + details.failed + ' failed (' + details.runtime + 'ms)'
+                                    '[' + f.module + '] ' + f.name + ': ' +
+                                    (f.message || 'failed') +
+                                    ' (expected: ' + f.expected +
+                                    ', actual: ' + f.actual + ')'
                                 );
-                                done(false);
-                            } else {
-                                grunt.log.ok(
-                                    'QUnit: ' + details.passed + '/' + details.total +
-                                    ' assertions passed, 0 failed (' + details.runtime + 'ms)'
-                                );
-                                done();
-                            }
-                        });
+                            });
+                        }
+                        if (details.failed > 0 || details.total === 0 || pageErrors.length > 0) {
+                            grunt.log.error(
+                                'QUnit: ' + details.passed + '/' + details.total +
+                                ' assertions passed, ' + details.failed + ' failed, ' +
+                                pageErrors.length + ' page error(s) (' + details.runtime + 'ms)'
+                            );
+                            finish(false);
+                        } else {
+                            grunt.log.ok(
+                                'QUnit: ' + details.passed + '/' + details.total +
+                                ' assertions passed, 0 failed (' + details.runtime + 'ms)'
+                            );
+                            finish(true);
+                        }
                     });
                 }).then(function() {
                     return page.evaluateOnNewDocument(function() {
@@ -191,9 +202,20 @@ module.exports = function(grunt) {
                     });
                 }).then(function() {
                     page.on('pageerror', function(err) {
-                        grunt.log.error('Page error: ' + err.message);
+                        var msg = err && err.message ? err.message : String(err);
+                        grunt.log.error('Page error: ' + msg);
+                        pageErrors.push(msg);
                     });
                     return page.goto(url, {waitUntil: 'load', timeout: 30000});
+                }).then(function() {
+                    return page.evaluate(function() {
+                        return typeof window.QUnit === 'object' && window.QUnit !== null;
+                    });
+                }).then(function(hasQUnit) {
+                    if (!hasQUnit) {
+                        grunt.log.error('QUnit failed to initialize.');
+                        finish(false);
+                    }
                 });
             }).catch(function(err) {
                 return browser.close().then(function() {
@@ -256,6 +278,6 @@ module.exports = function(grunt) {
     grunt.registerTask('default', ['connect:server:keepalive']);
     grunt.registerTask('dist', ['concat', 'string-replace', 'usebanner', 'uglify:min']);
     grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
-    grunt.registerTask('test', ['concat', 'string-replace', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
+    grunt.registerTask('test', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);
 };
