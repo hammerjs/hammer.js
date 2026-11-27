@@ -16,10 +16,12 @@ function TouchMouseInput() {
 
     var handler = bindFn(this.handler, this);
     this.touch = new TouchInput(this.manager, handler);
+    this.touch._skipPointerTypeFilter = true;
     this.mouse = new MouseInput(this.manager, handler);
 
     this.primaryTouch = null;
     this.lastTouches = [];
+    this._activeMouse = false;
 }
 
 inherit(TouchMouseInput, Input, {
@@ -31,20 +33,33 @@ inherit(TouchMouseInput, Input, {
      */
     handler: function TMEhandler(manager, inputEvent, inputData) {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
-            isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
+            isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE),
+            isActiveMouseContinuation = isMouse && this._activeMouse && !(inputEvent & INPUT_START);
 
-        if (isMouse && inputData.srcEvent && inputData.srcEvent.sourceCapabilities &&
+        if (isMouse && !isActiveMouseContinuation && inputData.srcEvent && inputData.srcEvent.sourceCapabilities &&
             inputData.srcEvent.sourceCapabilities.firesTouchEvents) {
             this.mouse.reset();
+            this._activeMouse = false;
             return;
         }
 
         // when we're in a touch event, record touches to  de-dupe synthetic mouse event
         if (isTouch) {
             recordTouches.call(this, inputEvent, inputData);
-        } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
-            this.mouse.reset();
-            return;
+            if (!isAllowedPointerType(manager, INPUT_TYPE_TOUCH)) {
+                return;
+            }
+        } else if (isMouse) {
+            if (!isActiveMouseContinuation && isSyntheticEvent.call(this, inputData)) {
+                this.mouse.reset();
+                this._activeMouse = false;
+                return;
+            }
+            if (inputEvent & INPUT_START) {
+                this._activeMouse = true;
+            } else if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
+                this._activeMouse = false;
+            }
         }
 
         this.callback(manager, inputEvent, inputData);
@@ -68,6 +83,7 @@ inherit(TouchMouseInput, Input, {
      * clear tracked active pointer state on child inputs
      */
     reset: function reset() {
+        this._activeMouse = false;
         this.touch.reset();
         this.mouse.reset();
     },
@@ -76,6 +92,8 @@ inherit(TouchMouseInput, Input, {
      * remove the event listeners
      */
     destroy: function destroy() {
+        this._activeMouse = false;
+        this.lastTouches.length = 0;
         this.touch.destroy();
         this.mouse.destroy();
     }

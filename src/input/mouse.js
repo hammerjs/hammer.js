@@ -1,8 +1,8 @@
-var MOUSE_INPUT_MAP = {
+var MOUSE_INPUT_MAP = assign(Object.create(null), {
     mousedown: INPUT_START,
     mousemove: INPUT_MOVE,
     mouseup: INPUT_END
-};
+});
 
 var MOUSE_ELEMENT_EVENTS = 'mousedown';
 var MOUSE_WINDOW_EVENTS = 'mousemove mouseup blur';

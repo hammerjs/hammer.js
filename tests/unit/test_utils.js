@@ -184,7 +184,7 @@ test('test add/removeEventListener', function() {
     utils.triggerDomEvent(window, 'testEvent2');
 });
 
-test('addEventListeners/removeEventListeners pass {passive: false} for touchstart/touchmove so root targets can preventDefault', function() {
+test('addEventListeners/removeEventListeners default to false and forward explicit listener options', function() {
     var added = [];
     var removed = [];
     var fakeTarget = {
@@ -200,25 +200,32 @@ test('addEventListeners/removeEventListeners pass {passive: false} for touchstar
     $H.addEventListeners(fakeTarget, 'touchstart touchmove touchend mousedown', noop);
     $H.removeEventListeners(fakeTarget, 'touchstart touchmove touchend mousedown', noop);
 
-    deepEqual(added[0].opts, {passive: false}, 'touchstart registers with {passive: false}');
-    deepEqual(added[1].opts, {passive: false}, 'touchmove registers with {passive: false}');
-    strictEqual(added[2].opts, false, 'touchend registers with false');
-    strictEqual(added[3].opts, false, 'mousedown registers with false');
-    deepEqual(removed[0].opts, {passive: false}, 'removeEventListeners matches {passive: false} for touchstart');
-    deepEqual(removed[1].opts, {passive: false}, 'removeEventListeners matches {passive: false} for touchmove');
+    strictEqual(added[0].opts, false, 'touchstart defaults to false (does not force {passive: false} globally)');
+    strictEqual(added[1].opts, false, 'touchmove defaults to false');
+    strictEqual(added[2].opts, false, 'touchend defaults to false');
+    strictEqual(added[3].opts, false, 'mousedown defaults to false');
+    strictEqual(removed[0].opts, false, 'removeEventListeners defaults to false for touchstart');
+    strictEqual(removed[1].opts, false, 'removeEventListeners defaults to false for touchmove');
 
-    // Verify a real touchmove listener on window can call preventDefault() without passive rejection
+    added = [];
+    removed = [];
+    $H.addEventListeners(fakeTarget, 'touchstart touchmove', noop, {passive: false});
+    $H.removeEventListeners(fakeTarget, 'touchstart touchmove', noop, {passive: false});
+    deepEqual(added[0].opts, {passive: false}, 'explicit {passive: false} forwarded on addEventListeners');
+    deepEqual(removed[0].opts, {passive: false}, 'explicit {passive: false} forwarded on removeEventListeners');
+
+    // Verify an explicit non-passive touchmove listener on window can call preventDefault()
     var onWindowTouchMove = function(ev) {
         ev.preventDefault();
     };
-    $H.addEventListeners(window, 'touchmove', onWindowTouchMove);
+    $H.addEventListeners(window, 'touchmove', onWindowTouchMove, {passive: false});
     try {
         var ev = document.createEvent('Event');
         ev.initEvent('touchmove', true, true);
         window.dispatchEvent(ev);
-        strictEqual(ev.defaultPrevented, true, 'window touchmove listener successfully calls preventDefault()');
+        strictEqual(ev.defaultPrevented, true, 'explicit non-passive window touchmove listener can call preventDefault()');
     } finally {
-        $H.removeEventListeners(window, 'touchmove', onWindowTouchMove);
+        $H.removeEventListeners(window, 'touchmove', onWindowTouchMove, {passive: false});
     }
 });
 
@@ -650,4 +657,44 @@ test('each handles null-prototype objects without throwing', function() {
         pairs.push(key + ':' + val);
     });
     deepEqual(pairs.sort(), ['a:1', 'b:2'], 'Hammer.each iterates Object.create(null) safely');
+});
+
+test('prefixed, each, getWindowForElement, and computeInputData guard edge cases and skip light-DOM composedPath', function() {
+    // 1. prefixed guards empty / non-string property names
+    strictEqual($H.prefixed(window, ''), undefined, 'prefixed returns undefined for empty string');
+    strictEqual($H.prefixed(window, null), undefined, 'prefixed returns undefined for null property');
+    strictEqual($H.prefixed(window, 123), undefined, 'prefixed returns undefined for non-string property');
+
+    // 2. each ignores truthy non-function forEach properties
+    var seen = [];
+    $H.each({forEach: true, a: 1}, function(val, key) {
+        seen.push(key + ':' + val);
+    });
+    deepEqual(seen.sort(), ['a:1', 'forEach:true'], 'each checks typeof obj.forEach === function');
+
+    // 3. getWindowForElement returns cross-realm window objects directly
+    var fakeIframeWin = {};
+    fakeIframeWin.window = fakeIframeWin;
+    strictEqual($H.getWindowForElement(fakeIframeWin), fakeIframeWin, 'getWindowForElement returns window-like self-referential object directly');
+
+    // 4. computeInputData skips composedPath() on regular Light DOM targets (no shadowRoot)
+    var parent = document.createElement('div');
+    var child = document.createElement('span');
+    parent.appendChild(child);
+    var composedCalls = 0;
+    var lightInput = {
+        eventType: Hammer.INPUT_MOVE,
+        pointers: [{clientX: 10, clientY: 10}],
+        changedPointers: [{clientX: 10, clientY: 10}],
+        srcEvent: {
+            target: child,
+            composedPath: function() {
+                composedCalls++;
+                return [child, parent];
+            }
+        }
+    };
+    $H.computeInputData({element: parent, session: {}}, lightInput);
+    equal(composedCalls, 0, 'composedPath() is not called for regular Light DOM targets');
+    strictEqual(lightInput.target, child, 'light DOM target still resolves accurately');
 });
