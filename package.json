@@ -43,6 +43,7 @@
   },
   "main": "hammer.js",
   "module": "hammer.mjs",
+  "sideEffects": true,
   "exports": {
     ".": {
       "import": "./hammer.mjs",
