@@ -9,7 +9,7 @@ function PressRecognizer() {
 
     this._timer = null;
     this._input = null;
-    this._invalidated = false;
+    this._recognized = false;
 }
 
 inherit(PressRecognizer, Recognizer, {
@@ -32,16 +32,12 @@ inherit(PressRecognizer, Recognizer, {
         var options = this.options;
         var validPointers = input.pointers.length === options.pointers;
         var validMovement = input.distance < options.threshold;
-        var validTime = options.time <= 0 || input.deltaTime > options.time;
 
         this._input = input;
 
         if (!validMovement || !validPointers || (input.eventType & INPUT_CANCEL) ||
-            (input.eventType & INPUT_END && (!validTime || this._invalidated))) {
+            (input.eventType & INPUT_END && !this._recognized)) {
             this.reset();
-            if (input.isFinal === false || !(input.eventType & INPUT_END)) {
-                this._invalidated = true;
-            }
         } else if (input.eventType & INPUT_START) {
             this.reset();
             if (options.time <= 0) {
@@ -65,7 +61,7 @@ inherit(PressRecognizer, Recognizer, {
 
     reset: function() {
         clearTimeout(this._timer);
-        this._invalidated = false;
+        this._recognized = false;
     },
 
     emit: function(input) {
@@ -76,6 +72,7 @@ inherit(PressRecognizer, Recognizer, {
         if (input && (input.eventType & INPUT_END)) {
             this.manager.emit(this.options.event + 'up', input);
         } else {
+            this._recognized = true;
             this._input.timeStamp = now();
             this.manager.emit(this.options.event, this._input);
         }
