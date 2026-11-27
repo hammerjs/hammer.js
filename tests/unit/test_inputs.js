@@ -222,6 +222,27 @@
         }
     });
 
+    test('SingleTouchInput does not double-dispatch bubbled touchstart or double-emit Press({time: 0})', function() {
+        var inputCount = 0;
+        var pressCount = 0;
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.SingleTouchInput,
+            recognizers: [[Hammer.Press, {time: 0}]]
+        });
+        manager.on('hammer.input', function() {
+            inputCount++;
+        });
+        manager.on('press', function() {
+            pressCount++;
+        });
+
+        // Dispatch a real bubbling touchstart on el (bubbles up to window where evWin also listens)
+        utils.dispatchTouchEvent(el, 'start', 30, 30, 1);
+
+        equal(inputCount, 1, 'bubbled touchstart only dispatches hammer.input once');
+        equal(pressCount, 1, 'Press({time: 0}) only emits press once on a single touchstart');
+    });
+
     test('TouchInput isolates multi-user touches by target and ignores untracked touchend', function() {
         var calls = [];
         manager = new Hammer.Manager(el, {recognizers: []});

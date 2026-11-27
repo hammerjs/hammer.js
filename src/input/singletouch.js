@@ -17,6 +17,7 @@ function SingleTouchInput() {
     this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
     this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
     this.started = false;
+    this._lastEv = null;
 
     Input.apply(this, arguments);
 }
@@ -26,6 +27,10 @@ inherit(SingleTouchInput, Input, {
         if (!isAllowedPointerType(this.manager, INPUT_TYPE_TOUCH)) {
             return;
         }
+        if (ev === this._lastEv) {
+            return;
+        }
+        this._lastEv = ev;
         var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
 
         // should we handle the touch events?
@@ -54,6 +59,7 @@ inherit(SingleTouchInput, Input, {
 
     reset: function() {
         this.started = false;
+        this._lastEv = null;
     }
 });
 
