@@ -281,6 +281,58 @@
         }
     });
 
+    test('TouchAction handles unsupported compound values, pinch-zoom precedence over manipulation, and prototype keys', function() {
+        // 1. pinch-zoom is more restrictive than manipulation and takes precedence
+        equal($H.cleanTouchActions('manipulation pinch-zoom'), 'pinch-zoom', 'pinch-zoom takes precedence over manipulation');
+        equal($H.cleanTouchActions('pinch-zoom manipulation'), 'pinch-zoom', 'pinch-zoom takes precedence regardless of order');
+
+        // 2. Prototype property names on TOUCH_ACTION_MAP return false
+        strictEqual($H.supportsTouchAction('constructor'), false, 'supportsTouchAction("constructor") returns false');
+        strictEqual($H.supportsTouchAction('toString'), false, 'supportsTouchAction("toString") returns false');
+
+        // 3. Unsupported compound value (e.g. "pan-y pinch-zoom") runs JS polyfill even when plain "pan-y" is supported
+        var map = $H.TOUCH_ACTION_MAP;
+        var origCompound = map ? map['pan-y pinch-zoom'] : undefined;
+        var origPanY = map ? map['pan-y'] : undefined;
+        try {
+            if (map) {
+                map['pan-y'] = true;
+                map['pan-y pinch-zoom'] = false;
+            }
+            manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'pan-y pinch-zoom'});
+
+            var horizEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+            manager.touchAction.preventDefaults({
+                srcEvent: horizEv,
+                offsetDirection: Hammer.DIRECTION_RIGHT,
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            });
+            equal(horizEv.prevented, true, 'polyfill prevents horizontal scroll for unsupported compound "pan-y pinch-zoom"');
+
+            manager.session = {};
+            var vertEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+            manager.touchAction.preventDefaults({
+                srcEvent: vertEv,
+                offsetDirection: Hammer.DIRECTION_DOWN,
+                pointers: [{}],
+                distance: 30,
+                deltaTime: 50
+            });
+            equal(vertEv.prevented, false, 'polyfill still allows vertical scroll for "pan-y pinch-zoom"');
+        } finally {
+            if (map) {
+                map['pan-y'] = origPanY;
+                if (origCompound === undefined) {
+                    delete map['pan-y pinch-zoom'];
+                } else {
+                    map['pan-y pinch-zoom'] = origCompound;
+                }
+            }
+        }
+    });
+
     test('TouchAction.preventDefaults exits early when native touch-action supports current value', function() {
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'none'});
         if ($H.TOUCH_ACTION_MAP && $H.TOUCH_ACTION_MAP.none) {

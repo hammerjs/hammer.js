@@ -96,14 +96,14 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
-        if (TOUCH_ACTION_MAP && TOUCH_ACTION_MAP[actions]) {
+        if (supportsTouchAction(actions)) {
             return;
         }
 
         var direction = input.offsetDirection;
-        var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
-        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
-        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
 
         if (hasNone) {
             //do not prevent defaults if this is a tap gesture
@@ -170,14 +170,14 @@ function cleanTouchActions(actions) {
         return supportsTouchAction(withPinchZoom) ? withPinchZoom : panAction;
     }
 
+    // pinch-zoom (more restrictive than manipulation: blocks panning while allowing pinch-zoom)
+    if (inStr(actions, TOUCH_ACTION_PINCH_ZOOM)) {
+        return TOUCH_ACTION_PINCH_ZOOM;
+    }
+
     // manipulation
     if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
         return TOUCH_ACTION_MANIPULATION;
-    }
-
-    // pinch-zoom
-    if (inStr(actions, TOUCH_ACTION_PINCH_ZOOM)) {
-        return TOUCH_ACTION_PINCH_ZOOM;
     }
 
     return TOUCH_ACTION_AUTO;
@@ -187,7 +187,7 @@ function supportsTouchAction(value) {
     if (!TOUCH_ACTION_MAP) {
         return false;
     }
-    if (TOUCH_ACTION_MAP[value] === undefined) {
+    if (!hasOwn.call(TOUCH_ACTION_MAP, value)) {
         TOUCH_ACTION_MAP[value] = !!(window.CSS && window.CSS.supports && window.CSS.supports('touch-action', value));
     }
     return TOUCH_ACTION_MAP[value];
@@ -197,7 +197,7 @@ function getTouchActionProps() {
     if (!NATIVE_TOUCH_ACTION) {
         return false;
     }
-    var touchMap = {};
+    var touchMap = Object.create(null);
     var cssSupports = window.CSS && window.CSS.supports;
     ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
 
