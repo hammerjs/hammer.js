@@ -101,9 +101,9 @@ Manager.prototype = {
         // if no recognizer is detecting a thing, it is set to `null`
         var curRecognizer = session.curRecognizer;
 
-        // reset when the last recognizer is recognized
+        // reset when the last recognizer is recognized, cancelled, or failed
         // or when we're in a new session
-        if (!curRecognizer || (curRecognizer.state & STATE_RECOGNIZED)) {
+        if (!curRecognizer || (curRecognizer.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED))) {
             curRecognizer = session.curRecognizer = null;
         }
 

@@ -56,3 +56,45 @@ test('getScale returns 1 instead of NaN or Infinity when initial pointers overla
     );
 });
 
+test('cancelling 1-finger Pan on 2nd pointer releases curRecognizer so Pinch can recognize', function() {
+    expect(2);
+
+    hammer.add(new Hammer.Pan({threshold: 5}));
+    hammer.add(new Hammer.Pinch({enable: true, threshold: 0.1}));
+
+    var events = [];
+    hammer.on('panstart pancancel pinchstart pinchout pinchend', function(ev) {
+        events.push(ev.type);
+    });
+
+    var p1Start = {clientX: 10, clientY: 10};
+    var p1Moved = {clientX: 30, clientY: 10};
+    var p2Start = {clientX: 50, clientY: 10};
+    var p2Spread = {clientX: 90, clientY: 10};
+
+    function feed(type, pointers, changed, t) {
+        $H.inputHandler(hammer, type, {
+            pointers: pointers,
+            changedPointers: changed,
+            pointerType: 'touch',
+            srcEvent: {target: el, timeStamp: t, cancelable: true, preventDefault: function() {}}
+        });
+    }
+
+    // 1-finger pan starts
+    feed($H.INPUT_START, [p1Start], [p1Start], 10);
+    feed($H.INPUT_MOVE, [p1Moved], [p1Moved], 20);
+    // 2nd finger lands -> cancels Pan
+    feed($H.INPUT_START, [p1Moved, p2Start], [p2Start], 30);
+    // Spread fingers apart -> Pinch should recognize
+    feed($H.INPUT_MOVE, [p1Moved, p2Spread], [p2Spread], 40);
+    feed($H.INPUT_END, [p1Moved, p2Spread], [p1Moved, p2Spread], 50);
+
+    deepEqual(
+        events,
+        ['panstart', 'pancancel', 'pinchstart', 'pinchout', 'pinchout', 'pinchend'],
+        'Pinch recognizes cleanly after 1-finger Pan transitions to STATE_CANCELLED'
+    );
+    equal(hammer.session.curRecognizer.options.event, 'pinch', 'curRecognizer transitions to pinch');
+});
+
