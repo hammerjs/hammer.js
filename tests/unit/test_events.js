@@ -168,3 +168,30 @@ test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapp
 
     ee.destroy();
 });
+
+test("Manager 'on', 'emit', and 'off' safely handle Object.prototype event names", function() {
+    expect(3);
+
+    var ee = new Hammer.Manager(utils.createHitArea());
+    var calls = 0;
+    var fn = function() {
+        calls++;
+    };
+    var data = {
+        target: ee.element,
+        srcEvent: {preventDefault: function() {}}
+    };
+
+    ee.on('constructor', fn);
+    ee.emit('constructor', data);
+    equal(calls, 1, 'handler registered for "constructor" event fires cleanly');
+
+    ee.emit('toString', data);
+    ok(true, 'emitting unregistered "toString" event does not throw');
+
+    ee.off('constructor', fn);
+    ee.emit('constructor', data);
+    equal(calls, 1, 'off("constructor", fn) unregisters handler cleanly');
+
+    ee.destroy();
+});

@@ -149,6 +149,30 @@ test('Hammer.Manager accepts recognizers as arrays.', function() {
     equal(1, recognizerActual.requireFail.length);
 });
 
+test('Manager constructor wires forward recognizer references and clones options.cssProps', function() {
+    expect(4);
+
+    // 1. Forward references in options.recognizers (doubletap listed before tap and press)
+    hammer = new Hammer.Manager(el, {
+        recognizers: [
+            [Hammer.Tap, {event: 'doubletap', taps: 2}, ['tap'], ['press']],
+            [Hammer.Tap],
+            [Hammer.Press]
+        ]
+    });
+    var doubletap = hammer.get('doubletap');
+    var tap = hammer.get('tap');
+    var press = hammer.get('press');
+    equal(doubletap.canRecognizeWith(tap), true, 'forward recognizeWith reference resolved');
+    equal(doubletap.requireFail[0], press, 'forward requireFailure reference resolved');
+
+    // 2. options.cssProps is cloned and does not alias Hammer.defaults.cssProps
+    notStrictEqual(hammer.options.cssProps, Hammer.defaults.cssProps, 'manager.options.cssProps does not alias Hammer.defaults.cssProps');
+    var origUserSelect = Hammer.defaults.cssProps.userSelect;
+    hammer.options.cssProps.userSelect = 'text';
+    equal(Hammer.defaults.cssProps.userSelect, origUserSelect, 'mutating manager.options.cssProps does not mutate Hammer.defaults.cssProps');
+});
+
 /*
  * Removing a recognizer which cannot be found would errantly remove the last recognizer in the
  * manager's list.

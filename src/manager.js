@@ -9,10 +9,13 @@ var FORCED_STOP = 2;
  */
 function Manager(element, options) {
     this.options = assign({}, Hammer.defaults, options || {});
+    if (this.options.cssProps) {
+        this.options.cssProps = assign({}, this.options.cssProps);
+    }
 
     this.options.inputTarget = this.options.inputTarget || element;
 
-    this.handlers = {};
+    this.handlers = Object.create(null);
     this.session = {};
     this.recognizers = [];
     this.oldCssProps = {};
@@ -23,11 +26,15 @@ function Manager(element, options) {
 
     toggleCssProps(this, true);
 
+    var addedRecognizers = [];
     each(this.options.recognizers, function(item) {
-        var recognizer = this.add(new (item[0])(item[1]));
+        addedRecognizers.push(this.add(new (item[0])(item[1])));
+    }, this);
+    each(this.options.recognizers, function(item, i) {
+        var recognizer = addedRecognizers[i];
         item[2] && recognizer.recognizeWith(item[2]);
         item[3] && recognizer.requireFailure(item[3]);
-    }, this);
+    });
 }
 
 Manager.prototype = {
@@ -319,7 +326,7 @@ Manager.prototype = {
         each(this.recognizers, function(recognizer) {
             recognizer.reset();
         });
-        this.handlers = {};
+        this.handlers = Object.create(null);
         this.session = {};
         this.input && this.input.destroy();
         this.input = null;
