@@ -277,6 +277,9 @@ Manager.prototype = {
      * @param {Object} data
      */
     emit: function(event, data) {
+        if (!this.element) {
+            return;
+        }
         var domEvents = this.options.domEvents;
         var handlers = this.handlers[event];
         if (!domEvents && (!handlers || !handlers.length)) {
