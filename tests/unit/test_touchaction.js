@@ -402,4 +402,92 @@
             winMgr.destroy();
         }
     });
+
+    test('TouchAction allowlists cache keys, rejects CSS keywords/substrings, supports pinch-zoom polyfill, and guards clobbered CSS.supports', function() {
+        var map = $H.TOUCH_ACTION_MAP;
+
+        // 1. Allowlist blocks var(--x), inherit, arbitrary strings from polluting TOUCH_ACTION_MAP
+        strictEqual($H.supportsTouchAction('var(--x)'), false, 'var(--x) rejected by touch-action allowlist');
+        strictEqual($H.supportsTouchAction('inherit'), false, 'inherit rejected by touch-action allowlist');
+        strictEqual($H.supportsTouchAction('arbitrary-untrusted-value'), false, 'arbitrary string rejected');
+        if (map) {
+            strictEqual('arbitrary-untrusted-value' in map, false, 'arbitrary string is never cached in TOUCH_ACTION_MAP');
+            strictEqual('var(--x)' in map, false, 'var(--x) is never cached in TOUCH_ACTION_MAP');
+        }
+
+        // 2. Token matching prevents substring false positives ('nonexistent' != 'none')
+        equal($H.cleanTouchActions('nonexistent'), 'auto', 'cleanTouchActions does not treat "nonexistent" as "none"');
+
+        // 3. Non-string values in set() do not throw and extra internal whitespace is normalized
+        manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'pan-y   pinch-zoom'});
+        equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'multiple internal spaces collapsed to single space');
+        manager.touchAction.set(null);
+        manager.touchAction.set(undefined);
+        equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'non-string set() values safely ignored');
+
+        // 4. pinch-zoom JS polyfill blocks single-pointer panning but allows 2-pointer pinch and short taps
+        var origPinch = map ? map['pinch-zoom'] : undefined;
+        var origCssSupports = window.CSS && window.CSS.supports;
+        try {
+            if (map) {
+                map['pinch-zoom'] = false;
+            }
+            manager.touchAction.set('none');
+            manager.touchAction.set('pinch-zoom');
+            strictEqual(manager.touchAction.appliedNative, false, 'appliedNative false for unsupported pinch-zoom');
+            if ($H.NATIVE_TOUCH_ACTION) {
+                equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'stale native "none" cleared when falling back to JS polyfill');
+            }
+
+            var tapEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+            manager.touchAction.preventDefaults({
+                srcEvent: tapEv,
+                offsetDirection: Hammer.DIRECTION_NONE,
+                pointers: [{}],
+                distance: 1,
+                deltaTime: 50
+            });
+            equal(tapEv.prevented, false, 'pinch-zoom polyfill allows short 1-pointer tap');
+
+            var panEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+            manager.touchAction.preventDefaults({
+                srcEvent: panEv,
+                offsetDirection: Hammer.DIRECTION_DOWN,
+                pointers: [{}],
+                distance: 25,
+                deltaTime: 50
+            });
+            equal(panEv.prevented, true, 'pinch-zoom polyfill prevents single-pointer panning');
+
+            manager.session = {};
+            var pinchEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
+            manager.touchAction.preventDefaults({
+                srcEvent: pinchEv,
+                offsetDirection: Hammer.DIRECTION_DOWN,
+                pointers: [{}, {}],
+                distance: 25,
+                deltaTime: 50
+            });
+            equal(pinchEv.prevented, false, 'pinch-zoom polyfill allows 2-pointer pinch');
+
+            // 5. Clobbered non-function window.CSS.supports does not throw
+            if (map && window.CSS) {
+                delete map['pan-left'];
+                window.CSS.supports = 'clobbered';
+                strictEqual($H.supportsTouchAction('pan-left'), false, 'non-function window.CSS.supports handled safely');
+                delete map['pan-left'];
+            }
+        } finally {
+            if (window.CSS) {
+                window.CSS.supports = origCssSupports;
+            }
+            if (map) {
+                if (origPinch === undefined) {
+                    delete map['pinch-zoom'];
+                } else {
+                    map['pinch-zoom'] = origPinch;
+                }
+            }
+        }
+    });
 })();
