@@ -445,6 +445,21 @@ test('hasParent handles self, deeply nested descendants, detached nodes, and nul
     equal($H.hasParent(null, root), false, 'returns false for null node');
 });
 
+test('hasParent resolves document and attached elements up to window without matching detached nodes', function() {
+    var attached = document.createElement('div');
+    document.body.appendChild(attached);
+    var detached = document.createElement('div');
+
+    try {
+        equal($H.hasParent(attached, window), true, 'attached DOM element has window as parent');
+        equal($H.hasParent(document, window), true, 'document has window as parent');
+        equal($H.hasParent(window, window), true, 'window matches itself');
+        equal($H.hasParent(detached, window), false, 'detached element does not match window');
+    } finally {
+        document.body.removeChild(attached);
+    }
+});
+
 test('hasParent and computeInputData resolve targets across Shadow DOM boundaries', function() {
     var outer = document.createElement('div');
     var host = document.createElement('div');
