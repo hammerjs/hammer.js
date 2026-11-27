@@ -803,3 +803,74 @@ test('computeInputData guards zero deltaTime so overallVelocity never outputs In
     strictEqual(moveInput.overallVelocityY, 0, 'overallVelocityY is 0 instead of -Infinity when deltaTime is 0');
     strictEqual(moveInput.overallVelocity, 0, 'overallVelocity is 0 instead of +-Infinity when deltaTime is 0');
 });
+
+test('velocity tracker ignores stale coalesced samples beyond horizon and resets on large backward timestamp jump', function() {
+    expect(4);
+
+    // 1. Stale coalesced events older than VELOCITY_HORIZON_MS (100ms) are not buffered even on empty session
+    var staleSession = {};
+    var staleMove = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 5020,
+        deltaX: 170,
+        deltaY: 0,
+        pointers: [{clientX: 170, clientY: 0}],
+        srcEvent: {
+            timeStamp: 5020,
+            clientX: 170,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 4850, clientX: 0, clientY: 0},   // 170ms old (> 100ms horizon)
+                    {timeStamp: 4880, clientX: 30, clientY: 0},  // 140ms old (> 100ms horizon)
+                    {timeStamp: 4910, clientX: 60, clientY: 0},  // 110ms old (> 100ms horizon)
+                    {timeStamp: 4940, clientX: 90, clientY: 0},  // 80ms old (within horizon)
+                    {timeStamp: 4980, clientX: 130, clientY: 0}, // 40ms old (within horizon)
+                    {timeStamp: 5020, clientX: 170, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(staleSession, staleMove);
+    equal(staleSession.velocitySamples[0].t, 4940, 'stale coalesced events >100ms old are skipped before buffering');
+    ok(Math.abs(staleMove.velocityX - 1.0) < 1e-6, 'velocityX computed cleanly from in-horizon coalesced samples');
+
+    // 2. Large backward timestamp jump (> 100ms) resets velocitySamples so new samples are tracked
+    var jumpSession = {};
+    $H.computeIntervalInputData(jumpSession, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 5000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: 5000, clientX: 0, clientY: 0}
+    });
+    $H.computeIntervalInputData(jumpSession, {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 5010,
+        deltaX: 10,
+        deltaY: 0,
+        pointers: [{clientX: 10, clientY: 0}],
+        srcEvent: {timeStamp: 5010, clientX: 10, clientY: 0}
+    });
+    // Jump backward by 310ms (e.g. clock domain switch), then move +20px in 10ms
+    $H.computeIntervalInputData(jumpSession, {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 4700,
+        deltaX: 20,
+        deltaY: 0,
+        pointers: [{clientX: 20, clientY: 0}],
+        srcEvent: {timeStamp: 4700, clientX: 20, clientY: 0}
+    });
+    var afterJump = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 4710,
+        deltaX: 40,
+        deltaY: 0,
+        pointers: [{clientX: 40, clientY: 0}],
+        srcEvent: {timeStamp: 4710, clientX: 40, clientY: 0}
+    };
+    $H.computeIntervalInputData(jumpSession, afterJump);
+    equal(jumpSession.velocitySamples.length, 2, 'large backward timestamp jump resets buffer and tracks new samples');
+    ok(Math.abs(afterJump.velocityX - 2.0) < 1e-6, 'velocityX reflects new clock domain (2.0 px/ms) after backward jump');
+});

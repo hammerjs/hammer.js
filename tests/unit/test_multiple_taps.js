@@ -181,3 +181,74 @@ test('TapRecognizer checks maxPointers and resets tap count across intervening P
     equal(doubleTaps3, 0, 'intervening Pan resets tap count (DoubleTap before Pan)');
     mgr3.destroy();
 });
+
+asyncTest('TapRecognizer with requireFailure preserves tapCount across rapid taps and resets when stopped', function() {
+    expect(3);
+
+    var localEl = utils.createHitArea();
+    function feed(mgr, type, x, y, t) {
+        var pt = {clientX: x, clientY: y};
+        $H.inputHandler(mgr, type, {
+            pointers: [pt],
+            changedPointers: [pt],
+            pointerType: 'touch',
+            srcEvent: {target: localEl, timeStamp: t, cancelable: true, preventDefault: function() {}}
+        });
+    }
+
+    // 1. Two rapid taps with tap.requireFailure(swipe) preserve tapCount === 2
+    var mgr1 = new Hammer.Manager(localEl, {recognizers: []});
+    var swipe1 = mgr1.add(new Hammer.Swipe());
+    var tap1 = mgr1.add(new Hammer.Tap({interval: 40}));
+    tap1.requireFailure(swipe1);
+    var counts1 = [];
+    mgr1.on('tap', function(ev) {
+        counts1.push(ev.tapCount);
+    });
+    feed(mgr1, $H.INPUT_START, 50, 50, 10);
+    feed(mgr1, $H.INPUT_END, 50, 50, 20);
+    feed(mgr1, $H.INPUT_START, 50, 50, 30);
+    feed(mgr1, $H.INPUT_END, 50, 50, 40);
+
+    // 2. Calling manager.stop() between taps still clears tapCount
+    var mgr2 = new Hammer.Manager(localEl, {recognizers: []});
+    var swipe2 = mgr2.add(new Hammer.Swipe());
+    var tap2 = mgr2.add(new Hammer.Tap({interval: 40}));
+    tap2.requireFailure(swipe2);
+    var counts2 = [];
+    mgr2.on('tap', function(ev) {
+        counts2.push(ev.tapCount);
+    });
+    feed(mgr2, $H.INPUT_START, 50, 50, 10);
+    feed(mgr2, $H.INPUT_END, 50, 50, 20);
+    mgr2.stop();
+    feed(mgr2, $H.INPUT_START, 50, 50, 30);
+    feed(mgr2, $H.INPUT_END, 50, 50, 40);
+
+    // 3. Intervening Pan drag still clears tapCount even with requireFailure
+    var mgr3 = new Hammer.Manager(localEl, {recognizers: []});
+    var pan3 = mgr3.add(new Hammer.Pan({threshold: 10}));
+    var tap3 = mgr3.add(new Hammer.Tap({interval: 40}));
+    tap3.requireFailure(pan3);
+    var counts3 = [];
+    mgr3.on('tap', function(ev) {
+        counts3.push(ev.tapCount);
+    });
+    feed(mgr3, $H.INPUT_START, 50, 50, 10);
+    feed(mgr3, $H.INPUT_END, 50, 50, 20);
+    feed(mgr3, $H.INPUT_START, 50, 50, 30);
+    feed(mgr3, $H.INPUT_MOVE, 150, 50, 40);
+    feed(mgr3, $H.INPUT_END, 150, 50, 50);
+    feed(mgr3, $H.INPUT_START, 50, 50, 60);
+    feed(mgr3, $H.INPUT_END, 50, 50, 70);
+
+    setTimeout(function() {
+        deepEqual(counts1, [2], 'rapid taps with requireFailure emit tapCount === 2');
+        deepEqual(counts2, [1], 'manager.stop() between taps resets tapCount to 1');
+        deepEqual(counts3, [1], 'intervening Pan drag still resets tapCount to 1');
+        mgr1.destroy();
+        mgr2.destroy();
+        mgr3.destroy();
+        start();
+    }, 90);
+});

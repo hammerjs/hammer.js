@@ -714,4 +714,55 @@
         strictEqual(outerEvents[0] && outerEvents[0].composed, true, 'dispatched DOM event has composed: true');
         strictEqual(outerEvents[0] && outerEvents[0].target, shadowLeaf, 'ev.gesture.target retains inner shadow leaf');
     });
+
+    test('Manager.recognize clears session.curRecognizer when it transitions to STATE_FAILED', function() {
+        var pan1Enabled = true;
+        var pan2Events = [];
+        manager = new Hammer.Manager(el, {
+            recognizers: [
+                [Hammer.Pan, {
+                    event: 'pan1',
+                    threshold: 5,
+                    enable: function() {
+                        return pan1Enabled;
+                    }
+                }],
+                [Hammer.Pan, {event: 'pan2', threshold: 5}]
+            ]
+        });
+        manager.on('pan2start', function(ev) {
+            pan2Events.push(ev.type);
+        });
+
+        function move(x) {
+            manager.recognize({
+                eventType: $H.INPUT_MOVE,
+                pointers: [{clientX: x, clientY: 10}],
+                changedPointers: [{clientX: x, clientY: 10}],
+                maxPointers: 1,
+                distance: x,
+                deltaX: x,
+                deltaY: 0,
+                deltaTime: 20,
+                direction: Hammer.DIRECTION_RIGHT,
+                offsetDirection: Hammer.DIRECTION_RIGHT,
+                srcEvent: {cancelable: true, preventDefault: function() {}}
+            });
+        }
+
+        // pan1 becomes active curRecognizer
+        move(20);
+        strictEqual(manager.session.curRecognizer, manager.get('pan1'), 'pan1 is active curRecognizer');
+        deepEqual(pan2Events, [], 'pan2 blocked while pan1 is active');
+
+        // Disable pan1 -> transitions to STATE_FAILED
+        pan1Enabled = false;
+        move(35);
+        equal(manager.get('pan1').state, $H.STATE_FAILED, 'disabled pan1 transitions to STATE_FAILED');
+
+        // Next move clears curRecognizer from failed pan1 so pan2 can recognize
+        move(50);
+        deepEqual(pan2Events, ['pan2start'], 'pan2 starts once curRecognizer is cleared from STATE_FAILED');
+        strictEqual(manager.session.curRecognizer, manager.get('pan2'), 'pan2 becomes new curRecognizer');
+    });
 })();
