@@ -55,7 +55,12 @@ function Input(manager, callback) {
         if (boolOrFn(manager.options.enable, [manager])) {
             self.handler(ev);
         } else {
+            manager.stop(true);
             self.reset();
+            each(manager.recognizers, function(recognizer) {
+                recognizer.reset();
+                recognizer.state = STATE_POSSIBLE;
+            });
         }
     };
 

@@ -77,6 +77,11 @@ Manager.prototype = {
      */
     stop: function(force) {
         this.session.stopped = force ? FORCED_STOP : STOP;
+        if (force) {
+            each(this.recognizers, function(recognizer) {
+                recognizer.reset();
+            });
+        }
     },
 
     /**
