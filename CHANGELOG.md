@@ -1,5 +1,30 @@
 # Changelog
 
+### 2.1.0 (Unreleased)
+
+> **Behavioral notes:**
+> - `cleanTouchActions()` now returns `'pan-y pinch-zoom'` / `'pan-x pinch-zoom'` instead of `'pan-y'` / `'pan-x'` on browsers supporting `pinch-zoom` in CSS `touch-action` (improving WCAG 1.4.4 accessibility while preserving single-axis gestures). Callers asserting exact `touchAction` strings should account for `pinch-zoom`.
+> - `center`, `deltaX`, and `deltaY` now preserve sub-pixel floating-point precision instead of rounding with `Math.round()`.
+> - `Manager.on()` now deduplicates identical `(event, handler)` pairs.
+> - `Hammer.Tap.prototype.failTimeout` has been removed (tap timers are only armed on `INPUT_END` when `requireFailure` is configured).
+> - `hammer.mjs` (ESM) and `hammer.js` (UMD/CommonJS) are independent standalone builds; avoid mixing `import 'hammerjs'` and `require('hammerjs')` for the same `Manager` instance.
+
+##### Features
+- Ship native ES module bundle (`hammer.mjs`) with default and named exports alongside UMD/CommonJS (`hammer.js`)
+- Add `pointerTypes` option on `Manager` to filter allowed pointer types (e.g. `['touch', 'pen']`)
+- Add recency-weighted velocity tracker with `PointerEvent.getCoalescedEvents()` support and hardware `srcEvent.timeStamp`
+- Preserve sub-pixel pointer coordinates (`center`, `deltaX`, `deltaY`)
+- Support `time: 0` synchronous recognition on `PressRecognizer`
+- Resolve Shadow DOM targets via `composedPath()` and `ShadowRoot.host` traversal in `hasParent()`
+- Preserve native `pinch-zoom` in computed single-axis `touch-action` values when supported
+
+##### Bug Fixes & Improvements
+- Self-heal leaked pointers on primary `pointerdown` and cancel active sessions on `window` `blur`
+- Unwrap continuous two-finger rotation across the `±180°` boundary
+- Restore original inline `touch-action` style on `Manager.destroy()`
+- Reset input state when disabled, reset active recognizers on fresh input, and guard `Manager.remove()` / `tryEmit()`
+- Deduplicate `Manager.on()` listeners and optimize `TouchMouseInput` timestamp deduplication and `emit()` allocations
+
 ### 2.0.10, 2026-11-26
 
 ##### Build
