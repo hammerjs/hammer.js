@@ -38,6 +38,12 @@ inherit(SingleTouchInput, Input, {
         }
 
         var touches = normalizeSingleTouches.call(this, ev, type);
+        if (!touches[0].length || ((type & (INPUT_END | INPUT_CANCEL)) && !touches[1].length)) {
+            if ((type & (INPUT_END | INPUT_CANCEL)) && !touches[0].length) {
+                this.started = false;
+            }
+            return;
+        }
 
         // when done, reset the started state
         if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {

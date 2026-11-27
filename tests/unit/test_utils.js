@@ -611,6 +611,12 @@ test('getCenter and simpleCloneInputData preserve sub-pixel pointer positions', 
     strictEqual(cloned.center.y, 34.6, 'cloned center.y preserves fractional clientY');
 });
 
+test('getCenter returns {x: 0, y: 0} instead of NaN for empty pointers array', function() {
+    var emptyCenter = $H.getCenter([]);
+    strictEqual(emptyCenter.x, 0, 'empty pointers center.x is 0');
+    strictEqual(emptyCenter.y, 0, 'empty pointers center.y is 0');
+});
+
 test('each handles null-prototype objects without throwing', function() {
     var obj = Object.create(null);
     obj.a = 1;

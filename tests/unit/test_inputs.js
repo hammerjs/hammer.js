@@ -691,4 +691,31 @@
         equal(penTaps, 1, 'pen tap recognizes cleanly after mid-gesture pointerTypes change');
         deepEqual(panEvents, ['panstart'], 'reset Pan recognizer does not leak into subsequent pen gesture');
     });
+
+    test('SingleTouchInput ignores empty touchend/touchcancel instead of emitting empty pointers', function() {
+        var calls = [];
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var input = new $H.SingleTouchInput(manager, function(mgr, type, data) {
+            calls.push({type: type, pointersLen: data.pointers.length});
+        });
+
+        try {
+            var t1 = {identifier: 1, clientX: 10, clientY: 10};
+            input.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+            equal(calls.length, 1, 'initial touchstart dispatched');
+
+            // Empty touchend (touches: [], changedTouches: [])
+            input.handler({type: 'touchend', touches: [], changedTouches: []});
+            equal(calls.length, 1, 'empty touchend is not forwarded to callback');
+            equal(input.started, false, 'empty touchend still resets started to false');
+
+            // Empty touchcancel (touches: [], changedTouches: [])
+            input.handler({type: 'touchstart', touches: [t1], changedTouches: [t1]});
+            input.handler({type: 'touchcancel', touches: [], changedTouches: []});
+            equal(calls.length, 2, 'empty touchcancel is not forwarded to callback');
+            equal(input.started, false, 'empty touchcancel still resets started to false');
+        } finally {
+            input.destroy();
+        }
+    });
 })();
