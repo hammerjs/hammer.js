@@ -51,7 +51,8 @@ module.exports = function(grunt) {
                 options: {
                     report: 'gzip',
                     compress: {
-                        arrows: false
+                        arrows: false,
+                        directives: false
                     },
                     output: {
                         comments: /^!/
@@ -80,7 +81,9 @@ module.exports = function(grunt) {
         ['hammer.js', 'hammer.mjs'].forEach(function(filepath) {
             if (grunt.file.exists(filepath)) {
                 var content = grunt.file.read(filepath);
-                grunt.file.write(filepath, content.replace(/\{\{PKG_VERSION\}\}/g, pkg.version));
+                grunt.file.write(filepath, content.replace(/\{\{PKG_VERSION\}\}/g, function() {
+                    return pkg.version;
+                }));
             }
         });
     });

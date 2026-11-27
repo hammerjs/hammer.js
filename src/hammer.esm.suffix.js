@@ -1,8 +1,10 @@
 return Hammer;
-})(typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {}), typeof document !== 'undefined' ? document : {});
+})((typeof window !== 'undefined' && window) ? window : ((typeof self !== 'undefined' && self) ? self : {}), (typeof document !== 'undefined' && document) ? document : {});
 
-if (typeof window !== 'undefined') {
-    window.Hammer = Hammer;
+if (typeof window !== 'undefined' && window) {
+    try {
+        window.Hammer = Hammer;
+    } catch (e) {}
 }
 
 export default Hammer;

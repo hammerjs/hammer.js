@@ -19,11 +19,14 @@ var browserGlobals = {
     TouchEvent: 'readonly',
     PointerEvent: 'readonly',
     MSPointerEvent: 'readonly',
-    DocumentTouch: 'readonly',
+    DocumentTouch: 'readonly'
+};
+
+var umdGlobals = Object.assign({}, browserGlobals, {
     define: 'readonly',
     module: 'readonly',
     exports: 'readonly'
-};
+});
 
 var nodeGlobals = {
     module: 'readonly',
@@ -83,10 +86,11 @@ module.exports = [
         languageOptions: {
             ecmaVersion: 5,
             sourceType: 'script',
-            globals: browserGlobals
+            globals: umdGlobals
         },
         rules: {
-            'no-undef': 'error'
+            'no-undef': 'error',
+            'strict': ['error', 'function']
         }
     },
     {
@@ -94,7 +98,7 @@ module.exports = [
         languageOptions: {
             ecmaVersion: 5,
             sourceType: 'script',
-            globals: browserGlobals
+            globals: umdGlobals
         },
         rules: Object.assign({}, commonRules, {
             'no-undef': 'error',
