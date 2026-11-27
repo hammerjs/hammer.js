@@ -43,11 +43,12 @@ inherit(TapRecognizer, Recognizer, {
     process: function(input) {
         var options = this.options;
 
-        var validPointers = input.pointers.length === options.pointers;
+        var validPointers = input.pointers.length === options.pointers &&
+            (input.maxPointers == null || input.maxPointers === options.pointers);
         var validMovement = input.distance < options.threshold;
         var validTouchTime = input.deltaTime < options.time;
 
-        this.reset();
+        this.reset(true);
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
@@ -82,12 +83,21 @@ inherit(TapRecognizer, Recognizer, {
                 }, options.interval, this);
                 return STATE_BEGAN;
             }
+        } else if (!validMovement || input.pointers.length > options.pointers ||
+            (input.maxPointers != null && input.maxPointers > options.pointers) ||
+            (input.eventType & (INPUT_END | INPUT_CANCEL))) {
+            this.reset();
         }
         return STATE_FAILED;
     },
 
-    reset: function() {
+    reset: function(keepCount) {
         clearTimeout(this._timer);
+        if (!keepCount) {
+            this.count = 0;
+            this.pTime = false;
+            this.pCenter = false;
+        }
     },
 
     emit: function() {
