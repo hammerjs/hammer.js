@@ -278,3 +278,45 @@ test('TapRecognizer does not arm a timer on pointer start or move', function() {
     utils.dispatchTouchEvent(el, 'move', 52, 50);
     strictEqual(tap._timer, null, 'no timer armed on touchmove');
 });
+
+test('session.firstMultiple clears when remaining pointers drop below 2 on lift-and-retouch without 1-finger move', function() {
+    expect(4);
+
+    var mgr = new Hammer.Manager(el, {recognizers: []});
+    function feed(type, pointers, changed, t) {
+        var inp = {
+            eventType: type,
+            pointers: pointers,
+            changedPointers: changed,
+            pointerType: 'touch',
+            srcEvent: {target: el, timeStamp: t}
+        };
+        $H.computeInputData(mgr, inp);
+        mgr.session.prevInput = inp;
+        return inp;
+    }
+
+    try {
+        var f1 = {clientX: 0, clientY: 0};
+        var f2Start = {clientX: 100, clientY: 0};
+        var f2Moved = {clientX: 0, clientY: 200};
+        var f3 = {clientX: 0, clientY: 200};
+
+        // 1. Finger 1 down, Finger 2 down, scale to 2x & rotate +90deg
+        feed($H.INPUT_START, [f1], [f1], 10);
+        feed($H.INPUT_START, [f1, f2Start], [f2Start], 20);
+        feed($H.INPUT_MOVE, [f1, f2Moved], [f2Moved], 30);
+
+        // 2. Finger 2 lifts (INPUT_END still reports final scale: 2 and rotation: 90)
+        var liftOut = feed($H.INPUT_END, [f1, f2Moved], [f2Moved], 40);
+        equal(liftOut.scale, 2, 'lifting second finger preserves final scale on INPUT_END');
+        equal(Math.round(liftOut.rotation), 90, 'lifting second finger preserves final rotation on INPUT_END');
+
+        // 3. Finger 3 touches down immediately with no intervening 1-finger move
+        var retouchOut = feed($H.INPUT_START, [f1, f3], [f3], 50);
+        equal(retouchOut.scale, 1, 'new finger pair starts with scale 1 instead of stale 2');
+        equal(retouchOut.rotation, 0, 'new finger pair starts with rotation 0 instead of stale 90');
+    } finally {
+        mgr.destroy();
+    }
+});

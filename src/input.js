@@ -199,8 +199,10 @@ function computeInputData(manager, input) {
     }
 
     // to compute scale and rotation we need to store the multiple touches
+    var isNewMultiple = false;
     if (pointersLength > 1 && !session.firstMultiple) {
         session.firstMultiple = simpleCloneInputData(input);
+        isNewMultiple = true;
     } else if (pointersLength === 1) {
         session.firstMultiple = false;
     }
@@ -227,8 +229,12 @@ function computeInputData(manager, input) {
 
     input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
     input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
-    if (firstMultiple && session.prevInput && session.prevInput.pointers.length > 1) {
+    if (firstMultiple && !isNewMultiple && session.prevInput && session.prevInput.pointers.length > 1) {
         input.rotation = session.prevInput.rotation + normalizeAngle(input.rotation - session.prevInput.rotation);
+    }
+    if ((input.eventType & (INPUT_END | INPUT_CANCEL)) &&
+        (pointersLength - input.changedPointers.length) < 2) {
+        session.firstMultiple = false;
     }
 
     input.maxPointers = session.prevInput ? Math.max(pointersLength, session.prevInput.maxPointers) : pointersLength;
