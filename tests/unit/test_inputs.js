@@ -653,4 +653,42 @@
         manager.set({inputTarget: newTarget});
         equal(manager.input.targetIds[1], undefined, 'TouchInput.targetIds reset when inputTarget is updated');
     });
+
+    test('Manager.set({pointerTypes}) mid-gesture resets active input store and recognizers', function() {
+        var penTaps = 0;
+        var panEvents = [];
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.PointerEventInput,
+            recognizers: [
+                [Hammer.Tap],
+                [Hammer.Pan, {threshold: 5}]
+            ]
+        });
+        manager.on('tap', function(ev) {
+            if (ev.pointerType === 'pen') {
+                penTaps++;
+            }
+        });
+        manager.on('panstart panmove panend', function(ev) {
+            panEvents.push(ev.type);
+        });
+
+        // Start a touch drag, then restrict pointerTypes to ['pen'] before touch lifts
+        manager.input.handler({type: 'pointerdown', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10, target: el});
+        manager.input.handler({type: 'pointermove', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 30, clientY: 10, target: el});
+        equal(manager.input.store.length, 1, 'touch pointer active before set({pointerTypes})');
+
+        manager.set({pointerTypes: ['pen']});
+        equal(manager.input.store.length, 0, 'set({pointerTypes}) clears active pointer store immediately');
+
+        // Touch release arrives after pointerTypes dropped 'touch'
+        manager.input.handler({type: 'pointerup', pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0, clientX: 30, clientY: 10, target: el});
+        equal(manager.input.store.length, 0, 'store stays empty after ignored touch pointerup');
+
+        // Subsequent pen tap must recognize as single-pointer gesture (not blocked by leaked touch)
+        manager.input.handler({type: 'pointerdown', pointerId: 2, pointerType: 'pen', isPrimary: true, button: 0, clientX: 50, clientY: 50, target: el});
+        manager.input.handler({type: 'pointerup', pointerId: 2, pointerType: 'pen', isPrimary: true, button: 0, clientX: 50, clientY: 50, target: el});
+        equal(penTaps, 1, 'pen tap recognizes cleanly after mid-gesture pointerTypes change');
+        deepEqual(panEvents, ['panstart'], 'reset Pan recognizer does not leak into subsequent pen gesture');
+    });
 })();

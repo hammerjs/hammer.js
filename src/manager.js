@@ -57,7 +57,8 @@ Manager.prototype = {
             this.input.target = options.inputTarget;
             this.input.init();
         }
-        if (options.enable !== undefined && !boolOrFn(this.options.enable, [this])) {
+        if ((options.enable !== undefined && !boolOrFn(this.options.enable, [this])) ||
+            options.pointerTypes !== undefined) {
             this.stop(true);
             this.input && this.input.reset();
             each(this.recognizers, function(recognizer) {
