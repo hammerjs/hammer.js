@@ -549,3 +549,51 @@ test('Manager.recognize does not loop infinitely when a handler replaces the act
     utils.dispatchTouchEvent(el, 'end', 20, 20);
     equal(secondFired, 0, 'recognizer removed earlier in the same recognize() cycle is skipped');
 });
+
+test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops after remove()', function() {
+    expect(2);
+
+    // 1. Calling destroy() inside a DOM panstart listener stops subsequent pan/panright DOM events
+    var domEventsSeen = [];
+    hammer = new Hammer.Manager(el, {
+        domEvents: true,
+        recognizers: [[Hammer.Pan, {threshold: 5}]]
+    });
+
+    var onDomEvent = function(ev) {
+        domEventsSeen.push(ev.type);
+        if (ev.type === 'panstart') {
+            hammer.destroy();
+        }
+    };
+    ['panstart', 'pan', 'panright'].forEach(function(name) {
+        el.addEventListener(name, onDomEvent, false);
+    });
+
+    try {
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        utils.dispatchTouchEvent(el, 'move', 30, 10);
+        deepEqual(domEventsSeen, ['panstart'], 'no further DOM events dispatched after destroy() in panstart listener');
+    } finally {
+        ['panstart', 'pan', 'panright'].forEach(function(name) {
+            el.removeEventListener(name, onDomEvent, false);
+        });
+        hammer = null;
+    }
+
+    // 2. Calling remove() inside a panstart listener stops subsequent pan/panright emits
+    var emitted = [];
+    hammer = new Hammer.Manager(el, {
+        recognizers: [[Hammer.Pan, {threshold: 5}]]
+    });
+    hammer.on('panstart pan panright', function(ev) {
+        emitted.push(ev.type);
+        if (ev.type === 'panstart') {
+            hammer.remove('pan');
+        }
+    });
+
+    utils.dispatchTouchEvent(el, 'start', 10, 10);
+    utils.dispatchTouchEvent(el, 'move', 30, 10);
+    deepEqual(emitted, ['panstart'], 'Recognizer.emit stops emitting remaining events after manager.remove()');
+});

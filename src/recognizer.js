@@ -176,6 +176,9 @@ Recognizer.prototype = {
      */
     emit: function(input) {
         var manager = this.manager;
+        if (!manager) {
+            return;
+        }
         var event = this.options.event;
         var state = this.state;
 
@@ -184,14 +187,17 @@ Recognizer.prototype = {
             manager.emit(event + stateStr(state), input);
         }
 
+        if (!this.manager) {
+            return;
+        }
         manager.emit(event, input); // simple 'eventName' events
 
-        if (input.additionalEvent) { // additional event(panleft, panright, pinchin, pinchout...)
+        if (input.additionalEvent && this.manager) { // additional event(panleft, panright, pinchin, pinchout...)
             manager.emit(input.additionalEvent, input);
         }
 
         // panend and pancancel
-        if (state >= STATE_ENDED) {
+        if (state >= STATE_ENDED && this.manager) {
             manager.emit(event + stateStr(state), input);
         }
     },
