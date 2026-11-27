@@ -48,7 +48,10 @@ inherit(PanRecognizer, AttrRecognizer, {
 
         // lock to axis?
         if (!(direction & options.direction)) {
-            if (options.direction & DIRECTION_HORIZONTAL) {
+            if ((options.direction & DIRECTION_HORIZONTAL) && (options.direction & DIRECTION_VERTICAL)) {
+                direction = getDirection(x, y);
+                hasMoved = (x != this.pX) || (y != this.pY);
+            } else if (options.direction & DIRECTION_HORIZONTAL) {
                 direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
                 hasMoved = x != this.pX;
                 distance = abs(input.deltaX);
