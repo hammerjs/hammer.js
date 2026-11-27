@@ -330,6 +330,77 @@
         equal(pan.state, $H.STATE_FAILED, 'recognizer transitions to STATE_FAILED');
     });
 
+    test('AttrRecognizer does not emit orphan end events on 1-frame gestures while Swipe still recognizes on INPUT_END', function() {
+        manager = new Hammer.Manager(el, {
+            recognizers: [
+                [Hammer.Pan, {threshold: 10}],
+                [Hammer.Pinch, {enable: true, threshold: 0.1}],
+                [Hammer.Rotate, {enable: true, threshold: 5}],
+                [Hammer.Swipe, {direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10, velocity: 0.3}, ['pan']]
+            ]
+        });
+
+        var panEvents = [];
+        var pinchEvents = [];
+        var rotateEvents = [];
+        var swipeEvents = [];
+
+        manager.on('panstart panmove panend pancancel', function(ev) {
+            panEvents.push(ev.type);
+        });
+        manager.on('pinchstart pinchmove pinchend pinchcancel', function(ev) {
+            pinchEvents.push(ev.type);
+        });
+        manager.on('rotatestart rotatemove rotateend rotatecancel', function(ev) {
+            rotateEvents.push(ev.type);
+        });
+        manager.on('swipe swiperight', function(ev) {
+            swipeEvents.push(ev.type);
+        });
+
+        var srcEv = {cancelable: true, preventDefault: function() {}, target: el};
+
+        // 1-frame Pan + Swipe: INPUT_START (0,0) -> INPUT_END (30,0) with no intervening INPUT_MOVE
+        manager.recognize({
+            eventType: $H.INPUT_START,
+            pointers: [{clientX: 0, clientY: 0}],
+            changedPointers: [{clientX: 0, clientY: 0}],
+            maxPointers: 1,
+            distance: 0,
+            deltaX: 0,
+            deltaY: 0,
+            direction: Hammer.DIRECTION_NONE,
+            offsetDirection: Hammer.DIRECTION_NONE,
+            velocity: 0,
+            velocityX: 0,
+            velocityY: 0,
+            srcEvent: srcEv
+        });
+        manager.recognize({
+            eventType: $H.INPUT_END,
+            pointers: [{clientX: 30, clientY: 0}],
+            changedPointers: [{clientX: 30, clientY: 0}],
+            maxPointers: 1,
+            distance: 30,
+            deltaX: 30,
+            deltaY: 0,
+            direction: Hammer.DIRECTION_RIGHT,
+            offsetDirection: Hammer.DIRECTION_RIGHT,
+            velocity: 1.5,
+            velocityX: 1.5,
+            velocityY: 0,
+            srcEvent: srcEv
+        });
+        deepEqual(panEvents, [], '1-frame pan does not emit orphan panend without panstart');
+        deepEqual(swipeEvents, ['swiperight', 'swipe'], 'SwipeRecognizer still recognizes 1-frame flick on INPUT_END');
+
+        // 1-frame Pinch and Rotate directly on INPUT_END without prior start
+        manager.get('pinch').recognize({eventType: $H.INPUT_END, pointers: [{}, {}], scale: 2.0, srcEvent: srcEv});
+        manager.get('rotate').recognize({eventType: $H.INPUT_END, pointers: [{}, {}], rotation: 45, srcEvent: srcEv});
+        deepEqual(pinchEvents, [], '1-frame pinch does not emit orphan pinchend without pinchstart');
+        deepEqual(rotateEvents, [], '1-frame rotate does not emit orphan rotateend without rotatestart');
+    });
+
     asyncTest('PressRecognizer clears timer on INPUT_END and INPUT_CANCEL even when deltaTime exceeds time', function() {
         expect(2);
 

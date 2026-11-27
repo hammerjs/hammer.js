@@ -49,6 +49,10 @@ inherit(SwipeRecognizer, AttrRecognizer, {
             velocity > this.options.velocity && input.eventType & INPUT_END;
     },
 
+    process: function(input) {
+        return this.attrTest(input) ? STATE_RECOGNIZED : STATE_FAILED;
+    },
+
     emit: function(input) {
         var direction = directionStr(input.offsetDirection);
         if (direction) {

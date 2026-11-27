@@ -51,7 +51,7 @@ inherit(AttrRecognizer, Recognizer, {
             return STATE_FAILED;
         } else if (isRecognized || isValid) {
             if (eventType & INPUT_END) {
-                return state | STATE_ENDED;
+                return isRecognized ? (state | STATE_ENDED) : STATE_FAILED;
             } else if (!(state & STATE_BEGAN)) {
                 return STATE_BEGAN;
             }
