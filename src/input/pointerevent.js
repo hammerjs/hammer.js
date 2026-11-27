@@ -23,6 +23,10 @@ if (window.MSPointerEvent && !window.PointerEvent) {
     POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel blur';
 }
 
+function normalizePointerType(pointerType) {
+    return IE10_POINTER_TYPE_ENUM[pointerType] || pointerType;
+}
+
 /**
  * Pointer events input
  * @constructor
@@ -53,7 +57,7 @@ inherit(PointerEventInput, Input, {
                 this.callback(this.manager, INPUT_CANCEL, {
                     pointers: cancelled,
                     changedPointers: cancelled,
-                    pointerType: IE10_POINTER_TYPE_ENUM[cancelled[0].pointerType] || cancelled[0].pointerType,
+                    pointerType: normalizePointerType(cancelled[0].pointerType),
                     srcEvent: ev
                 });
             }
@@ -62,7 +66,7 @@ inherit(PointerEventInput, Input, {
 
         var eventType = POINTER_INPUT_MAP[ev.type] ||
             POINTER_INPUT_MAP[ev.type.toLowerCase().replace('ms', '')];
-        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+        var pointerType = normalizePointerType(ev.pointerType);
 
         if (!isAllowedPointerType(this.manager, pointerType)) {
             return;
@@ -79,7 +83,7 @@ inherit(PointerEventInput, Input, {
             // pointer of that type is active; purge any leaked pointers of the same type.
             if (ev.isPrimary && store.length) {
                 for (var i = store.length - 1; i >= 0; i--) {
-                    if ((IE10_POINTER_TYPE_ENUM[store[i].pointerType] || store[i].pointerType) === pointerType) {
+                    if (normalizePointerType(store[i].pointerType) === pointerType) {
                         store.splice(i, 1);
                     }
                 }

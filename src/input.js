@@ -41,6 +41,7 @@ var PROPS_CLIENT_XY = ['clientX', 'clientY'];
  */
 function Input(manager, callback) {
     var self = this;
+    var wasDisabled = false;
     this.manager = manager;
     this.callback = callback;
     this.element = manager.element;
@@ -53,14 +54,12 @@ function Input(manager, callback) {
             return;
         }
         if (boolOrFn(manager.options.enable, [manager])) {
+            wasDisabled = false;
             self.handler(ev);
-        } else {
+        } else if (!wasDisabled) {
+            wasDisabled = true;
             manager.stop(true);
             self.reset();
-            each(manager.recognizers, function(recognizer) {
-                recognizer.reset();
-                recognizer.state = STATE_POSSIBLE;
-            });
         }
     };
 
@@ -303,31 +302,13 @@ function computeIntervalInputData(session, input) {
             if (dt > VELOCITY_ASSUME_STOPPED_MS || dt < -VELOCITY_HORIZON_MS) {
                 samples.length = 0;
             } else if (samples.length < 3 && dt > 0 && (x !== lastSample.x || y !== lastSample.y)) {
+                // Only include liftoff for 1-2 sample flicks; multi-frame drags rely on pre-liftoff motion to avoid release jitter
                 samples.push({t: timeStamp, x: x, y: y});
             }
         }
     } else {
-        if (eventType === INPUT_MOVE && input.pointers && input.pointers.length === 1 &&
-            srcEvent && srcEvent.timeStamp > 0 &&
-            typeof srcEvent.getCoalescedEvents === TYPE_FUNCTION) {
-            var coalesced = srcEvent.getCoalescedEvents();
-            if (coalesced && coalesced.length > 1 && isFiniteNumber(srcEvent.clientX) && isFiniteNumber(srcEvent.clientY)) {
-                for (var cIdx = 0; cIdx < coalesced.length; cIdx++) {
-                    var c = coalesced[cIdx];
-                    var cTime = c.timeStamp;
-                    if (cTime > 0 && cTime < timeStamp && (timeStamp - cTime) <= VELOCITY_HORIZON_MS &&
-                        isFiniteNumber(c.clientX) && isFiniteNumber(c.clientY)) {
-                        if (samples.length === 0 || (cTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS) {
-                            recordVelocitySample(
-                                samples,
-                                cTime,
-                                x + (c.clientX - srcEvent.clientX),
-                                y + (c.clientY - srcEvent.clientY)
-                            );
-                        }
-                    }
-                }
-            }
+        if (eventType === INPUT_MOVE) {
+            ingestCoalescedSamples(samples, input, srcEvent, timeStamp, x, y);
         }
         recordVelocitySample(samples, timeStamp, x, y);
     }
@@ -338,6 +319,44 @@ function computeIntervalInputData(session, input) {
         var prev = session.prevInput;
         var moveDir = getDirection(x - (prev.deltaX || 0), y - (prev.deltaY || 0));
         input.direction = (moveDir !== DIRECTION_NONE) ? moveDir : (prev.direction || DIRECTION_NONE);
+    }
+}
+
+/**
+ * ingest sub-frame coalesced PointerEvent samples for single-pointer moves
+ * @param {Array} samples
+ * @param {Object} input
+ * @param {Object} srcEvent
+ * @param {Number} timeStamp
+ * @param {Number} x
+ * @param {Number} y
+ */
+function ingestCoalescedSamples(samples, input, srcEvent, timeStamp, x, y) {
+    if (!input.pointers || input.pointers.length !== 1 ||
+        !srcEvent || !(srcEvent.timeStamp > 0) ||
+        typeof srcEvent.getCoalescedEvents !== TYPE_FUNCTION ||
+        !isFiniteNumber(srcEvent.clientX) || !isFiniteNumber(srcEvent.clientY)) {
+        return;
+    }
+
+    var coalesced = srcEvent.getCoalescedEvents();
+    if (!coalesced || coalesced.length <= 1) {
+        return;
+    }
+
+    for (var i = 0; i < coalesced.length; i++) {
+        var c = coalesced[i];
+        var cTime = c.timeStamp;
+        if (cTime > 0 && cTime < timeStamp && (timeStamp - cTime) <= VELOCITY_HORIZON_MS &&
+            isFiniteNumber(c.clientX) && isFiniteNumber(c.clientY) &&
+            (samples.length === 0 || (cTime - samples[samples.length - 1].t) >= VELOCITY_MIN_COALESCED_INTERVAL_MS)) {
+            recordVelocitySample(
+                samples,
+                cTime,
+                x + (c.clientX - srcEvent.clientX),
+                y + (c.clientY - srcEvent.clientY)
+            );
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 return Hammer;
-})(typeof window !== 'undefined' ? window : {}, typeof document !== 'undefined' ? document : {});
+})(typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {}), typeof document !== 'undefined' ? document : {});
 
 if (typeof window !== 'undefined') {
     window.Hammer = Hammer;
