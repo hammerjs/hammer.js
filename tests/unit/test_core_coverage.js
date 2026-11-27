@@ -287,8 +287,8 @@
         rotate.recognize({eventType: $H.INPUT_END, pointers: [{}, {}], rotation: 25, srcEvent: srcEv});
         deepEqual(rotateEvents, ['rotatestart', 'rotatemove', 'rotateend'], 'Rotate emits start, move, end above threshold');
 
-        // PressRecognizer emit guard when not recognized + pressup on valid release
-        var press = manager.add(new Hammer.Press({time: 200, threshold: 9}));
+        // PressRecognizer emit guard when not recognized + pressup after recognized press
+        var press = manager.add(new Hammer.Press({time: 0, threshold: 9}));
         var pressEvents = [];
         manager.on('press pressup', function(ev) {
             pressEvents.push(ev.type);
@@ -298,13 +298,20 @@
         equal(pressEvents.length, 0, 'Press.emit does nothing when state !== STATE_RECOGNIZED');
 
         press.recognize({
+            eventType: $H.INPUT_START,
+            pointers: [{}],
+            distance: 0,
+            deltaTime: 0,
+            srcEvent: srcEv
+        });
+        press.recognize({
             eventType: $H.INPUT_END,
             pointers: [{}],
             distance: 2,
             deltaTime: 300,
             srcEvent: srcEv
         });
-        deepEqual(pressEvents, ['pressup'], 'Press emits pressup when released after time threshold');
+        deepEqual(pressEvents, ['press', 'pressup'], 'Press emits pressup when released after press was recognized');
     });
 
     test('AttrRecognizer does not emit start or move when INPUT_CANCEL arrives before recognition', function() {
@@ -416,14 +423,14 @@
         // Case 1: INPUT_END arrives with deltaTime > time before timer callback runs
         press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
-        deepEqual(events, ['pressup'], 'pressup emitted on valid end');
+        deepEqual(events, [], 'pressup is not emitted if press timer did not fire before end');
 
         // Case 2: INPUT_CANCEL arrives with deltaTime > time before timer callback runs
         press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_CANCEL, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
 
         setTimeout(function() {
-            deepEqual(events, ['pressup'], 'no stale press event fires after end or cancel');
+            deepEqual(events, [], 'no stale press event fires after end or cancel');
             start();
         }, 60);
     });
@@ -568,6 +575,56 @@
             srcEvent: srcEv
         });
         deepEqual(delayedEvents, [], 'non-zero time press does not fire synchronously');
+    });
+
+    asyncTest('PressRecognizer never emits pressup without prior press (timer race and requireFailure)', function() {
+        expect(4);
+
+        manager = new Hammer.Manager(el, {recognizers: []});
+        var pan = manager.add(new Hammer.Pan({threshold: 5}));
+        var press = manager.add(new Hammer.Press({time: 30, threshold: 9}));
+        press.requireFailure(pan);
+
+        var events = [];
+        manager.on('press pressup', function(ev) {
+            events.push(ev.type);
+        });
+
+        var srcEv = {cancelable: true, preventDefault: function() {}};
+
+        // 1. Timer-vs-release race: INPUT_END arrives with deltaTime > time before timer callback fires
+        press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 80, srcEvent: srcEv});
+        deepEqual(events, [], 'timer race does not emit pressup without press');
+
+        // 2. requireFailure blocks synchronous time: 0 press; blocker later fails before INPUT_END
+        var pressZero = manager.add(new Hammer.Press({event: 'press', time: 0, threshold: 9}));
+        pressZero.requireFailure(pan);
+        pan.state = $H.STATE_BEGAN;
+        pressZero.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+        pan.state = $H.STATE_FAILED;
+        pressZero.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 10, srcEvent: srcEv});
+        deepEqual(events, [], 'blocked time:0 press does not emit pressup when blocker later fails');
+
+        // 3. requireFailure blocks timed press; blocker fails before release
+        var pressTimed = manager.add(new Hammer.Press({event: 'press', time: 20, threshold: 9}));
+        pressTimed.requireFailure(pan);
+        pan.state = $H.STATE_BEGAN;
+        pressTimed.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+
+        setTimeout(function() {
+            pan.state = $H.STATE_FAILED;
+            pressTimed.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 50, srcEvent: srcEv});
+            deepEqual(events, [], 'blocked timed press does not emit pressup after blocker fails');
+
+            // 4. Normal unblocked press fires press then pressup
+            pressTimed.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
+            setTimeout(function() {
+                pressTimed.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 50, srcEvent: srcEv});
+                deepEqual(events, ['press', 'pressup'], 'normal press emits press followed by pressup');
+                start();
+            }, 40);
+        }, 40);
     });
 
     test('computeDeltaXY rebases smoothly after partial INPUT_CANCEL and handles missing offsetDelta', function() {
