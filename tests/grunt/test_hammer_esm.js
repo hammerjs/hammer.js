@@ -51,6 +51,22 @@ module.exports = function(grunt) {
             clearTimeout: clearTimeout
         });
 
+        // 2c. Web Worker runtime with `self` global (no `window`) exposes self.Hammer
+        var workerSelf = {};
+        vm.runInNewContext(builtCode, {
+            self: workerSelf,
+            setTimeout: setTimeout,
+            clearTimeout: clearTimeout
+        });
+        if (typeof workerSelf.Hammer !== 'function') {
+            grunt.fail.fatal('hammer.js must expose Hammer on self when window is undefined (Web Worker fallback)');
+        }
+
+        // 2d. Package metadata: explicit sideEffects flag for bare imports
+        if (pkg.sideEffects !== true) {
+            grunt.fail.fatal('package.json must explicitly set "sideEffects": true');
+        }
+
         // 3. Native ES module load in Node.js without window/document (when hammer.mjs is built)
         if (!grunt.file.exists('hammer.mjs')) {
             grunt.log.ok('SSR load passed (CommonJS and bare runtime without window/document).');

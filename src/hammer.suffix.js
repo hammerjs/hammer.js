@@ -8,4 +8,4 @@ if (typeof define === 'function' && define.amd) {
 } else if (typeof module != 'undefined' && module.exports) {
     module.exports = Hammer;
 }
-})(typeof window !== 'undefined' ? window : {}, typeof document !== 'undefined' ? document : {}, 'Hammer');
+})(typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {}), typeof document !== 'undefined' ? document : {}, 'Hammer');

@@ -19,6 +19,8 @@ Or download the pre-built bundle from [GitHub Releases](https://github.com/hamme
 <script src="https://cdn.jsdelivr.net/npm/hammerjs/hammer.min.js"></script>
 ```
 
+> **Note on ESM/CommonJS mixing:** `hammer.mjs` (ESM) and `hammer.js` (UMD/CommonJS) are standalone builds. Avoid mixing `import 'hammerjs'` and `require('hammerjs')` for the same `Manager` instance (for example, passing a recognizer created from CJS into an ESM `Manager`), as `instanceof` checks and internal recognizer IDs are per-copy.
+
 ## Usage
 
 Create a `Hammer` instance on a DOM element to listen for the default gestures (`pan`, `swipe`, `tap`, `doubletap`, and `press`):
