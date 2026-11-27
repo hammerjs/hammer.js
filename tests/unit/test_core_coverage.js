@@ -243,17 +243,20 @@
             swipeEvents.push(ev.type);
         });
         [Hammer.DIRECTION_UP, Hammer.DIRECTION_DOWN, Hammer.DIRECTION_LEFT, Hammer.DIRECTION_RIGHT].forEach(function(dir) {
+            var vx = (dir === Hammer.DIRECTION_LEFT) ? -1.0 : (dir === Hammer.DIRECTION_RIGHT) ? 1.0 : 0;
+            var vy = (dir === Hammer.DIRECTION_UP) ? -1.0 : (dir === Hammer.DIRECTION_DOWN) ? 1.0 : 0;
+            var v = vx || vy;
             swipe.recognize({
                 eventType: $H.INPUT_END,
                 pointers: [{}],
                 maxPointers: 1,
                 distance: 40,
-                velocity: 1.0,
-                velocityX: 1.0,
-                velocityY: 1.0,
-                overallVelocity: 1.0,
-                overallVelocityX: 1.0,
-                overallVelocityY: 1.0,
+                velocity: v,
+                velocityX: vx,
+                velocityY: vy,
+                overallVelocity: v,
+                overallVelocityX: vx,
+                overallVelocityY: vy,
                 offsetDirection: dir,
                 srcEvent: srcEv
             });

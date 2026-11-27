@@ -513,3 +513,81 @@ test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function(
     });
     deepEqual(events, ['swiperight'], 'matching rightward flick still emits swiperight');
 });
+
+test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection and rejects cross-axis velocity', function() {
+    expect(3);
+
+    var events = [];
+    hammer.add(new Hammer.Swipe({
+        direction: Hammer.DIRECTION_HORIZONTAL,
+        threshold: 10,
+        velocity: 0.3
+    }));
+    hammer.on('swipeleft swiperight swipeup swipedown', function(ev) {
+        events.push(ev.type);
+    });
+
+    // Curved rightward thumb swipe arcing slightly down near liftoff (vx=0.80, vy=0.85 -> direction=DOWN, offsetDirection=RIGHT)
+    hammer.recognize({
+        pointers: [{clientX: 142, clientY: 84}],
+        changedPointers: [{clientX: 142, clientY: 84}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 98,
+        deltaX: 92,
+        deltaY: 34,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        direction: Hammer.DIRECTION_DOWN,
+        velocity: 0.85,
+        velocityX: 0.80,
+        velocityY: 0.85,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    deepEqual(events, ['swiperight'], 'curved horizontal swipe arcing downward still emits swiperight');
+
+    // Diagonal swipe under DIRECTION_ALL
+    events = [];
+    hammer.add(new Hammer.Swipe({
+        direction: Hammer.DIRECTION_ALL,
+        threshold: 10,
+        velocity: 0.3
+    }));
+    hammer.recognize({
+        pointers: [{clientX: 142, clientY: 84}],
+        changedPointers: [{clientX: 142, clientY: 84}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 98,
+        deltaX: 92,
+        deltaY: 34,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        direction: Hammer.DIRECTION_DOWN,
+        velocity: 0.85,
+        velocityX: 0.80,
+        velocityY: 0.85,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    deepEqual(events, ['swiperight'], 'diagonal swipe under DIRECTION_ALL emits swiperight when velocityX exceeds threshold');
+
+    // Vertical velocity alone must not trigger swiperight under DIRECTION_ALL
+    events = [];
+    hammer.recognize({
+        pointers: [{clientX: 142, clientY: 84}],
+        changedPointers: [{clientX: 142, clientY: 84}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 98,
+        deltaX: 92,
+        deltaY: 34,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        direction: Hammer.DIRECTION_DOWN,
+        velocity: 0.90,
+        velocityX: 0.10,
+        velocityY: 0.90,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    deepEqual(events, [], 'vertical velocity below velocityX threshold does not trigger swiperight under DIRECTION_ALL');
+});

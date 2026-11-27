@@ -27,22 +27,26 @@ inherit(SwipeRecognizer, AttrRecognizer, {
 
     attrTest: function(input) {
         var direction = this.options.direction;
+        var offsetDirection = input.offsetDirection;
         var velocity;
 
-        if (direction & DIRECTION_HORIZONTAL && direction & DIRECTION_VERTICAL) {
-            velocity = input.velocity;
-        } else if (direction & DIRECTION_HORIZONTAL) {
+        if (offsetDirection === DIRECTION_LEFT) {
+            velocity = -input.velocityX;
+        } else if (offsetDirection === DIRECTION_RIGHT) {
             velocity = input.velocityX;
-        } else if (direction & DIRECTION_VERTICAL) {
+        } else if (offsetDirection === DIRECTION_UP) {
+            velocity = -input.velocityY;
+        } else if (offsetDirection === DIRECTION_DOWN) {
             velocity = input.velocityY;
+        } else {
+            velocity = 0;
         }
 
         return this._super.attrTest.call(this, input) &&
-            direction & input.offsetDirection &&
-            (!input.direction || (input.direction & input.offsetDirection)) &&
+            direction & offsetDirection &&
             input.distance > this.options.threshold &&
             input.maxPointers == this.options.pointers &&
-            abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
+            velocity > this.options.velocity && input.eventType & INPUT_END;
     },
 
     emit: function(input) {
