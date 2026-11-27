@@ -467,6 +467,13 @@ function simpleCloneInputData(input) {
 function getCenter(pointers) {
     var pointersLength = pointers.length;
 
+    if (!pointersLength) {
+        return {
+            x: 0,
+            y: 0
+        };
+    }
+
     // no need to loop when only one touch
     if (pointersLength === 1) {
         return {
