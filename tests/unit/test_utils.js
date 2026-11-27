@@ -234,6 +234,14 @@ test('getDirection', function() {
     equal($H.getDirection(10, -50), Hammer.DIRECTION_UP, 'mostly upward movement returns DIRECTION_UP');
 });
 
+test('getDirection returns DIRECTION_NONE for NaN inputs', function() {
+    expect(3);
+
+    equal($H.getDirection(NaN, 0), Hammer.DIRECTION_NONE, 'NaN x returns DIRECTION_NONE');
+    equal($H.getDirection(0, NaN), Hammer.DIRECTION_NONE, 'NaN y returns DIRECTION_NONE');
+    equal($H.getDirection(NaN, NaN), Hammer.DIRECTION_NONE, 'NaN x and y returns DIRECTION_NONE');
+});
+
 asyncTest('setTimeoutContext binds context and returns clearable timer id', function() {
     expect(2);
 

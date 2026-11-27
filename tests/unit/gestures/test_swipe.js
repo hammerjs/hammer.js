@@ -494,6 +494,74 @@ test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and sk
     ok(Math.abs(out.velocityY - (-0.5)) < 1e-6, 'exact -0.5 px/ms velocityY preserved under 1000Hz decimation');
 });
 
+test('NaN or non-finite coalesced coordinates are ignored without poisoning velocity or direction', function() {
+    var session = {};
+    $H.computeIntervalInputData(session, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 1000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 100, clientY: 100}],
+        srcEvent: {timeStamp: 5000, clientX: 100, clientY: 100}
+    });
+
+    var move = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 1016,
+        deltaX: 32,
+        deltaY: 0,
+        pointers: [{clientX: 132, clientY: 100}],
+        srcEvent: {
+            timeStamp: 5016,
+            clientX: 132,
+            clientY: 100,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 5004, clientX: 108, clientY: 100},
+                    {timeStamp: 5008, clientX: NaN, clientY: 100},
+                    {timeStamp: 5012, clientX: Infinity, clientY: 100},
+                    {timeStamp: 5016, clientX: 132, clientY: 100}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session, move);
+
+    ok(isFinite(move.velocityX) && Math.abs(move.velocityX - 2.0) < 1e-6, 'NaN/Infinity coalesced coords do not poison velocityX');
+    equal(move.direction, Hammer.DIRECTION_RIGHT, 'direction stays DIRECTION_RIGHT instead of DIRECTION_DOWN');
+
+    // srcEvent with NaN clientX safely skips coalesced reconstruction
+    var session2 = {};
+    $H.computeIntervalInputData(session2, {
+        eventType: Hammer.INPUT_START,
+        timeStamp: 2000,
+        deltaX: 0,
+        deltaY: 0,
+        pointers: [{clientX: 0, clientY: 0}],
+        srcEvent: {timeStamp: 6000, clientX: 0, clientY: 0}
+    });
+    var move2 = {
+        eventType: Hammer.INPUT_MOVE,
+        timeStamp: 2010,
+        deltaX: 20,
+        deltaY: 0,
+        pointers: [{clientX: 20, clientY: 0}],
+        srcEvent: {
+            timeStamp: 6010,
+            clientX: NaN,
+            clientY: 0,
+            getCoalescedEvents: function() {
+                return [
+                    {timeStamp: 6005, clientX: 10, clientY: 0},
+                    {timeStamp: 6010, clientX: 20, clientY: 0}
+                ];
+            }
+        }
+    };
+    $H.computeIntervalInputData(session2, move2);
+    ok(isFinite(move2.velocityX) && Math.abs(move2.velocityX - 2.0) < 1e-6, 'NaN srcEvent.clientX skips coalesced loop cleanly');
+});
+
 test('velocity tracker uses hardware srcEvent.timeStamp so main-thread frame jitter does not skew velocity', function() {
     var session = {};
 
