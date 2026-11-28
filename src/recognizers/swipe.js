@@ -47,7 +47,7 @@ inherit(SwipeRecognizer, AttrRecognizer, {
         return this._super.attrTest.call(this, input) &&
             direction & offsetDirection &&
             input.distance > this.options.threshold &&
-            input.maxPointers == this.options.pointers &&
+            (this.options.pointers === 0 || input.maxPointers == this.options.pointers) &&
             velocity > this.options.velocity &&
             (!(maxVelocity > 0) || velocity <= maxVelocity) &&
             input.eventType & INPUT_END;

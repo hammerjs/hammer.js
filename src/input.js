@@ -159,7 +159,7 @@ function createInputInstance(manager) {
  */
 function isAllowedPointerType(manager, pointerType) {
     var allowed = manager.options.pointerTypes;
-    return !allowed || inArray(allowed, pointerType) > -1;
+    return !allowed || (Array.isArray(allowed) && inArray(allowed, pointerType) > -1);
 }
 
 /**
@@ -203,7 +203,7 @@ function inputHandler(manager, eventType, input) {
 
     manager.recognize(input);
     if (manager.element) {
-        manager.session.prevInput = input;
+        manager.session.prevInput = input.isFinal ? null : input;
     }
 }
 

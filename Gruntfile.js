@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         'src/input/*.js',
         'src/touchaction.js',
         'src/recognizer.js',
+        'src/recognizers/attribute.js',
         'src/recognizers/*.js',
         'src/hammer.js',
         'src/manager.js',
