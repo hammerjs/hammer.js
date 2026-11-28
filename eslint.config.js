@@ -78,8 +78,7 @@ module.exports = [
             'src/hammer.suffix.js',
             'src/hammer.esm.prefix.js',
             'src/hammer.esm.suffix.js',
-            'tests/build.js',
-            'tests/unit/assets/jquery.min.js'
+            'tests/build.js'
         ]
     },
     {
@@ -146,7 +145,7 @@ module.exports = [
         })
     },
     {
-        files: ['tests/unit/assets/utils.js'],
+        files: ['tests/unit/utils.js'],
         languageOptions: {
             ecmaVersion: 5,
             sourceType: 'script',
@@ -159,7 +158,7 @@ module.exports = [
     },
     {
         files: ['tests/unit/**/*.js'],
-        ignores: ['tests/unit/assets/**'],
+        ignores: ['tests/unit/utils.js'],
         languageOptions: {
             ecmaVersion: 5,
             sourceType: 'script',

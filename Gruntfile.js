@@ -164,5 +164,4 @@ module.exports = function(grunt) {
     grunt.registerTask('lint', ['eslint']);
     grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
-    grunt.registerTask('test-travis', ['build']);
 };
