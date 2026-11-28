@@ -320,3 +320,92 @@ QUnit.test('Multi-pointer TapRecognizer handles sequential finger liftoff and cl
         done();
     }, 80);
 });
+
+QUnit.test('Multi-pointer TapRecognizer handles first-finger-first liftoff, trailing move, and avoids retaining _input on partial taps', function(assert) {
+    var done = assert.async();
+    assert.expect(5);
+
+    var localEl = utils.createHitArea();
+    function feed(mgr, type, pointers, changed, t) {
+        $H.inputHandler(mgr, type, {
+            pointers: pointers,
+            changedPointers: changed,
+            pointerType: 'touch',
+            srcEvent: {target: localEl, timeStamp: t, cancelable: true, preventDefault: function() {}}
+        });
+    }
+
+    var f1 = {clientX: 50, clientY: 50};
+    var f2 = {clientX: 80, clientY: 50};
+
+    // 0. Default single-finger doubletap must not retain _input after a single tap
+    var mgr0 = new Hammer(localEl);
+    feed(mgr0, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr0, $H.INPUT_END, [f1], [f1], 20);
+    assert.strictEqual(mgr0.get('doubletap')._input, null, 'default doubletap does not retain _input after a single tap');
+    mgr0.destroy();
+
+    // 1. 2-finger double-tap where f1 lifts BEFORE f2 (distance against firstInput is 30px >= threshold 9)
+    var mgr1 = new Hammer.Manager(localEl, {
+        recognizers: [[Hammer.Tap, {event: 'twofingerdouble', pointers: 2, taps: 2}]]
+    });
+    var doubleCount = 0;
+    mgr1.on('twofingerdouble', function() {
+        doubleCount++;
+    });
+
+    feed(mgr1, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr1, $H.INPUT_START, [f1, f2], [f2], 15);
+    feed(mgr1, $H.INPUT_END, [f1, f2], [f1], 25);
+    feed(mgr1, $H.INPUT_END, [f2], [f2], 35);
+
+    // Partial multi-tap (count=1 of taps=2) must NOT retain _input
+    assert.strictEqual(mgr1.get('twofingerdouble')._input, null, 'partial multi-tap does not retain _input between taps');
+
+    feed(mgr1, $H.INPUT_START, [f1], [f1], 110);
+    feed(mgr1, $H.INPUT_START, [f1, f2], [f2], 115);
+    feed(mgr1, $H.INPUT_END, [f1, f2], [f1], 125);
+    feed(mgr1, $H.INPUT_END, [f2], [f2], 135);
+
+    assert.equal(doubleCount, 1, '2-finger double-tap recognizes when first finger lifts before second');
+
+    // 2. 2-finger tap with requireFailure survives trailing INPUT_MOVE before second finger lifts
+    var mgr2 = new Hammer.Manager(localEl, {recognizers: []});
+    var dt2 = mgr2.add(new Hammer.Tap({event: 'doubletap', pointers: 2, taps: 2, interval: 40}));
+    var st2 = mgr2.add(new Hammer.Tap({event: 'tap', pointers: 2, taps: 1, interval: 40}));
+    st2.requireFailure(dt2);
+    var singleCount = 0;
+    mgr2.on('tap', function() {
+        singleCount++;
+    });
+
+    feed(mgr2, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr2, $H.INPUT_START, [f1, f2], [f2], 15);
+    feed(mgr2, $H.INPUT_END, [f1, f2], [f1], 25);
+    feed(mgr2, $H.INPUT_MOVE, [f2], [f2], 30);
+    feed(mgr2, $H.INPUT_END, [f2], [f2], 35);
+
+    // 3. Trailing INPUT_CANCEL still cancels pending multi-pointer tap
+    var mgr3 = new Hammer.Manager(localEl, {recognizers: []});
+    var dt3 = mgr3.add(new Hammer.Tap({event: 'doubletap', pointers: 2, taps: 2, interval: 40}));
+    var st3 = mgr3.add(new Hammer.Tap({event: 'tap', pointers: 2, taps: 1, interval: 40}));
+    st3.requireFailure(dt3);
+    var cancelledCount = 0;
+    mgr3.on('tap', function() {
+        cancelledCount++;
+    });
+
+    feed(mgr3, $H.INPUT_START, [f1], [f1], 10);
+    feed(mgr3, $H.INPUT_START, [f1, f2], [f2], 15);
+    feed(mgr3, $H.INPUT_END, [f1, f2], [f1], 25);
+    feed(mgr3, $H.INPUT_CANCEL, [f2], [f2], 35);
+
+    setTimeout(function() {
+        assert.equal(singleCount, 1, '2-finger tap with requireFailure survives trailing INPUT_MOVE and f1-first liftoff');
+        assert.equal(cancelledCount, 0, 'trailing INPUT_CANCEL still cancels pending multi-pointer tap');
+        mgr1.destroy();
+        mgr2.destroy();
+        mgr3.destroy();
+        done();
+    }, 80);
+});
