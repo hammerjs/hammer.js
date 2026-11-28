@@ -92,6 +92,17 @@ module.exports = function(grunt) {
                     urls: ['http://127.0.0.1:8000/tests/unit/index.html']
                 }
             }
+        },
+
+        eslint: {
+            target: [
+                'hammer.js',
+                'hammer.mjs',
+                'hammer.min.js',
+                'src',
+                'Gruntfile.js',
+                'eslint.config.js'
+            ]
         }
     });
 
@@ -136,44 +147,6 @@ module.exports = function(grunt) {
         grunt.file.write('tests/build.js', wrapped);
     });
 
-    grunt.registerTask('lint', 'Lint source and build files with ESLint', function() {
-        var done = this.async();
-        var ESLint = require('eslint').ESLint;
-        var eslint = new ESLint();
-        var targets = ['src', 'Gruntfile.js', 'eslint.config.js'];
-        if (grunt.file.exists('hammer.min.js')) {
-            targets.unshift('hammer.min.js');
-        }
-        if (grunt.file.exists('hammer.mjs')) {
-            targets.unshift('hammer.mjs');
-        }
-        if (grunt.file.exists('hammer.js')) {
-            targets.unshift('hammer.js');
-        }
-
-        eslint.lintFiles(targets).then(function(results) {
-            return eslint.loadFormatter('stylish').then(function(formatter) {
-                var output = formatter.format(results);
-                if (output) {
-                    grunt.log.writeln(output);
-                }
-                var errorCount = results.reduce(function(sum, r) {
-                    return sum + r.errorCount;
-                }, 0);
-                if (errorCount > 0) {
-                    grunt.log.error('ESLint found ' + errorCount + ' error(s).');
-                    done(false);
-                } else {
-                    grunt.log.ok('ESLint passed (' + results.length + ' files checked).');
-                    done();
-                }
-            });
-        }).catch(function(err) {
-            grunt.log.error(err.stack || err.message);
-            done(false);
-        });
-    });
-
     // Load Node/SSR/ESM load tests (slightly odd place to run tests via Grunt,
     // but for now the easiest way to test importing Hammer in a Node environment)
     grunt.loadTasks('tests/grunt');
@@ -182,10 +155,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-banner');
 
     grunt.registerTask('default', ['connect:server:keepalive']);
     grunt.registerTask('dist', ['concat', 'string-replace', 'usebanner', 'uglify:min']);
+    grunt.registerTask('lint', ['eslint']);
     grunt.registerTask('build', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test', ['dist', 'lint', 'test-ssr', 'build-test', 'connect:server', 'qunit']);
     grunt.registerTask('test-travis', ['build']);

@@ -26,15 +26,14 @@
   "bugs": {
     "url": "https://github.com/hammerjs/hammer.js/issues"
   },
-  "dependencies": {},
   "devDependencies": {
-    "eslint": "^10.0.0",
     "grunt": "^1.6.3",
     "grunt-banner": "^0.6.0",
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-connect": "^5.0.1",
     "grunt-contrib-qunit": "^11.0.0",
     "grunt-contrib-uglify": "^5.2.2",
+    "grunt-eslint": "^27.0.0",
     "hammer-simulator": "github:hammerjs/simulator#31a05ccd9314247d4e404e18e310b9e3b4642056",
     "jquery-hammerjs": "2.0.x",
     "qunit": "^3.0.0"
