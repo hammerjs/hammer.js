@@ -25,7 +25,7 @@ test('swipe can be recognized', function() {
 
     stop();
 
-    Simulator.gestures.swipe(el);
+    Simulator.gestures.swipe(el, { duration: 60 });
 });
 
 test('single-axis swipe checks velocity along configured axis', function() {

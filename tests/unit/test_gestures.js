@@ -37,7 +37,7 @@ module('Gesture recognition', {
 asyncTest('recognize pan', function() {
     expect(1);
 
-    Simulator.gestures.pan(el, { duration: 500, deltaX: 100, deltaY: 0 }, function() {
+    Simulator.gestures.pan(el, { duration: 120, deltaX: 25, deltaY: 0 }, function() {
         start();
         deepEqual(events, {
             pan: true,
@@ -52,7 +52,7 @@ asyncTest('recognize pan', function() {
 asyncTest('recognize press', function() {
     expect(1);
 
-    Simulator.gestures.press(el, null, function() {
+    Simulator.gestures.press(el, { duration: 290 }, function() {
         start();
         deepEqual(events, {
             press: true
@@ -63,7 +63,7 @@ asyncTest('recognize press', function() {
 asyncTest('recognize swipe', function() {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 300, deltaX: 400, deltaY: 0 }, function() {
+    Simulator.gestures.swipe(el, { duration: 80, deltaX: 200, deltaY: 0 }, function() {
         start();
         deepEqual(events, {
             pan: true,
@@ -80,7 +80,7 @@ asyncTest('recognize swipe', function() {
 asyncTest('recognize pinch', function() {
     expect(1);
 
-    Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function() {
+    Simulator.gestures.pinch(el, { duration: 80, scale: .5 }, function() {
         start();
         deepEqual(events, {
             pinch: true,
@@ -98,7 +98,7 @@ asyncTest('recognize children multitouch pinch', function() {
     var el1 = utils.createHitArea(el),
         el2 = utils.createHitArea(el);
 
-    Simulator.gestures.pinch([el1, el2], { duration: 500, scale: .5 }, function() {
+    Simulator.gestures.pinch([el1, el2], { duration: 80, scale: .5 }, function() {
         start();
         deepEqual(events, {
             pinch: true,
@@ -115,7 +115,7 @@ asyncTest('recognize parent-child multitouch pinch', function() {
 
     var el1 = utils.createHitArea(el);
 
-    Simulator.gestures.pinch([el, el1], { duration: 100, scale: .5 }, function() {
+    Simulator.gestures.pinch([el, el1], { duration: 80, scale: .5 }, function() {
         start();
         deepEqual(events, {
             pinch: true,
@@ -130,7 +130,7 @@ asyncTest('recognize parent-child multitouch pinch', function() {
 asyncTest('recognize rotate', function() {
     expect(1);
 
-    Simulator.gestures.rotate(el, { duration: 500, scale: 1 }, function() {
+    Simulator.gestures.rotate(el, { duration: 80, scale: 1 }, function() {
         start();
         deepEqual(events, {
             rotate: true,
@@ -146,7 +146,7 @@ asyncTest('recognize multitouch rotate', function() {
 
     var el1 = utils.createHitArea(el);
 
-    Simulator.gestures.rotate([el, el1], { duration: 500, scale: 1 }, function() {
+    Simulator.gestures.rotate([el, el1], { duration: 80, scale: 1 }, function() {
         start();
         deepEqual(events, {
             rotate: true,
@@ -160,7 +160,7 @@ asyncTest('recognize multitouch rotate', function() {
 asyncTest('recognize rotate and pinch simultaneous', function() {
     expect(1);
 
-    Simulator.gestures.pinchRotate(el, { duration: 500, scale: 2 }, function() {
+    Simulator.gestures.pinchRotate(el, { duration: 80, scale: 2 }, function() {
         start();
         deepEqual(events, {
             rotate: true,
@@ -179,7 +179,7 @@ asyncTest('recognize rotate and pinch simultaneous', function() {
 asyncTest('don\'t recognize pan and swipe when moving down, when only horizontal is allowed', function() {
     expect(1);
 
-    Simulator.gestures.swipe(el, { duration: 250, deltaX: 0, deltaZ: 200 }, function() {
+    Simulator.gestures.swipe(el, { duration: 80, deltaX: 0, deltaY: 100 }, function() {
         start();
         deepEqual(events, { });
     });
@@ -188,23 +188,23 @@ asyncTest('don\'t recognize pan and swipe when moving down, when only horizontal
 asyncTest('don\'t recognize press if duration is too short.', function() {
     expect(1);
 
-    Simulator.gestures.press(el, { duration: 240 });
+    Simulator.gestures.press(el, { duration: 150 });
 
     setTimeout(function() {
         start();
         deepEqual(events, { tap: true }, 'Tap gesture has been recognized.');
-    }, 275);
+    }, 190);
 });
 
 asyncTest('don\'t recognize tap if duration is too long.', function() {
     expect(1);
 
-    Simulator.gestures.tap(el, { duration: 255 });
+    Simulator.gestures.tap(el, { duration: 270 });
 
     setTimeout(function() {
         start();
         deepEqual(events, { press: true }, 'Press gesture has been recognized.');
-    }, 275);
+    }, 300);
 });
 
 test('getRotation and computeInputData stay continuous across the +-180deg boundary', function() {

@@ -27,7 +27,7 @@ test('should disable a recognizer through the `enable` constructor parameter', f
     setTimeout(function() {
         start();
         equal(counter, 0);
-    }, 100);
+    }, 20);
 });
 
 test('should disable recognizing when the manager is disabled.', function() {
@@ -46,7 +46,7 @@ test('should disable recognizing when the manager is disabled.', function() {
     setTimeout(function() {
         start();
         equal(counter, 0);
-    }, 100);
+    }, 20);
 });
 
 asyncTest('disabling manager mid-gesture cancels pending timers and resets active recognizers', function() {
@@ -140,7 +140,7 @@ test('should accept the `enable` constructor parameter as function', function() 
         utils.dispatchTouchEvent(el, 'end', 50, 50);
 
         equal(counter, 1);
-    }, 100);
+    }, 20);
 });
 
 test('should accept a function parameter with `set`', function() {

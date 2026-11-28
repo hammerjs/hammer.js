@@ -9,9 +9,9 @@ module('Tap delay', {
         el = utils.createHitArea();
         hammer = new Hammer(el, {recognizers: []});
 
-        var tap = new Hammer.Tap();
-        var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2 });
-        var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3 });
+        var tap = new Hammer.Tap({interval: 60});
+        var doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2, interval: 60 });
+        var tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3, interval: 60 });
 
         hammer.add([tripleTap, doubleTap, tap]);
 
@@ -56,7 +56,7 @@ asyncTest('When a tripleTap is fired, doubleTap and Tap should not be recognized
         equal(tripleTapCount, 1, 'one tripletap event');
         equal(doubleTapCount, 0, 'no doubletap event');
         equal(tapCount, 0, 'no singletap event');
-    }, 350);
+    }, 90);
 });
 asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized', function() {
     expect(3);
@@ -72,7 +72,7 @@ asyncTest('When a doubleTap is fired, tripleTap and Tap should not be recognized
         equal(tripleTapCount, 0);
         equal(doubleTapCount, 1);
         equal(tapCount, 0);
-    }, 350);
+    }, 90);
 });
 
 asyncTest('When a tap is fired, tripleTap and doubleTap should not be recognized', function() {
@@ -86,7 +86,7 @@ asyncTest('When a tap is fired, tripleTap and doubleTap should not be recognized
         equal(tripleTapCount, 0);
         equal(doubleTapCount, 0);
         equal(tapCount, 1);
-    }, 350);
+    }, 90);
 });
 
 test('tryEmit resets failing recognizer timer when requireFailure blocks emission', function() {

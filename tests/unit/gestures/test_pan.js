@@ -56,7 +56,7 @@ asyncTest('Pan event flow should be start -> left -> end', function() {
         isCalledPanleft = true;
     });
 
-    Simulator.gestures.pan(el, { deltaX: -100, deltaY: 0 }, function() {
+    Simulator.gestures.pan(el, { duration: 60, deltaX: -100, deltaY: 0 }, function() {
         equal(eventflow,"startleftend");
         start();
     });

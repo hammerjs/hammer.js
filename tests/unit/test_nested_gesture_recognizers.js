@@ -99,7 +99,7 @@ test('Panning on the child should fire parent pan and should not fire child tap 
  });
  */
 
-var pressPeriod = 600;
+var nestedPressPeriod = 40;
 module('Nested gesture recognizers (Press Child + Pan Parent)', {
     setup: function() {
         parent = document.createElement('div');
@@ -115,7 +115,7 @@ module('Nested gesture recognizers (Press Child + Pan Parent)', {
             touchAction: 'none'
         });
 
-        hammerChild.add(new Hammer.Press({time: pressPeriod}));
+        hammerChild.add(new Hammer.Press({time: nestedPressPeriod}));
         hammerParent.add(new Hammer.Pan({threshold: 5, pointers: 1}));
     },
     teardown: function() {
@@ -140,7 +140,7 @@ test('Press on the child', function() {
 
     setTimeout(function() {
         start();
-    }, pressPeriod);
+    }, nestedPressPeriod + 30);
 });
 
 test('When Press is followed by Pan on the same element, both gestures are recognized', function() {
@@ -163,5 +163,5 @@ test('When Press is followed by Pan on the same element, both gestures are recog
         utils.dispatchTouchEvent(child, 'move', 30, 10);
         utils.dispatchTouchEvent(child, 'end', 30, 10);
 
-    }, pressPeriod);
+    }, nestedPressPeriod + 30);
 });
