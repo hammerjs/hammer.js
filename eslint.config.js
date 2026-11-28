@@ -78,8 +78,7 @@ module.exports = [
             'src/hammer.suffix.js',
             'src/hammer.esm.prefix.js',
             'src/hammer.esm.suffix.js',
-            'tests/build.js',
-            'tests/unit/assets/jquery.min.js'
+            'tests/build.js'
         ]
     },
     {
