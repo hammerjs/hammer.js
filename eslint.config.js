@@ -78,7 +78,8 @@ module.exports = [
             'src/hammer.suffix.js',
             'src/hammer.esm.prefix.js',
             'src/hammer.esm.suffix.js',
-            'tests/**'
+            'tests/build.js',
+            'tests/unit/assets/jquery.min.js'
         ]
     },
     {
@@ -129,17 +130,53 @@ module.exports = [
         })
     },
     {
-        files: ['Gruntfile.js', 'eslint.config.js'],
+        files: ['Gruntfile.js', 'eslint.config.js', 'tests/grunt/**/*.js'],
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'commonjs',
-            globals: nodeGlobals
+            globals: Object.assign({}, nodeGlobals, {
+                global: 'readonly'
+            })
         },
         rules: Object.assign({}, commonRules, {
             'eol-last': ['error', 'always'],
             'no-undef': 'error',
             'no-unused-vars': ['error', {args: 'after-used', caughtErrors: 'none'}],
             'strict': ['error', 'safe']
+        })
+    },
+    {
+        files: ['tests/unit/assets/utils.js'],
+        languageOptions: {
+            ecmaVersion: 5,
+            sourceType: 'script',
+            globals: browserGlobals
+        },
+        rules: Object.assign({}, commonRules, {
+            'eol-last': ['error', 'always'],
+            'no-undef': 'error'
+        })
+    },
+    {
+        files: ['tests/unit/**/*.js'],
+        ignores: ['tests/unit/assets/**'],
+        languageOptions: {
+            ecmaVersion: 5,
+            sourceType: 'script',
+            globals: Object.assign({}, browserGlobals, {
+                QUnit: 'readonly',
+                Hammer: 'readonly',
+                $H: 'readonly',
+                Simulator: 'readonly',
+                jQuery: 'readonly',
+                $: 'readonly',
+                utils: 'readonly'
+            })
+        },
+        rules: Object.assign({}, commonRules, {
+            'eol-last': ['error', 'always'],
+            'no-undef': 'error',
+            'no-unused-vars': ['error', {args: 'none', caughtErrors: 'none'}]
         })
     }
 ];

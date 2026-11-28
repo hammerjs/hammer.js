@@ -20,24 +20,24 @@ QUnit.test('Pinch event flow should be start -> in -> end', function(assert) {
     var pinch = new Hammer.Pinch({enable: true, threshold: .1});
     hammer.add(pinch);
 
-    var eventflow = "";
+    var eventflow = '';
     var isFiredPinchin = false;
     hammer.on('pinchstart', function() {
-        eventflow += "start";
+        eventflow += 'start';
     });
     hammer.on('pinchin', function() {
         if(!isFiredPinchin){
             isFiredPinchin = true;
-            eventflow += "in";
+            eventflow += 'in';
         }
     });
     hammer.on('pinchend', function() {
-        eventflow += "end";
+        eventflow += 'end';
         isFiredPinchin = false;
     });
 
     Simulator.gestures.pinch(el, { duration: 80, scale: .5 }, function() {
-        assert.equal(eventflow,"startinend");
+        assert.equal(eventflow, 'startinend');
         done();
     });
 });

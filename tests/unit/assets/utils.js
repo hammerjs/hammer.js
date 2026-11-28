@@ -38,7 +38,7 @@ var utils = {
 
     createHitArea: function(parent) {
         if (parent == null) {
-            parent = document.getElementById('qunit-fixture')
+            parent = document.getElementById('qunit-fixture');
         }
         var hitArea = document.createElement('div');
         hitArea.style.background = '#eee';
