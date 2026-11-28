@@ -921,7 +921,42 @@
             manager = new Hammer.Manager(window, {inputClass: Hammer.TouchInput, touchAction: 'auto', recognizers: []});
             var winAutoMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
             assert.deepEqual(winAutoMove.opts, {passive: true}, 'TouchInput on window with touchAction: auto uses {passive: true}');
+
+            // 5. Manager.set({ touchAction }) rebinds TouchInput listeners when passive-ness changes
+            winAdded = [];
+            manager.set({touchAction: 'none'});
+            var winReboundNone = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            assert.ok(winReboundNone, 'Manager.set({touchAction: "none"}) rebinds touchmove on window');
+            assert.deepEqual(winReboundNone && winReboundNone.opts, {passive: false}, 'rebound touchmove on window uses {passive: false}');
+
+            winAdded = [];
+            manager.set({touchAction: 'auto'});
+            var winReboundAuto = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            assert.ok(winReboundAuto, 'Manager.set({touchAction: "auto"}) rebinds touchmove on window');
+            assert.deepEqual(winReboundAuto && winReboundAuto.opts, {passive: true}, 'rebound touchmove on window returns to {passive: true}');
             manager.destroy();
+
+            // 6. getTouchListenerOptions checks manager.element.style (not inputTarget.style)
+            elAdded = [];
+            manager = new Hammer.Manager(document, {inputTarget: el, inputClass: Hammer.TouchInput, touchAction: 'none', recognizers: []});
+            var docElMove = elAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            assert.deepEqual(docElMove.opts, {passive: false}, 'document manager with styled inputTarget uses {passive: false}');
+            manager.destroy();
+
+            var origDocAdd = document.addEventListener;
+            var docAdded = [];
+            document.addEventListener = function(type, fn, opts) {
+                docAdded.push({type: type, opts: opts});
+                return origDocAdd.call(this, type, fn, opts);
+            };
+            try {
+                manager = new Hammer.Manager(el, {inputTarget: document, inputClass: Hammer.TouchInput, touchAction: 'none', recognizers: []});
+                var elDocMove = docAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+                assert.deepEqual(elDocMove.opts, {passive: true}, 'styled element manager with document inputTarget uses {passive: true}');
+                manager.destroy();
+            } finally {
+                document.addEventListener = origDocAdd;
+            }
             manager = null;
         } finally {
             window.addEventListener = origWinAdd;

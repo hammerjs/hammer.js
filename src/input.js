@@ -86,7 +86,7 @@ Input.prototype = {
      * bind the events
      */
     init: function() {
-        this._evTargetOptions = this.evTarget ? getTouchListenerOptions(this.manager, this.target) : false;
+        this._evTargetOptions = this.evTarget ? getTouchListenerOptions(this.manager) : false;
         this._evWinOptions = (this.evWin && inStr(this.evWin, 'touch')) ? PASSIVE_LISTENER_OPTIONS : false;
         this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
         this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler, this._evTargetOptions);
@@ -107,19 +107,19 @@ Input.prototype = {
 /**
  * select passive vs non-passive listener options for element-scoped touch targets
  * @param {Manager} manager
- * @param {EventTarget} target
  * @returns {Boolean|Object}
  */
-function getTouchListenerOptions(manager, target) {
+function getTouchListenerOptions(manager) {
     if (!SUPPORT_PASSIVE_EVENTS) {
         return false;
     }
     var touchAction = manager && manager.options && manager.options.touchAction;
-    var normalized = typeof touchAction === 'string' ? touchAction.toLowerCase().trim() : '';
+    var normalized = typeof touchAction === 'string' ? touchAction.toLowerCase().trim().replace(/\s+/g, ' ') : '';
     if (normalized === 'auto' || normalized === 'manipulation') {
         return PASSIVE_LISTENER_OPTIONS;
     }
-    if (target && target.style && TOUCH_ACTION_MAP &&
+    var element = manager && manager.element;
+    if (element && element.style && TOUCH_ACTION_MAP &&
         TOUCH_ACTION_MAP.none && TOUCH_ACTION_MAP['pan-x'] && TOUCH_ACTION_MAP['pan-y'] &&
         (!normalized || normalized === 'compute' || supportsTouchAction(normalized))) {
         return PASSIVE_LISTENER_OPTIONS;

@@ -58,8 +58,18 @@ Manager.prototype = {
             this.options.cssProps = assign({}, this.options.cssProps);
             toggleCssProps(this, true);
         }
-        if (options.touchAction) {
+        if (options.touchAction !== undefined) {
             this.touchAction.update();
+            if (options.inputTarget === undefined && this.input) {
+                var touchInput = this.input.touch || this.input;
+                if (touchInput.evTarget &&
+                    Boolean(touchInput._evTargetOptions && touchInput._evTargetOptions.passive) !==
+                    Boolean(getTouchListenerOptions(this).passive)) {
+                    this.stop(true);
+                    this.input.destroy();
+                    this.input.init();
+                }
+            }
         }
         if (options.inputTarget !== undefined && this.input) {
             this.options.inputTarget = options.inputTarget || this.element;
