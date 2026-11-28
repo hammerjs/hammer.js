@@ -699,3 +699,34 @@ QUnit.test('prefixed, each, getWindowForElement, and computeInputData guard edge
     assert.equal(composedCalls, 0, 'composedPath() is not called for regular Light DOM targets');
     assert.strictEqual(lightInput.target, child, 'light DOM target still resolves accurately');
 });
+
+QUnit.test('hasParent traverses assignedSlot for slotted light-DOM children inside Shadow DOM', function(assert) {
+    if (!Element.prototype.attachShadow) {
+        assert.ok(true, 'Shadow DOM not supported in this environment');
+        return;
+    }
+
+    var outer = document.createElement('div');
+    var host = document.createElement('div');
+    var unrelated = document.createElement('div');
+    outer.appendChild(host);
+    outer.appendChild(unrelated);
+
+    var shadow = host.attachShadow({mode: 'open'});
+    var wrapper = document.createElement('div');
+    var slot = document.createElement('slot');
+    wrapper.appendChild(slot);
+    shadow.appendChild(wrapper);
+
+    var slottedChild = document.createElement('span');
+    var grandChild = document.createElement('b');
+    slottedChild.appendChild(grandChild);
+    host.appendChild(slottedChild);
+
+    assert.strictEqual($H.hasParent(slottedChild, wrapper), true, 'slotted child has shadow wrapper as composed parent');
+    assert.strictEqual($H.hasParent(grandChild, wrapper), true, 'descendant of slotted child has shadow wrapper as composed parent');
+    assert.strictEqual($H.hasParent(slottedChild, slot), true, 'slotted child has slot element as composed parent');
+    assert.strictEqual($H.hasParent(slottedChild, host), true, 'slotted child still has shadow host as parent');
+    assert.strictEqual($H.hasParent(slottedChild, outer), true, 'slotted child still has outer light-DOM ancestor as parent');
+    assert.strictEqual($H.hasParent(slottedChild, unrelated), false, 'slotted child does not match unrelated element');
+});

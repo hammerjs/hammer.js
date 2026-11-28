@@ -263,7 +263,8 @@ function hasParent(node, parent) {
         if (node == parent) {
             return true;
         }
-        node = node.parentNode ||
+        node = node.assignedSlot ||
+            node.parentNode ||
             (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ && node.host) ||
             (node.nodeType === 9 /* Node.DOCUMENT_NODE */ && (node.defaultView || node.parentWindow));
     }
