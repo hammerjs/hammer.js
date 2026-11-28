@@ -63,7 +63,7 @@ TouchAction.prototype = {
             }
             this.appliedNative = true;
         } else {
-            if (this.appliedNative && isValidTouchActionValue(value) &&
+            if (this.appliedNative &&
                 this.oldTouchAction !== undefined && element && element.style) {
                 element.style[PREFIXED_TOUCH_ACTION] = this.oldTouchAction;
                 this.oldTouchAction = undefined;
@@ -235,13 +235,17 @@ function isValidTouchActionValue(value) {
 }
 
 function supportsTouchAction(value) {
-    if (!TOUCH_ACTION_MAP || !isValidTouchActionValue(value)) {
+    if (!TOUCH_ACTION_MAP || typeof value !== 'string' || !value) {
         return false;
     }
-    if (!hasOwn.call(TOUCH_ACTION_MAP, value)) {
-        TOUCH_ACTION_MAP[value] = !!(window.CSS && typeof window.CSS.supports === TYPE_FUNCTION &&
-            window.CSS.supports('touch-action', value));
+    if (hasOwn.call(TOUCH_ACTION_MAP, value)) {
+        return TOUCH_ACTION_MAP[value];
     }
+    if (!isValidTouchActionValue(value)) {
+        return false;
+    }
+    TOUCH_ACTION_MAP[value] = !!(window.CSS && typeof window.CSS.supports === TYPE_FUNCTION &&
+        window.CSS.supports('touch-action', value));
     return TOUCH_ACTION_MAP[value];
 }
 

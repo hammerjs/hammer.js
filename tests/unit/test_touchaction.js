@@ -255,11 +255,10 @@
             assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-y pinch-zoom', 'native CSS touch-action applied for pan-y pinch-zoom');
         }
 
-        // Invalid touch-action value is ignored natively
-        var prevStyle = el.style[$H.PREFIXED_TOUCH_ACTION];
+        // Invalid touch-action value restores original inline style instead of leaving stale native style
         manager.set({touchAction: 'not-a-valid-touch-action'});
         if ($H.NATIVE_TOUCH_ACTION) {
-            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], prevStyle, 'unsupported touch-action value does not overwrite style');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'invalid touch-action value restores original inline style');
         }
 
         // Fallback to plain pan-y when browser lacks pan-y pinch-zoom support
@@ -470,7 +469,16 @@
             });
             assert.equal(pinchEv.prevented, false, 'pinch-zoom polyfill allows 2-pointer pinch');
 
-            // 5. Clobbered non-function window.CSS.supports does not throw
+            // 5. Switching from a native touch-action to an invalid value restores original inline style
+            if ($H.NATIVE_TOUCH_ACTION) {
+                manager.touchAction.set('none');
+                assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'none', 'native "none" applied');
+                manager.touchAction.set('invalid-value');
+                assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'stale native "none" cleared when switching to invalid touchAction');
+                assert.strictEqual(manager.touchAction.appliedNative, false, 'appliedNative false after invalid touchAction');
+            }
+
+            // 6. Clobbered non-function window.CSS.supports does not throw
             if (map && window.CSS) {
                 delete map['pan-left'];
                 window.CSS.supports = 'clobbered';
