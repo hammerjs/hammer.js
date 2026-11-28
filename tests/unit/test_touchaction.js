@@ -1,11 +1,11 @@
 (function() {
     var el, manager;
 
-    module('TouchAction', {
-        setup: function() {
+    QUnit.module('TouchAction', {
+        beforeEach: function() {
             el = utils.createHitArea();
         },
-        teardown: function() {
+        afterEach: function() {
             if (manager) {
                 manager.destroy();
                 manager = null;
@@ -13,7 +13,7 @@
         }
     });
 
-    test('cleanTouchActions normalizes combined touch-action values', function() {
+    QUnit.test('cleanTouchActions normalizes combined touch-action values', function(assert) {
         var supportsPanXPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
             window.CSS.supports('touch-action', 'pan-x pinch-zoom');
         var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
@@ -21,18 +21,18 @@
         var expectedPanX = supportsPanXPinch ? 'pan-x pinch-zoom' : 'pan-x';
         var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
 
-        equal($H.cleanTouchActions('none'), 'none', 'none stays none');
-        equal($H.cleanTouchActions('pan-x none auto'), 'none', 'none takes precedence');
-        equal($H.cleanTouchActions('pan-x pan-y'), 'none', 'pan-x + pan-y collapses to none');
-        equal($H.cleanTouchActions('pan-x auto'), expectedPanX, 'pan-x preserves pinch-zoom when supported');
-        equal($H.cleanTouchActions('pan-y auto'), expectedPanY, 'pan-y preserves pinch-zoom when supported');
-        equal($H.cleanTouchActions('manipulation auto'), 'manipulation', 'manipulation preserved when no pan/none');
-        equal($H.cleanTouchActions('pinch-zoom auto'), 'pinch-zoom', 'pinch-zoom preserved when no pan/none/manipulation');
-        equal($H.cleanTouchActions('auto'), 'auto', 'auto stays auto');
-        equal($H.cleanTouchActions(''), 'auto', 'empty string defaults to auto');
+        assert.equal($H.cleanTouchActions('none'), 'none', 'none stays none');
+        assert.equal($H.cleanTouchActions('pan-x none auto'), 'none', 'none takes precedence');
+        assert.equal($H.cleanTouchActions('pan-x pan-y'), 'none', 'pan-x + pan-y collapses to none');
+        assert.equal($H.cleanTouchActions('pan-x auto'), expectedPanX, 'pan-x preserves pinch-zoom when supported');
+        assert.equal($H.cleanTouchActions('pan-y auto'), expectedPanY, 'pan-y preserves pinch-zoom when supported');
+        assert.equal($H.cleanTouchActions('manipulation auto'), 'manipulation', 'manipulation preserved when no pan/none');
+        assert.equal($H.cleanTouchActions('pinch-zoom auto'), 'pinch-zoom', 'pinch-zoom preserved when no pan/none/manipulation');
+        assert.equal($H.cleanTouchActions('auto'), 'auto', 'auto stays auto');
+        assert.equal($H.cleanTouchActions(''), 'auto', 'empty string defaults to auto');
     });
 
-    test('TouchAction.compute calculates expected value from enabled recognizers', function() {
+    QUnit.test('TouchAction.compute calculates expected value from enabled recognizers', function(assert) {
         var supportsPanXPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
             window.CSS.supports('touch-action', 'pan-x pinch-zoom');
         var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
@@ -41,63 +41,63 @@
         var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
 
         manager = new Hammer.Manager(el, {recognizers: []});
-        equal(manager.touchAction.actions, 'auto', 'no recognizers computes auto');
+        assert.equal(manager.touchAction.actions, 'auto', 'no recognizers computes auto');
 
         manager.add(new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL}));
-        equal(manager.touchAction.actions, expectedPanY, 'horizontal pan computes pan-y (+ pinch-zoom when supported)');
+        assert.equal(manager.touchAction.actions, expectedPanY, 'horizontal pan computes pan-y (+ pinch-zoom when supported)');
 
         manager.add(new Hammer.Pan({direction: Hammer.DIRECTION_VERTICAL}));
-        equal(manager.touchAction.actions, expectedPanX, 'vertical pan replaces horizontal and computes pan-x (+ pinch-zoom when supported)');
+        assert.equal(manager.touchAction.actions, expectedPanX, 'vertical pan replaces horizontal and computes pan-x (+ pinch-zoom when supported)');
 
         manager.add(new Hammer.Swipe({direction: Hammer.DIRECTION_HORIZONTAL}));
-        equal(manager.touchAction.actions, 'none', 'vertical pan + horizontal swipe computes none');
+        assert.equal(manager.touchAction.actions, 'none', 'vertical pan + horizontal swipe computes none');
 
         manager.remove('pan');
-        equal(manager.touchAction.actions, expectedPanY, 'removing pan leaves horizontal swipe -> pan-y (+ pinch-zoom when supported)');
+        assert.equal(manager.touchAction.actions, expectedPanY, 'removing pan leaves horizontal swipe -> pan-y (+ pinch-zoom when supported)');
 
         manager.remove('swipe');
         manager.add(new Hammer.Press());
-        equal(manager.touchAction.actions, 'auto', 'press recognizer computes auto');
+        assert.equal(manager.touchAction.actions, 'auto', 'press recognizer computes auto');
 
         manager.add(new Hammer.Rotate({enable: false}));
-        equal(manager.touchAction.actions, 'auto', 'disabled rotate recognizer is ignored in compute');
+        assert.equal(manager.touchAction.actions, 'auto', 'disabled rotate recognizer is ignored in compute');
 
         manager.get('rotate').set({enable: true});
         manager.touchAction.update();
-        equal(manager.touchAction.actions, 'none', 'enabled rotate recognizer computes none');
+        assert.equal(manager.touchAction.actions, 'none', 'enabled rotate recognizer computes none');
 
         manager.remove('rotate');
         manager.add(new Hammer.Pinch({enable: true}));
-        equal(manager.touchAction.actions, 'none', 'enabled pinch recognizer computes none');
+        assert.equal(manager.touchAction.actions, 'none', 'enabled pinch recognizer computes none');
     });
 
-    test('Manager.destroy restores original inline touch-action style', function() {
+    QUnit.test('Manager.destroy restores original inline touch-action style', function(assert) {
         if ($H.NATIVE_TOUCH_ACTION) {
             // 1. No initial inline touch-action -> restored to empty string after multiple updates
             el.style[$H.PREFIXED_TOUCH_ACTION] = '';
             manager = new Hammer(el);
-            ok(el.style[$H.PREFIXED_TOUCH_ACTION] !== '', 'Hammer sets inline touch-action');
+            assert.ok(el.style[$H.PREFIXED_TOUCH_ACTION] !== '', 'Hammer sets inline touch-action');
             manager.set({touchAction: 'none'});
             manager.destroy();
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'destroy() clears inline touch-action when originally unset');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'destroy() clears inline touch-action when originally unset');
             manager.destroy();
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'calling destroy() twice remains safe');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'calling destroy() twice remains safe');
 
             // 2. Existing inline touch-action -> restored to original value
             el.style[$H.PREFIXED_TOUCH_ACTION] = 'manipulation';
             manager = new Hammer.Manager(el, {
                 recognizers: [[Hammer.Pan, {direction: Hammer.DIRECTION_ALL}]]
             });
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'none', 'Hammer overrides inline touch-action while active');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'none', 'Hammer overrides inline touch-action while active');
             manager.destroy();
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'manipulation', 'destroy() restores previous inline touch-action');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'manipulation', 'destroy() restores previous inline touch-action');
             manager = null;
         } else {
-            ok(true, 'native touch-action not supported in environment');
+            assert.ok(true, 'native touch-action not supported in environment');
         }
     });
 
-    test('TouchAction.preventDefaults enforces polyfill rules when native touch-action is unavailable', function() {
+    QUnit.test('TouchAction.preventDefaults enforces polyfill rules when native touch-action is unavailable', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'none'});
 
         var map = $H.TOUCH_ACTION_MAP;
@@ -133,7 +133,7 @@
                 distance: 1,
                 deltaTime: 50
             });
-            equal(ev.prevented, false, 'touchAction none allows short tap without preventDefault');
+            assert.equal(ev.prevented, false, 'touchAction none allows short tap without preventDefault');
 
             // 2. touchAction: none prevents once distance >= 2
             ev = makeSrcEvent();
@@ -144,8 +144,8 @@
                 distance: 10,
                 deltaTime: 50
             });
-            equal(ev.prevented, true, 'touchAction none prevents default when moving');
-            equal(manager.session.prevented, true, 'session.prevented flag set');
+            assert.equal(ev.prevented, true, 'touchAction none prevents default when moving');
+            assert.equal(manager.session.prevented, true, 'session.prevented flag set');
 
             // 3. Subsequent events in same session always preventDefault
             ev = makeSrcEvent();
@@ -156,7 +156,7 @@
                 distance: 0,
                 deltaTime: 10
             });
-            equal(ev.prevented, true, 'subsequent events in prevented session call preventDefault');
+            assert.equal(ev.prevented, true, 'subsequent events in prevented session call preventDefault');
 
             // 4. pan-x pan-y allows all scrolling (never prevents)
             manager.session = {};
@@ -169,7 +169,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(ev.prevented, false, 'pan-x pan-y does not prevent default');
+            assert.equal(ev.prevented, false, 'pan-x pan-y does not prevent default');
 
             // 5. pan-y prevents horizontal gestures, allows vertical
             manager.session = {};
@@ -182,7 +182,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(ev.prevented, false, 'pan-y allows vertical scrolling');
+            assert.equal(ev.prevented, false, 'pan-y allows vertical scrolling');
 
             ev = makeSrcEvent();
             manager.touchAction.preventDefaults({
@@ -192,7 +192,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(ev.prevented, true, 'pan-y prevents horizontal movement');
+            assert.equal(ev.prevented, true, 'pan-y prevents horizontal movement');
 
             // 6. pan-x prevents vertical gestures, allows horizontal
             manager.session = {};
@@ -205,7 +205,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(ev.prevented, false, 'pan-x allows horizontal scrolling');
+            assert.equal(ev.prevented, false, 'pan-x allows horizontal scrolling');
 
             ev = makeSrcEvent();
             manager.touchAction.preventDefaults({
@@ -215,7 +215,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(ev.prevented, true, 'pan-x prevents vertical movement');
+            assert.equal(ev.prevented, true, 'pan-x prevents vertical movement');
         } finally {
             if (map && origMap) {
                 map.none = origMap.none;
@@ -225,7 +225,7 @@
         }
     });
 
-    test('TouchAction.set normalizes whitespace and case before compute and native style lookup', function() {
+    QUnit.test('TouchAction.set normalizes whitespace and case before compute and native style lookup', function(assert) {
         var supportsPanYPinch = $H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports &&
             window.CSS.supports('touch-action', 'pan-y pinch-zoom');
         var expectedPanY = supportsPanYPinch ? 'pan-y pinch-zoom' : 'pan-y';
@@ -234,32 +234,32 @@
             recognizers: [[Hammer.Pan, {direction: Hammer.DIRECTION_HORIZONTAL}]],
             touchAction: ' COMPUTE '
         });
-        equal(manager.touchAction.actions, expectedPanY, 'padded uppercase COMPUTE triggers touchAction.compute()');
+        assert.equal(manager.touchAction.actions, expectedPanY, 'padded uppercase COMPUTE triggers touchAction.compute()');
 
         manager.set({touchAction: ' PAN-X '});
-        equal(manager.touchAction.actions, 'pan-x', 'explicit pan-x stored normalized without adding pinch-zoom');
+        assert.equal(manager.touchAction.actions, 'pan-x', 'explicit pan-x stored normalized without adding pinch-zoom');
         if ($H.NATIVE_TOUCH_ACTION) {
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-x', 'native CSS touch-action applied for uppercase/padded value');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-x', 'native CSS touch-action applied for uppercase/padded value');
         }
     });
 
-    test('TouchAction supports pinch-zoom and dynamic CSS.supports touch-action values with graceful fallback', function() {
+    QUnit.test('TouchAction supports pinch-zoom and dynamic CSS.supports touch-action values with graceful fallback', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'pinch-zoom'});
-        equal(manager.touchAction.actions, 'pinch-zoom', 'pinch-zoom action stored');
+        assert.equal(manager.touchAction.actions, 'pinch-zoom', 'pinch-zoom action stored');
         if ($H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports('touch-action', 'pinch-zoom')) {
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pinch-zoom', 'native CSS touch-action applied for pinch-zoom');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pinch-zoom', 'native CSS touch-action applied for pinch-zoom');
         }
 
         manager.set({touchAction: 'pan-y pinch-zoom'});
         if ($H.NATIVE_TOUCH_ACTION && window.CSS && window.CSS.supports('touch-action', 'pan-y pinch-zoom')) {
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-y pinch-zoom', 'native CSS touch-action applied for pan-y pinch-zoom');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], 'pan-y pinch-zoom', 'native CSS touch-action applied for pan-y pinch-zoom');
         }
 
         // Invalid touch-action value is ignored natively
         var prevStyle = el.style[$H.PREFIXED_TOUCH_ACTION];
         manager.set({touchAction: 'not-a-valid-touch-action'});
         if ($H.NATIVE_TOUCH_ACTION) {
-            equal(el.style[$H.PREFIXED_TOUCH_ACTION], prevStyle, 'unsupported touch-action value does not overwrite style');
+            assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], prevStyle, 'unsupported touch-action value does not overwrite style');
         }
 
         // Fallback to plain pan-y when browser lacks pan-y pinch-zoom support
@@ -269,7 +269,7 @@
             if (map) {
                 map['pan-y pinch-zoom'] = false;
             }
-            equal($H.cleanTouchActions('pan-y'), 'pan-y', 'cleanTouchActions falls back to pan-y when pan-y pinch-zoom is unsupported');
+            assert.equal($H.cleanTouchActions('pan-y'), 'pan-y', 'cleanTouchActions falls back to pan-y when pan-y pinch-zoom is unsupported');
         } finally {
             if (map) {
                 if (origVal === undefined) {
@@ -281,14 +281,14 @@
         }
     });
 
-    test('TouchAction handles unsupported compound values, pinch-zoom precedence over manipulation, and prototype keys', function() {
+    QUnit.test('TouchAction handles unsupported compound values, pinch-zoom precedence over manipulation, and prototype keys', function(assert) {
         // 1. pinch-zoom is more restrictive than manipulation and takes precedence
-        equal($H.cleanTouchActions('manipulation pinch-zoom'), 'pinch-zoom', 'pinch-zoom takes precedence over manipulation');
-        equal($H.cleanTouchActions('pinch-zoom manipulation'), 'pinch-zoom', 'pinch-zoom takes precedence regardless of order');
+        assert.equal($H.cleanTouchActions('manipulation pinch-zoom'), 'pinch-zoom', 'pinch-zoom takes precedence over manipulation');
+        assert.equal($H.cleanTouchActions('pinch-zoom manipulation'), 'pinch-zoom', 'pinch-zoom takes precedence regardless of order');
 
         // 2. Prototype property names on TOUCH_ACTION_MAP return false
-        strictEqual($H.supportsTouchAction('constructor'), false, 'supportsTouchAction("constructor") returns false');
-        strictEqual($H.supportsTouchAction('toString'), false, 'supportsTouchAction("toString") returns false');
+        assert.strictEqual($H.supportsTouchAction('constructor'), false, 'supportsTouchAction("constructor") returns false');
+        assert.strictEqual($H.supportsTouchAction('toString'), false, 'supportsTouchAction("toString") returns false');
 
         // 3. Unsupported compound value (e.g. "pan-y pinch-zoom") runs JS polyfill even when plain "pan-y" is supported
         var map = $H.TOUCH_ACTION_MAP;
@@ -309,7 +309,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(horizEv.prevented, true, 'polyfill prevents horizontal scroll for unsupported compound "pan-y pinch-zoom"');
+            assert.equal(horizEv.prevented, true, 'polyfill prevents horizontal scroll for unsupported compound "pan-y pinch-zoom"');
 
             manager.session = {};
             var vertEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
@@ -320,7 +320,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(vertEv.prevented, false, 'polyfill still allows vertical scroll for "pan-y pinch-zoom"');
+            assert.equal(vertEv.prevented, false, 'polyfill still allows vertical scroll for "pan-y pinch-zoom"');
         } finally {
             if (map) {
                 map['pan-y'] = origPanY;
@@ -333,7 +333,7 @@
         }
     });
 
-    test('TouchAction.preventDefaults exits early when native touch-action supports current value', function() {
+    QUnit.test('TouchAction.preventDefaults exits early when native touch-action supports current value', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'none'});
         if ($H.TOUCH_ACTION_MAP && $H.TOUCH_ACTION_MAP.none) {
             var directionReads = 0;
@@ -350,18 +350,18 @@
                 }
             });
             manager.touchAction.preventDefaults(input);
-            equal(directionReads, 0, 'skips polyfill checks when native touch-action supports value');
+            assert.equal(directionReads, 0, 'skips polyfill checks when native touch-action supports value');
         } else {
-            ok(true, 'native touch-action not supported in environment');
+            assert.ok(true, 'native touch-action not supported in environment');
         }
     });
 
-    test('TouchAction falls back to JS preventDefault when element has no style (document/window)', function() {
+    QUnit.test('TouchAction falls back to JS preventDefault when element has no style (document/window)', function(assert) {
         // 1. document with touchAction: 'none'
         var docMgr = new Hammer.Manager(document, {recognizers: [], touchAction: 'none'});
         var docEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
         try {
-            strictEqual(docMgr.touchAction.appliedNative, false, 'appliedNative is false for document target');
+            assert.strictEqual(docMgr.touchAction.appliedNative, false, 'appliedNative is false for document target');
             docMgr.touchAction.preventDefaults({
                 srcEvent: docEv,
                 offsetDirection: Hammer.DIRECTION_RIGHT,
@@ -369,7 +369,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(docEv.prevented, true, 'document target with touchAction "none" uses JS preventDefault polyfill');
+            assert.equal(docEv.prevented, true, 'document target with touchAction "none" uses JS preventDefault polyfill');
         } finally {
             docMgr.destroy();
         }
@@ -379,7 +379,7 @@
         var horizEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
         var vertEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
         try {
-            strictEqual(winMgr.touchAction.appliedNative, false, 'appliedNative is false for window target');
+            assert.strictEqual(winMgr.touchAction.appliedNative, false, 'appliedNative is false for window target');
             winMgr.touchAction.preventDefaults({
                 srcEvent: horizEv,
                 offsetDirection: Hammer.DIRECTION_RIGHT,
@@ -387,7 +387,7 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(horizEv.prevented, true, 'window target with touchAction "pan-y" prevents horizontal drag');
+            assert.equal(horizEv.prevented, true, 'window target with touchAction "pan-y" prevents horizontal drag');
 
             winMgr.session = {};
             winMgr.touchAction.preventDefaults({
@@ -397,33 +397,33 @@
                 distance: 30,
                 deltaTime: 50
             });
-            equal(vertEv.prevented, false, 'window target with touchAction "pan-y" allows vertical drag');
+            assert.equal(vertEv.prevented, false, 'window target with touchAction "pan-y" allows vertical drag');
         } finally {
             winMgr.destroy();
         }
     });
 
-    test('TouchAction allowlists cache keys, rejects CSS keywords/substrings, supports pinch-zoom polyfill, and guards clobbered CSS.supports', function() {
+    QUnit.test('TouchAction allowlists cache keys, rejects CSS keywords/substrings, supports pinch-zoom polyfill, and guards clobbered CSS.supports', function(assert) {
         var map = $H.TOUCH_ACTION_MAP;
 
         // 1. Allowlist blocks var(--x), inherit, arbitrary strings from polluting TOUCH_ACTION_MAP
-        strictEqual($H.supportsTouchAction('var(--x)'), false, 'var(--x) rejected by touch-action allowlist');
-        strictEqual($H.supportsTouchAction('inherit'), false, 'inherit rejected by touch-action allowlist');
-        strictEqual($H.supportsTouchAction('arbitrary-untrusted-value'), false, 'arbitrary string rejected');
+        assert.strictEqual($H.supportsTouchAction('var(--x)'), false, 'var(--x) rejected by touch-action allowlist');
+        assert.strictEqual($H.supportsTouchAction('inherit'), false, 'inherit rejected by touch-action allowlist');
+        assert.strictEqual($H.supportsTouchAction('arbitrary-untrusted-value'), false, 'arbitrary string rejected');
         if (map) {
-            strictEqual('arbitrary-untrusted-value' in map, false, 'arbitrary string is never cached in TOUCH_ACTION_MAP');
-            strictEqual('var(--x)' in map, false, 'var(--x) is never cached in TOUCH_ACTION_MAP');
+            assert.strictEqual('arbitrary-untrusted-value' in map, false, 'arbitrary string is never cached in TOUCH_ACTION_MAP');
+            assert.strictEqual('var(--x)' in map, false, 'var(--x) is never cached in TOUCH_ACTION_MAP');
         }
 
         // 2. Token matching prevents substring false positives ('nonexistent' != 'none')
-        equal($H.cleanTouchActions('nonexistent'), 'auto', 'cleanTouchActions does not treat "nonexistent" as "none"');
+        assert.equal($H.cleanTouchActions('nonexistent'), 'auto', 'cleanTouchActions does not treat "nonexistent" as "none"');
 
         // 3. Non-string values in set() do not throw and extra internal whitespace is normalized
         manager = new Hammer.Manager(el, {recognizers: [], touchAction: 'pan-y   pinch-zoom'});
-        equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'multiple internal spaces collapsed to single space');
+        assert.equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'multiple internal spaces collapsed to single space');
         manager.touchAction.set(null);
         manager.touchAction.set(undefined);
-        equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'non-string set() values safely ignored');
+        assert.equal(manager.touchAction.actions, 'pan-y pinch-zoom', 'non-string set() values safely ignored');
 
         // 4. pinch-zoom JS polyfill blocks single-pointer panning but allows 2-pointer pinch and short taps
         var origPinch = map ? map['pinch-zoom'] : undefined;
@@ -434,9 +434,9 @@
             }
             manager.touchAction.set('none');
             manager.touchAction.set('pinch-zoom');
-            strictEqual(manager.touchAction.appliedNative, false, 'appliedNative false for unsupported pinch-zoom');
+            assert.strictEqual(manager.touchAction.appliedNative, false, 'appliedNative false for unsupported pinch-zoom');
             if ($H.NATIVE_TOUCH_ACTION) {
-                equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'stale native "none" cleared when falling back to JS polyfill');
+                assert.equal(el.style[$H.PREFIXED_TOUCH_ACTION], '', 'stale native "none" cleared when falling back to JS polyfill');
             }
 
             var tapEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
@@ -447,7 +447,7 @@
                 distance: 1,
                 deltaTime: 50
             });
-            equal(tapEv.prevented, false, 'pinch-zoom polyfill allows short 1-pointer tap');
+            assert.equal(tapEv.prevented, false, 'pinch-zoom polyfill allows short 1-pointer tap');
 
             var panEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
             manager.touchAction.preventDefaults({
@@ -457,7 +457,7 @@
                 distance: 25,
                 deltaTime: 50
             });
-            equal(panEv.prevented, true, 'pinch-zoom polyfill prevents single-pointer panning');
+            assert.equal(panEv.prevented, true, 'pinch-zoom polyfill prevents single-pointer panning');
 
             manager.session = {};
             var pinchEv = {cancelable: true, prevented: false, preventDefault: function() { this.prevented = true; }};
@@ -468,13 +468,13 @@
                 distance: 25,
                 deltaTime: 50
             });
-            equal(pinchEv.prevented, false, 'pinch-zoom polyfill allows 2-pointer pinch');
+            assert.equal(pinchEv.prevented, false, 'pinch-zoom polyfill allows 2-pointer pinch');
 
             // 5. Clobbered non-function window.CSS.supports does not throw
             if (map && window.CSS) {
                 delete map['pan-left'];
                 window.CSS.supports = 'clobbered';
-                strictEqual($H.supportsTouchAction('pan-left'), false, 'non-function window.CSS.supports handled safely');
+                assert.strictEqual($H.supportsTouchAction('pan-left'), false, 'non-function window.CSS.supports handled safely');
                 delete map['pan-left'];
             }
         } finally {

@@ -33,10 +33,11 @@
     "grunt-banner": "^0.6.0",
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-connect": "^5.0.1",
+    "grunt-contrib-qunit": "^11.0.0",
     "grunt-contrib-uglify": "^5.2.2",
     "hammer-simulator": "github:hammerjs/simulator#31a05ccd9314247d4e404e18e310b9e3b4642056",
     "jquery-hammerjs": "2.0.x",
-    "puppeteer": "^25.0.0"
+    "qunit": "^3.0.0"
   },
   "overrides": {
     "jquery": "^3.7.1"

@@ -1,11 +1,11 @@
 (function() {
     var el, manager;
 
-    module('Core Coverage (Manager & Recognizers)', {
-        setup: function() {
+    QUnit.module('Core Coverage (Manager & Recognizers)', {
+        beforeEach: function() {
             el = utils.createHitArea();
         },
-        teardown: function() {
+        afterEach: function() {
             if (manager) {
                 manager.destroy();
                 manager = null;
@@ -13,18 +13,18 @@
         }
     });
 
-    test('Manager.set updates touchAction and rebinds inputTarget', function() {
+    QUnit.test('Manager.set updates touchAction and rebinds inputTarget', function(assert) {
         var newTarget = utils.createHitArea();
         manager = new Hammer.Manager(el, {recognizers: [[Hammer.Tap]]});
 
         manager.set({touchAction: 'none'});
-        equal(manager.touchAction.actions, 'none', 'set({touchAction}) updates touchAction');
+        assert.equal(manager.touchAction.actions, 'none', 'set({touchAction}) updates touchAction');
 
         manager.set({inputTarget: newTarget});
-        equal(manager.input.target, newTarget, 'set({inputTarget}) rebinds input target');
+        assert.equal(manager.input.target, newTarget, 'set({inputTarget}) rebinds input target');
     });
 
-    test('Manager.stop and forced stop halt recognition', function() {
+    QUnit.test('Manager.stop and forced stop halt recognition', function(assert) {
         var events = [];
         manager = new Hammer.Manager(el, {
             recognizers: [
@@ -57,20 +57,20 @@
 
         // Forced stop inside pan1start stops pan2 in the same recognize() cycle and resets state
         manager.recognize(baseInput);
-        deepEqual(events, ['pan1start'], 'stop(true) halts remaining recognizers immediately');
-        equal(manager.get('pan1').state, $H.STATE_POSSIBLE, 'stop(true) resets active recognizer state to STATE_POSSIBLE');
+        assert.deepEqual(events, ['pan1start'], 'stop(true) halts remaining recognizers immediately');
+        assert.equal(manager.get('pan1').state, $H.STATE_POSSIBLE, 'stop(true) resets active recognizer state to STATE_POSSIBLE');
 
         // Subsequent recognize() calls are ignored while session.stopped is set
         manager.recognize(baseInput);
-        deepEqual(events, ['pan1start'], 'recognize() exits early when session is stopped');
+        assert.deepEqual(events, ['pan1start'], 'recognize() exits early when session is stopped');
 
         // Non-forced stop sets STOP flag
         manager.session = {};
         manager.stop();
-        equal(manager.session.stopped, $H.STOP, 'stop() sets STOP flag on session');
+        assert.equal(manager.session.stopped, $H.STOP, 'stop() sets STOP flag on session');
     });
 
-    test('Manager.remove array arg, missing on/off args, emit preventDefault, and destroy CSS restore', function() {
+    QUnit.test('Manager.remove array arg, missing on/off args, emit preventDefault, and destroy CSS restore', function(assert) {
         el.style.userSelect = 'text';
         manager = new Hammer.Manager(el, {
             recognizers: [[Hammer.Tap], [Hammer.Press]]
@@ -78,14 +78,14 @@
 
         // Remove multiple recognizers via array and ignore unknown name
         manager.remove(['tap', 'press']);
-        equal(manager.recognizers.length, 0, 'remove() accepts array of recognizer names');
+        assert.equal(manager.recognizers.length, 0, 'remove() accepts array of recognizer names');
         manager.remove('doesnotexist');
-        equal(manager.recognizers.length, 0, 'remove() ignores unknown recognizer');
+        assert.equal(manager.recognizers.length, 0, 'remove() ignores unknown recognizer');
 
         // on() and off() safely ignore undefined arguments
-        equal(manager.on(undefined, function() {}), undefined, 'on(undefined) returns early');
-        equal(manager.on('tap', undefined), undefined, 'on(events, undefined) returns early');
-        equal(manager.off(undefined), undefined, 'off(undefined) returns early');
+        assert.equal(manager.on(undefined, function() {}), undefined, 'on(undefined) returns early');
+        assert.equal(manager.on('tap', undefined), undefined, 'on(events, undefined) returns early');
+        assert.equal(manager.off(undefined), undefined, 'off(undefined) returns early');
 
         // emit() exposes data.preventDefault() delegating to srcEvent.preventDefault()
         var srcPrevented = false;
@@ -99,7 +99,7 @@
                 }
             }
         });
-        equal(srcPrevented, true, 'emitted event preventDefault() delegates to srcEvent');
+        assert.equal(srcPrevented, true, 'emitted event preventDefault() delegates to srcEvent');
 
         // emit() with domEvents: true dispatches a DOM Event carrying .gesture
         var domEv = null;
@@ -113,59 +113,59 @@
             srcEvent: {preventDefault: function() {}}
         });
         el.removeEventListener('customdom', domListener, false);
-        ok(domEv && domEv.type === 'customdom' && domEv.gesture && domEv.gesture.target === el,
+        assert.ok(domEv && domEv.type === 'customdom' && domEv.gesture && domEv.gesture.target === el,
             'domEvents: true dispatches DOM event with gesture payload');
 
         // Manager handles target without .style (e.g. document) without throwing
         var docManager = new Hammer.Manager(document, {recognizers: []});
-        ok(docManager instanceof Hammer.Manager, 'Manager works on document without .style');
+        assert.ok(docManager instanceof Hammer.Manager, 'Manager works on document without .style');
         docManager.destroy();
 
         // destroy() restores inline cssProps and clears element
         var userSelectProp = $H.prefixed(el.style, 'userSelect');
         manager.destroy();
-        equal(manager.element, null, 'destroy() clears element reference');
+        assert.equal(manager.element, null, 'destroy() clears element reference');
         if (userSelectProp) {
-            equal(el.style[userSelectProp], 'text', 'destroy() restores previous inline cssProps value');
+            assert.equal(el.style[userSelectProp], 'text', 'destroy() restores previous inline cssProps value');
         }
         manager = null;
     });
 
-    test('Recognizer dropRequireFailure, dropRecognizeWith array, stateStr, directionStr, and AttrRecognizer cancel', function() {
+    QUnit.test('Recognizer dropRequireFailure, dropRecognizeWith array, stateStr, directionStr, and AttrRecognizer cancel', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: []});
         var tap = manager.add(new Hammer.Tap({event: 'tap'}));
         var doubletap = manager.add(new Hammer.Tap({event: 'doubletap', taps: 2}));
         var press = manager.add(new Hammer.Press());
 
         tap.requireFailure([doubletap, press]);
-        equal(tap.hasRequireFailures(), true, 'requireFailure registered');
+        assert.equal(tap.hasRequireFailures(), true, 'requireFailure registered');
 
         tap.dropRequireFailure('doubletap');
-        equal(tap.requireFail.length, 1, 'dropRequireFailure removes link by name');
+        assert.equal(tap.requireFail.length, 1, 'dropRequireFailure removes link by name');
 
         tap.dropRequireFailure([press]);
-        equal(tap.hasRequireFailures(), false, 'dropRequireFailure accepts array argument');
+        assert.equal(tap.hasRequireFailures(), false, 'dropRequireFailure accepts array argument');
 
         tap.recognizeWith([doubletap, press]);
-        equal(tap.canRecognizeWith(doubletap), true, 'recognizeWith registered doubletap');
-        equal(tap.canRecognizeWith(press), true, 'recognizeWith registered press');
+        assert.equal(tap.canRecognizeWith(doubletap), true, 'recognizeWith registered doubletap');
+        assert.equal(tap.canRecognizeWith(press), true, 'recognizeWith registered press');
 
         tap.dropRecognizeWith([doubletap, press]);
-        equal(tap.canRecognizeWith(doubletap), false, 'dropRecognizeWith array removed doubletap');
-        equal(tap.canRecognizeWith(press), false, 'dropRecognizeWith array removed press');
+        assert.equal(tap.canRecognizeWith(doubletap), false, 'dropRecognizeWith array removed doubletap');
+        assert.equal(tap.canRecognizeWith(press), false, 'dropRecognizeWith array removed press');
 
         // stateStr & directionStr coverage
-        equal($H.stateStr($H.STATE_CANCELLED), 'cancel', 'STATE_CANCELLED -> cancel');
-        equal($H.stateStr($H.STATE_ENDED), 'end', 'STATE_ENDED -> end');
-        equal($H.stateStr($H.STATE_CHANGED), 'move', 'STATE_CHANGED -> move');
-        equal($H.stateStr($H.STATE_BEGAN), 'start', 'STATE_BEGAN -> start');
-        equal($H.stateStr($H.STATE_POSSIBLE), '', 'STATE_POSSIBLE -> empty string');
+        assert.equal($H.stateStr($H.STATE_CANCELLED), 'cancel', 'STATE_CANCELLED -> cancel');
+        assert.equal($H.stateStr($H.STATE_ENDED), 'end', 'STATE_ENDED -> end');
+        assert.equal($H.stateStr($H.STATE_CHANGED), 'move', 'STATE_CHANGED -> move');
+        assert.equal($H.stateStr($H.STATE_BEGAN), 'start', 'STATE_BEGAN -> start');
+        assert.equal($H.stateStr($H.STATE_POSSIBLE), '', 'STATE_POSSIBLE -> empty string');
 
-        equal($H.directionStr(Hammer.DIRECTION_DOWN), 'down', 'DIRECTION_DOWN -> down');
-        equal($H.directionStr(Hammer.DIRECTION_UP), 'up', 'DIRECTION_UP -> up');
-        equal($H.directionStr(Hammer.DIRECTION_LEFT), 'left', 'DIRECTION_LEFT -> left');
-        equal($H.directionStr(Hammer.DIRECTION_RIGHT), 'right', 'DIRECTION_RIGHT -> right');
-        equal($H.directionStr(Hammer.DIRECTION_NONE), '', 'DIRECTION_NONE -> empty string');
+        assert.equal($H.directionStr(Hammer.DIRECTION_DOWN), 'down', 'DIRECTION_DOWN -> down');
+        assert.equal($H.directionStr(Hammer.DIRECTION_UP), 'up', 'DIRECTION_UP -> up');
+        assert.equal($H.directionStr(Hammer.DIRECTION_LEFT), 'left', 'DIRECTION_LEFT -> left');
+        assert.equal($H.directionStr(Hammer.DIRECTION_RIGHT), 'right', 'DIRECTION_RIGHT -> right');
+        assert.equal($H.directionStr(Hammer.DIRECTION_NONE), '', 'DIRECTION_NONE -> empty string');
 
         // AttrRecognizer transitions to STATE_CANCELLED on INPUT_CANCEL after beginning
         var pan = manager.add(new Hammer.Pan({threshold: 1}));
@@ -193,10 +193,10 @@
             direction: Hammer.DIRECTION_RIGHT,
             srcEvent: srcEv
         });
-        deepEqual(emitted, ['panstart', 'pancancel'], 'AttrRecognizer emits cancel event on INPUT_CANCEL');
+        assert.deepEqual(emitted, ['panstart', 'pancancel'], 'AttrRecognizer emits cancel event on INPUT_CANCEL');
     });
 
-    test('PanRecognizer vertical axis locking, SwipeRecognizer directions, Pinch/Rotate/Press edge paths', function() {
+    QUnit.test('PanRecognizer vertical axis locking, SwipeRecognizer directions, Pinch/Rotate/Press edge paths', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: []});
 
         // Vertical Pan axis locking (hits vertical branch in directionTest)
@@ -235,7 +235,7 @@
             direction: Hammer.DIRECTION_DOWN,
             srcEvent: srcEv
         });
-        deepEqual(panEvents, ['panstart', 'panup', 'pandown', 'panend'], 'vertical Pan locks to Y axis and emits panup/pandown');
+        assert.deepEqual(panEvents, ['panstart', 'panup', 'pandown', 'panend'], 'vertical Pan locks to Y axis and emits panup/pandown');
 
         // SwipeRecognizer vertical & horizontal directions
         var swipe = manager.add(new Hammer.Swipe({direction: Hammer.DIRECTION_ALL, threshold: 10, velocity: 0.3}));
@@ -262,7 +262,7 @@
                 srcEvent: srcEv
             });
         });
-        deepEqual(swipeEvents, ['swipeup', 'swipedown', 'swipeleft', 'swiperight'], 'Swipe emits all 4 directional events');
+        assert.deepEqual(swipeEvents, ['swipeup', 'swipedown', 'swipeleft', 'swiperight'], 'Swipe emits all 4 directional events');
 
         // PinchRecognizer pinchout & pinchin
         var pinch = manager.add(new Hammer.Pinch({enable: true, threshold: 0.1}));
@@ -273,7 +273,7 @@
         pinch.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], scale: 1.5, srcEvent: srcEv});
         pinch.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], scale: 0.6, srcEvent: srcEv});
         pinch.recognize({eventType: $H.INPUT_END, pointers: [{}, {}], scale: 0.6, srcEvent: srcEv});
-        deepEqual(pinchEvents, ['pinchstart', 'pinchout', 'pinchin', 'pinchin', 'pinchend'], 'Pinch emits start, out, in, end');
+        assert.deepEqual(pinchEvents, ['pinchstart', 'pinchout', 'pinchin', 'pinchin', 'pinchend'], 'Pinch emits start, out, in, end');
 
         // RotateRecognizer threshold & events
         var rotate = manager.add(new Hammer.Rotate({enable: true, threshold: 5}));
@@ -282,11 +282,11 @@
             rotateEvents.push(ev.type);
         });
         rotate.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], rotation: 2, srcEvent: srcEv});
-        equal(rotateEvents.length, 0, 'Rotate does not trigger below threshold');
+        assert.equal(rotateEvents.length, 0, 'Rotate does not trigger below threshold');
         rotate.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], rotation: 15, srcEvent: srcEv});
         rotate.recognize({eventType: $H.INPUT_MOVE, pointers: [{}, {}], rotation: 25, srcEvent: srcEv});
         rotate.recognize({eventType: $H.INPUT_END, pointers: [{}, {}], rotation: 25, srcEvent: srcEv});
-        deepEqual(rotateEvents, ['rotatestart', 'rotatemove', 'rotateend'], 'Rotate emits start, move, end above threshold');
+        assert.deepEqual(rotateEvents, ['rotatestart', 'rotatemove', 'rotateend'], 'Rotate emits start, move, end above threshold');
 
         // PressRecognizer emit guard when not recognized + pressup after recognized press
         var press = manager.add(new Hammer.Press({time: 0, threshold: 9}));
@@ -296,7 +296,7 @@
         });
         press.state = $H.STATE_FAILED;
         press.emit({eventType: $H.INPUT_END, srcEvent: srcEv});
-        equal(pressEvents.length, 0, 'Press.emit does nothing when state !== STATE_RECOGNIZED');
+        assert.equal(pressEvents.length, 0, 'Press.emit does nothing when state !== STATE_RECOGNIZED');
 
         press.recognize({
             eventType: $H.INPUT_START,
@@ -312,10 +312,10 @@
             deltaTime: 300,
             srcEvent: srcEv
         });
-        deepEqual(pressEvents, ['press', 'pressup'], 'Press emits pressup when released after press was recognized');
+        assert.deepEqual(pressEvents, ['press', 'pressup'], 'Press emits pressup when released after press was recognized');
     });
 
-    test('AttrRecognizer does not emit start or move when INPUT_CANCEL arrives before recognition', function() {
+    QUnit.test('AttrRecognizer does not emit start or move when INPUT_CANCEL arrives before recognition', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: []});
         var pan = manager.add(new Hammer.Pan({threshold: 1}));
         var emitted = [];
@@ -334,11 +334,11 @@
             direction: Hammer.DIRECTION_RIGHT,
             srcEvent: srcEv
         });
-        deepEqual(emitted, [], 'INPUT_CANCEL before recognition emits no pan events');
-        equal(pan.state, $H.STATE_FAILED, 'recognizer transitions to STATE_FAILED');
+        assert.deepEqual(emitted, [], 'INPUT_CANCEL before recognition emits no pan events');
+        assert.equal(pan.state, $H.STATE_FAILED, 'recognizer transitions to STATE_FAILED');
     });
 
-    test('AttrRecognizer does not emit orphan end events on 1-frame gestures while Swipe still recognizes on INPUT_END', function() {
+    QUnit.test('AttrRecognizer does not emit orphan end events on 1-frame gestures while Swipe still recognizes on INPUT_END', function(assert) {
         manager = new Hammer.Manager(el, {
             recognizers: [
                 [Hammer.Pan, {threshold: 10}],
@@ -399,18 +399,19 @@
             velocityY: 0,
             srcEvent: srcEv
         });
-        deepEqual(panEvents, [], '1-frame pan does not emit orphan panend without panstart');
-        deepEqual(swipeEvents, ['swiperight', 'swipe'], 'SwipeRecognizer still recognizes 1-frame flick on INPUT_END');
+        assert.deepEqual(panEvents, [], '1-frame pan does not emit orphan panend without panstart');
+        assert.deepEqual(swipeEvents, ['swiperight', 'swipe'], 'SwipeRecognizer still recognizes 1-frame flick on INPUT_END');
 
         // 1-frame Pinch and Rotate directly on INPUT_END without prior start
         manager.get('pinch').recognize({eventType: $H.INPUT_END, pointers: [{}, {}], scale: 2.0, srcEvent: srcEv});
         manager.get('rotate').recognize({eventType: $H.INPUT_END, pointers: [{}, {}], rotation: 45, srcEvent: srcEv});
-        deepEqual(pinchEvents, [], '1-frame pinch does not emit orphan pinchend without pinchstart');
-        deepEqual(rotateEvents, [], '1-frame rotate does not emit orphan rotateend without rotatestart');
+        assert.deepEqual(pinchEvents, [], '1-frame pinch does not emit orphan pinchend without pinchstart');
+        assert.deepEqual(rotateEvents, [], '1-frame rotate does not emit orphan rotateend without rotatestart');
     });
 
-    asyncTest('PressRecognizer clears timer on INPUT_END and INPUT_CANCEL even when deltaTime exceeds time', function() {
-        expect(2);
+    QUnit.test('PressRecognizer clears timer on INPUT_END and INPUT_CANCEL even when deltaTime exceeds time', function(assert) {
+        var done = assert.async();
+        assert.expect(2);
 
         manager = new Hammer.Manager(el, {recognizers: []});
         var press = manager.add(new Hammer.Press({time: 20}));
@@ -424,19 +425,19 @@
         // Case 1: INPUT_END arrives with deltaTime > time before timer callback runs
         press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
-        deepEqual(events, [], 'pressup is not emitted if press timer did not fire before end');
+        assert.deepEqual(events, [], 'pressup is not emitted if press timer did not fire before end');
 
         // Case 2: INPUT_CANCEL arrives with deltaTime > time before timer callback runs
         press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_CANCEL, pointers: [{}], distance: 0, deltaTime: 30, srcEvent: srcEv});
 
         setTimeout(function() {
-            deepEqual(events, [], 'no stale press event fires after end or cancel');
-            start();
+            assert.deepEqual(events, [], 'no stale press event fires after end or cancel');
+            done();
         }, 60);
     });
 
-    test('PressRecognizer does not emit pressup if movement invalidated the press before release', function() {
+    QUnit.test('PressRecognizer does not emit pressup if movement invalidated the press before release', function(assert) {
         manager = new Hammer.Manager(el, {recognizers: []});
         var press = manager.add(new Hammer.Press({time: 20, threshold: 9}));
         var events = [];
@@ -451,7 +452,7 @@
         press.recognize({eventType: $H.INPUT_MOVE, pointers: [{}], distance: 2, deltaTime: 30, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 2, deltaTime: 40, srcEvent: srcEv});
 
-        deepEqual(events, [], 'pressup is not emitted after movement invalidated the press');
+        assert.deepEqual(events, [], 'pressup is not emitted after movement invalidated the press');
 
         // Second finger cancels pending press; lifting second finger (isFinal: false) must keep press invalidated
         press.recognize({eventType: $H.INPUT_START, isFirst: true, isFinal: false, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
@@ -459,11 +460,11 @@
         press.recognize({eventType: $H.INPUT_END, isFirst: false, isFinal: false, pointers: [{}, {}], distance: 2, deltaTime: 10, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_END, isFirst: false, isFinal: true, pointers: [{}], distance: 0, deltaTime: 40, srcEvent: srcEv});
 
-        deepEqual(events, [], 'pressup is not emitted after a second pointer invalidated the press');
+        assert.deepEqual(events, [], 'pressup is not emitted after a second pointer invalidated the press');
     });
 
-    test('Manager.emit populates data.type and data.preventDefault before dispatching DOM events', function() {
-        expect(3);
+    QUnit.test('Manager.emit populates data.type and data.preventDefault before dispatching DOM events', function(assert) {
+        assert.expect(3);
 
         manager = new Hammer.Manager(el, {
             domEvents: true,
@@ -474,7 +475,7 @@
         var seenTypes = [];
         var onDomTap = function(ev) {
             seenTypes.push(ev.gesture.type);
-            equal(typeof ev.gesture.preventDefault, 'function', 'ev.gesture.preventDefault is defined on DOM event');
+            assert.equal(typeof ev.gesture.preventDefault, 'function', 'ev.gesture.preventDefault is defined on DOM event');
             ev.gesture.preventDefault();
         };
         var onDomCustom = function(ev) {
@@ -496,15 +497,15 @@
             manager.emit('tap', payload);
             manager.emit('custom', payload);
 
-            deepEqual(seenTypes, ['tap', 'custom'], 'ev.gesture.type matches each dispatched DOM event');
-            equal(prevented, true, 'ev.gesture.preventDefault invokes srcEvent.preventDefault');
+            assert.deepEqual(seenTypes, ['tap', 'custom'], 'ev.gesture.type matches each dispatched DOM event');
+            assert.equal(prevented, true, 'ev.gesture.preventDefault invokes srcEvent.preventDefault');
         } finally {
             el.removeEventListener('tap', onDomTap, false);
             el.removeEventListener('custom', onDomCustom, false);
         }
     });
 
-    test('PressRecognizer with time: 0 fires press synchronously on INPUT_START and pressup on immediate INPUT_END', function() {
+    QUnit.test('PressRecognizer with time: 0 fires press synchronously on INPUT_START and pressup on immediate INPUT_END', function(assert) {
         var events = [];
         manager = new Hammer.Manager(el, {
             recognizers: [[Hammer.Press, {time: 0}]]
@@ -521,7 +522,7 @@
             deltaTime: 0,
             srcEvent: srcEv
         });
-        deepEqual(events, ['press'], 'press fires synchronously on INPUT_START when time is 0');
+        assert.deepEqual(events, ['press'], 'press fires synchronously on INPUT_START when time is 0');
 
         // Small move within threshold does not re-emit press
         manager.recognize({
@@ -531,7 +532,7 @@
             deltaTime: 0,
             srcEvent: srcEv
         });
-        deepEqual(events, ['press'], 'INPUT_MOVE within threshold does not re-emit press');
+        assert.deepEqual(events, ['press'], 'INPUT_MOVE within threshold does not re-emit press');
 
         // Immediate INPUT_END (deltaTime === 0) emits pressup
         manager.recognize({
@@ -541,7 +542,7 @@
             deltaTime: 0,
             srcEvent: srcEv
         });
-        deepEqual(events, ['press', 'pressup'], 'pressup fires on immediate INPUT_END when time is 0');
+        assert.deepEqual(events, ['press', 'pressup'], 'pressup fires on immediate INPUT_END when time is 0');
 
         // Moving past threshold before INPUT_END suppresses pressup
         events = [];
@@ -559,7 +560,7 @@
             deltaTime: 10,
             srcEvent: srcEv
         });
-        deepEqual(events, ['press'], 'moving beyond threshold cancels pressup');
+        assert.deepEqual(events, ['press'], 'moving beyond threshold cancels pressup');
 
         // Default non-zero time still waits asynchronously
         var delayedEvents = [];
@@ -575,11 +576,12 @@
             deltaTime: 0,
             srcEvent: srcEv
         });
-        deepEqual(delayedEvents, [], 'non-zero time press does not fire synchronously');
+        assert.deepEqual(delayedEvents, [], 'non-zero time press does not fire synchronously');
     });
 
-    asyncTest('PressRecognizer never emits pressup without prior press (timer race and requireFailure)', function() {
-        expect(4);
+    QUnit.test('PressRecognizer never emits pressup without prior press (timer race and requireFailure)', function(assert) {
+        var done = assert.async();
+        assert.expect(4);
 
         manager = new Hammer.Manager(el, {recognizers: []});
         var pan = manager.add(new Hammer.Pan({threshold: 5}));
@@ -596,7 +598,7 @@
         // 1. Timer-vs-release race: INPUT_END arrives with deltaTime > time before timer callback fires
         press.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         press.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 80, srcEvent: srcEv});
-        deepEqual(events, [], 'timer race does not emit pressup without press');
+        assert.deepEqual(events, [], 'timer race does not emit pressup without press');
 
         // 2. requireFailure blocks synchronous time: 0 press; blocker later fails before INPUT_END
         var pressZero = manager.add(new Hammer.Press({event: 'press', time: 0, threshold: 9}));
@@ -605,7 +607,7 @@
         pressZero.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
         pan.state = $H.STATE_FAILED;
         pressZero.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 10, srcEvent: srcEv});
-        deepEqual(events, [], 'blocked time:0 press does not emit pressup when blocker later fails');
+        assert.deepEqual(events, [], 'blocked time:0 press does not emit pressup when blocker later fails');
 
         // 3. requireFailure blocks timed press; blocker fails before release
         var pressTimed = manager.add(new Hammer.Press({event: 'press', time: 20, threshold: 9}));
@@ -616,19 +618,19 @@
         setTimeout(function() {
             pan.state = $H.STATE_FAILED;
             pressTimed.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 50, srcEvent: srcEv});
-            deepEqual(events, [], 'blocked timed press does not emit pressup after blocker fails');
+            assert.deepEqual(events, [], 'blocked timed press does not emit pressup after blocker fails');
 
             // 4. Normal unblocked press fires press then pressup
             pressTimed.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
             setTimeout(function() {
                 pressTimed.recognize({eventType: $H.INPUT_END, pointers: [{}], distance: 0, deltaTime: 50, srcEvent: srcEv});
-                deepEqual(events, ['press', 'pressup'], 'normal press emits press followed by pressup');
-                start();
+                assert.deepEqual(events, ['press', 'pressup'], 'normal press emits press followed by pressup');
+                done();
             }, 40);
         }, 40);
     });
 
-    test('computeDeltaXY rebases smoothly after partial INPUT_CANCEL and handles missing offsetDelta', function() {
+    QUnit.test('computeDeltaXY rebases smoothly after partial INPUT_CANCEL and handles missing offsetDelta', function(assert) {
         var session = {};
         var first = {eventType: $H.INPUT_START, center: {x: 50, y: 10}};
         $H.computeDeltaXY(session, first);
@@ -637,7 +639,7 @@
         var moved = {eventType: $H.INPUT_MOVE, center: {x: 70, y: 10}};
         $H.computeDeltaXY(session, moved);
         session.prevInput = moved;
-        equal(moved.deltaX, 20, 'initial two-finger move tracks +20px');
+        assert.equal(moved.deltaX, 20, 'initial two-finger move tracks +20px');
 
         // One of two pointers is cancelled (e.g. palm rejection)
         var cancelled = {eventType: $H.INPUT_CANCEL, center: {x: 70, y: 10}};
@@ -648,27 +650,27 @@
         var afterCancel = {eventType: $H.INPUT_MOVE, center: {x: 25, y: 10}};
         $H.computeDeltaXY(session, afterCancel);
         session.prevInput = afterCancel;
-        equal(afterCancel.deltaX, 20, 'deltaX stays continuous immediately after partial INPUT_CANCEL');
+        assert.equal(afterCancel.deltaX, 20, 'deltaX stays continuous immediately after partial INPUT_CANCEL');
 
         var continued = {eventType: $H.INPUT_MOVE, center: {x: 30, y: 10}};
         $H.computeDeltaXY(session, continued);
-        equal(continued.deltaX, 25, 'subsequent move accumulates from rebased offset');
+        assert.equal(continued.deltaX, 25, 'subsequent move accumulates from rebased offset');
 
         // Mid-stream move with empty session does not produce NaN
         var midStream = {eventType: $H.INPUT_MOVE, center: {x: 40, y: 15}};
         $H.computeDeltaXY({}, midStream);
-        equal(midStream.deltaX, 0, 'missing offsetDelta initializes cleanly instead of NaN');
-        equal(midStream.deltaY, 0, 'missing offsetDelta deltaY initializes cleanly');
+        assert.equal(midStream.deltaX, 0, 'missing offsetDelta initializes cleanly instead of NaN');
+        assert.equal(midStream.deltaY, 0, 'missing offsetDelta deltaY initializes cleanly');
     });
 
-    test('domEvents: true dispatches composed DOM events that cross Shadow DOM boundaries to outer managers', function() {
+    QUnit.test('domEvents: true dispatches composed DOM events that cross Shadow DOM boundaries to outer managers', function(assert) {
         var outer = document.createElement('div');
         var host = document.createElement('div');
         outer.appendChild(host);
         el.appendChild(outer);
 
         if (!host.attachShadow) {
-            ok(true, 'Shadow DOM not supported in environment');
+            assert.ok(true, 'Shadow DOM not supported in environment');
             return;
         }
 
@@ -709,13 +711,13 @@
         feedShadow($H.INPUT_START);
         feedShadow($H.INPUT_END);
 
-        equal(hostEvents.length, 1, 'composed tap DOM event crosses ShadowRoot and reaches shadow host');
-        equal(outerEvents.length, 1, 'composed tap DOM event bubbles to outer manager element');
-        strictEqual(outerEvents[0] && outerEvents[0].composed, true, 'dispatched DOM event has composed: true');
-        strictEqual(outerEvents[0] && outerEvents[0].target, shadowLeaf, 'ev.gesture.target retains inner shadow leaf');
+        assert.equal(hostEvents.length, 1, 'composed tap DOM event crosses ShadowRoot and reaches shadow host');
+        assert.equal(outerEvents.length, 1, 'composed tap DOM event bubbles to outer manager element');
+        assert.strictEqual(outerEvents[0] && outerEvents[0].composed, true, 'dispatched DOM event has composed: true');
+        assert.strictEqual(outerEvents[0] && outerEvents[0].target, shadowLeaf, 'ev.gesture.target retains inner shadow leaf');
     });
 
-    test('Manager.recognize clears session.curRecognizer when it transitions to STATE_FAILED', function() {
+    QUnit.test('Manager.recognize clears session.curRecognizer when it transitions to STATE_FAILED', function(assert) {
         var pan1Enabled = true;
         var pan2Events = [];
         manager = new Hammer.Manager(el, {
@@ -752,21 +754,22 @@
 
         // pan1 becomes active curRecognizer
         move(20);
-        strictEqual(manager.session.curRecognizer, manager.get('pan1'), 'pan1 is active curRecognizer');
-        deepEqual(pan2Events, [], 'pan2 blocked while pan1 is active');
+        assert.strictEqual(manager.session.curRecognizer, manager.get('pan1'), 'pan1 is active curRecognizer');
+        assert.deepEqual(pan2Events, [], 'pan2 blocked while pan1 is active');
 
         // Disable pan1 -> transitions to STATE_FAILED
         pan1Enabled = false;
         move(35);
-        equal(manager.get('pan1').state, $H.STATE_FAILED, 'disabled pan1 transitions to STATE_FAILED');
+        assert.equal(manager.get('pan1').state, $H.STATE_FAILED, 'disabled pan1 transitions to STATE_FAILED');
 
         // Next move clears curRecognizer from failed pan1 so pan2 can recognize
         move(50);
-        deepEqual(pan2Events, ['pan2start'], 'pan2 starts once curRecognizer is cleared from STATE_FAILED');
-        strictEqual(manager.session.curRecognizer, manager.get('pan2'), 'pan2 becomes new curRecognizer');
+        assert.deepEqual(pan2Events, ['pan2start'], 'pan2 starts once curRecognizer is cleared from STATE_FAILED');
+        assert.strictEqual(manager.session.curRecognizer, manager.get('pan2'), 'pan2 becomes new curRecognizer');
     });
 
-    asyncTest('Recognizer.set({enable: false}), isRecognizerActive, emit FORCED_STOP, and Press/Tap _input cleanup', function() {
+    QUnit.test('Recognizer.set({enable: false}), isRecognizerActive, emit FORCED_STOP, and Press/Tap _input cleanup', function(assert) {
+        var done = assert.async();
         var pressAllowed = true;
         var events = [];
 
@@ -797,13 +800,13 @@
 
         utils.dispatchTouchEvent(el, 'start', 10, 10);
         utils.dispatchTouchEvent(el, 'move', 30, 10);
-        deepEqual(events, ['panstart'], 'Recognizer.emit stops emitting pan/panright after stop(true) in panstart');
+        assert.deepEqual(events, ['panstart'], 'Recognizer.emit stops emitting pan/panright after stop(true) in panstart');
 
         events = [];
         manager.session.stopped = false;
         swipe.state = $H.STATE_RECOGNIZED;
         swipe.emit({offsetDirection: Hammer.DIRECTION_RIGHT, srcEvent: srcEv});
-        deepEqual(events, ['swiperight'], 'SwipeRecognizer.emit stops emitting swipe after stop(true) in swiperight');
+        assert.deepEqual(events, ['swiperight'], 'SwipeRecognizer.emit stops emitting swipe after stop(true) in swiperight');
 
         // 2. Press timer respects recognizer enable callback and exclusive curRecognizer
         events = [];
@@ -816,10 +819,10 @@
         var press2 = new Hammer.Press({time: 20});
         manager.add(press2);
         press2.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
-        ok(press2._input !== null, 'Press stores _input while pending');
+        assert.ok(press2._input !== null, 'Press stores _input while pending');
         press2.set({enable: false});
-        strictEqual(press2._input, null, 'Press.set({enable: false}) resets and clears _input');
-        equal(press2.state, $H.STATE_FAILED, 'Press.set({enable: false}) marks recognizer STATE_FAILED');
+        assert.strictEqual(press2._input, null, 'Press.set({enable: false}) resets and clears _input');
+        assert.equal(press2.state, $H.STATE_FAILED, 'Press.set({enable: false}) marks recognizer STATE_FAILED');
 
         // 3. Active exclusive curRecognizer blocks pending Press timer
         press2.set({enable: true});
@@ -828,13 +831,13 @@
         manager.session.curRecognizer = pan;
 
         setTimeout(function() {
-            deepEqual(events, [], 'pending Press timer does not fire when disabled or blocked by exclusive curRecognizer');
+            assert.deepEqual(events, [], 'pending Press timer does not fire when disabled or blocked by exclusive curRecognizer');
 
             // 4. Detached emit() on Press and Tap does not throw and Press clears _input after emit
             manager.session.curRecognizer = null;
             press2.set({time: 0});
             press2.recognize({eventType: $H.INPUT_START, pointers: [{}], distance: 0, deltaTime: 0, srcEvent: srcEv});
-            strictEqual(press2._input, null, 'Press._input is nulled after emitting press');
+            assert.strictEqual(press2._input, null, 'Press._input is nulled after emitting press');
 
             manager.remove(press2);
             press2.state = $H.STATE_RECOGNIZED;
@@ -842,8 +845,8 @@
             var detachedTap = new Hammer.Tap();
             detachedTap.state = $H.STATE_RECOGNIZED;
             detachedTap.emit();
-            ok(true, 'calling emit() on detached Press or Tap does not throw');
-            start();
+            assert.ok(true, 'calling emit() on detached Press or Tap does not throw');
+            done();
         }, 50);
     });
 })();

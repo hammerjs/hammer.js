@@ -2,18 +2,19 @@ var el, hammer, events;
 
 var jQueryPluginPath = '../../node_modules/jquery-hammerjs/jquery.hammer.js';
 
-module('jQuery plugin', {
-    setup: function() {
+QUnit.module('jQuery plugin', {
+    beforeEach: function() {
         el = utils.createHitArea();
         events = {};
     },
-    teardown: function() {
+    afterEach: function() {
         hammer && hammer.destroy();
     }
 });
 
-asyncTest('trigger pan with jQuery', function() {
-    expect(2);
+QUnit.test('trigger pan with jQuery', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
 
     $.getScript(jQueryPluginPath, function() {
         jQuery(el).hammer();
@@ -24,8 +25,7 @@ asyncTest('trigger pan with jQuery', function() {
         });
 
         Simulator.gestures.pan(el, { duration: 60, deltaX: 50, deltaY: 0 }, function() {
-            start();
-            deepEqual(events, {
+            assert.deepEqual(events, {
                 pan: true,
                 panstart: true,
                 panmove: true,
@@ -33,13 +33,15 @@ asyncTest('trigger pan with jQuery', function() {
                 panend: true
             });
 
-            ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
+            assert.ok(jQuery(el).data('hammer') instanceof Hammer.Manager, 'data attribute refers to the instance');
+            done();
         });
     });
 });
 
-asyncTest('trigger pan without jQuery should still work', function() {
-    expect(1);
+QUnit.test('trigger pan without jQuery should still work', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
 
     var hammer = Hammer(el);
     hammer.on('panstart pan panmove panright panend', function(ev) {
@@ -47,13 +49,13 @@ asyncTest('trigger pan without jQuery should still work', function() {
     });
 
     Simulator.gestures.pan(el, { duration: 60, deltaX: 50, deltaY: 0 }, function() {
-        start();
-        deepEqual(events, {
+        assert.deepEqual(events, {
             pan: true,
             panstart: true,
             panmove: true,
             panright: true,
             panend: true
         });
+        done();
     });
 });

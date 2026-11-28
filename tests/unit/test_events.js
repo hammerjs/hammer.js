@@ -1,30 +1,30 @@
-module('eventEmitter');
+QUnit.module('eventEmitter');
 
-test('test the eventemitter', function() {
-    expect(6);
+QUnit.test('test the eventemitter', function(assert) {
+    assert.expect(6);
 
     var ee = new Hammer.Manager(utils.createHitArea());
     var inputData = {
         target: document.body,
         srcEvent: {
             preventDefault: function() {
-                ok(true, 'preventDefault ref');
+                assert.ok(true, 'preventDefault ref');
             },
             target: document.body
         }
     };
 
     function event3Handler() {
-        ok(true, 'emitted event3');
+        assert.ok(true, 'emitted event3');
     }
 
     ee.on('testEvent1', function() {
-        ok(true, 'emitted event');
+        assert.ok(true, 'emitted event');
     });
     ee.on('testEvent2', function(ev) {
-        ok(true, 'emitted event');
+        assert.ok(true, 'emitted event');
         ev.preventDefault();
-        ok(ev.target === document.body, 'target is the body');
+        assert.ok(ev.target === document.body, 'target is the body');
     });
     ee.on('testEvent3', event3Handler);
 
@@ -51,18 +51,18 @@ test('test the eventemitter', function() {
 /*
  * Hammer.Manager.off method : exception handling
  */
-test("When Hammer.Manager didn't attach an event, 'off' method is ignored", function() {
+QUnit.test("When Hammer.Manager didn't attach an event, 'off' method is ignored", function(assert) {
     var count = 0;
-    hammer = new Hammer(el, { inputTarget: document.body });
-    hammer.off("swipeleft", function(e) {
+    var hm = new Hammer(utils.createHitArea(), { inputTarget: document.body });
+    hm.off("swipeleft", function(e) {
         count++;
     });
-    ok(true, "nothing");
-    hammer.destroy();
+    assert.ok(true, "nothing");
+    hm.destroy();
 });
 
-test("'off' with an unregistered handler should not remove existing handlers", function() {
-    expect(2);
+QUnit.test("'off' with an unregistered handler should not remove existing handlers", function(assert) {
+    assert.expect(2);
 
     var ee = new Hammer.Manager(utils.createHitArea());
     var count1 = 0;
@@ -89,14 +89,14 @@ test("'off' with an unregistered handler should not remove existing handlers", f
 
     ee.emit('tap', inputData);
 
-    equal(count1, 1, 'first handler still called');
-    equal(count2, 1, 'last handler was not mistakenly spliced out');
+    assert.equal(count1, 1, 'first handler still called');
+    assert.equal(count2, 1, 'last handler was not mistakenly spliced out');
 
     ee.destroy();
 });
 
-test("'on' ignores duplicate registrations of the same event and handler", function() {
-    expect(5);
+QUnit.test("'on' ignores duplicate registrations of the same event and handler", function(assert) {
+    assert.expect(5);
 
     var ee = new Hammer.Manager(utils.createHitArea());
     var count1 = 0;
@@ -122,22 +122,22 @@ test("'on' ignores duplicate registrations of the same event and handler", funct
     ee.on('tap', handler2);
 
     ee.emit('tap', inputData);
-    equal(count1, 1, 'duplicate handler for tap only invoked once');
-    equal(count2, 1, 'distinct handler for tap still invoked');
+    assert.equal(count1, 1, 'duplicate handler for tap only invoked once');
+    assert.equal(count2, 1, 'distinct handler for tap still invoked');
 
     ee.emit('press', inputData);
-    equal(count1, 2, 'same handler still registered on other event names');
+    assert.equal(count1, 2, 'same handler still registered on other event names');
 
     ee.off('tap', handler1);
     ee.emit('tap', inputData);
-    equal(count1, 2, 'single off() completely unregisters handler');
-    equal(count2, 2, 'other handler remains active');
+    assert.equal(count1, 2, 'single off() completely unregisters handler');
+    assert.equal(count2, 2, 'other handler remains active');
 
     ee.destroy();
 });
 
-test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapper", function() {
-    expect(3);
+QUnit.test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapper", function(assert) {
+    assert.expect(3);
 
     var ee = new Hammer.Manager(utils.createHitArea(), {domEvents: true});
     var fn = function() {};
@@ -153,7 +153,7 @@ test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapp
 
     ee.on('tap', fn);
     ee.off('tap', fn);
-    strictEqual(ee.handlers.tap, undefined, 'removing last handler deletes empty bucket');
+    assert.strictEqual(ee.handlers.tap, undefined, 'removing last handler deletes empty bucket');
 
     var seenPreventDefault = null;
     ee.on('tap', function(ev) {
@@ -163,14 +163,14 @@ test("'off' deletes empty handler buckets and 'emit' reuses preventDefault wrapp
     ee.emit('tap', data);
     ee.emit('tap', data);
 
-    strictEqual(data.preventDefault, seenPreventDefault, 'preventDefault wrapper reused across emits on same data object');
-    equal(prevented, 2, 'preventDefault delegates to srcEvent on each call');
+    assert.strictEqual(data.preventDefault, seenPreventDefault, 'preventDefault wrapper reused across emits on same data object');
+    assert.equal(prevented, 2, 'preventDefault delegates to srcEvent on each call');
 
     ee.destroy();
 });
 
-test("Manager 'on', 'emit', and 'off' safely handle Object.prototype event names", function() {
-    expect(3);
+QUnit.test("Manager 'on', 'emit', and 'off' safely handle Object.prototype event names", function(assert) {
+    assert.expect(3);
 
     var ee = new Hammer.Manager(utils.createHitArea());
     var calls = 0;
@@ -184,14 +184,14 @@ test("Manager 'on', 'emit', and 'off' safely handle Object.prototype event names
 
     ee.on('constructor', fn);
     ee.emit('constructor', data);
-    equal(calls, 1, 'handler registered for "constructor" event fires cleanly');
+    assert.equal(calls, 1, 'handler registered for "constructor" event fires cleanly');
 
     ee.emit('toString', data);
-    ok(true, 'emitting unregistered "toString" event does not throw');
+    assert.ok(true, 'emitting unregistered "toString" event does not throw');
 
     ee.off('constructor', fn);
     ee.emit('constructor', data);
-    equal(calls, 1, 'off("constructor", fn) unregisters handler cleanly');
+    assert.equal(calls, 1, 'off("constructor", fn) unregisters handler cleanly');
 
     ee.destroy();
 });

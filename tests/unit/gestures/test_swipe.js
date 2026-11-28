@@ -2,34 +2,34 @@ var el,
     hammer,
     swipeCount = 0;
 
-module('Swipe Gesture', {
-    setup: function() {
+QUnit.module('Swipe Gesture', {
+    beforeEach: function() {
         el = utils.createHitArea();
         hammer = new Hammer(el, {recognizers: []});
         swipeCount = 0;
     },
-    teardown: function() {
+    afterEach: function() {
         hammer.destroy();
     }
 });
 
-test('swipe can be recognized', function() {
-    expect(1);
+QUnit.test('swipe can be recognized', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
 
     var swipe = new Hammer.Swipe({threshold: 1});
     hammer.add(swipe);
     hammer.on('swipe', function() {
-        ok(true);
-        start();
+        assert.ok(true);
+        done();
     });
 
-    stop();
 
     Simulator.gestures.swipe(el, { duration: 60 });
 });
 
-test('single-axis swipe checks velocity along configured axis', function() {
-    expect(4);
+QUnit.test('single-axis swipe checks velocity along configured axis', function(assert) {
+    assert.expect(4);
 
     var swipeH = new Hammer.Swipe({
         direction: Hammer.DIRECTION_HORIZONTAL,
@@ -54,7 +54,7 @@ test('single-axis swipe checks velocity along configured axis', function() {
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 0, 'horizontal swipe rejected when velocityX is below threshold');
+    assert.equal(swipeCount, 0, 'horizontal swipe rejected when velocityX is below threshold');
 
     hammer.recognize({
         pointers: [{clientX: 120, clientY: 50}],
@@ -69,7 +69,7 @@ test('single-axis swipe checks velocity along configured axis', function() {
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'horizontal swipe accepted when velocityX exceeds threshold');
+    assert.equal(swipeCount, 1, 'horizontal swipe accepted when velocityX exceeds threshold');
 
     hammer.add(new Hammer.Swipe({
         direction: Hammer.DIRECTION_VERTICAL,
@@ -90,7 +90,7 @@ test('single-axis swipe checks velocity along configured axis', function() {
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'vertical swipe rejected when velocityY is below threshold');
+    assert.equal(swipeCount, 1, 'vertical swipe rejected when velocityY is below threshold');
 
     hammer.recognize({
         pointers: [{clientX: 50, clientY: 120}],
@@ -105,10 +105,10 @@ test('single-axis swipe checks velocity along configured axis', function() {
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 2, 'vertical swipe accepted when velocityY exceeds threshold');
+    assert.equal(swipeCount, 2, 'vertical swipe accepted when velocityY exceeds threshold');
 });
 
-test('weighted velocity tracker: constant speed, jitter smoothing, late flick, pause stop, peel-off, and 1-frame flick', function() {
+QUnit.test('weighted velocity tracker: constant speed, jitter smoothing, late flick, pause stop, peel-off, and 1-frame flick', function(assert) {
     function feed(session, eventType, timeStamp, deltaX, deltaY) {
         var inp = {
             eventType: eventType,
@@ -128,14 +128,14 @@ test('weighted velocity tracker: constant speed, jitter smoothing, late flick, p
     for (var i = 0; i < times.length; i++) {
         out = feed(s1, i === 0 ? Hammer.INPUT_START : Hammer.INPUT_MOVE, times[i], times[i] * 0.8, times[i] * -0.4);
     }
-    ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'exact velocityX (0.8 px/ms) on uneven intervals');
-    ok(Math.abs(out.velocityY - (-0.4)) < 1e-6, 'exact velocityY (-0.4 px/ms) on uneven intervals');
-    ok(Math.abs(out.velocity - 0.8) < 1e-6, 'dominant axis velocity matches velocityX');
-    equal(out.direction, Hammer.DIRECTION_RIGHT, 'direction derived from weighted velocity');
+    assert.ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'exact velocityX (0.8 px/ms) on uneven intervals');
+    assert.ok(Math.abs(out.velocityY - (-0.4)) < 1e-6, 'exact velocityY (-0.4 px/ms) on uneven intervals');
+    assert.ok(Math.abs(out.velocity - 0.8) < 1e-6, 'dominant axis velocity matches velocityX');
+    assert.equal(out.direction, Hammer.DIRECTION_RIGHT, 'direction derived from weighted velocity');
 
     // 2. Liftoff peel-off shift on INPUT_END is ignored when >= 2 move samples exist
     out = feed(s1, Hammer.INPUT_END, 108, 72, -35);
-    ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'capacitive peel-off shift on INPUT_END does not corrupt release velocity');
+    assert.ok(Math.abs(out.velocityX - 0.8) < 1e-6, 'capacitive peel-off shift on INPUT_END does not corrupt release velocity');
 
     // 3. Pausing > 40ms before INPUT_END zeroes velocity cleanly (no phantom swipe after stop)
     var s2 = {};
@@ -143,8 +143,8 @@ test('weighted velocity tracker: constant speed, jitter smoothing, late flick, p
     feed(s2, Hammer.INPUT_MOVE, 10, 15, 0);
     feed(s2, Hammer.INPUT_MOVE, 20, 30, 0);
     out = feed(s2, Hammer.INPUT_END, 80, 30, 0);
-    equal(out.velocityX, 0, 'velocityX resets to 0 when pointer pauses > 40ms before lift');
-    equal(out.velocity, 0, 'velocity resets to 0 after pause');
+    assert.equal(out.velocityX, 0, 'velocityX resets to 0 when pointer pauses > 40ms before lift');
+    assert.equal(out.velocity, 0, 'velocity resets to 0 after pause');
 
     // 4. Slow drag followed by fast late flick (> 100ms total) reflects recent flick velocity
     var s3 = {};
@@ -159,25 +159,25 @@ test('weighted velocity tracker: constant speed, jitter smoothing, late flick, p
     feed(s3, Hammer.INPUT_MOVE, 140, 32, 0);
     feed(s3, Hammer.INPUT_MOVE, 150, 42, 0);
     out = feed(s3, Hammer.INPUT_END, 155, 42, 0);
-    ok(out.velocityX > 0.5, 'recency-weighted LSQ1 captures late flick velocity (' + out.velocityX.toFixed(3) + ' px/ms)');
+    assert.ok(out.velocityX > 0.5, 'recency-weighted LSQ1 captures late flick velocity (' + out.velocityX.toFixed(3) + ' px/ms)');
 
     // 5. Fast 1-frame flick (INPUT_START -> INPUT_END with no INPUT_MOVE) still computes velocity
     var s4 = {};
     feed(s4, Hammer.INPUT_START, 0, 0, 0);
     out = feed(s4, Hammer.INPUT_END, 20, 40, 0);
-    ok(Math.abs(out.velocityX - 2.0) < 1e-6, '1-frame flick computes exact velocity');
+    assert.ok(Math.abs(out.velocityX - 2.0) < 1e-6, '1-frame flick computes exact velocity');
 
     // 6. INPUT_CANCEL clears samples and zeroes velocity
     var s5 = {};
     feed(s5, Hammer.INPUT_START, 0, 0, 0);
     feed(s5, Hammer.INPUT_MOVE, 15, 30, 0);
     out = feed(s5, Hammer.INPUT_CANCEL, 25, 30, 0);
-    equal(out.velocity, 0, 'INPUT_CANCEL zeroes velocity');
-    equal(s5.velocitySamples.length, 0, 'INPUT_CANCEL clears velocity sample buffer');
+    assert.equal(out.velocity, 0, 'INPUT_CANCEL zeroes velocity');
+    assert.equal(s5.velocitySamples.length, 0, 'INPUT_CANCEL clears velocity sample buffer');
 });
 
-test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using weighted velocity', function() {
-    expect(2);
+QUnit.test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using weighted velocity', function(assert) {
+    assert.expect(2);
 
     var swipe = new Hammer.Swipe({
         direction: Hammer.DIRECTION_HORIZONTAL,
@@ -206,7 +206,7 @@ test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using w
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'late flick triggers swipe even when overallVelocityX is below threshold');
+    assert.equal(swipeCount, 1, 'late flick triggers swipe even when overallVelocityX is below threshold');
 
     // Case 2: Fast drag followed by pause before lift (overallVelocityX = 0.8 > 0.3, weighted velocityX = 0)
     hammer.recognize({
@@ -225,10 +225,10 @@ test('SwipeRecognizer triggers on late flick and rejects drag-then-pause using w
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    equal(swipeCount, 1, 'drag followed by pause before lift does not trigger swipe');
+    assert.equal(swipeCount, 1, 'drag followed by pause before lift does not trigger swipe');
 });
 
-test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame samples when supported', function() {
+QUnit.test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame samples when supported', function(assert) {
     var session = {};
 
     // Start at t=1000 (Date.now() clock domain, whereas DOMHighResTimeStamp is ~5000ms)
@@ -267,8 +267,8 @@ test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame sa
     };
     $H.computeIntervalInputData(session, moveInput);
 
-    equal(session.velocitySamples.length, 3, 'all 3 sub-frame coalesced samples recorded after pause reset');
-    ok(Math.abs(moveInput.velocityX - 2.0) < 1e-6, 'exact 2.0 px/ms flick velocity recovered from coalesced events');
+    assert.equal(session.velocitySamples.length, 3, 'all 3 sub-frame coalesced samples recorded after pause reset');
+    assert.ok(Math.abs(moveInput.velocityX - 2.0) < 1e-6, 'exact 2.0 px/ms flick velocity recovered from coalesced events');
 
     // Out-of-order coalesced sample (e.g. 1ms Date.now rounding before last sample) does not wipe buffer
     var moveInput2 = {
@@ -292,8 +292,8 @@ test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame sa
     };
     $H.computeIntervalInputData(session, moveInput2);
 
-    equal(session.velocitySamples.length, 5, 'older coalesced sample skipped without wiping prior samples');
-    ok(Math.abs(moveInput2.velocityX - 2.0) < 1e-6, 'velocity remains exact across frames with coalesced events');
+    assert.equal(session.velocitySamples.length, 5, 'older coalesced sample skipped without wiping prior samples');
+    assert.ok(Math.abs(moveInput2.velocityX - 2.0) < 1e-6, 'velocity remains exact across frames with coalesced events');
 
     // Multi-pointer coalesced move scales delta by 1 / pointers.length (centroid velocity)
     var multiSession = {};
@@ -325,10 +325,10 @@ test('weighted velocity tracker incorporates coalesced PointerEvent sub-frame sa
         }
     };
     $H.computeIntervalInputData(multiSession, mMove);
-    ok(Math.abs(mMove.velocityX - 1.0) < 1e-6, '2-pointer coalesced centroid velocity is 1.0 px/ms');
+    assert.ok(Math.abs(mMove.velocityX - 1.0) < 1e-6, '2-pointer coalesced centroid velocity is 1.0 px/ms');
 });
 
-test('multi-pointer coalesced events do not distort velocity and staggered hardware timestamps do not wipe samples', function() {
+QUnit.test('multi-pointer coalesced events do not distort velocity and staggered hardware timestamps do not wipe samples', function(assert) {
     // 1. Two fingers moving smoothly right at 1.0 px/ms across frames with per-finger coalesced events
     var session = {};
     $H.computeIntervalInputData(session, {
@@ -384,7 +384,7 @@ test('multi-pointer coalesced events do not distort velocity and staggered hardw
         }
     };
     $H.computeIntervalInputData(session, f2Frame1);
-    ok(Math.abs(f2Frame1.velocityX - 1.0) < 1e-6, '2-finger frame 1 velocityX stays exact 1.0 px/ms (got ' + f2Frame1.velocityX + ')');
+    assert.ok(Math.abs(f2Frame1.velocityX - 1.0) < 1e-6, '2-finger frame 1 velocityX stays exact 1.0 px/ms (got ' + f2Frame1.velocityX + ')');
 
     // Frame 2: Finger 1 arrives at 132.0ms, Finger 2 arrives with staggered hardware timeStamp 131.5ms
     var f1Frame2 = {
@@ -406,8 +406,8 @@ test('multi-pointer coalesced events do not distort velocity and staggered hardw
         srcEvent: {timeStamp: 131.5, clientX: 32, clientY: 100}
     };
     $H.computeIntervalInputData(session, f2Frame2);
-    ok(f2Frame2.velocityX > 0.5, 'small staggered negative dt skips sample without wiping velocity to 0 (got ' + f2Frame2.velocityX + ')');
-    ok(session.velocitySamples.length >= 2, 'velocity sample buffer preserved across staggered hardware timestamp');
+    assert.ok(f2Frame2.velocityX > 0.5, 'small staggered negative dt skips sample without wiping velocity to 0 (got ' + f2Frame2.velocityX + ')');
+    assert.ok(session.velocitySamples.length >= 2, 'velocity sample buffer preserved across staggered hardware timestamp');
 
     // 2. INPUT_START + stationary 0px INPUT_MOVE + fast INPUT_END still computes flick velocity
     var flickSession = {};
@@ -436,10 +436,10 @@ test('multi-pointer coalesced events do not distort velocity and staggered hardw
         srcEvent: {timeStamp: 1020, clientX: 60, clientY: 0}
     };
     $H.computeIntervalInputData(flickSession, flickEnd);
-    ok(flickEnd.velocityX > 1.0, 'fast flick on INPUT_END after single stationary move computes positive velocity (got ' + flickEnd.velocityX + ')');
+    assert.ok(flickEnd.velocityX > 1.0, 'fast flick on INPUT_END after single stationary move computes positive velocity (got ' + flickEnd.velocityX + ')');
 });
 
-test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and skip malformed entries', function() {
+QUnit.test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and skip malformed entries', function(assert) {
     var session = {};
     var t0 = 3000;
     var domT0 = 7000;
@@ -489,12 +489,12 @@ test('1000Hz coalesced PointerEvents preserve full 100ms velocity horizon and sk
 
     var samples = session.velocitySamples;
     var span = samples[samples.length - 1].t - samples[0].t;
-    ok(span >= 70, '1000Hz coalesced input preserves full window span instead of overflowing in 20ms (span=' + span + 'ms)');
-    ok(Math.abs(out.velocityX - 1.5) < 1e-6, 'exact 1.5 px/ms velocityX preserved under 1000Hz decimation');
-    ok(Math.abs(out.velocityY - (-0.5)) < 1e-6, 'exact -0.5 px/ms velocityY preserved under 1000Hz decimation');
+    assert.ok(span >= 70, '1000Hz coalesced input preserves full window span instead of overflowing in 20ms (span=' + span + 'ms)');
+    assert.ok(Math.abs(out.velocityX - 1.5) < 1e-6, 'exact 1.5 px/ms velocityX preserved under 1000Hz decimation');
+    assert.ok(Math.abs(out.velocityY - (-0.5)) < 1e-6, 'exact -0.5 px/ms velocityY preserved under 1000Hz decimation');
 });
 
-test('NaN or non-finite coalesced coordinates are ignored without poisoning velocity or direction', function() {
+QUnit.test('NaN or non-finite coalesced coordinates are ignored without poisoning velocity or direction', function(assert) {
     var session = {};
     $H.computeIntervalInputData(session, {
         eventType: Hammer.INPUT_START,
@@ -527,8 +527,8 @@ test('NaN or non-finite coalesced coordinates are ignored without poisoning velo
     };
     $H.computeIntervalInputData(session, move);
 
-    ok(isFinite(move.velocityX) && Math.abs(move.velocityX - 2.0) < 1e-6, 'NaN/Infinity coalesced coords do not poison velocityX');
-    equal(move.direction, Hammer.DIRECTION_RIGHT, 'direction stays DIRECTION_RIGHT instead of DIRECTION_DOWN');
+    assert.ok(isFinite(move.velocityX) && Math.abs(move.velocityX - 2.0) < 1e-6, 'NaN/Infinity coalesced coords do not poison velocityX');
+    assert.equal(move.direction, Hammer.DIRECTION_RIGHT, 'direction stays DIRECTION_RIGHT instead of DIRECTION_DOWN');
 
     // srcEvent with NaN clientX safely skips coalesced reconstruction
     var session2 = {};
@@ -559,10 +559,10 @@ test('NaN or non-finite coalesced coordinates are ignored without poisoning velo
         }
     };
     $H.computeIntervalInputData(session2, move2);
-    ok(isFinite(move2.velocityX) && Math.abs(move2.velocityX - 2.0) < 1e-6, 'NaN srcEvent.clientX skips coalesced loop cleanly');
+    assert.ok(isFinite(move2.velocityX) && Math.abs(move2.velocityX - 2.0) < 1e-6, 'NaN srcEvent.clientX skips coalesced loop cleanly');
 });
 
-test('velocity tracker uses hardware srcEvent.timeStamp so main-thread frame jitter does not skew velocity', function() {
+QUnit.test('velocity tracker uses hardware srcEvent.timeStamp so main-thread frame jitter does not skew velocity', function(assert) {
     var session = {};
 
     // Hardware moves at constant 1.0 px/ms (5000 -> 5016 -> 5032 -> 5048),
@@ -642,11 +642,11 @@ test('velocity tracker uses hardware srcEvent.timeStamp so main-thread frame jit
     };
     $H.computeIntervalInputData(session, frame3);
 
-    ok(Math.abs(frame3.velocityX - 1.0) < 1e-6, 'main-thread stall does not spike velocity (' + frame3.velocityX.toFixed(3) + ' px/ms)');
+    assert.ok(Math.abs(frame3.velocityX - 1.0) < 1e-6, 'main-thread stall does not spike velocity (' + frame3.velocityX.toFixed(3) + ' px/ms)');
 });
 
-test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function() {
-    expect(2);
+QUnit.test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function(assert) {
+    assert.expect(2);
 
     var events = [];
     hammer.add(new Hammer.Swipe({
@@ -673,7 +673,7 @@ test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function(
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    deepEqual(events, [], 'reverse leftward flick does not falsely emit swiperight');
+    assert.deepEqual(events, [], 'reverse leftward flick does not falsely emit swiperight');
 
     // Dragged right and flicked right -> emits swiperight
     hammer.recognize({
@@ -690,11 +690,11 @@ test('SwipeRecognizer rejects reverse flick opposing offsetDirection', function(
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    deepEqual(events, ['swiperight'], 'matching rightward flick still emits swiperight');
+    assert.deepEqual(events, ['swiperight'], 'matching rightward flick still emits swiperight');
 });
 
-test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection and rejects cross-axis velocity', function() {
-    expect(3);
+QUnit.test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection and rejects cross-axis velocity', function(assert) {
+    assert.expect(3);
 
     var events = [];
     hammer.add(new Hammer.Swipe({
@@ -723,7 +723,7 @@ test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection a
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    deepEqual(events, ['swiperight'], 'curved horizontal swipe arcing downward still emits swiperight');
+    assert.deepEqual(events, ['swiperight'], 'curved horizontal swipe arcing downward still emits swiperight');
 
     // Diagonal swipe under DIRECTION_ALL
     events = [];
@@ -748,7 +748,7 @@ test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection a
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    deepEqual(events, ['swiperight'], 'diagonal swipe under DIRECTION_ALL emits swiperight when velocityX exceeds threshold');
+    assert.deepEqual(events, ['swiperight'], 'diagonal swipe under DIRECTION_ALL emits swiperight when velocityX exceeds threshold');
 
     // Vertical velocity alone must not trigger swiperight under DIRECTION_ALL
     events = [];
@@ -768,11 +768,11 @@ test('SwipeRecognizer accepts curved/diagonal swipes moving in offsetDirection a
         srcEvent: {preventDefault: function() {}, target: el},
         target: el
     });
-    deepEqual(events, [], 'vertical velocity below velocityX threshold does not trigger swiperight under DIRECTION_ALL');
+    assert.deepEqual(events, [], 'vertical velocity below velocityX threshold does not trigger swiperight under DIRECTION_ALL');
 });
 
-test('computeInputData guards zero deltaTime so overallVelocity never outputs Infinity', function() {
-    expect(4);
+QUnit.test('computeInputData guards zero deltaTime so overallVelocity never outputs Infinity', function(assert) {
+    assert.expect(4);
 
     var moveInput;
     for (var attempt = 0; attempt < 10; attempt++) {
@@ -798,14 +798,14 @@ test('computeInputData guards zero deltaTime so overallVelocity never outputs In
         }
     }
 
-    strictEqual(moveInput.deltaTime, 0, 'same-ms move has deltaTime === 0');
-    strictEqual(moveInput.overallVelocityX, 0, 'overallVelocityX is 0 instead of Infinity when deltaTime is 0');
-    strictEqual(moveInput.overallVelocityY, 0, 'overallVelocityY is 0 instead of -Infinity when deltaTime is 0');
-    strictEqual(moveInput.overallVelocity, 0, 'overallVelocity is 0 instead of +-Infinity when deltaTime is 0');
+    assert.strictEqual(moveInput.deltaTime, 0, 'same-ms move has deltaTime === 0');
+    assert.strictEqual(moveInput.overallVelocityX, 0, 'overallVelocityX is 0 instead of Infinity when deltaTime is 0');
+    assert.strictEqual(moveInput.overallVelocityY, 0, 'overallVelocityY is 0 instead of -Infinity when deltaTime is 0');
+    assert.strictEqual(moveInput.overallVelocity, 0, 'overallVelocity is 0 instead of +-Infinity when deltaTime is 0');
 });
 
-test('velocity tracker ignores stale coalesced samples beyond horizon and resets on large backward timestamp jump', function() {
-    expect(4);
+QUnit.test('velocity tracker ignores stale coalesced samples beyond horizon and resets on large backward timestamp jump', function(assert) {
+    assert.expect(4);
 
     // 1. Stale coalesced events older than VELOCITY_HORIZON_MS (100ms) are not buffered even on empty session
     var staleSession = {};
@@ -832,8 +832,8 @@ test('velocity tracker ignores stale coalesced samples beyond horizon and resets
         }
     };
     $H.computeIntervalInputData(staleSession, staleMove);
-    equal(staleSession.velocitySamples[0].t, 4940, 'stale coalesced events >100ms old are skipped before buffering');
-    ok(Math.abs(staleMove.velocityX - 1.0) < 1e-6, 'velocityX computed cleanly from in-horizon coalesced samples');
+    assert.equal(staleSession.velocitySamples[0].t, 4940, 'stale coalesced events >100ms old are skipped before buffering');
+    assert.ok(Math.abs(staleMove.velocityX - 1.0) < 1e-6, 'velocityX computed cleanly from in-horizon coalesced samples');
 
     // 2. Large backward timestamp jump (> 100ms) resets velocitySamples so new samples are tracked
     var jumpSession = {};
@@ -871,12 +871,12 @@ test('velocity tracker ignores stale coalesced samples beyond horizon and resets
         srcEvent: {timeStamp: 4710, clientX: 40, clientY: 0}
     };
     $H.computeIntervalInputData(jumpSession, afterJump);
-    equal(jumpSession.velocitySamples.length, 2, 'large backward timestamp jump resets buffer and tracks new samples');
-    ok(Math.abs(afterJump.velocityX - 2.0) < 1e-6, 'velocityX reflects new clock domain (2.0 px/ms) after backward jump');
+    assert.equal(jumpSession.velocitySamples.length, 2, 'large backward timestamp jump resets buffer and tracks new samples');
+    assert.ok(Math.abs(afterJump.velocityX - 2.0) < 1e-6, 'velocityX reflects new clock domain (2.0 px/ms) after backward jump');
 });
 
-test('coalesced PointerEvents are skipped on rebase INPUT_MOVE immediately after partial liftoff', function() {
-    expect(2);
+QUnit.test('coalesced PointerEvents are skipped on rebase INPUT_MOVE immediately after partial liftoff', function(assert) {
+    assert.expect(2);
 
     var session = {};
     // Stationary 2-finger hold, then finger 2 lifts (partial INPUT_END)
@@ -925,15 +925,15 @@ test('coalesced PointerEvents are skipped on rebase INPUT_MOVE immediately after
         }
     };
     $H.computeIntervalInputData(session, rebasedMove);
-    equal(coalescedCalled, 0, 'getCoalescedEvents is skipped on rebase frame after INPUT_END');
-    ok(Math.abs(rebasedMove.velocityX) < 1e-6, 'rebased move does not inject false velocity from coalesced pre-liftoff samples');
+    assert.equal(coalescedCalled, 0, 'getCoalescedEvents is skipped on rebase frame after INPUT_END');
+    assert.ok(Math.abs(rebasedMove.velocityX) < 1e-6, 'rebased move does not inject false velocity from coalesced pre-liftoff samples');
 });
 
-test('SwipeRecognizer defaults to threshold 30 and rejects shorter swipes', function() {
-    expect(4);
+QUnit.test('SwipeRecognizer defaults to threshold 30 and rejects shorter swipes', function(assert) {
+    assert.expect(4);
 
     var swipe = new Hammer.Swipe();
-    equal(swipe.options.threshold, 30, 'default swipe threshold is 30');
+    assert.equal(swipe.options.threshold, 30, 'default swipe threshold is 30');
 
     hammer.add(swipe);
     hammer.on('swipe', function() {
@@ -957,20 +957,20 @@ test('SwipeRecognizer defaults to threshold 30 and rejects shorter swipes', func
     }
 
     recognizeDistance(25);
-    equal(swipeCount, 0, 'swipe with distance 25 is rejected under default threshold 30');
+    assert.equal(swipeCount, 0, 'swipe with distance 25 is rejected under default threshold 30');
 
     recognizeDistance(30);
-    equal(swipeCount, 0, 'swipe with distance equal to 30 is rejected (strictly > threshold)');
+    assert.equal(swipeCount, 0, 'swipe with distance equal to 30 is rejected (strictly > threshold)');
 
     recognizeDistance(31);
-    equal(swipeCount, 1, 'swipe with distance 31 is accepted under default threshold 30');
+    assert.equal(swipeCount, 1, 'swipe with distance 31 is accepted under default threshold 30');
 });
 
-test('SwipeRecognizer enforces default maxVelocity 80 and supports custom or disabled maxVelocity', function() {
-    expect(9);
+QUnit.test('SwipeRecognizer enforces default maxVelocity 80 and supports custom or disabled maxVelocity', function(assert) {
+    assert.expect(9);
 
     var swipe = new Hammer.Swipe();
-    equal(swipe.options.maxVelocity, 80, 'default swipe maxVelocity is 80');
+    assert.equal(swipe.options.maxVelocity, 80, 'default swipe maxVelocity is 80');
 
     hammer.add(swipe);
     hammer.on('swipe', function() {
@@ -995,31 +995,31 @@ test('SwipeRecognizer enforces default maxVelocity 80 and supports custom or dis
 
     // 1. Default maxVelocity: 80 accepts up to 80 and rejects weird peaks above 80
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 80, 0);
-    equal(swipeCount, 1, 'velocity equal to default maxVelocity (80) is accepted');
+    assert.equal(swipeCount, 1, 'velocity equal to default maxVelocity (80) is accepted');
 
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 80.1, 0);
-    equal(swipeCount, 1, 'velocity peak above default maxVelocity (80.1) is rejected');
+    assert.equal(swipeCount, 1, 'velocity peak above default maxVelocity (80.1) is rejected');
 
     recognizeVelocity(Hammer.DIRECTION_LEFT, -85, 0);
-    equal(swipeCount, 1, 'leftward velocity peak (-85) exceeding default maxVelocity is rejected');
+    assert.equal(swipeCount, 1, 'leftward velocity peak (-85) exceeding default maxVelocity is rejected');
 
     recognizeVelocity(Hammer.DIRECTION_RIGHT, Infinity, 0);
-    equal(swipeCount, 1, 'Infinite velocity peak is rejected');
+    assert.equal(swipeCount, 1, 'Infinite velocity peak is rejected');
 
     // 2. Custom maxVelocity option
     swipe.set({maxVelocity: 5});
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 5, 0);
-    equal(swipeCount, 2, 'velocity equal to custom maxVelocity (5) is accepted');
+    assert.equal(swipeCount, 2, 'velocity equal to custom maxVelocity (5) is accepted');
 
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 5.1, 0);
-    equal(swipeCount, 2, 'velocity above custom maxVelocity (5.1) is rejected');
+    assert.equal(swipeCount, 2, 'velocity above custom maxVelocity (5.1) is rejected');
 
     // 3. Disabling maxVelocity with 0 or null
     swipe.set({maxVelocity: 0});
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 120, 0);
-    equal(swipeCount, 3, 'maxVelocity: 0 disables the upper velocity cap');
+    assert.equal(swipeCount, 3, 'maxVelocity: 0 disables the upper velocity cap');
 
     swipe.set({maxVelocity: null});
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 120, 0);
-    equal(swipeCount, 4, 'maxVelocity: null disables the upper velocity cap');
+    assert.equal(swipeCount, 4, 'maxVelocity: null disables the upper velocity cap');
 });
