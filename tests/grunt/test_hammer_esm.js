@@ -94,9 +94,24 @@ module.exports = function(grunt) {
             grunt.fail.fatal('hammer.js must expose Hammer on self when window is undefined (Web Worker fallback)');
         }
 
-        // 2d. Package metadata: explicit sideEffects flag for bare imports
+        // 2d. Package metadata: explicit sideEffects flag and 2.x backwards-compatible opt-in ESM exports
         if (pkg.sideEffects !== true) {
             grunt.fail.fatal('package.json must explicitly set "sideEffects": true');
+        }
+        if (pkg.module !== undefined) {
+            grunt.fail.fatal('package.json must not set "module" in 2.x (breaks import * as Hammer from "hammerjs" in bundlers)');
+        }
+        if (!pkg.exports || pkg.exports['.'] !== './hammer.js') {
+            grunt.fail.fatal('package.json exports["."] must resolve to "./hammer.js" for 2.x backwards compatibility');
+        }
+        if (pkg.exports['./esm'] !== './hammer.mjs' || pkg.exports['./hammer.mjs'] !== './hammer.mjs') {
+            grunt.fail.fatal('package.json must expose opt-in ESM entry points "./esm" and "./hammer.mjs" -> "./hammer.mjs"');
+        }
+
+        // 2e. Package self-reference resolution: require("hammerjs") -> CJS, import("hammerjs/esm") -> ESM
+        var selfCjs = require('hammerjs');
+        if (typeof selfCjs !== 'function' || selfCjs.VERSION !== pkg.version) {
+            grunt.fail.fatal('require("hammerjs") must resolve to the UMD/CJS Hammer constructor');
         }
 
         // 3. Native ES module load in Node.js without window/document
@@ -145,8 +160,14 @@ module.exports = function(grunt) {
                     if (typeof frozenMod.default !== 'function') {
                         grunt.fail.fatal('hammer.mjs failed to load with frozen window');
                     }
-                    grunt.log.ok('SSR load passed (CommonJS, minified, bare runtime, frozen window, and native ESM with/without window).');
-                    done();
+                    // 6. Verify opt-in ESM package subpath import("hammerjs/esm")
+                    return import('hammerjs/esm').then(function(optInMod) {
+                        if (typeof optInMod.default !== 'function' || optInMod.VERSION !== pkg.version) {
+                            grunt.fail.fatal('import("hammerjs/esm") failed to resolve opt-in ESM build');
+                        }
+                        grunt.log.ok('SSR load passed (CommonJS, minified, bare runtime, frozen window, and native ESM with/without window).');
+                        done();
+                    });
                 }, function(err) {
                     if (prevWindow === undefined) {
                         delete global.window;
