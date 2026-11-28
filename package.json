@@ -42,14 +42,10 @@
     "jquery": "^3.7.1"
   },
   "main": "hammer.js",
-  "module": "hammer.mjs",
   "sideEffects": true,
   "exports": {
-    ".": {
-      "import": "./hammer.mjs",
-      "require": "./hammer.js",
-      "default": "./hammer.js"
-    },
+    ".": "./hammer.js",
+    "./esm": "./hammer.mjs",
     "./hammer": "./hammer.js",
     "./hammer.js": "./hammer.js",
     "./hammer.min": "./hammer.min.js",

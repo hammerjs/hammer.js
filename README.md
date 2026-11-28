@@ -19,7 +19,7 @@ Or download the pre-built bundle from [GitHub Releases](https://github.com/hamme
 <script src="https://cdn.jsdelivr.net/npm/hammerjs/hammer.min.js"></script>
 ```
 
-> **Note on ESM/CommonJS mixing:** `hammer.mjs` (ESM) and `hammer.js` (UMD/CommonJS) are standalone builds. Avoid mixing `import 'hammerjs'` and `require('hammerjs')` for the same `Manager` instance (for example, passing a recognizer created from CJS into an ESM `Manager`), as `instanceof` checks and internal recognizer IDs are per-copy.
+> **Note on ESM & 2.x compatibility:** The default `'hammerjs'` entry point resolves to the UMD/CommonJS build (`hammer.js`) to stay strictly backwards-compatible with existing 2.x consumers (including `import * as Hammer from 'hammerjs'` in TypeScript/bundlers). To opt in to the native ES module build with named exports, import from `'hammerjs/esm'` (or `'hammerjs/hammer.mjs'`). Because `hammer.mjs` and `hammer.js` are standalone builds, avoid mixing them for the same `Manager` instance (for example, passing a recognizer created from CJS into an ESM `Manager`), as `instanceof` checks and internal recognizer IDs are per-copy.
 
 ## Usage
 
