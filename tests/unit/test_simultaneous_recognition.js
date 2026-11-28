@@ -3,7 +3,7 @@ var el,
 
 QUnit.module('Simultaenous recognition', {
     beforeEach: function() {
-        el = utils.createHitArea()
+        el = utils.createHitArea();
     },
     afterEach: function() {
         hammer && hammer.destroy();

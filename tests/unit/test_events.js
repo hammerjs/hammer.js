@@ -52,12 +52,9 @@ QUnit.test('test the eventemitter', function(assert) {
  * Hammer.Manager.off method : exception handling
  */
 QUnit.test("When Hammer.Manager didn't attach an event, 'off' method is ignored", function(assert) {
-    var count = 0;
     var hm = new Hammer(utils.createHitArea(), { inputTarget: document.body });
-    hm.off("swipeleft", function(e) {
-        count++;
-    });
-    assert.ok(true, "nothing");
+    hm.off('swipeleft', function() {});
+    assert.ok(true, 'nothing');
     hm.destroy();
 });
 

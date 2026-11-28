@@ -212,7 +212,7 @@ QUnit.test('check whether Hammer.defaults.cssProps is restored', function(assert
     Hammer.each(Hammer.defaults.cssProps, function(value, name) {
         prop = Hammer.prefixed(el.style, name);
         if (prop) {
-            assert.equal(el.style[prop], beforeCssProps[name], "check if " + name + " is restored");
+            assert.equal(el.style[prop], beforeCssProps[name], 'check if ' + name + ' is restored');
         }
     });
 });

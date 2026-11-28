@@ -41,24 +41,24 @@ QUnit.test('Pan event flow should be start -> left -> end', function(assert) {
     var pan = new Hammer.Pan({threshold: 1});
     hammer.add(pan);
 
-    var eventflow = "";
+    var eventflow = '';
     var isCalledPanleft = false;
     hammer.on('panstart', function() {
-        eventflow += "start";
+        eventflow += 'start';
     });
     hammer.on('panleft', function() {
         if(!isCalledPanleft){
             isCalledPanleft = true;
-            eventflow += "left";
+            eventflow += 'left';
         }
     });
     hammer.on('panend', function() {
-        eventflow += "end";
+        eventflow += 'end';
         isCalledPanleft = true;
     });
 
     Simulator.gestures.pan(el, { duration: 60, deltaX: -100, deltaY: 0 }, function() {
-        assert.equal(eventflow,"startleftend");
+        assert.equal(eventflow, 'startleftend');
         done();
     });
 });

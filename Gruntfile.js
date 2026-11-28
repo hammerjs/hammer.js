@@ -100,6 +100,7 @@ module.exports = function(grunt) {
                 'hammer.mjs',
                 'hammer.min.js',
                 'src',
+                'tests',
                 'Gruntfile.js',
                 'eslint.config.js'
             ]
