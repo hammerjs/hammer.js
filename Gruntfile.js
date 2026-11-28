@@ -121,24 +121,21 @@ module.exports = function(grunt) {
         var done = this.async();
         var puppeteer = require('puppeteer');
         var url = 'http://127.0.0.1:8000/tests/unit/index.html';
+        var envShards = parseInt(process.env.QUNIT_SHARDS, 10);
+        var shardCount = Math.min(envShards > 0 ? envShards : 4, 16);
+        var startTime = Date.now();
 
-        puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        }).then(function(browser) {
+        function runShard(browser, shardIndex) {
             return browser.newPage().then(function(page) {
                 var failures = [];
                 var pageErrors = [];
-                var finished = false;
+                var resolveDone;
+                var donePromise = new Promise(function(resolve) {
+                    resolveDone = resolve;
+                });
 
-                function finish(ok) {
-                    if (finished) {
-                        return;
-                    }
-                    finished = true;
-                    browser.close().catch(function() {}).then(function() {
-                        done(ok);
-                    });
+                function cleanup() {
+                    return page.close().catch(function() {});
                 }
 
                 return page.exposeFunction('__gruntQUnitLog', function(details) {
@@ -147,33 +144,10 @@ module.exports = function(grunt) {
                     }
                 }).then(function() {
                     return page.exposeFunction('__gruntQUnitDone', function(details) {
-                        if (failures.length) {
-                            failures.forEach(function(f) {
-                                grunt.log.error(
-                                    '[' + f.module + '] ' + f.name + ': ' +
-                                    (f.message || 'failed') +
-                                    ' (expected: ' + f.expected +
-                                    ', actual: ' + f.actual + ')'
-                                );
-                            });
-                        }
-                        if (details.failed > 0 || details.total === 0 || pageErrors.length > 0) {
-                            grunt.log.error(
-                                'QUnit: ' + details.passed + '/' + details.total +
-                                ' assertions passed, ' + details.failed + ' failed, ' +
-                                pageErrors.length + ' page error(s) (' + details.runtime + 'ms)'
-                            );
-                            finish(false);
-                        } else {
-                            grunt.log.ok(
-                                'QUnit: ' + details.passed + '/' + details.total +
-                                ' assertions passed, 0 failed (' + details.runtime + 'ms)'
-                            );
-                            finish(true);
-                        }
+                        resolveDone(details);
                     });
                 }).then(function() {
-                    return page.evaluateOnNewDocument(function() {
+                    return page.evaluateOnNewDocument(function(sIdx, sCnt) {
                         // Match legacy PhantomJS touch-only test environment used by Hammer Simulator
                         delete window.PointerEvent;
                         Object.defineProperty(window, 'QUnit', {
@@ -185,6 +159,16 @@ module.exports = function(grunt) {
                                     enumerable: true,
                                     configurable: true
                                 });
+                                if (sCnt > 1) {
+                                    var testIdx = 0;
+                                    var origTest = val.test;
+                                    val.test = window.test = function(name) {
+                                        if (name !== 'global failure' && (testIdx++ % sCnt) !== sIdx) {
+                                            return;
+                                        }
+                                        return origTest.apply(this, arguments);
+                                    };
+                                }
                                 val.log(function(details) {
                                     if (!details.result) {
                                         window.__gruntQUnitLog({
@@ -202,7 +186,7 @@ module.exports = function(grunt) {
                                 });
                             }
                         });
-                    });
+                    }, shardIndex, shardCount);
                 }).then(function() {
                     page.on('pageerror', function(err) {
                         var msg = err && err.message ? err.message : String(err);
@@ -216,12 +200,88 @@ module.exports = function(grunt) {
                     });
                 }).then(function(hasQUnit) {
                     if (!hasQUnit) {
-                        grunt.log.error('QUnit failed to initialize.');
-                        finish(false);
+                        throw new Error('QUnit failed to initialize.');
                     }
+                    return donePromise;
+                }).then(function(details) {
+                    return cleanup().then(function() {
+                        return {
+                            details: details,
+                            failures: failures,
+                            pageErrors: pageErrors
+                        };
+                    });
+                }, function(err) {
+                    return cleanup().then(function() {
+                        throw err;
+                    });
                 });
-            }).catch(function(err) {
-                return browser.close().then(function() {
+            });
+        }
+
+        puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ]
+        }).then(function(browser) {
+            var shardPromises = [];
+            for (var i = 0; i < shardCount; i++) {
+                shardPromises.push(runShard(browser, i));
+            }
+
+            return Promise.all(shardPromises).then(function(results) {
+                var passed = 0;
+                var failed = 0;
+                var total = 0;
+                var failures = [];
+                var pageErrors = 0;
+
+                results.forEach(function(r) {
+                    passed += r.details.passed;
+                    failed += r.details.failed;
+                    total += r.details.total;
+                    failures = failures.concat(r.failures);
+                    pageErrors += r.pageErrors.length;
+                });
+
+                var runtime = Date.now() - startTime;
+                var shardSuffix = shardCount > 1 ? ' across ' + shardCount + ' shards' : '';
+
+                if (failures.length) {
+                    failures.forEach(function(f) {
+                        grunt.log.error(
+                            '[' + f.module + '] ' + f.name + ': ' +
+                            (f.message || 'failed') +
+                            ' (expected: ' + f.expected +
+                            ', actual: ' + f.actual + ')'
+                        );
+                    });
+                }
+
+                var ok = failed === 0 && total > 0 && pageErrors === 0;
+                if (!ok) {
+                    grunt.log.error(
+                        'QUnit: ' + passed + '/' + total +
+                        ' assertions passed, ' + failed + ' failed, ' +
+                        pageErrors + ' page error(s) (' + runtime + 'ms' + shardSuffix + ')'
+                    );
+                } else {
+                    grunt.log.ok(
+                        'QUnit: ' + passed + '/' + total +
+                        ' assertions passed, 0 failed (' + runtime + 'ms' + shardSuffix + ')'
+                    );
+                }
+
+                return browser.close().catch(function() {}).then(function() {
+                    done(ok);
+                });
+            }, function(err) {
+                return browser.close().catch(function() {}).then(function() {
                     throw err;
                 });
             });
