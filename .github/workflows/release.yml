@@ -5,28 +5,30 @@ on:
     types: [published]
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build, upload release assets & publish to npm
+  build:
+    name: Build, test & verify release artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Verify release tag matches package.json version
         env:
@@ -40,21 +42,6 @@ jobs:
             echo "::error::Release tag ${RELEASE_TAG} does not match package.json version ${PKG_VERSION}."
             exit 1
           fi
-
-      - name: Verify npm version supports OIDC Trusted Publishing
-        run: |
-          npm --version
-          node -e '
-            const [maj, min, pat] = require("child_process")
-              .execSync("npm --version", { encoding: "utf8" })
-              .trim()
-              .split(".")
-              .map(Number);
-            if (maj < 11 || (maj === 11 && (min < 5 || (min === 5 && pat < 1)))) {
-              console.error("npm >= 11.5.1 is required for OIDC Trusted Publishing");
-              process.exit(1);
-            }
-          '
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -75,7 +62,69 @@ jobs:
           grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.js
           grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.mjs
           ls -lh hammer.js hammer.mjs hammer.min.js hammer.min.js.map
-          npm pack --dry-run
+          npm pack --dry-run --ignore-scripts
+
+      - name: Upload built release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          if-no-files-found: error
+          path: |
+            hammer.js
+            hammer.mjs
+            hammer.min.js
+            hammer.min.js.map
+
+  publish:
+    name: Upload release assets & publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm version supports OIDC Trusted Publishing
+        run: |
+          npm --version
+          node -e '
+            const [maj, min, pat] = require("child_process")
+              .execSync("npm --version", { encoding: "utf8" })
+              .trim()
+              .split(".")
+              .map(Number);
+            if (maj < 11 || (maj === 11 && (min < 5 || (min === 5 && pat < 1)))) {
+              console.error("npm >= 11.5.1 is required for OIDC Trusted Publishing");
+              process.exit(1);
+            }
+          '
+
+      - name: Download built release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+
+      - name: Verify downloaded artifacts
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          test -s hammer.js
+          test -s hammer.mjs
+          test -s hammer.min.js
+          test -s hammer.min.js.map
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.js
+          grep -Fq "Hammer.VERSION = '${PKG_VERSION}';" hammer.mjs
 
       - name: Upload build assets to GitHub Release
         env:
@@ -95,7 +144,7 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           if [ "${IS_PRERELEASE}" = "true" ] || [[ "${RELEASE_TAG}" == *-* ]]; then
-            npm publish --provenance --access public --tag next
+            npm publish --provenance --access public --ignore-scripts --tag next
           else
-            npm publish --provenance --access public
+            npm publish --provenance --access public --ignore-scripts
           fi
