@@ -48,8 +48,8 @@ inherit(TapRecognizer, Recognizer, {
         var validMovement = input.distance < options.threshold;
         var validTouchTime = input.deltaTime < options.time;
 
-        // Trailing finger liftoff after a multi-pointer tap already matched
-        if (input.eventType === INPUT_END && validMovement && validTouchTime &&
+        // Trailing finger move/liftoff after a multi-pointer tap already matched
+        if (options.pointers > 1 && (input.eventType & (INPUT_MOVE | INPUT_END)) &&
             input.pointers.length < options.pointers && input.maxPointers === options.pointers) {
             return this.state === STATE_BEGAN ? STATE_BEGAN : STATE_FAILED;
         }
@@ -67,12 +67,11 @@ inherit(TapRecognizer, Recognizer, {
 
             this.count = (validMultiTap && validInterval) ? this.count + 1 : 1;
 
-            this._input = input;
-
             // if tap count matches we have recognized it,
             // else it has began recognizing...
             var tapCount = this.count % options.taps;
             if (tapCount === 0) {
+                this._input = input;
                 // no failing requirements, immediately trigger the tap event
                 // or wait as long as the multitap interval to trigger
                 if (!this.hasRequireFailures()) {
