@@ -1,28 +1,28 @@
 var el,
     hammer;
 
-module('Pan Gesture', {
-    setup: function() {
+QUnit.module('Pan Gesture', {
+    beforeEach: function() {
         el = document.createElement('div');
         document.body.appendChild(el);
 
         hammer = new Hammer(el, {recognizers: []});
     },
-    teardown: function() {
+    afterEach: function() {
         document.body.removeChild(el);
         hammer.destroy();
     }
 });
 
-test('`panstart` and `panmove` should be recognized', function() {
-    expect(2);
+QUnit.test('`panstart` and `panmove` should be recognized', function(assert) {
+    assert.expect(2);
 
     var panMoveCount = 0;
     var pan = new Hammer.Pan({threshold: 1});
 
     hammer.add(pan);
     hammer.on('panstart', function() {
-      ok(true);
+      assert.ok(true);
     });
     hammer.on('panmove', function() {
       panMoveCount++;
@@ -32,11 +32,12 @@ test('`panstart` and `panmove` should be recognized', function() {
     utils.dispatchTouchEvent(el, 'move', 70, 50);
     utils.dispatchTouchEvent(el, 'move', 90, 50);
 
-    equal(panMoveCount, 1);
+    assert.equal(panMoveCount, 1);
 });
 
-asyncTest('Pan event flow should be start -> left -> end', function() {
-    expect(1);
+QUnit.test('Pan event flow should be start -> left -> end', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
     var pan = new Hammer.Pan({threshold: 1});
     hammer.add(pan);
 
@@ -57,13 +58,13 @@ asyncTest('Pan event flow should be start -> left -> end', function() {
     });
 
     Simulator.gestures.pan(el, { duration: 60, deltaX: -100, deltaY: 0 }, function() {
-        equal(eventflow,"startleftend");
-        start();
+        assert.equal(eventflow,"startleftend");
+        done();
     });
 });
 
-test('calling manager.stop() inside panstart does not skip panstart on the next gesture', function() {
-    expect(2);
+QUnit.test('calling manager.stop() inside panstart does not skip panstart on the next gesture', function(assert) {
+    assert.expect(2);
 
     var pan = new Hammer.Pan({threshold: 5});
     hammer.add(pan);
@@ -83,7 +84,7 @@ test('calling manager.stop() inside panstart does not skip panstart on the next 
     utils.dispatchTouchEvent(el, 'move', 30, 10);
     utils.dispatchTouchEvent(el, 'move', 50, 10);
     utils.dispatchTouchEvent(el, 'end', 50, 10);
-    deepEqual(events, ['panstart'], 'first gesture stops after panstart');
+    assert.deepEqual(events, ['panstart'], 'first gesture stops after panstart');
 
     // Gesture 2: fresh session must reset recognizer state and emit panstart again
     events = [];
@@ -91,11 +92,11 @@ test('calling manager.stop() inside panstart does not skip panstart on the next 
     utils.dispatchTouchEvent(el, 'start', 10, 10);
     utils.dispatchTouchEvent(el, 'move', 30, 10);
     utils.dispatchTouchEvent(el, 'end', 30, 10);
-    deepEqual(events, ['panstart', 'panend'], 'next gesture after stop() properly emits panstart');
+    assert.deepEqual(events, ['panstart', 'panend'], 'next gesture after stop() properly emits panstart');
 });
 
-test('PanRecognizer with DIRECTION_NONE does not recognize pans', function() {
-    expect(1);
+QUnit.test('PanRecognizer with DIRECTION_NONE does not recognize pans', function(assert) {
+    assert.expect(1);
 
     var panCount = 0;
     var pan = new Hammer.Pan({direction: Hammer.DIRECTION_NONE, threshold: 5});
@@ -110,11 +111,11 @@ test('PanRecognizer with DIRECTION_NONE does not recognize pans', function() {
     utils.dispatchTouchEvent(el, 'move', 40, 40);
     utils.dispatchTouchEvent(el, 'end', 40, 40);
 
-    equal(panCount, 0, 'no pan events fired when direction is DIRECTION_NONE');
+    assert.equal(panCount, 0, 'no pan events fired when direction is DIRECTION_NONE');
 });
 
-test('consecutive axis-locked pans at the same deltaX both recognize cleanly', function() {
-    expect(2);
+QUnit.test('consecutive axis-locked pans at the same deltaX both recognize cleanly', function(assert) {
+    assert.expect(2);
 
     var pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 5});
     hammer.add(pan);
@@ -128,7 +129,7 @@ test('consecutive axis-locked pans at the same deltaX both recognize cleanly', f
     utils.dispatchTouchEvent(el, 'start', 10, 10);
     utils.dispatchTouchEvent(el, 'move', 40, 10);
     utils.dispatchTouchEvent(el, 'end', 40, 10);
-    equal(panStarts, 1, 'first pan recognized');
+    assert.equal(panStarts, 1, 'first pan recognized');
 
     // Gesture 2 arrives directly at deltaX = 30 with predominantly vertical direction (triggers axis lock check)
     pan.recognize({
@@ -140,11 +141,11 @@ test('consecutive axis-locked pans at the same deltaX both recognize cleanly', f
         direction: Hammer.DIRECTION_DOWN,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    equal(panStarts, 2, 'second axis-locked pan at same deltaX recognizes cleanly');
+    assert.equal(panStarts, 2, 'second axis-locked pan at same deltaX recognizes cleanly');
 });
 
-test('single-axis Pan checks axis displacement against threshold and ignores perpendicular wiggle', function() {
-    expect(4);
+QUnit.test('single-axis Pan checks axis displacement against threshold and ignores perpendicular wiggle', function(assert) {
+    assert.expect(4);
 
     // 1. Horizontal-only Pan must not start on 25px vertical drag + 1px horizontal wiggle
     var hEvents = [];
@@ -163,7 +164,7 @@ test('single-axis Pan checks axis displacement against threshold and ignores per
         direction: Hammer.DIRECTION_RIGHT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(hEvents, [], 'horizontal Pan rejects 1px horizontal wiggle after 25px vertical drag');
+    assert.deepEqual(hEvents, [], 'horizontal Pan rejects 1px horizontal wiggle after 25px vertical drag');
 
     hPan.recognize({
         eventType: $H.INPUT_MOVE,
@@ -174,7 +175,7 @@ test('single-axis Pan checks axis displacement against threshold and ignores per
         direction: Hammer.DIRECTION_RIGHT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(hEvents, ['panstart'], 'horizontal Pan starts once abs(deltaX) exceeds threshold');
+    assert.deepEqual(hEvents, ['panstart'], 'horizontal Pan starts once abs(deltaX) exceeds threshold');
 
     // 2. Vertical-only Pan must not start on 25px horizontal drag + 1px vertical wiggle
     var vEvents = [];
@@ -194,7 +195,7 @@ test('single-axis Pan checks axis displacement against threshold and ignores per
         direction: Hammer.DIRECTION_DOWN,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(vEvents, [], 'vertical Pan rejects 1px vertical wiggle after 25px horizontal drag');
+    assert.deepEqual(vEvents, [], 'vertical Pan rejects 1px vertical wiggle after 25px horizontal drag');
 
     vPan.recognize({
         eventType: $H.INPUT_MOVE,
@@ -205,11 +206,11 @@ test('single-axis Pan checks axis displacement against threshold and ignores per
         direction: Hammer.DIRECTION_DOWN,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(vEvents, ['panstart'], 'vertical Pan starts once abs(deltaY) exceeds threshold');
+    assert.deepEqual(vEvents, ['panstart'], 'vertical Pan starts once abs(deltaY) exceeds threshold');
 });
 
-test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and keep emitting directional pan events', function() {
-    expect(3);
+QUnit.test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and keep emitting directional pan events', function(assert) {
+    assert.expect(3);
 
     // 1. Slow vertical drag (>40ms between moves) with DIRECTION_ALL
     var panAll = new Hammer.Pan({direction: Hammer.DIRECTION_ALL, threshold: 10});
@@ -235,7 +236,7 @@ test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and
     feedPointer($H.INPUT_MOVE, 10, 40, 1100);
     feedPointer($H.INPUT_END, 10, 40, 1150);
 
-    deepEqual(
+    assert.deepEqual(
         verticalEvents,
         ['panstart', 'pandown', 'panmove', 'pandown', 'panend'],
         'slow vertical drag with DIRECTION_ALL emits panstart, panmove, pandown, and panend'
@@ -257,7 +258,7 @@ test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and
     feedPointer($H.INPUT_MOVE, 70, 10, 2200);
     feedPointer($H.INPUT_END, 70, 10, 2250);
 
-    equal(panRightCount, 4, 'panright emitted on panstart and every subsequent slow panmove');
+    assert.equal(panRightCount, 4, 'panright emitted on panstart and every subsequent slow panmove');
 
     // 3. Direct DIRECTION_ALL pan recognition when input.direction is DIRECTION_NONE
     var directStarts = 0;
@@ -275,11 +276,11 @@ test('slow drags (>40ms between moves) recognize vertical Pan(DIRECTION_ALL) and
         direction: Hammer.DIRECTION_NONE,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    equal(directStarts, 1, 'DIRECTION_ALL recognizes vertical displacement when input.direction is DIRECTION_NONE');
+    assert.equal(directStarts, 1, 'DIRECTION_ALL recognizes vertical displacement when input.direction is DIRECTION_NONE');
 });
 
-test('directional Pan rejects 1px opposite wiggle after dragging in disallowed direction', function() {
-    expect(5);
+QUnit.test('directional Pan rejects 1px opposite wiggle after dragging in disallowed direction', function(assert) {
+    assert.expect(5);
 
     var events = [];
     hammer.add(new Hammer.Pan({direction: Hammer.DIRECTION_RIGHT, threshold: 10}));
@@ -297,7 +298,7 @@ test('directional Pan rejects 1px opposite wiggle after dragging in disallowed d
         direction: Hammer.DIRECTION_RIGHT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(events, [], 'DIRECTION_RIGHT rejects 1px rightward wiggle while cumulative deltaX is -29');
+    assert.deepEqual(events, [], 'DIRECTION_RIGHT rejects 1px rightward wiggle while cumulative deltaX is -29');
 
     hammer.get('pan').recognize({
         eventType: $H.INPUT_MOVE,
@@ -308,7 +309,7 @@ test('directional Pan rejects 1px opposite wiggle after dragging in disallowed d
         direction: Hammer.DIRECTION_LEFT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(events, ['panstart', 'panright'], 'DIRECTION_RIGHT recognizes when cumulative deltaX > threshold');
+    assert.deepEqual(events, ['panstart', 'panright'], 'DIRECTION_RIGHT recognizes when cumulative deltaX > threshold');
 
     // Vertical single-direction: DIRECTION_UP rejects +29px down with 1px upward wiggle
     events = [];
@@ -326,7 +327,7 @@ test('directional Pan rejects 1px opposite wiggle after dragging in disallowed d
         direction: Hammer.DIRECTION_UP,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(events, [], 'DIRECTION_UP rejects 1px upward wiggle while cumulative deltaY is +29');
+    assert.deepEqual(events, [], 'DIRECTION_UP rejects 1px upward wiggle while cumulative deltaY is +29');
 
     // Asymmetric multi-axis mask (RIGHT | DOWN) uses cumulative getDirection(x, y)
     events = [];
@@ -344,7 +345,7 @@ test('directional Pan rejects 1px opposite wiggle after dragging in disallowed d
         direction: Hammer.DIRECTION_RIGHT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(events, [], 'asymmetric RIGHT|DOWN mask rejects 1px right wiggle at deltaX = -29');
+    assert.deepEqual(events, [], 'asymmetric RIGHT|DOWN mask rejects 1px right wiggle at deltaX = -29');
 
     hammer.get('pan').recognize({
         eventType: $H.INPUT_MOVE,
@@ -355,5 +356,5 @@ test('directional Pan rejects 1px opposite wiggle after dragging in disallowed d
         direction: Hammer.DIRECTION_DOWN,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    deepEqual(events, ['panstart', 'pandown'], 'asymmetric RIGHT|DOWN mask recognizes downward drag');
+    assert.deepEqual(events, ['panstart', 'pandown'], 'asymmetric RIGHT|DOWN mask recognizes downward drag');
 });

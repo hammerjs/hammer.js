@@ -133,9 +133,7 @@ module.exports = [
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'commonjs',
-            globals: Object.assign({}, nodeGlobals, {
-                window: 'readonly'
-            })
+            globals: nodeGlobals
         },
         rules: Object.assign({}, commonRules, {
             'eol-last': ['error', 'always'],

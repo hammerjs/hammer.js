@@ -1,13 +1,13 @@
 var el, el2,
     hammer, hammer2;
 
-module('Tests', {
-    setup: function() {
+QUnit.module('Tests', {
+    beforeEach: function() {
         el = utils.createHitArea();
         el2 = utils.createHitArea();
     },
 
-    teardown: function() {
+    afterEach: function() {
         if (hammer) {
             hammer.destroy();
             hammer = null;
@@ -19,29 +19,29 @@ module('Tests', {
     }
 });
 
-test('hammer shortcut', function() {
-    expect(2);
+QUnit.test('hammer shortcut', function(assert) {
+    assert.expect(2);
 
     var origTouchAction = Hammer.defaults.touchAction;
     Hammer.defaults.touchAction = 'pan-y';
     try {
         hammer = Hammer(el);
 
-        ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
-        ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
+        assert.ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+        assert.ok(hammer.touchAction.actions == Hammer.defaults.touchAction, 'set the default touchAction');
     } finally {
         Hammer.defaults.touchAction = origTouchAction;
     }
 });
 
-test('hammer shortcut with options', function() {
-    expect(2);
+QUnit.test('hammer shortcut with options', function(assert) {
+    assert.expect(2);
 
     hammer = Hammer(el, {
         touchAction: 'none'
     });
-    ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
-    ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
+    assert.ok(hammer instanceof Hammer.Manager, 'returns an instance of Manager');
+    assert.ok(hammer.touchAction.actions == 'none', 'set the default touchAction');
 });
 
 /* Creating a hammer instance does not work on the same way
@@ -49,14 +49,14 @@ test('hammer shortcut with options', function() {
  *
  * This can confuse developers who read tests to use the library when doc is missing.
  */
-test('Hammer and Hammer.Manager constructors work exactly on the same way.', function() {
-    expect(2);
+QUnit.test('Hammer and Hammer.Manager constructors work exactly on the same way.', function(assert) {
+    assert.expect(2);
 
     hammer = new Hammer(el, {});
-    equal(Hammer.defaults.preset.length, hammer.recognizers.length);
+    assert.equal(Hammer.defaults.preset.length, hammer.recognizers.length);
 
     hammer2 = new Hammer.Manager(el, {});
-    equal(0, hammer2.recognizers.length);
+    assert.equal(0, hammer2.recognizers.length);
 });
 
 /* DOC to disable default recognizers should be added.
@@ -66,30 +66,30 @@ test('Hammer and Hammer.Manager constructors work exactly on the same way.', fun
  * - Hammer(el, {recognizers: null}).      IMO: now, it fails.
  * - Hammer(el, {recognizers: []}).  It works, but it is likely not intuitive.
  */
-test('A Hammer instance can be setup to not having default recognizers.', function() {
-    expect(1);
+QUnit.test('A Hammer instance can be setup to not having default recognizers.', function(assert) {
+    assert.expect(1);
 
     hammer = new Hammer(el, { recognizers: false });
-    equal(0, hammer.recognizers.length);
+    assert.equal(0, hammer.recognizers.length);
 });
 
 /* The case was when I added a custom tap event which was added to the default
  * recognizers, and my custom tap gesture wasn't working (I do not know exactly the reason),
  * but removing the default recognizers solved the issue.
  */
-test('Adding the same recognizer type should remove the old recognizer', function() {
-    expect(4);
+QUnit.test('Adding the same recognizer type should remove the old recognizer', function(assert) {
+    assert.expect(4);
 
     hammer = new Hammer(el);
 
-    ok(!!hammer.get('tap'));
-    equal(7, hammer.recognizers.length);
+    assert.ok(!!hammer.get('tap'));
+    assert.equal(7, hammer.recognizers.length);
 
     var newTap = new Hammer.Tap({time: 1337});
     hammer.add(newTap);
 
-    equal(7, hammer.recognizers.length);
-    equal(1337, hammer.get('tap').options.time);
+    assert.equal(7, hammer.recognizers.length);
+    assert.equal(1337, hammer.get('tap').options.time);
 });
 
 /*
@@ -97,41 +97,43 @@ test('Adding the same recognizer type should remove the old recognizer', functio
  * - in this tests, it does not update input.velocity ( always 0)
  * - does not fire swipeleft or swiperight events
  */
-asyncTest('Swiping to the left should fire swipeleft event', function() {
-    expect(2);
+QUnit.test('Swiping to the left should fire swipeleft event', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
 
     hammer = new Hammer(el, {recognizers: []});
     hammer.add(new Hammer.Swipe());
     hammer.on('swipe swipeleft', function() {
-        ok(true);
+        assert.ok(true);
     });
 
     Simulator.gestures.swipe(el, {pos: [300, 300], duration: 60, deltaY: 0, deltaX: -200}, function() {
-        start();
+        done();
     });
 });
 
 /*
  * Input target change
  */
-asyncTest('Should detect input while on other element', function() {
-    expect(1);
+QUnit.test('Should detect input while on other element', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
 
     hammer = new Hammer(el, { inputTarget: document.body });
     hammer.on('tap', function() {
-        ok(true);
+        assert.ok(true);
     });
 
     Simulator.gestures.tap(document.body, { duration: 20 }, function() {
-        start();
+        done();
     });
 });
 
 /* Hammer.Manager constructor accepts a "recognizers" option in which each
  * element is an array representation of a Recognizer.
  */
-test('Hammer.Manager accepts recognizers as arrays.', function() {
-    expect(4);
+QUnit.test('Hammer.Manager accepts recognizers as arrays.', function(assert) {
+    assert.expect(4);
 
     hammer = new Hammer.Manager(el, {
         recognizers: [
@@ -141,16 +143,16 @@ test('Hammer.Manager accepts recognizers as arrays.', function() {
             [Hammer.Pan, { direction: Hammer.DIRECTION_UP }, ['swipe', 'pinch'], ['rotate']]
         ]
     });
-    equal(4, hammer.recognizers.length);
+    assert.equal(4, hammer.recognizers.length);
 
     var recognizerActual = hammer.recognizers[3];
-    equal(recognizerActual.options.direction, Hammer.DIRECTION_UP);
-    equal(2, Object.keys(recognizerActual.simultaneous).length);
-    equal(1, recognizerActual.requireFail.length);
+    assert.equal(recognizerActual.options.direction, Hammer.DIRECTION_UP);
+    assert.equal(2, Object.keys(recognizerActual.simultaneous).length);
+    assert.equal(1, recognizerActual.requireFail.length);
 });
 
-test('Manager constructor wires forward recognizer references and clones options.cssProps', function() {
-    expect(4);
+QUnit.test('Manager constructor wires forward recognizer references and clones options.cssProps', function(assert) {
+    assert.expect(4);
 
     // 1. Forward references in options.recognizers (doubletap listed before tap and press)
     hammer = new Hammer.Manager(el, {
@@ -163,31 +165,31 @@ test('Manager constructor wires forward recognizer references and clones options
     var doubletap = hammer.get('doubletap');
     var tap = hammer.get('tap');
     var press = hammer.get('press');
-    equal(doubletap.canRecognizeWith(tap), true, 'forward recognizeWith reference resolved');
-    equal(doubletap.requireFail[0], press, 'forward requireFailure reference resolved');
+    assert.equal(doubletap.canRecognizeWith(tap), true, 'forward recognizeWith reference resolved');
+    assert.equal(doubletap.requireFail[0], press, 'forward requireFailure reference resolved');
 
     // 2. options.cssProps is cloned and does not alias Hammer.defaults.cssProps
-    notStrictEqual(hammer.options.cssProps, Hammer.defaults.cssProps, 'manager.options.cssProps does not alias Hammer.defaults.cssProps');
+    assert.notStrictEqual(hammer.options.cssProps, Hammer.defaults.cssProps, 'manager.options.cssProps does not alias Hammer.defaults.cssProps');
     var origUserSelect = Hammer.defaults.cssProps.userSelect;
     hammer.options.cssProps.userSelect = 'text';
-    equal(Hammer.defaults.cssProps.userSelect, origUserSelect, 'mutating manager.options.cssProps does not mutate Hammer.defaults.cssProps');
+    assert.equal(Hammer.defaults.cssProps.userSelect, origUserSelect, 'mutating manager.options.cssProps does not mutate Hammer.defaults.cssProps');
 });
 
 /*
  * Removing a recognizer which cannot be found would errantly remove the last recognizer in the
  * manager's list.
  */
-test('Remove non-existent recognizer.', function() {
-    expect(1);
+QUnit.test('Remove non-existent recognizer.', function(assert) {
+    assert.expect(1);
 
     hammer = new Hammer(el, {recognizers: []});
     hammer.add(new Hammer.Swipe());
     hammer.remove('tap');
 
-    equal(1, hammer.recognizers.length);
+    assert.equal(1, hammer.recognizers.length);
 });
 
-test('check whether Hammer.defaults.cssProps is restored', function() {
+QUnit.test('check whether Hammer.defaults.cssProps is restored', function(assert) {
     var beforeCssProps = {
         userSelect: 'text',
         touchSelect: 'grippers',
@@ -210,13 +212,13 @@ test('check whether Hammer.defaults.cssProps is restored', function() {
     Hammer.each(Hammer.defaults.cssProps, function(value, name) {
         prop = Hammer.prefixed(el.style, name);
         if (prop) {
-            equal(el.style[prop], beforeCssProps[name], "check if " + name + " is restored");
+            assert.equal(el.style[prop], beforeCssProps[name], "check if " + name + " is restored");
         }
     });
 });
 
-test('TouchMouseInput ignores mouse events with srcEvent.sourceCapabilities.firesTouchEvents', function() {
-    expect(2);
+QUnit.test('TouchMouseInput ignores mouse events with srcEvent.sourceCapabilities.firesTouchEvents', function(assert) {
+    assert.expect(2);
 
     hammer = new Hammer(el, {inputClass: Hammer.TouchMouseInput});
     var tapCount = 0;
@@ -237,15 +239,15 @@ test('TouchMouseInput ignores mouse events with srcEvent.sourceCapabilities.fire
 
     dispatchMouse('mousedown', 50, 50, 1, true);
     dispatchMouse('mouseup', 50, 50, 0, true);
-    equal(tapCount, 0, 'mouse event with firesTouchEvents=true is ignored');
+    assert.equal(tapCount, 0, 'mouse event with firesTouchEvents=true is ignored');
 
     dispatchMouse('mousedown', 100, 100, 1, false);
     dispatchMouse('mouseup', 100, 100, 0, false);
-    equal(tapCount, 1, 'mouse event with firesTouchEvents=false is still recognized');
+    assert.equal(tapCount, 1, 'mouse event with firesTouchEvents=false is still recognized');
 });
 
-test('TouchAction skips preventDefault on non-cancelable events', function() {
-    expect(5);
+QUnit.test('TouchAction skips preventDefault on non-cancelable events', function(assert) {
+    assert.expect(5);
 
     hammer = new Hammer(el, {touchAction: 'none'});
     var preventCalls = 0;
@@ -257,8 +259,8 @@ test('TouchAction skips preventDefault on non-cancelable events', function() {
     };
 
     hammer.touchAction.preventSrc(nonCancelableEvent);
-    equal(preventCalls, 0, 'preventSrc skips preventDefault when cancelable is false');
-    ok(!hammer.session.prevented, 'session.prevented is not set when event is non-cancelable');
+    assert.equal(preventCalls, 0, 'preventSrc skips preventDefault when cancelable is false');
+    assert.ok(!hammer.session.prevented, 'session.prevented is not set when event is non-cancelable');
 
     hammer.session.prevented = true;
     hammer.touchAction.preventDefaults({
@@ -268,7 +270,7 @@ test('TouchAction skips preventDefault on non-cancelable events', function() {
         offsetDirection: Hammer.DIRECTION_RIGHT,
         srcEvent: nonCancelableEvent
     });
-    equal(preventCalls, 0, 'preventDefaults skips preventDefault when cancelable is false');
+    assert.equal(preventCalls, 0, 'preventDefaults skips preventDefault when cancelable is false');
 
     hammer.session.prevented = false;
     hammer.touchAction.preventSrc({
@@ -277,18 +279,18 @@ test('TouchAction skips preventDefault on non-cancelable events', function() {
             preventCalls++;
         }
     });
-    equal(preventCalls, 1, 'preventSrc calls preventDefault when cancelable is true');
+    assert.equal(preventCalls, 1, 'preventSrc calls preventDefault when cancelable is true');
 
     hammer.touchAction.preventSrc({
         preventDefault: function() {
             preventCalls++;
         }
     });
-    equal(preventCalls, 2, 'preventSrc still calls preventDefault when cancelable is undefined');
+    assert.equal(preventCalls, 2, 'preventSrc still calls preventDefault when cancelable is undefined');
 });
 
-test('toggleCssProps does not write undefined property for unsupported cssProps', function() {
-    expect(3);
+QUnit.test('toggleCssProps does not write undefined property for unsupported cssProps', function(assert) {
+    assert.expect(3);
 
     hammer = Hammer(el, {
         cssProps: {
@@ -296,17 +298,17 @@ test('toggleCssProps does not write undefined property for unsupported cssProps'
         }
     });
 
-    ok(!('undefined' in el.style), 'element.style does not get an "undefined" property');
-    ok(!('undefined' in hammer.oldCssProps), 'oldCssProps does not store an "undefined" key');
+    assert.ok(!('undefined' in el.style), 'element.style does not get an "undefined" property');
+    assert.ok(!('undefined' in hammer.oldCssProps), 'oldCssProps does not store an "undefined" key');
 
     hammer.destroy();
     hammer = null;
 
-    ok(!('undefined' in el.style), 'element.style still has no "undefined" property after destroy');
+    assert.ok(!('undefined' in el.style), 'element.style still has no "undefined" property after destroy');
 });
 
-test('PointerEventInput snapshots pointers and removes ended pointer before callback', function() {
-    expect(4);
+QUnit.test('PointerEventInput snapshots pointers and removes ended pointer before callback', function(assert) {
+    assert.expect(4);
 
     hammer = new Hammer(el, {inputClass: Hammer.PointerEventInput});
     var capturedPointers = null;
@@ -334,7 +336,7 @@ test('PointerEventInput snapshots pointers and removes ended pointer before call
 
     hammer.input.handler(createPointerEvent('pointerdown', 1));
     hammer.input.handler(createPointerEvent('pointerup', 1));
-    equal(capturedPointers && capturedPointers.length, 1, 'ev.pointers snapshot is not mutated after pointerup');
+    assert.equal(capturedPointers && capturedPointers.length, 1, 'ev.pointers snapshot is not mutated after pointerup');
 
     shouldThrow = true;
     var caught = false;
@@ -344,32 +346,33 @@ test('PointerEventInput snapshots pointers and removes ended pointer before call
     } catch (err) {
         caught = true;
     }
-    ok(caught, 'listener error propagated synchronously');
-    equal(hammer.input.store.length, 0, 'store is cleaned up even when a listener throws');
+    assert.ok(caught, 'listener error propagated synchronously');
+    assert.equal(hammer.input.store.length, 0, 'store is cleaned up even when a listener throws');
 
     shouldThrow = false;
     hammer.input.handler(createPointerEvent('pointerdown', 3));
     hammer.input.handler(createPointerEvent('pointerup', 3));
-    equal(tapCount, 3, 'subsequent gestures still recognize after listener throw');
+    assert.equal(tapCount, 3, 'subsequent gestures still recognize after listener throw');
 });
 
-test('Manager.destroy clears DOM references and is safe to call twice', function() {
-    expect(4);
+QUnit.test('Manager.destroy clears DOM references and is safe to call twice', function(assert) {
+    assert.expect(4);
 
     hammer = new Hammer(el, {inputTarget: el2});
     hammer.destroy();
 
-    strictEqual(hammer.element, null, 'destroy clears manager.element');
-    strictEqual(hammer.input, null, 'destroy clears manager.input');
-    strictEqual(hammer.options.inputTarget, null, 'destroy clears manager.options.inputTarget');
+    assert.strictEqual(hammer.element, null, 'destroy clears manager.element');
+    assert.strictEqual(hammer.input, null, 'destroy clears manager.input');
+    assert.strictEqual(hammer.options.inputTarget, null, 'destroy clears manager.options.inputTarget');
 
     hammer.destroy();
-    ok(true, 'calling destroy a second time does not throw');
+    assert.ok(true, 'calling destroy a second time does not throw');
     hammer = null;
 });
 
-asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active recognition, and guard touchAction', function() {
-    expect(5);
+QUnit.test('Manager.remove and Manager.destroy reset pending timers, halt active recognition, and guard touchAction', function(assert) {
+    var done = assert.async();
+    assert.expect(5);
 
     hammer = new Hammer.Manager(el, {
         domEvents: true,
@@ -389,7 +392,7 @@ asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active 
     // 1. Removing a recognizer resets its timer and clears recognizer.manager
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     hammer.remove(press);
-    strictEqual(press.manager, null, 'remove() clears recognizer.manager');
+    assert.strictEqual(press.manager, null, 'remove() clears recognizer.manager');
 
     // 2. Re-add press, trigger timer, then destroy inside pan1start -> pan2 must not run and press timer must be cancelled
     var press2 = hammer.add(new Hammer.Press({event: 'press', time: 20}));
@@ -417,11 +420,11 @@ asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active 
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
 
-    equal(pan2Fired, 0, 'destroy() inside a listener halts remaining recognizers in the active cycle');
+    assert.equal(pan2Fired, 0, 'destroy() inside a listener halts remaining recognizers in the active cycle');
 
     // 3. Updating touchAction / recognizer options after destroy does not throw
     press2.set({enable: false});
-    ok(true, 'recognizer.set() -> touchAction.update() after destroy() does not throw');
+    assert.ok(true, 'recognizer.set() -> touchAction.update() after destroy() does not throw');
 
     // 4. Subsequent recognize() after destroy is a no-op
     hammer.recognize({
@@ -433,32 +436,32 @@ asyncTest('Manager.remove and Manager.destroy reset pending timers, halt active 
         direction: Hammer.DIRECTION_RIGHT,
         srcEvent: {cancelable: true, preventDefault: function() {}}
     });
-    equal(pan2Fired, 0, 'recognize() after destroy() is ignored');
+    assert.equal(pan2Fired, 0, 'recognize() after destroy() is ignored');
 
     hammer = null;
     setTimeout(function() {
-        equal(pressFired, 0, 'pending press timers were cancelled by remove() and destroy()');
-        start();
+        assert.equal(pressFired, 0, 'pending press timers were cancelled by remove() and destroy()');
+        done();
     }, 60);
 });
 
-test('Hammer() does not mutate caller options and accepts frozen options objects', function() {
-    expect(3);
+QUnit.test('Hammer() does not mutate caller options and accepts frozen options objects', function(assert) {
+    assert.expect(3);
 
     var sharedOptions = {touchAction: 'pan-y'};
     var h1 = new Hammer(el, sharedOptions);
-    strictEqual(sharedOptions.recognizers, undefined, 'caller options object is not mutated with default recognizers');
+    assert.strictEqual(sharedOptions.recognizers, undefined, 'caller options object is not mutated with default recognizers');
     h1.destroy();
 
     var frozenOptions = Object.freeze({touchAction: 'pan-y'});
     var h2 = new Hammer(el, frozenOptions);
-    ok(h2.recognizers.length > 0, 'frozen options object works and still attaches default preset recognizers');
-    equal(h2.options.touchAction, 'pan-y', 'frozen option values are preserved');
+    assert.ok(h2.recognizers.length > 0, 'frozen options object works and still attaches default preset recognizers');
+    assert.equal(h2.options.touchAction, 'pan-y', 'frozen option values are preserved');
     h2.destroy();
 });
 
-test('disabling manager mid-gesture resets active input state and guards set(inputTarget) after destroy', function() {
-    expect(5);
+QUnit.test('disabling manager mid-gesture resets active input state and guards set(inputTarget) after destroy', function(assert) {
+    assert.expect(5);
 
     var enabled = true;
     var tapCount = 0;
@@ -475,31 +478,31 @@ test('disabling manager mid-gesture resets active input state and guards set(inp
 
     // Pointer down while enabled, then disabled before pointerup
     hammer.input.domHandler({type: 'pointerdown', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10, target: el});
-    equal(hammer.input.store.length, 1, 'pointer stored while enabled');
+    assert.equal(hammer.input.store.length, 1, 'pointer stored while enabled');
 
     enabled = false;
     hammer.input.domHandler({type: 'pointerup', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
-    equal(hammer.input.store.length, 0, 'store cleared when domHandler observes manager disabled');
+    assert.equal(hammer.input.store.length, 0, 'store cleared when domHandler observes manager disabled');
 
     // Re-enabling and hovering must not emit a ghost tap
     enabled = true;
     hammer.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
-    equal(tapCount, 0, 'hovering after re-enable does not emit a ghost tap');
+    assert.equal(tapCount, 0, 'hovering after re-enable does not emit a ghost tap');
 
     // Static set({enable: false}) clears active store immediately
     hammer.input.domHandler({type: 'pointerdown', pointerId: 2, pointerType: 'touch', button: 0, clientX: 10, clientY: 10, target: el});
     hammer.set({enable: false});
-    equal(hammer.input.store.length, 0, 'set({enable: false}) resets input store immediately');
+    assert.equal(hammer.input.store.length, 0, 'set({enable: false}) resets input store immediately');
 
     // set({inputTarget}) after destroy does not throw
     hammer.destroy();
     hammer.set({inputTarget: el2});
-    ok(true, 'set({inputTarget}) safely ignored after destroy');
+    assert.ok(true, 'set({inputTarget}) safely ignored after destroy');
     hammer = null;
 });
 
-test('Manager.remove clears session.curRecognizer when removing active recognizer mid-gesture', function() {
-    expect(5);
+QUnit.test('Manager.remove clears session.curRecognizer when removing active recognizer mid-gesture', function(assert) {
+    assert.expect(5);
 
     // 1. Removing inside pan1move (after pan1 is already stored in session.curRecognizer)
     hammer = new Hammer.Manager(el, {
@@ -519,23 +522,23 @@ test('Manager.remove clears session.curRecognizer when removing active recognize
 
     utils.dispatchTouchEvent(el, 'start', 10, 10);
     utils.dispatchTouchEvent(el, 'move', 25, 10);
-    strictEqual(hammer.session.curRecognizer.options.event, 'pan1', 'pan1 becomes curRecognizer on start');
+    assert.strictEqual(hammer.session.curRecognizer.options.event, 'pan1', 'pan1 becomes curRecognizer on start');
 
     utils.dispatchTouchEvent(el, 'move', 40, 10);
-    equal(pan2Started, 1, 'removing active pan1 on pan1move clears curRecognizer and lets pan2 recognize');
-    strictEqual(hammer.session.curRecognizer.options.event, 'pan2', 'pan2 becomes new curRecognizer');
+    assert.equal(pan2Started, 1, 'removing active pan1 on pan1move clears curRecognizer and lets pan2 recognize');
+    assert.strictEqual(hammer.session.curRecognizer.options.event, 'pan2', 'pan2 becomes new curRecognizer');
 
     // 2. toggleCssProps safely handles null element (e.g. set({cssProps}) after destroy)
     hammer.destroy();
     hammer.set({cssProps: {userSelect: 'text'}});
-    ok(true, 'set({cssProps}) after destroy() does not throw');
+    assert.ok(true, 'set({cssProps}) after destroy() does not throw');
     $H.toggleCssProps({element: null, options: {cssProps: {userSelect: 'none'}}, oldCssProps: {}}, true);
-    ok(true, 'toggleCssProps safely ignores null element');
+    assert.ok(true, 'toggleCssProps safely ignores null element');
     hammer = null;
 });
 
-test('Manager.recognize does not loop infinitely when a handler replaces the active recognizer with add()', function() {
-    expect(2);
+QUnit.test('Manager.recognize does not loop infinitely when a handler replaces the active recognizer with add()', function(assert) {
+    assert.expect(2);
 
     hammer = new Hammer.Manager(el, {
         recognizers: [[Hammer.Tap]]
@@ -551,7 +554,7 @@ test('Manager.recognize does not loop infinitely when a handler replaces the act
 
     utils.dispatchTouchEvent(el, 'start', 20, 20);
     utils.dispatchTouchEvent(el, 'end', 20, 20);
-    equal(tapCount, 1, 'replacing active recognizer via add() inside handler runs once without looping');
+    assert.equal(tapCount, 1, 'replacing active recognizer via add() inside handler runs once without looping');
 
     // Removing a subsequent recognizer inside an earlier recognizer callback skips the removed recognizer
     hammer.destroy();
@@ -571,11 +574,11 @@ test('Manager.recognize does not loop infinitely when a handler replaces the act
 
     utils.dispatchTouchEvent(el, 'start', 20, 20);
     utils.dispatchTouchEvent(el, 'end', 20, 20);
-    equal(secondFired, 0, 'recognizer removed earlier in the same recognize() cycle is skipped');
+    assert.equal(secondFired, 0, 'recognizer removed earlier in the same recognize() cycle is skipped');
 });
 
-test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops after remove()', function() {
-    expect(2);
+QUnit.test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops after remove()', function(assert) {
+    assert.expect(2);
 
     // 1. Calling destroy() inside a DOM panstart listener stops subsequent pan/panright DOM events
     var domEventsSeen = [];
@@ -597,7 +600,7 @@ test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops 
     try {
         utils.dispatchTouchEvent(el, 'start', 10, 10);
         utils.dispatchTouchEvent(el, 'move', 30, 10);
-        deepEqual(domEventsSeen, ['panstart'], 'no further DOM events dispatched after destroy() in panstart listener');
+        assert.deepEqual(domEventsSeen, ['panstart'], 'no further DOM events dispatched after destroy() in panstart listener');
     } finally {
         ['panstart', 'pan', 'panright'].forEach(function(name) {
             el.removeEventListener(name, onDomEvent, false);
@@ -619,11 +622,11 @@ test('Manager.emit stops DOM dispatch after destroy() and Recognizer.emit stops 
 
     utils.dispatchTouchEvent(el, 'start', 10, 10);
     utils.dispatchTouchEvent(el, 'move', 30, 10);
-    deepEqual(emitted, ['panstart'], 'Recognizer.emit stops emitting remaining events after manager.remove()');
+    assert.deepEqual(emitted, ['panstart'], 'Recognizer.emit stops emitting remaining events after manager.remove()');
 });
 
-test('Manager constructor skips displaced preset recognizers and unattached string refs are ignored', function() {
-    expect(5);
+QUnit.test('Manager constructor skips displaced preset recognizers and unattached string refs are ignored', function(assert) {
+    assert.expect(5);
 
     // 1. Displaced recognizer in options.recognizers must not wire recognizeWith/requireFailure
     hammer = new Hammer.Manager(el, {
@@ -636,20 +639,20 @@ test('Manager constructor skips displaced preset recognizers and unattached stri
     });
     var tap = hammer.get('tap');
     var pan = hammer.get('pan');
-    equal(tap.options.time, 500, 'later preset entry replaces earlier entry with same event name');
-    equal(Object.keys(pan.simultaneous).length, 0, 'displaced recognizer did not pollute pan.simultaneous');
-    equal(tap.requireFail.length, 0, 'replacement recognizer kept its own requireFail list');
+    assert.equal(tap.options.time, 500, 'later preset entry replaces earlier entry with same event name');
+    assert.equal(Object.keys(pan.simultaneous).length, 0, 'displaced recognizer did not pollute pan.simultaneous');
+    assert.equal(tap.requireFail.length, 0, 'replacement recognizer kept its own requireFail list');
 
     // 2. Unattached recognizer ignores string recognizeWith / requireFailure
     var orphan = new Hammer.Tap();
     orphan.recognizeWith('pan');
     orphan.requireFailure('press');
-    equal(Object.keys(orphan.simultaneous).length, 0, 'unattached recognizeWith(string) does not add undefined key');
-    equal(orphan.requireFail.length, 0, 'unattached requireFailure(string) does not push raw string');
+    assert.equal(Object.keys(orphan.simultaneous).length, 0, 'unattached recognizeWith(string) does not add undefined key');
+    assert.equal(orphan.requireFail.length, 0, 'unattached requireFailure(string) does not push raw string');
 });
 
-test('Manager.set handles cssProps disabling/cloning, inputTarget reset, and destroy stops remaining handlers', function() {
-    expect(9);
+QUnit.test('Manager.set handles cssProps disabling/cloning, inputTarget reset, and destroy stops remaining handlers', function(assert) {
+    assert.expect(9);
 
     var prop = Hammer.prefixed(el.style, 'userSelect');
     if (prop) {
@@ -665,24 +668,24 @@ test('Manager.set handles cssProps disabling/cloning, inputTarget reset, and des
     // 1. set({cssProps}) clones caller object and restores on false/null
     var updatedCss = {userSelect: 'all'};
     hammer.set({cssProps: updatedCss});
-    notStrictEqual(hammer.options.cssProps, updatedCss, 'set({cssProps}) clones caller object');
+    assert.notStrictEqual(hammer.options.cssProps, updatedCss, 'set({cssProps}) clones caller object');
     updatedCss.userSelect = 'auto';
-    equal(hammer.options.cssProps.userSelect, 'all', 'mutating caller cssProps object does not mutate manager.options.cssProps');
+    assert.equal(hammer.options.cssProps.userSelect, 'all', 'mutating caller cssProps object does not mutate manager.options.cssProps');
 
     hammer.set({cssProps: false});
-    equal(hammer.options.cssProps, false, 'set({cssProps: false}) updates option');
+    assert.equal(hammer.options.cssProps, false, 'set({cssProps: false}) updates option');
     if (prop) {
-        equal(el.style[prop], 'text', 'set({cssProps: false}) restores original CSS property');
+        assert.equal(el.style[prop], 'text', 'set({cssProps: false}) restores original CSS property');
     } else {
-        ok(true, 'userSelect not prefixed in environment');
+        assert.ok(true, 'userSelect not prefixed in environment');
     }
 
     // 2. set({inputTarget}) stops active session and falsy inputTarget reverts to element
     hammer.set({inputTarget: el2});
-    strictEqual(hammer.input.target, el2, 'set({inputTarget: el2}) rebinds input target');
+    assert.strictEqual(hammer.input.target, el2, 'set({inputTarget: el2}) rebinds input target');
     hammer.set({inputTarget: null});
-    strictEqual(hammer.options.inputTarget, el, 'set({inputTarget: null}) reverts option to manager.element');
-    strictEqual(hammer.input.target, el, 'set({inputTarget: null}) rebinds input target to manager.element');
+    assert.strictEqual(hammer.options.inputTarget, el, 'set({inputTarget: null}) reverts option to manager.element');
+    assert.strictEqual(hammer.input.target, el, 'set({inputTarget: null}) rebinds input target to manager.element');
 
     // 3. destroy() inside a JS listener halts remaining listeners and detaches recognizers
     var tapRec = hammer.get('tap');
@@ -697,7 +700,7 @@ test('Manager.set handles cssProps disabling/cloning, inputTarget reset, and des
     utils.dispatchTouchEvent(el, 'start', 20, 20);
     utils.dispatchTouchEvent(el, 'end', 20, 20);
 
-    equal(secondCalled, 0, 'Manager.emit stops invoking remaining JS listeners after destroy()');
-    strictEqual(tapRec.manager, null, 'Manager.destroy detaches recognizers and clears recognizer.manager');
+    assert.equal(secondCalled, 0, 'Manager.emit stops invoking remaining JS listeners after destroy()');
+    assert.strictEqual(tapRec.manager, null, 'Manager.destroy detaches recognizers and clears recognizer.manager');
     hammer = null;
 });

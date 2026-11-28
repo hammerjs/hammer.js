@@ -1,17 +1,18 @@
 var el,
     hammer;
 
-module('Simultaenous recognition', {
-    setup: function() {
+QUnit.module('Simultaenous recognition', {
+    beforeEach: function() {
         el = utils.createHitArea()
     },
-    teardown: function() {
+    afterEach: function() {
         hammer && hammer.destroy();
     }
 });
 
-asyncTest('should pinch and pan simultaneously be recognized when enabled', function() {
-    expect(4);
+QUnit.test('should pinch and pan simultaneously be recognized when enabled', function(assert) {
+    var done = assert.async();
+    assert.expect(4);
 
     var panCount = 0,
         pinchCount = 0;
@@ -89,23 +90,23 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
 
     // 2 gesture will be recognized
     executeGesture(function() {
-        equal(panCount, 1);
-        equal(pinchCount, 1);
+        assert.equal(panCount, 1);
+        assert.equal(pinchCount, 1);
 
         pinch.dropRecognizeWith(hammer.get('pan'));
 
         // only the pan gesture will be recognized
         executeGesture(function() {
-            equal(panCount, 2);
-            equal(pinchCount, 1);
+            assert.equal(panCount, 2);
+            assert.equal(pinchCount, 1);
 
-            start();
+            done();
         });
     });
 });
 
-test('the first gesture should block the following gestures (Tap & DoubleTap)', function() {
-    expect(4);
+QUnit.test('the first gesture should block the following gestures (Tap & DoubleTap)', function(assert) {
+    assert.expect(4);
 
     var tapCount = 0,
         doubleTapCount = 0;
@@ -132,8 +133,8 @@ test('the first gesture should block the following gestures (Tap & DoubleTap)', 
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
-    equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
+    assert.equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
+    assert.equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
     doubleTap.recognizeWith(hammer.get('tap'));
 
@@ -142,12 +143,12 @@ test('the first gesture should block the following gestures (Tap & DoubleTap)', 
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(tapCount, 4);
-    equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
+    assert.equal(tapCount, 4);
+    assert.equal(doubleTapCount, 1, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
 });
 
-test('when disabled, the first gesture should not block gestures  (Tap & DoubleTap )', function() {
-    expect(4);
+QUnit.test('when disabled, the first gesture should not block gestures  (Tap & DoubleTap )', function(assert) {
+    assert.expect(4);
 
     var tapCount = 0,
         doubleTapCount = 0;
@@ -174,8 +175,8 @@ test('when disabled, the first gesture should not block gestures  (Tap & DoubleT
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
-    equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
+    assert.equal(tapCount, 2, 'on a double tap gesture, the tap gesture is recognized twice');
+    assert.equal(doubleTapCount, 0, 'double tap gesture is not recognized because the prior tap gesture does not recognize it simultaneously');
 
     hammer.get('tap').set({ enable: false });
 
@@ -184,12 +185,12 @@ test('when disabled, the first gesture should not block gestures  (Tap & DoubleT
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(tapCount, 2, 'tap gesture should not be recognized when the recognizer is disabled');
-    equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');
+    assert.equal(tapCount, 2, 'tap gesture should not be recognized when the recognizer is disabled');
+    assert.equal(doubleTapCount, 1, 'when the tap gesture is disabled, doubleTap can be recognized');
 });
 
-test('the first gesture should block the following gestures (DoubleTap & Tap)', function() {
-    expect(4);
+QUnit.test('the first gesture should block the following gestures (DoubleTap & Tap)', function(assert) {
+    assert.expect(4);
 
     var tapCount = 0,
         doubleTapCount = 0;
@@ -216,8 +217,8 @@ test('the first gesture should block the following gestures (DoubleTap & Tap)', 
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(doubleTapCount, 1, 'double tap is recognized');
-    equal(tapCount, 1, 'tap is detected, the doubletap is only catched by the doubletap recognizer');
+    assert.equal(doubleTapCount, 1, 'double tap is recognized');
+    assert.equal(tapCount, 1, 'tap is detected, the doubletap is only catched by the doubletap recognizer');
 
     // doubletap and tap together
     doubleTap.recognizeWith(hammer.get('tap'));
@@ -229,6 +230,6 @@ test('the first gesture should block the following gestures (DoubleTap & Tap)', 
     utils.dispatchTouchEvent(el, 'start', 0, 10);
     utils.dispatchTouchEvent(el, 'end', 0, 10);
 
-    equal(doubleTapCount, 1);
-    equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
+    assert.equal(doubleTapCount, 1);
+    assert.equal(tapCount, 2, 'when the tap gesture is configured to work simultaneously, tap & doubleTap can be recognized simultaneously');
 });

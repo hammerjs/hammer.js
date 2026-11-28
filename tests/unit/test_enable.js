@@ -2,55 +2,56 @@ var el,
     hammer,
     counter;
 
-module('Test recognizer enable', {
-    setup: function() {
+QUnit.module('Test recognizer enable', {
+    beforeEach: function() {
         el = utils.createHitArea();
         hammer = new Hammer.Manager(el, {recognizers: []});
         counter = 0;
     },
-    teardown: function() {
+    afterEach: function() {
         hammer && hammer.destroy();
     }
 });
 
-test('should disable a recognizer through the `enable` constructor parameter', function() {
-    expect(1);
+QUnit.test('should disable a recognizer through the `enable` constructor parameter', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
     hammer.add(new Hammer.Tap({enable: false}));
     hammer.on('tap', function() {
         counter++;
     });
 
-    stop();
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        start();
-        equal(counter, 0);
+        assert.equal(counter, 0);
+        done();
     }, 20);
 });
 
-test('should disable recognizing when the manager is disabled.', function() {
-    expect(1);
+QUnit.test('should disable recognizing when the manager is disabled.', function(assert) {
+    var done = assert.async();
+    assert.expect(1);
     hammer.set({ enable: false });
     hammer.add(new Hammer.Tap());
     hammer.on('tap', function() {
         counter++;
     });
 
-    stop();
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        start();
-        equal(counter, 0);
+        assert.equal(counter, 0);
+        done();
     }, 20);
 });
 
-asyncTest('disabling manager mid-gesture cancels pending timers and resets active recognizers', function() {
-    expect(3);
+QUnit.test('disabling manager mid-gesture cancels pending timers and resets active recognizers', function(assert) {
+    var done = assert.async();
+    assert.expect(3);
 
     var pressCount = 0;
     var panEvents = [];
@@ -71,12 +72,12 @@ asyncTest('disabling manager mid-gesture cancels pending timers and resets activ
 
     // 2. Re-enable, begin a pan, disable mid-pan (swallowing touchend), then re-enable and pan again
     setTimeout(function() {
-        equal(pressCount, 0, 'pending press timer cancelled when manager is disabled via set({enable: false})');
+        assert.equal(pressCount, 0, 'pending press timer cancelled when manager is disabled via set({enable: false})');
 
         hammer.set({enable: true});
         utils.dispatchTouchEvent(el, 'start', 10, 10);
         utils.dispatchTouchEvent(el, 'move', 30, 10);
-        deepEqual(panEvents, ['panstart'], 'first pan starts normally');
+        assert.deepEqual(panEvents, ['panstart'], 'first pan starts normally');
 
         hammer.set({enable: false});
         utils.dispatchTouchEvent(el, 'end', 30, 10);
@@ -86,13 +87,13 @@ asyncTest('disabling manager mid-gesture cancels pending timers and resets activ
         utils.dispatchTouchEvent(el, 'start', 10, 10);
         utils.dispatchTouchEvent(el, 'move', 30, 10);
         utils.dispatchTouchEvent(el, 'end', 30, 10);
-        deepEqual(panEvents, ['panstart', 'panend'], 'pan recognizer resets cleanly so next gesture emits panstart');
-        start();
+        assert.deepEqual(panEvents, ['panstart', 'panend'], 'pan recognizer resets cleanly so next gesture emits panstart');
+        done();
     }, 60);
 });
 
-test('should toggle a recognizer using the `set` call to the recognizer enable property', function() {
-    expect(2);
+QUnit.test('should toggle a recognizer using the `set` call to the recognizer enable property', function(assert) {
+    assert.expect(2);
 
     hammer.add(new Hammer.Tap());
     hammer.on('tap', function() {
@@ -101,17 +102,18 @@ test('should toggle a recognizer using the `set` call to the recognizer enable p
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 1);
+    assert.equal(counter, 1);
 
     hammer.get('tap').set({ enable: false });
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 1);
+    assert.equal(counter, 1);
 });
 
-test('should accept the `enable` constructor parameter as function', function() {
-    expect(2);
+QUnit.test('should accept the `enable` constructor parameter as function', function(assert) {
+    var done = assert.async();
+    assert.expect(2);
 
     var canRecognizeTap = false;
 
@@ -126,25 +128,24 @@ test('should accept the `enable` constructor parameter as function', function() 
         counter++;
     });
 
-    stop();
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
     setTimeout(function() {
-        start();
-        equal(counter, 0);
+        assert.equal(counter, 0);
 
         canRecognizeTap = true;
 
         utils.dispatchTouchEvent(el, 'start', 50, 50);
         utils.dispatchTouchEvent(el, 'end', 50, 50);
 
-        equal(counter, 1);
+        assert.equal(counter, 1);
+        done();
     }, 20);
 });
 
-test('should accept a function parameter with `set`', function() {
-    expect(3);
+QUnit.test('should accept a function parameter with `set`', function(assert) {
+    assert.expect(3);
 
     hammer.add(new Hammer.Tap());
     hammer.on('tap', function() {
@@ -153,7 +154,7 @@ test('should accept a function parameter with `set`', function() {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 1);
+    assert.equal(counter, 1);
 
     var canRecognizeTap = false;
     hammer.get('tap').set({ enable: function() {
@@ -162,23 +163,23 @@ test('should accept a function parameter with `set`', function() {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 1);
+    assert.equal(counter, 1);
 
     canRecognizeTap = true;
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 2);
+    assert.equal(counter, 2);
 });
 
-test('should pass the recognizer and optional the input parameter to the `enable` callback', function() {
-    expect(2);
+QUnit.test('should pass the recognizer and optional the input parameter to the `enable` callback', function(assert) {
+    assert.expect(2);
 
     var tap;
 
     // the enable function is called initially to setup the touch-action property
     // at that moment there isnt any input
     var canEnable = function(recognizer, input) {
-        equal(recognizer, tap);
+        assert.equal(recognizer, tap);
         return true;
     };
     tap = new Hammer.Tap({enable: canEnable});
@@ -187,8 +188,8 @@ test('should pass the recognizer and optional the input parameter to the `enable
     utils.dispatchTouchEvent(el, 'start', 50, 50);
 });
 
-test('should toggle based on other object method', function() {
-    expect(2);
+QUnit.test('should toggle based on other object method', function(assert) {
+    assert.expect(2);
 
     var view = {
         state: 0,
@@ -204,35 +205,35 @@ test('should toggle based on other object method', function() {
 
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 0);
+    assert.equal(counter, 0);
 
     view.state = 1;
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
-    equal(counter, 1);
+    assert.equal(counter, 1);
 });
 
-test('Manager.set updates cssProps on element and restores previous styles cleanly', function() {
+QUnit.test('Manager.set updates cssProps on element and restores previous styles cleanly', function(assert) {
     var userSelectProp = $H.prefixed(el.style, 'userSelect');
     var origUserSelect = 'text';
     if (userSelectProp) {
         hammer.destroy();
         el.style[userSelectProp] = origUserSelect;
         hammer = new Hammer.Manager(el, {recognizers: []});
-        equal(el.style[userSelectProp], 'none', 'initial cssProps applies userSelect: none');
+        assert.equal(el.style[userSelectProp], 'none', 'initial cssProps applies userSelect: none');
 
         hammer.set({cssProps: {userSelect: 'auto'}});
-        equal(el.style[userSelectProp], 'auto', 'set({cssProps}) applies new userSelect value');
+        assert.equal(el.style[userSelectProp], 'auto', 'set({cssProps}) applies new userSelect value');
 
         hammer.set({cssProps: {}});
-        equal(el.style[userSelectProp], origUserSelect, 'set({cssProps: {}}) restores original userSelect value');
+        assert.equal(el.style[userSelectProp], origUserSelect, 'set({cssProps: {}}) restores original userSelect value');
     } else {
-        ok(true, 'userSelect style not supported in environment');
+        assert.ok(true, 'userSelect style not supported in environment');
     }
 });
 
-test('destroying manager inside a gesture handler does not re-attach session.prevInput', function() {
-    expect(2);
+QUnit.test('destroying manager inside a gesture handler does not re-attach session.prevInput', function(assert) {
+    assert.expect(2);
 
     hammer.add(new Hammer.Tap());
     hammer.on('tap', function() {
@@ -242,12 +243,12 @@ test('destroying manager inside a gesture handler does not re-attach session.pre
     utils.dispatchTouchEvent(el, 'start', 50, 50);
     utils.dispatchTouchEvent(el, 'end', 50, 50);
 
-    strictEqual(hammer.element, null, 'manager.element is cleared after destroy');
-    strictEqual(hammer.session.prevInput, undefined, 'manager.session.prevInput is not re-attached after destroy');
+    assert.strictEqual(hammer.element, null, 'manager.element is cleared after destroy');
+    assert.strictEqual(hammer.session.prevInput, undefined, 'manager.session.prevInput is not re-attached after destroy');
 });
 
-test('statically disabled recognizer exits without reading or cloning inputData properties', function() {
-    expect(2);
+QUnit.test('statically disabled recognizer exits without reading or cloning inputData properties', function(assert) {
+    assert.expect(2);
 
     var getterReads = 0;
     var input = {};
@@ -263,12 +264,13 @@ test('statically disabled recognizer exits without reading or cloning inputData 
     hammer.add(pan);
     pan.recognize(input);
 
-    equal(pan.state, $H.STATE_FAILED, 'disabled recognizer transitions to STATE_FAILED');
-    equal(getterReads, 0, 'inputData was not cloned while enable is false');
+    assert.equal(pan.state, $H.STATE_FAILED, 'disabled recognizer transitions to STATE_FAILED');
+    assert.equal(getterReads, 0, 'inputData was not cloned while enable is false');
 });
 
-asyncTest('dynamic enable: () => false and manager.stop(true) cancel Press/Tap timers and prevent TouchInput mid-gesture resume', function() {
-    expect(4);
+QUnit.test('dynamic enable: () => false and manager.stop(true) cancel Press/Tap timers and prevent TouchInput mid-gesture resume', function(assert) {
+    var done = assert.async();
+    assert.expect(4);
 
     // 1. Dynamic enable flipping false (with and without subsequent DOM event) cancels pending Press timer
     var enabled = true;
@@ -335,22 +337,22 @@ asyncTest('dynamic enable: () => false and manager.stop(true) cancel Press/Tap t
     touchEnabled = true;
     mgr3.input.domHandler({type: 'touchmove', touches: [t1Far], changedTouches: [t1Far], target: el, preventDefault: function() {}});
 
-    deepEqual(panEvents, [], 'TouchInput does not resume mid-gesture after reset by dynamic enable');
+    assert.deepEqual(panEvents, [], 'TouchInput does not resume mid-gesture after reset by dynamic enable');
 
     setTimeout(function() {
-        equal(pressCount, 0, 'dynamic enable: () => false prevents pending Press timer from firing');
-        equal(stopPressCount, 0, 'manager.stop(true) cancels pending Press timer');
-        equal(stopTapCount, 0, 'manager.stop(true) cancels pending delayed Tap timer');
+        assert.equal(pressCount, 0, 'dynamic enable: () => false prevents pending Press timer from firing');
+        assert.equal(stopPressCount, 0, 'manager.stop(true) cancels pending Press timer');
+        assert.equal(stopTapCount, 0, 'manager.stop(true) cancels pending delayed Tap timer');
         mgr1.destroy();
         mgr2Press.destroy();
         mgr2Tap.destroy();
         mgr3.destroy();
-        start();
+        done();
     }, 60);
 });
 
-test('Input.domHandler resets only once while disabled and re-arms after re-enabling', function() {
-    expect(4);
+QUnit.test('Input.domHandler resets only once while disabled and re-arms after re-enabling', function(assert) {
+    assert.expect(4);
 
     var enabled = false;
     var resetCalls = 0;
@@ -373,18 +375,18 @@ test('Input.domHandler resets only once while disabled and re-arms after re-enab
         mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 10, clientY: 10, target: el});
         mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 20, clientY: 10, target: el});
         mgr.input.domHandler({type: 'pointermove', pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: 30, clientY: 10, target: el});
-        equal(resetCalls, 1, 'repeated hover events while disabled reset input only once');
+        assert.equal(resetCalls, 1, 'repeated hover events while disabled reset input only once');
 
         // Re-enabling, starting a pointer, and disabling again triggers a fresh reset
         enabled = true;
         mgr.input.domHandler({type: 'pointerdown', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 10, clientY: 10, target: el});
-        equal(mgr.input.store.length, 1, 'pointer tracked after re-enabling');
+        assert.equal(mgr.input.store.length, 1, 'pointer tracked after re-enabling');
 
         enabled = false;
         mgr.input.domHandler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 20, clientY: 10, target: el});
         mgr.input.domHandler({type: 'pointermove', pointerId: 2, pointerType: 'mouse', button: 0, buttons: 1, clientX: 30, clientY: 10, target: el});
-        equal(resetCalls, 2, 're-disabling resets active pointer once and ignores subsequent disabled moves');
-        equal(mgr.input.store.length, 0, 're-disabling clears the active pointer from store');
+        assert.equal(resetCalls, 2, 're-disabling resets active pointer once and ignores subsequent disabled moves');
+        assert.equal(mgr.input.store.length, 0, 're-disabling clears the active pointer from store');
     } finally {
         mgr.destroy();
     }
