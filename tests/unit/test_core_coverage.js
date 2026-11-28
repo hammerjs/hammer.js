@@ -849,4 +849,51 @@
             done();
         }, 50);
     });
+
+    QUnit.test('session cleanup, defensive guards, and Manager.remove relationship cleanup', function(assert) {
+        manager = new Hammer.Manager(el, {recognizers: []});
+
+        // 1. session.prevInput is cleared on final INPUT_END / INPUT_CANCEL so DOM references are not retained
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        assert.ok(manager.session.prevInput !== null, 'session.prevInput is populated during an active gesture');
+        utils.dispatchTouchEvent(el, 'end', 10, 10);
+        assert.strictEqual(manager.session.prevInput, null, 'session.prevInput is cleared to null after final INPUT_END');
+
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        utils.dispatchTouchEvent(el, 'cancel', 10, 10);
+        assert.strictEqual(manager.session.prevInput, null, 'session.prevInput is cleared to null after final INPUT_CANCEL');
+
+        // 2. isAllowedPointerType requires an Array and does not substring-match a string
+        manager.set({pointerTypes: 'touch'});
+        assert.strictEqual($H.isAllowedPointerType(manager, 'touch'), false, 'non-array string pointerTypes is not substring-matched');
+        assert.strictEqual($H.isAllowedPointerType(manager, 't'), false, 'non-array string pointerTypes rejects single-char substring');
+        manager.set({pointerTypes: ['touch']});
+        assert.strictEqual($H.isAllowedPointerType(manager, 'touch'), true, 'array pointerTypes matches allowed type');
+        manager.set({pointerTypes: null});
+
+        // 3. prefixed() returns undefined on primitive values instead of throwing TypeError
+        assert.strictEqual($H.prefixed('primitive', 'foo'), undefined, 'prefixed() returns undefined for string primitive');
+        assert.strictEqual($H.prefixed(123, 'foo'), undefined, 'prefixed() returns undefined for number primitive');
+        assert.strictEqual($H.prefixed(true, 'foo'), undefined, 'prefixed() returns undefined for boolean primitive');
+
+        // 4. toggleCssProps does not clobber CSSStyleDeclaration methods like setProperty
+        var origSetProperty = el.style.setProperty;
+        manager.set({cssProps: {setProperty: 'clobbered'}});
+        assert.strictEqual(el.style.setProperty, origSetProperty, 'toggleCssProps skips function properties on element.style');
+        manager.set({cssProps: Hammer.defaults.cssProps});
+        assert.strictEqual(el.style.setProperty, origSetProperty, 'restoring cssProps keeps element.style.setProperty intact');
+
+        // 5. Manager.remove(rec) clears outgoing requireFail and simultaneous links on the removed recognizer
+        var tap1 = manager.add(new Hammer.Tap({event: 'tap1'}));
+        var tap2 = manager.add(new Hammer.Tap({event: 'tap2'}));
+        var pan = manager.add(new Hammer.Pan());
+        tap1.requireFailure(tap2);
+        tap1.recognizeWith(pan);
+        assert.equal(tap1.requireFail.length, 1, 'tap1 has outgoing requireFail before remove');
+        assert.equal(Object.keys(tap1.simultaneous).length, 1, 'tap1 has outgoing simultaneous before remove');
+
+        manager.remove(tap1);
+        assert.equal(tap1.requireFail.length, 0, 'Manager.remove clears requireFail on the removed recognizer');
+        assert.equal(Object.keys(tap1.simultaneous).length, 0, 'Manager.remove clears simultaneous on the removed recognizer');
+    });
 })();

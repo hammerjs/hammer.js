@@ -1023,3 +1023,67 @@ QUnit.test('SwipeRecognizer enforces default maxVelocity 80 and supports custom 
     recognizeVelocity(Hammer.DIRECTION_RIGHT, 120, 0);
     assert.equal(swipeCount, 4, 'maxVelocity: null disables the upper velocity cap');
 });
+
+QUnit.test('SwipeRecognizer with pointers: 0 accepts any pointer count', function(assert) {
+    assert.expect(2);
+
+    var swipe = new Hammer.Swipe({
+        pointers: 0,
+        threshold: 10,
+        velocity: 0.3
+    });
+    hammer.add(swipe);
+    hammer.on('swipe', function() {
+        swipeCount++;
+    });
+
+    hammer.recognize({
+        pointers: [{clientX: 120, clientY: 50}],
+        changedPointers: [{clientX: 120, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 1,
+        distance: 50,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        velocity: 0.8,
+        velocityX: 0.8,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    assert.equal(swipeCount, 1, 'pointers: 0 recognizes 1-pointer swipe');
+
+    hammer.recognize({
+        pointers: [{clientX: 120, clientY: 50}, {clientX: 130, clientY: 60}],
+        changedPointers: [{clientX: 120, clientY: 50}],
+        eventType: Hammer.INPUT_END,
+        maxPointers: 2,
+        distance: 50,
+        offsetDirection: Hammer.DIRECTION_RIGHT,
+        velocity: 0.8,
+        velocityX: 0.8,
+        velocityY: 0,
+        srcEvent: {preventDefault: function() {}, target: el},
+        target: el
+    });
+    assert.equal(swipeCount, 2, 'pointers: 0 recognizes 2-pointer swipe');
+});
+
+QUnit.test('velocitySamples buffer stays bounded at 32 samples under >250Hz continuous drags', function(assert) {
+    var session = {};
+    var out;
+    // 50 samples at 3ms intervals (333Hz, 147ms total) at constant 1.0 px/ms
+    for (var i = 0; i < 50; i++) {
+        var t = i * 3;
+        var inp = {
+            eventType: i === 0 ? Hammer.INPUT_START : Hammer.INPUT_MOVE,
+            timeStamp: t,
+            deltaX: t * 1.0,
+            deltaY: 0
+        };
+        $H.computeIntervalInputData(session, inp);
+        session.prevInput = inp;
+        out = inp;
+    }
+    assert.equal(session.velocitySamples.length, 32, 'velocitySamples capped at VELOCITY_HISTORY_CAPACITY (32)');
+    assert.ok(Math.abs(out.velocityX - 1.0) < 1e-6, 'velocity remains exact (1.0 px/ms) after ring buffer eviction');
+});

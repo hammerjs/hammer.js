@@ -358,7 +358,7 @@ function uniqueArray(src, key, sort) {
  * @returns {String|Undefined} prefixed
  */
 function prefixed(obj, property) {
-    if (!obj || typeof property !== 'string' || !property) {
+    if (!obj || (typeof obj !== 'object' && typeof obj !== TYPE_FUNCTION) || typeof property !== 'string' || !property) {
         return undefined;
     }
     var prefix, prop;

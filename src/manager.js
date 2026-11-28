@@ -221,6 +221,8 @@ Manager.prototype = {
                     other.dropRequireFailure(recognizer);
                     other.dropRecognizeWith(recognizer);
                 });
+                recognizer.requireFail.length = 0;
+                recognizer.simultaneous = Object.create(null);
                 recognizer.reset();
                 recognizer.state = STATE_POSSIBLE;
                 recognizer.manager = null;
@@ -354,7 +356,7 @@ function toggleCssProps(manager, add) {
     var prop;
     each(manager.options.cssProps, function(value, name) {
         prop = prefixed(element.style, name);
-        if (prop) {
+        if (prop && typeof element.style[prop] !== TYPE_FUNCTION) {
             if (add) {
                 manager.oldCssProps[prop] = element.style[prop];
                 element.style[prop] = value;
