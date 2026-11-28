@@ -1044,4 +1044,32 @@
             input.destroy();
         }
     });
+
+    QUnit.test('TouchMouseInput shares wasDisabled state across touch and mouse child inputs', function(assert) {
+        var enabled = false;
+        manager = new Hammer.Manager(el, {
+            inputClass: Hammer.TouchMouseInput,
+            recognizers: [],
+            enable: function() {
+                return enabled;
+            }
+        });
+
+        // 1. Disabled touch event marks touch as disabled
+        utils.dispatchTouchEvent(el, 'start', 10, 10);
+        assert.strictEqual(manager.input.mouse.pressed, false, 'mouse is not pressed initially');
+
+        // 2. Re-enable and start a mouse drag (only mouse.domHandler sees enabled === true)
+        enabled = true;
+        var downEv = document.createEvent('MouseEvents');
+        downEv.initMouseEvent('mousedown', true, true, window, 1, 10, 10, 10, 10, false, false, false, false, 0, null);
+        el.dispatchEvent(downEv);
+        assert.strictEqual(manager.input.mouse.pressed, true, 'mouse drag started after re-enabling');
+
+        // 3. Disable again and send a touch event: must stop(true) and reset mouse.pressed
+        enabled = false;
+        utils.dispatchTouchEvent(el, 'start', 20, 20);
+        assert.strictEqual(manager.input.mouse.pressed, false, 'touch event after re-disabling resets active mouse drag via shared wasDisabled');
+        assert.strictEqual(manager.session.stopped, $H.FORCED_STOP, 'manager.stop(true) called when re-disabled via touch');
+    });
 })();

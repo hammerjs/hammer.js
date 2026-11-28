@@ -41,7 +41,6 @@ var PROPS_CLIENT_XY = ['clientX', 'clientY'];
  */
 function Input(manager, callback) {
     var self = this;
-    var wasDisabled = false;
     this.manager = manager;
     this.callback = callback;
     this.element = manager.element;
@@ -54,10 +53,10 @@ function Input(manager, callback) {
             return;
         }
         if (boolOrFn(manager.options.enable, [manager])) {
-            wasDisabled = false;
+            manager._wasDisabled = false;
             self.handler(ev);
-        } else if (!wasDisabled) {
-            wasDisabled = true;
+        } else if (!manager._wasDisabled) {
+            manager._wasDisabled = true;
             manager.stop(true);
             (manager.input || self).reset();
         }
