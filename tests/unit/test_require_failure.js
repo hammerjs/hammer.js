@@ -1,6 +1,6 @@
 var el,
     hammer,
-    pressPeriod = 200,
+    pressPeriod = 40,
     pressThreshold = 20,
     pressCount = 0,
     panStartCount = 0,
@@ -42,13 +42,13 @@ asyncTest('When swipe does not recognize the gesture, a press gesture can be fir
     setTimeout(function() {
         start();
         equal(pressCount, 1);
-    }, pressPeriod + 100);
+    }, pressPeriod + 40);
 });
 
 asyncTest('When swipe does recognize the gesture, a press gesture cannot be fired', function() {
     expect(2);
 
-    Simulator.gestures.swipe(el, null, function() {
+    Simulator.gestures.swipe(el, { duration: 60 }, function() {
         start();
 
         ok(swipeCount > 0, 'swipe gesture should be recognizing');
@@ -93,7 +93,7 @@ asyncTest('When pan does not recognize the gesture, a press gesture can be fired
     setTimeout(function() {
         start();
         equal(pressCount, 1);
-    }, pressPeriod + 100);
+    }, pressPeriod + 40);
 });
 
 asyncTest('When pan recognizes the gesture, a press gesture cannot be fired', function() {
@@ -107,7 +107,7 @@ asyncTest('When pan recognizes the gesture, a press gesture cannot be fired', fu
 
         ok(panStartCount > 0, 'pan gesture should be recognizing');
         equal(pressCount, 0, 'press gesture should not be recognized because pan gesture is recognizing');
-    }, pressPeriod + 100);
+    }, pressPeriod + 40);
 });
 
 test('recognizeWith and requireFailure methods ignore unknown recognizer names', function() {

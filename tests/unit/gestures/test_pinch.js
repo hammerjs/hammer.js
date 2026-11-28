@@ -35,7 +35,7 @@ asyncTest('Pinch event flow should be start -> in -> end', function() {
         isFiredPinchin = false;
     });
 
-    Simulator.gestures.pinch(el, { duration: 500, scale: .5 }, function() {
+    Simulator.gestures.pinch(el, { duration: 80, scale: .5 }, function() {
         equal(eventflow,"startinend");
         start();
     });

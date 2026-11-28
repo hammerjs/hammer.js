@@ -106,7 +106,7 @@ asyncTest('Swiping to the left should fire swipeleft event', function() {
         ok(true);
     });
 
-    Simulator.gestures.swipe(el, {pos: [300, 300], deltaY: 0, deltaX: -200}, function() {
+    Simulator.gestures.swipe(el, {pos: [300, 300], duration: 60, deltaY: 0, deltaX: -200}, function() {
         start();
     });
 });
@@ -122,7 +122,7 @@ asyncTest('Should detect input while on other element', function() {
         ok(true);
     });
 
-    Simulator.gestures.tap(document.body, null, function() {
+    Simulator.gestures.tap(document.body, { duration: 20 }, function() {
         start();
     });
 });

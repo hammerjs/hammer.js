@@ -23,7 +23,7 @@ asyncTest('trigger pan with jQuery', function() {
             }
         });
 
-        Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function() {
+        Simulator.gestures.pan(el, { duration: 60, deltaX: 50, deltaY: 0 }, function() {
             start();
             deepEqual(events, {
                 pan: true,
@@ -46,7 +46,7 @@ asyncTest('trigger pan without jQuery should still work', function() {
         events[ev.type] = true;
     });
 
-    Simulator.gestures.pan(el, { deltaX: 50, deltaY: 0 }, function() {
+    Simulator.gestures.pan(el, { duration: 60, deltaX: 50, deltaY: 0 }, function() {
         start();
         deepEqual(events, {
             pan: true,

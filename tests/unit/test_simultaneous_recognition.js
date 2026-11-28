@@ -61,7 +61,7 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
             event.changedTouches = touches;
 
             el.dispatchEvent(event);
-        }, 100);
+        }, 15);
 
         setTimeout(function() {
             touches = [
@@ -84,7 +84,7 @@ asyncTest('should pinch and pan simultaneously be recognized when enabled', func
             el.dispatchEvent(event);
 
             cb();
-        }, 200);
+        }, 30);
     };
 
     // 2 gesture will be recognized
