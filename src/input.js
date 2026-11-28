@@ -87,7 +87,7 @@ Input.prototype = {
      */
     init: function() {
         this._evTargetOptions = this.evTarget ? getTouchListenerOptions(this.manager) : false;
-        this._evWinOptions = (this.evWin && inStr(this.evWin, 'touch')) ? PASSIVE_LISTENER_OPTIONS : false;
+        this._evWinOptions = (this.evWin && inStr(this.evWin, 'touch')) ? getTouchListenerOptions(this.manager) : false;
         this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
         this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler, this._evTargetOptions);
         this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler, this._evWinOptions);

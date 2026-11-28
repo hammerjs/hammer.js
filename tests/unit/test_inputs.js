@@ -885,11 +885,17 @@
         var map = $H.TOUCH_ACTION_MAP;
         var origNone = map ? map.none : undefined;
         try {
-            // 1. SingleTouchInput never registers {passive: false} on window
+            // 1. SingleTouchInput uses passive on window when native touch-action applies, and non-passive when polyfilling
             manager = new Hammer.Manager(el, {inputClass: Hammer.SingleTouchInput, recognizers: []});
             var winTouchMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
             assert.ok(winTouchMove, 'SingleTouchInput attaches touchmove on window');
-            assert.deepEqual(winTouchMove.opts, {passive: true}, 'SingleTouchInput evWin touchmove is passive on window');
+            assert.deepEqual(winTouchMove.opts, {passive: true}, 'SingleTouchInput evWin touchmove is passive on window when native touch-action applies');
+            manager.destroy();
+
+            winAdded = [];
+            manager = new Hammer.Manager(window, {inputClass: Hammer.SingleTouchInput, touchAction: 'none', recognizers: []});
+            var winSingleNoneMove = winAdded.filter(function(item) { return item.type === 'touchmove'; })[0];
+            assert.deepEqual(winSingleNoneMove.opts, {passive: false}, 'SingleTouchInput evWin touchmove uses {passive: false} when touch-action polyfill is needed');
             manager.destroy();
 
             // 2. TouchInput on DOM element with native touch-action registers {passive: true}
